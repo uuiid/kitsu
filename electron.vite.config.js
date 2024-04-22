@@ -38,14 +38,12 @@ export default defineConfig(() => {
       plugins: [vue()],
       root: '.',
       build: {
-        minify: true,
         sourcemap: true,
         rollupOptions: {
           input: {
             index: resolve(__dirname, 'index.html')
           }
-        },
-        outDir: 'dist'
+        }
       },
       resolve: {
         vue: 'vue/dist/vue.esm.js',
