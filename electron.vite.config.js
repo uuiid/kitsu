@@ -1,6 +1,7 @@
 import { defineConfig } from 'electron-vite'
 import { resolve, join } from 'path'
 import vue from '@vitejs/plugin-vue2'
+import { builtinModules } from 'module'
 
 export default defineConfig(() => {
   const PACKAGE_ROOT = __dirname
@@ -16,9 +17,19 @@ export default defineConfig(() => {
     },
     preload: {
       build: {
+        sourcemap: true,
+        minify: process.env.MODE !== 'development',
+        lib: {
+          entry: 'src/index.js',
+          formats: ['cjs']
+        },
         rollupOptions: {
+          external: ['electron', ...builtinModules],
           input: {
             index: resolve(__dirname, 'electron/preload/index.ts')
+          },
+          output: {
+            entryFileNames: '[name].cjs'
           }
         }
       }

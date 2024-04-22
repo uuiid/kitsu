@@ -29,6 +29,8 @@
     "@fullcalendar/vue": "6.1.11",
     "@google/model-viewer": "3.4.0",
     "@sentry/vue": "7.110.1",
+    "@electron-toolkit/preload": "^3.0.1",
+    "@electron-toolkit/utils": "^3.0.0",
     "async": "3.2.5",
     "bowser": "2.11.0",
     "chart.js": "2.9.4",
@@ -72,8 +74,6 @@
     "wavesurfer.js": "6.6.4"
   },
   "devDependencies": {
-    "@electron-toolkit/preload": "^3.0.1",
-    "@electron-toolkit/utils": "^3.0.0",
     "@types/vue-feather-icons": "5.0.8",
     "@vitejs/plugin-vue2": "2.3.1",
     "@vue/compiler-sfc": "2.7.16",
