@@ -14,6 +14,22 @@
           <img src="../../assets/kitsu-text.svg" v-else />
         </div>
         <form>
+          <div class="field mt2">
+            <p class="control has-icon">
+              <input
+                v-model="server"
+                v-focus
+                class="input is-medium server"
+                type="text"
+                :placeholder="$t('login.fields.server')"
+                @input="updateServer"
+                @keyup.enter="confirmLogIn"
+              />
+              <span class="icon">
+                <icon name="server" :width="20" />
+              </span>
+            </p>
+          </div>
           <div class="field mt2" v-show="!(isMissingOTP || isWrongOTP)">
             <p class="control has-icon">
               <input
@@ -23,7 +39,6 @@
                 @input="updateEmail"
                 @keyup.enter="confirmLogIn"
                 v-model="email"
-                v-focus
               />
               <span class="icon">
                 <mail-icon width="20" height="20" />
@@ -121,6 +136,10 @@ export default {
     }
   },
 
+  beforeMount() {
+    this.server = this.$store.state.login.server
+  },
+
   mounted() {
     this.fadeAway = false
     this.email = this.$store.state.login.email
@@ -133,6 +152,10 @@ export default {
 
   methods: {
     ...mapActions(['logIn']),
+
+    updateServer(e) {
+      this.$store.dispatch('changeServer', e.target.value)
+    },
 
     updateEmail(e) {
       this.$store.dispatch('changeEmail', e.target.value)

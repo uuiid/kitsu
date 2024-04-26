@@ -18,7 +18,7 @@ import 'v-autocomplete/dist/v-autocomplete.css'
 import VueAnimXYZ from '@animxyz/vue'
 import '@animxyz/core' // Import css here if you haven't elsewhere
 
-Vue.use(VueWebsocket, IO, '/events')
+Vue.use(VueWebsocket, IO, window.electron.socketio)
 Vue.config.productionTip = false
 Vue.use(Autocomplete)
 Vue.use(Meta)
@@ -48,6 +48,10 @@ Vue.prototype.$locale = {
   current() {
     return i18n.locale
   }
+}
+
+if (store.state.login.server) {
+  window.electron.socketio.create()
 }
 
 // Start application.

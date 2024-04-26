@@ -1,6 +1,8 @@
 import {
   CHANGE_EMAIL,
   CHANGE_PASSWORD,
+  CHANGE_SERVER,
+  CHANGE_ACCESS_TOKEN,
   LOGIN_RUN,
   LOGIN_SUCCESS,
   LOGIN_FAILURE,
@@ -15,7 +17,9 @@ import auth from '@/lib/auth'
 import { coerceTwoFactorPayload } from '@/lib/webauthn'
 
 const initialState = {
-  email: '',
+  email: window.electron.store.get('login.email'),
+  server: window.electron.store.get('login.server'),
+  access_token: window.electron.store.get('login.access_token'),
   password: '',
   isLoginLoading: false,
   isLoginError: false,
@@ -29,6 +33,7 @@ const state = {
 const getters = {
   email: state => state.email,
   password: state => state.password,
+  access_token: state => state.access_token,
   isLoginLoading: state => state.isLoginLoading,
   isLoginError: state => state.isLoginError,
   isDataLoading: state => state.isDataLoading
@@ -41,6 +46,10 @@ const actions = {
 
   changePassword({ commit, state }, password) {
     commit(CHANGE_PASSWORD, password)
+  },
+
+  changeServer({ commit, state }, server) {
+    commit(CHANGE_SERVER, server)
   },
 
   logIn({ commit, state }, { twoFactorPayload, callback }) {
@@ -101,6 +110,16 @@ const mutations = {
 
   [CHANGE_PASSWORD](state, password) {
     state.password = password
+  },
+
+  [CHANGE_SERVER](state, server) {
+    window.electron.store.set('login.server', server)
+    state.server = server
+  },
+
+  [CHANGE_ACCESS_TOKEN](state, accessToken) {
+    window.electron.store.set('login.access_token', accessToken)
+    state.access_token = accessToken
   },
 
   [LOGIN_RUN](state) {

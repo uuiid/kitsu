@@ -5,13 +5,14 @@ import {
   SET_ORGANISATION,
   USER_LOGIN,
   USER_LOGOUT,
-  USER_LOGIN_FAIL
+  USER_LOGIN_FAIL,
+  CHANGE_ACCESS_TOKEN
 } from '@/store/mutation-types.js'
 
 const auth = {
   logIn(payload, callback) {
     superagent
-      .post('/api/auth/login')
+      .post(`${store.state.login.server}/api/auth/login`)
       .send(payload)
       .end((err, res) => {
         if (err) {
@@ -42,6 +43,7 @@ const auth = {
           if (res.body.login) {
             const user = res.body.user
             store.commit(DATA_LOADING_START)
+            store.commit(CHANGE_ACCESS_TOKEN, res.body.access_token)
             callback(null, user)
           } else {
             store.commit(USER_LOGIN_FAIL)
@@ -52,20 +54,22 @@ const auth = {
   },
 
   logout(callback) {
-    superagent.get('/api/auth/logout').end((err, res) => {
-      if (err) {
-        console.error(err)
-        callback(err)
-      }
-      store.commit(USER_LOGOUT)
-      callback()
-    })
+    superagent
+      .get(`${store.state.login.server}/api/auth/logout`)
+      .end((err, res) => {
+        if (err) {
+          console.error(err)
+          callback(err)
+        }
+        store.commit(USER_LOGOUT)
+        callback()
+      })
   },
 
   resetPassword(email) {
     return new Promise((resolve, reject) => {
       superagent
-        .post('/api/auth/reset-password')
+        .post(`${store.state.login.server}/api/auth/reset-password`)
         .send({ email })
         .end((err, res) => {
           if (err) reject(err)
@@ -77,7 +81,7 @@ const auth = {
   resetChangePassword(email, token, password, password2) {
     return new Promise((resolve, reject) => {
       superagent
-        .put('/api/auth/reset-password')
+        .put(`${store.state.login.server}/api/auth/reset-password`)
         .send({ email, token, password, password2 })
         .end((err, res) => {
           if (err) reject(err)
@@ -87,39 +91,47 @@ const auth = {
   },
 
   isServerLoggedIn(callback) {
-    superagent.get('/api/auth/authenticated').end((err, res) => {
-      if (err && res && [401, 422].includes(res.statusCode)) {
-        store.commit(USER_LOGIN_FAIL)
-        callback(null)
-      } else if (err) {
-        store.commit(USER_LOGIN_FAIL)
-        callback(err)
-      } else if (res && res.body === null) {
-        store.commit(USER_LOGIN_FAIL)
-        callback(err)
-      } else {
-        const user = res.body.user
-        const organisation = res.body.organisation || {}
-        organisation.use_original_file_name =
-          organisation.use_original_file_name ? 'true' : 'false'
-        organisation.timesheets_locked = organisation.timesheets_locked
-          ? 'true'
-          : 'false'
-        organisation.hd_by_default = organisation.hd_by_default
-          ? 'true'
-          : 'false'
-        store.commit(SET_ORGANISATION, organisation)
-        store.commit(USER_LOGIN, user)
-        callback(null)
-      }
-    })
+    superagent
+      .get(`${store.state.login.server}/api/auth/authenticated`)
+      .end((err, res) => {
+        if (err && res && [401, 422].includes(res.statusCode)) {
+          store.commit(USER_LOGIN_FAIL)
+          callback(null)
+        } else if (err) {
+          store.commit(USER_LOGIN_FAIL)
+          callback(err)
+        } else if (res && res.body === null) {
+          store.commit(USER_LOGIN_FAIL)
+          callback(err)
+        } else {
+          const user = res.body.user
+          const organisation = res.body.organisation || {}
+          organisation.use_original_file_name =
+            organisation.use_original_file_name ? 'true' : 'false'
+          organisation.timesheets_locked = organisation.timesheets_locked
+            ? 'true'
+            : 'false'
+          organisation.hd_by_default = organisation.hd_by_default
+            ? 'true'
+            : 'false'
+          store.commit(SET_ORGANISATION, organisation)
+          store.commit(USER_LOGIN, user)
+          callback(null)
+        }
+      })
   },
 
   // Needed for router to know if a redirection to login page is required or
   // not.
   requireAuth(to, from, next) {
     const finalize = () => {
-      if (!store.state.user.isAuthenticated) {
+      if (!store.state.login.server) {
+        next({
+          name: 'server-down',
+          query: { redirect: to.fullPath }
+        })
+        return
+      } else if (!store.state.user.isAuthenticated) {
         store
           .dispatch('getOrganisation')
           .catch(err => {

@@ -29,14 +29,15 @@ if (!app.requestSingleInstanceLock()) {
   process.exit(0)
 }
 
+let mainWindow = null
+
 function createWindow(): void {
 
   const filter = { urls: ['https://192.168.20.69/*'] };
   session.defaultSession.webRequest.onHeadersReceived(filter, (details, callback) => {
-    console.log("details", details.responseHeaders);
     if (details.responseHeaders && details.responseHeaders['Set-Cookie']) {
       for (let i = 0; i < details.responseHeaders['Set-Cookie'].length; i++)
-        details.responseHeaders['Set-Cookie'][i] += ";SameSite=None;Secure";
+        details.responseHeaders['Set-Cookie'][i] += "; SameSite=None; Secure";
     }
 
     callback({ responseHeaders: details.responseHeaders });
@@ -69,7 +70,7 @@ function createWindow(): void {
   })
 
   // Create the browser window.
-  const mainWindow = new BrowserWindow({
+  mainWindow = new BrowserWindow({
     x: mainWindowState.x,
     y: mainWindowState.y,
     width: mainWindowState.width,
@@ -78,7 +79,8 @@ function createWindow(): void {
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.cjs'),
-      sandbox: false
+      sandbox: false,
+      webSecurity: false
     }
   })
   mainWindowState.manage(mainWindow)
@@ -120,9 +122,12 @@ function createWindow(): void {
     return { action: 'deny' }
   })
 
-
-
-
+  /**
+   * If you install `show: true` then it can cause issues when trying to close the window.
+   * Use `show: false` and listener events `ready-to-show` to fix these issues.
+   *
+   * @see https://github.com/electron/electron/issues/25012
+   */
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
     if (isDevelopment) {
@@ -215,31 +220,27 @@ function createWindow(): void {
 
 }
 
+app.on('second-instance', () => {
+  // Someone tried to run a second instance, we should focus our window.
+  if (mainWindow) {
+    if (mainWindow.isMinimized()) mainWindow.restore()
+    mainWindow.focus()
+  }
+})
+
+app.on('certificate-error', (event, webContents, url, error, certificate, callback) => {
+  // On certificate error we disable default behaviour (stop loading the page)
+  // and we then say "it is all fine - true" to the callback
+  event.preventDefault();
+  callback(true);
+});
+
+
 // This method will be called when Electron has finished
 // initialization and is ready to create browser windows.
 // Some APIs can only be used after this event occurs.
-app.whenReady().then(() => {
-  // Set app user model id for windows
-  electronApp.setAppUserModelId('com.electron')
+app.whenReady().then(createWindow)
 
-  // Default open or close DevTools by F12 in development
-  // and ignore CommandOrControl + R in production.
-  // see https://github.com/alex8088/electron-toolkit/tree/master/packages/utils
-  app.on('browser-window-created', (_, window) => {
-    optimizer.watchWindowShortcuts(window)
-  })
-
-  // IPC test
-  ipcMain.on('ping', () => console.log('pong'))
-
-  createWindow()
-
-  app.on('activate', function () {
-    // On macOS it's common to re-create a window in the app when the
-    // dock icon is clicked and there are no other windows open.
-    if (BrowserWindow.getAllWindows().length === 0) createWindow()
-  })
-})
 
 // Quit when all windows are closed, except on macOS. There, it's common
 // for applications and their menu bar to stay active until the user quits

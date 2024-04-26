@@ -1,9 +1,10 @@
 import superagent from 'superagent'
 import errors from '@/lib/errors'
+import store from '@/store'
 
 const client = {
   get(path, callback) {
-    superagent.get(path).end((err, res) => {
+    superagent.get(`${store.state.login.server}${path}`).end((err, res) => {
       // if (res?.statusCode === 401) return errors.backToLogin()
       callback(err, res?.body)
     })
@@ -11,7 +12,7 @@ const client = {
 
   post(path, data, callback) {
     superagent
-      .post(path)
+      .post(`${store.state.login.server}${path}`)
       .send(data)
       .end((err, res) => {
         if (res?.statusCode === 401) return errors.backToLogin()
@@ -21,7 +22,7 @@ const client = {
 
   put(path, data, callback) {
     superagent
-      .put(path)
+      .put(`${store.state.login.server}${path}`)
       .send(data)
       .end((err, res) => {
         if (res?.statusCode === 401) return errors.backToLogin()
@@ -30,20 +31,22 @@ const client = {
   },
 
   del(path, callback) {
-    superagent.del(path).end((err, res) => {
+    superagent.del(`${store.state.login.server}${path}`).end((err, res) => {
       if (res?.statusCode === 401) return errors.backToLogin()
       callback(err, res?.body)
     })
   },
 
   pget(path) {
-    return superagent.get(path).then(res => res?.body)
+    return superagent
+      .get(`${store.state.login.server}${path}`)
+      .then(res => res?.body)
   },
 
   ppost(path, data) {
     return new Promise((resolve, reject) => {
       superagent
-        .post(path)
+        .post(`${store.state.login.server}${path}`)
         .send(data)
         .end((err, res) => {
           if (res?.statusCode === 401) {
@@ -61,7 +64,7 @@ const client = {
 
   ppostFile(path, data) {
     const request = superagent
-      .post(path)
+      .post(`${store.state.login.server}${path}`)
       .send(data)
       .on('progress', e => e)
     return {
@@ -83,7 +86,7 @@ const client = {
   pput(path, data) {
     return new Promise((resolve, reject) => {
       superagent
-        .put(path)
+        .put(`${store.state.login.server}${path}`)
         .send(data)
         .end((err, res) => {
           if (res?.statusCode === 401) {
@@ -102,7 +105,7 @@ const client = {
   pdel(path, data) {
     return new Promise((resolve, reject) => {
       superagent
-        .del(path)
+        .del(`${store.state.login.server}${path}`)
         .send(data)
         .end((err, res) => {
           if (res?.statusCode === 401) {
