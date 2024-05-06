@@ -105,6 +105,7 @@ const actions = {
 
 const mutations = {
   [CHANGE_EMAIL](state, email) {
+    window.electron.store.set('login.email', email)
     state.email = email
   },
 
