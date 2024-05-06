@@ -4,7 +4,7 @@
     loading="lazy"
     alt=""
     :key="props.previewFileId"
-    :src="`/api/pictures/${props.type}/preview-files/${props.previewFileId}.png`"
+    :src="`${this.$store.state.login.server}/api/pictures/${props.type}/preview-files/${props.previewFileId}.png`"
     :style="{
       width: props.width,
       height: props.height,

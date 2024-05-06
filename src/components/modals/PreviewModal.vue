@@ -62,7 +62,7 @@ export default {
       if (this.previewFileId) {
         const id = this.previewFileId
         return this.active && this.previewFileId
-          ? '/api/pictures/originals/preview-files/' + id + '.png'
+          ? `${this.$store.state.login.server}/api/pictures/originals/preview-files/${id}.png`
           : ''
       } else if (this.attachment) {
         return getDownloadAttachmentPath(this.attachment)

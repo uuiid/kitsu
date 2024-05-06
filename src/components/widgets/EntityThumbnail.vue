@@ -104,7 +104,7 @@ export default {
   computed: {
     originalPath() {
       const previewFileId = this.previewFileId || this.entity.preview_file_id
-      return '/api/pictures/originals/preview-files/' + previewFileId + '.png'
+      return `${this.$store.state.login.server}/api/pictures/originals/preview-files/${previewFileId}.png`
     },
 
     isPreview() {
@@ -138,26 +138,12 @@ export default {
       const previewFileId = this.previewFileId || this.entity.preview_file_id
 
       if (this.square) {
-        return (
-          '/api/pictures/thumbnails-square/preview-files/' +
-          previewFileId +
-          '.png'
-        )
+        return `${this.$store.state.login.server}/api/pictures/thumbnails-square/preview-files/${previewFileId}.png`
       } else {
         if (this.width && this.width > 150) {
-          return (
-            '/api/pictures/previews/preview-files/' +
-            previewFileId +
-            '.png' +
-            this.timer
-          )
+          return `${this.$store.state.login.server}/api/pictures/previews/preview-files/${previewFileId}.png${this.timer}`
         } else {
-          return (
-            '/api/pictures/thumbnails/preview-files/' +
-            previewFileId +
-            '.png' +
-            this.timer
-          )
+          return `${this.$store.state.login.server}/api/pictures/thumbnails/preview-files/${previewFileId}.png`
         }
       }
     },

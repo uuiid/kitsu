@@ -18,7 +18,7 @@
         <img
           loading="lazy"
           alt=""
-          :src="`/api/pictures/thumbnails-square/preview-files/${asset.preview_file_id}.png`"
+          :src="`${this.$store.state.login.server}/api/pictures/thumbnails-square/preview-files/${asset.preview_file_id}.png`"
         />
         <span class="nb-occurences" v-if="nbOccurences > 1">
           {{ nbOccurences }}

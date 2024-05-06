@@ -237,8 +237,7 @@ export default {
     reset() {
       this.title = this.organisation.name
       this.logoPath =
-        '/api/pictures/thumbnails/organisations/' +
-        `${this.organisation.id}.png?t=` +
+        `${this.$store.state.login.server}/api/pictures/thumbnails/organisations/${this.organisation.id}.png?t=` +
         new Date().toISOString()
     }
   },

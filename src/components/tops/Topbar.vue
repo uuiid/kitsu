@@ -309,10 +309,7 @@ export default {
     ]),
 
     logoPath() {
-      return (
-        '/api/pictures/thumbnails/' +
-        `organisations/${this.organisation.id}.png`
-      )
+      return `${this.$store.state.login.server}/api/pictures/thumbnails/organisations/${this.organisation.id}.png`
     },
 
     assetSections() {

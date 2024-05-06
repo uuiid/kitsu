@@ -129,7 +129,7 @@ export default {
 
     thumbnailPath() {
       const previewFileId = this.previewFileId || this.entity.preview_file_id
-      return '/api/pictures/previews/preview-files/' + previewFileId + '.png'
+      return `${this.$store.state.login.server}/api/pictures/previews/preview-files/${previewFileId}.png`
     },
 
     thumbnailKey() {
