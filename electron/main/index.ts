@@ -33,13 +33,11 @@ let mainWindow = null
 
 function createWindow(): void {
 
-  const filter = { urls: ['https://192.168.20.69/*'] };
-  session.defaultSession.webRequest.onHeadersReceived(filter, (details, callback) => {
-    if (details.responseHeaders && details.responseHeaders['Set-Cookie']) {
+  session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
+    if(details.url.startsWith('https://192.168') && details.responseHeaders && details.responseHeaders['Set-Cookie']){
       for (let i = 0; i < details.responseHeaders['Set-Cookie'].length; i++)
         details.responseHeaders['Set-Cookie'][i] += "; SameSite=None; Secure";
     }
-
     callback({ responseHeaders: details.responseHeaders });
   })
 
