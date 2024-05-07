@@ -17,9 +17,9 @@ import auth from '@/lib/auth'
 import { coerceTwoFactorPayload } from '@/lib/webauthn'
 
 const initialState = {
-  email: window.electron.store.get('login.email'),
-  server: window.electron.store.get('login.server'),
-  access_token: window.electron.store.get('login.access_token'),
+  email: window.electron?.store.get('login.email'),
+  server: window.electron?.store.get('login.server'),
+  access_token: window.electron?.store.get('login.access_token'),
   password: '',
   isLoginLoading: false,
   isLoginError: false,
@@ -105,7 +105,7 @@ const actions = {
 
 const mutations = {
   [CHANGE_EMAIL](state, email) {
-    window.electron.store.set('login.email', email)
+    window.electron?.store.set('login.email', email)
     state.email = email
   },
 
@@ -114,12 +114,12 @@ const mutations = {
   },
 
   [CHANGE_SERVER](state, server) {
-    window.electron.store.set('login.server', server)
+    window.electron?.store.set('login.server', server)
     state.server = server
   },
 
   [CHANGE_ACCESS_TOKEN](state, accessToken) {
-    window.electron.store.set('login.access_token', accessToken)
+    window.electron?.store.set('login.access_token', accessToken)
     state.access_token = accessToken
   },
 
