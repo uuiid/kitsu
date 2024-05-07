@@ -1,7 +1,8 @@
 import { ipcRenderer, contextBridge } from 'electron'
 import { electronAPI } from '@electron-toolkit/preload'
-import { readFileSync } from 'fs'
+import { readFileSync, access, accessSync, constants, PathLike, readdirSync } from 'fs'
 import { store, config } from '../main/store'
+import path from 'path'
 const io = require('socket.io-client')
 
 // --------- Expose some API to the Renderer process ---------
@@ -64,6 +65,30 @@ const api = {
   },
   openDialog: (options) => {
     return ipcRenderer.invoke('open-dialog:show', options)
+  },
+  fileExists: (in_path: PathLike, callback: (arg0: boolean) => void ) => {
+    access(path.normalize(in_path.toString()), constants.F_OK, (err)=>{
+      if (err){
+        console.log(err)
+        callback(false)
+      }
+      callback(true)
+    })
+  },
+  fileExistsSync(in_path: PathLike): boolean {
+    try {
+      accessSync(path.normalize(in_path.toString()), constants.F_OK)
+      return true
+    } catch (err) {
+      console.log(err)
+      return false
+    }
+  },
+  filereaddirSync(in_path: PathLike) {
+    return readdirSync(path.normalize(in_path.toString())); 
+  },
+  filefilestem(in_path: PathLike) {
+    return path.parse(in_path.toString()).name
   },
   launchCommandBeforeExport: (command, variables) => {
     return ipcRenderer.invoke('launch-command:post-exports', command, variables)
