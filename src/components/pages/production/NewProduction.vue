@@ -806,8 +806,8 @@ export default {
         value === null ||
         value === undefined ||
         value === '' ||
-        value === [] ||
-        value === {}
+        value == [] ||
+        value == {}
       )
     },
 

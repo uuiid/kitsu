@@ -1694,7 +1694,7 @@ export default {
     rebuildEntityListToCompare() {
       if (this.taskTypeToCompare) {
         this.entityListToCompare = this.entityList.map(entity => {
-          if (!entity.preview_files || entity.preview_files === {}) {
+          if (!entity.preview_files || entity.preview_files == {}) {
             return {
               preview_file_id: '',
               preview_file_extension: 'none'
