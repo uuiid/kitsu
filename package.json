@@ -110,6 +110,6 @@
     "*.{js,vue}": "eslint --cache --fix"
   },
   "overrides": {
-    "canvas": "jasongin/node-canvas"
+    "canvas": "uuiid/node-canvas"
   }
 }
