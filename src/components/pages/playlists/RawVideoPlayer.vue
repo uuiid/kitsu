@@ -185,9 +185,9 @@ export default {
             entity.preview_file_previews[this.currentPreviewIndex - 1].id
         }
         if (this.isHd) {
-          return `/api/movies/originals/preview-files/${previewId}.mp4`
+          return `${this.$store.state.login.server}/api/movies/originals/preview-files/${previewId}.mp4`
         } else {
-          return `/api/movies/low/preview-files/${previewId}.mp4`
+          return `${this.$store.state.login.server}/api/movies/low/preview-files/${previewId}.mp4`
         }
       } else {
         return ''

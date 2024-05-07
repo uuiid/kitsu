@@ -131,7 +131,7 @@ export const playerMixin = {
           previewId = preview.id
           extension = preview.extension
         }
-        return `/api/pictures/originals/preview-files/${previewId}.${extension}`
+        return `${this.$store.state.login.server}/api/pictures/originals/preview-files/${previewId}.${extension}`
       } else {
         return ''
       }
@@ -145,9 +145,9 @@ export const playerMixin = {
         const extension = this.currentPreviewToCompare.extension
         const previewId = this.currentPreviewToCompare.id
         if (this.isPictureComparison) {
-          return `/api/pictures/originals/preview-files/${previewId}.${extension}`
+          return `${this.$store.state.login.server}/api/pictures/originals/preview-files/${previewId}.${extension}`
         } else {
-          return `/api/movies/originals/preview-files/${previewId}.${extension}`
+          return `${this.$store.state.login.server}/api/movies/originals/preview-files/${previewId}.${extension}`
         }
       } else {
         return ''
@@ -157,7 +157,7 @@ export const playerMixin = {
     currentPreviewDlPath() {
       if (!this.currentPreview) return ''
       const previewId = this.currentPreview.id
-      return `/api/pictures/originals/preview-files/${previewId}/download`
+      return `${this.$store.state.login.server}/api/pictures/originals/preview-files/${previewId}/download`
     },
 
     currentEntity() {

@@ -675,7 +675,7 @@ export default {
     },
 
     getAttachmentPath(attachment) {
-      return `/api/data/attachment-files/${attachment.id}/file/${attachment.name}`
+      return `${this.$store.state.login.server}/api/data/attachment-files/${attachment.id}/file/${attachment.name}`
     },
 
     toggleCommentMenu() {

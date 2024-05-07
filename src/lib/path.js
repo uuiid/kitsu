@@ -214,11 +214,11 @@ export const getPersonTabPath = (personId, tab) => {
 }
 
 export const getDownloadAttachmentPath = attachment => {
-  return `/api/data/attachment-files/${attachment.id}/file/${attachment.name}`
+  return `${this.$store.state.login.server}/api/data/attachment-files/${attachment.id}/file/${attachment.name}`
 }
 
 export const getAttachmentThumbnailPath = attachment => {
-  return `/api/pictures/thumbnails/attachment-files/${attachment.id}.png`
+  return `${this.$store.state.login.server}/api/pictures/thumbnails/attachment-files/${attachment.id}.png`
 }
 
 export const pluralizeEntityType = (type = '') => {

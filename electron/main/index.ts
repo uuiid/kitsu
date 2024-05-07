@@ -34,7 +34,7 @@ let mainWindow = null
 function createWindow(): void {
 
   session.defaultSession.webRequest.onHeadersReceived((details, callback) => {
-    if(details.url.startsWith('https://192.168') && details.responseHeaders && details.responseHeaders['Set-Cookie']){
+    if((details.url.startsWith('https://192.168') || details.url.startsWith('https://127.0')) && details.responseHeaders && details.responseHeaders['Set-Cookie']){
       for (let i = 0; i < details.responseHeaders['Set-Cookie'].length; i++)
         details.responseHeaders['Set-Cookie'][i] += "; SameSite=None; Secure";
     }

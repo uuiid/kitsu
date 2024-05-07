@@ -431,7 +431,7 @@ export default {
 
     shotThumbnailPath() {
       const previewId = this.currentShot.preview_file_id
-      return `/api/pictures/originals/preview-files/${previewId}.png`
+      return `${this.$store.state.login.server}/api/pictures/originals/preview-files/${previewId}.png`
     },
 
     isPreview() {

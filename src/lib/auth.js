@@ -127,19 +127,25 @@ const auth = {
     const finalize = () => {
       if (!store.state.login.server) {
         next({
-          name: 'server-down',
+          path: '/login',
           query: { redirect: to.fullPath }
         })
         return
       } else if (!store.state.user.isAuthenticated) {
         store
           .dispatch('getOrganisation')
+          .then(() => {
+            next({
+              path: '/login',
+              query: { redirect: to.fullPath }
+            })
+          })
           .catch(err => {
             console.error(err)
           })
           .finally(() => {
             next({
-              name: 'login',
+              path: '/login',
               query: { redirect: to.fullPath }
             })
           })
@@ -153,7 +159,7 @@ const auth = {
       auth.isServerLoggedIn(err => {
         if (err) {
           next({
-            name: 'server-down',
+            path: '/login',
             query: { redirect: to.fullPath }
           })
         } else {

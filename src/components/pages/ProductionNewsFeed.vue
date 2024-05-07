@@ -666,12 +666,12 @@ export default {
     getPreviewPath(news) {
       const previewId = news.preview_file_id
       const extension = news.preview_file_extension
-      return `/api/pictures/originals/preview-files/${previewId}.${extension}`
+      return `${this.$store.state.login.server}/api/pictures/originals/preview-files/${previewId}.${extension}`
     },
 
     getPreviewDlPath(news) {
       const previewId = news.preview_file_id
-      return `/api/pictures/originals/preview-files/${previewId}/download`
+      return `${this.$store.state.login.server}/api/pictures/originals/preview-files/${previewId}/download`
     },
 
     hasRetakeValue(news) {

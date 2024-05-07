@@ -1187,7 +1187,7 @@ export default {
       if (!this.currentPreview) return ''
       const previewId = this.currentPreview.id
       const extension = this.currentPreview.extension
-      return `/api/pictures/originals/preview-files/${previewId}.${extension}`
+      return `${this.$store.state.login.server}/api/pictures/originals/preview-files/${previewId}.${extension}`
     },
 
     previousEntityIndex() {

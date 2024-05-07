@@ -842,12 +842,12 @@ export default {
     getOriginalPath() {
       const previewId = this.currentPreviewId
       const extension = this.extension ? this.extension : 'png'
-      return `/api/pictures/originals/preview-files/${previewId}.${extension}`
+      return `${this.$store.state.login.server}/api/pictures/originals/preview-files/${previewId}.${extension}`
     },
 
     getOriginalDlPath() {
       const previewId = this.currentPreviewId
-      return `/api/pictures/originals/preview-files/${previewId}/download`
+      return `${this.$store.state.login.server}/api/pictures/originals/preview-files/${previewId}/download`
     },
 
     setOtherPreviews() {
