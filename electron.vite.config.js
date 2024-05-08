@@ -1,13 +1,18 @@
-import { defineConfig } from 'electron-vite'
+import { defineConfig, externalizeDepsPlugin } from 'electron-vite'
 import { resolve, join } from 'path'
 import vue from '@vitejs/plugin-vue2'
 import { builtinModules } from 'module'
 
-export default defineConfig(() => {
+export default defineConfig(({ command, mode }) => {
   const PACKAGE_ROOT = __dirname
   return {
     main: {
+      plugins: [externalizeDepsPlugin()],
       build: {
+        lib: {
+          entry: resolve(__dirname, 'electron/main/index.ts'),
+          formats: ['cjs']
+        },
         rollupOptions: {
           input: {
             index: resolve(__dirname, 'electron/main/index.ts')
@@ -16,11 +21,12 @@ export default defineConfig(() => {
       }
     },
     preload: {
+      plugins: [externalizeDepsPlugin()],
       build: {
         sourcemap: true,
         minify: process.env.MODE !== 'development',
         lib: {
-          entry: 'src/index.js',
+          entry: resolve(__dirname, 'electron/preload/index.ts'),
           formats: ['cjs']
         },
         rollupOptions: {
@@ -48,12 +54,9 @@ export default defineConfig(() => {
       resolve: {
         vue: 'vue/dist/vue.esm.js',
         extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
-        alias: [
-          {
-            find: '@',
-            replacement: join(PACKAGE_ROOT, 'src') + '/'
-          }
-        ]
+        alias: {
+          '@': join(PACKAGE_ROOT, 'src') + '/'
+        }
       },
       css: {
         preprocessorOptions: {

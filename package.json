@@ -7,18 +7,19 @@
   "license": "AGPL-3.0",
   "private": true,
   "type": "module",
-  "main": "out/main/index.js",
+  "main": "out/main/index.cjs",
   "scripts": {
     "dev": "vite",
     "dev_e": "electron-vite dev",
-    "build": "vite build",
-    "build2": "vue-tsc --noEmit && vite build && electron-builder",
+    "build": "electron-vite build",
+    "build2": "vue-tsc --noEmit && electron-vite build && electron-builder",
     "preview": "vite preview",
     "lint": "eslint --ext .js,.vue --ignore-path .gitignore src/",
     "lint:fix": "npm run lint -- --fix",
     "format": "prettier --write --list-different src/**/*.{js,vue}",
     "test:unit": "vitest tests/unit",
     "prepare": "husky install",
+    "prebuild": "electron-vite build",
     "build:unpack": "npm run build && electron-builder --dir"
   },
   "dependencies": {
@@ -111,5 +112,28 @@
   },
   "overrides": {
     "canvas": "uuiid/node-canvas"
+  },
+  "build": {
+    "appId": "com.cgwire.kitsu",
+    "productName": "Kitsu",
+    "files": [
+      "out/**/*",
+      "node_modules/**/*",
+      "package.json",
+      "public/**/*"
+    ],
+    "win": {
+      "target": [
+        {
+          "target": "nsis"
+        },
+        {
+          "target": "portable"
+        },
+        {
+          "target": "zip"
+        }
+      ]
+    }
   }
 }
