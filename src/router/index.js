@@ -13,7 +13,7 @@ const loadSavedScrollPosition = (to, from, savedPosition) => {
 }
 
 export default new VueRouter({
-  mode: 'history',
+  mode: 'hash',
   scrollBehavior: loadSavedScrollPosition,
   routes
 })
