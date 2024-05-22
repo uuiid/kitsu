@@ -125,7 +125,7 @@
                 v-model="names.shot"
               />
             </div>
-            <div class="field">
+            <div class="flexrow buttons">
               <button
                 :class="{
                   button: true,
@@ -135,7 +135,18 @@
                 :disabled="!isAddShotAllowed || loading.addShot"
                 @click="addShot"
               >
-                {{ $t('main.add') }}
+                {{ $t('doodle.add1') }}
+              </button>
+              <button
+                :class="{
+                  button: true,
+                  'is-success': true,
+                  'is-loading': loading.addShot
+                }"
+                :disabled="!isAddShotAllowed || loading.addShot"
+                @click="addShot10"
+              >
+                {{ $t('doodle.add10') }}
               </button>
             </div>
           </div>
@@ -340,6 +351,41 @@ export default {
           })
         }
       }
+    },
+
+    addShot10() {
+      if (this.isAddShotAllowed && !this.loading.addShot) {
+        const shotName = this.names.shot
+        const number = shotName.replace(/\D/g, '')
+        if (number.length > 0) {
+          const val = parseInt(number)
+          if (val) {
+            let i
+            for (i = 0; i < 10; i++) {
+              this.loading.addShot = true
+              const names_shot = stringHelpers.generateNextName(
+                shotName,
+                parseInt(i)
+              )
+              if (this.selectedSequenceId) {
+                const shot = {
+                  name: names_shot,
+                  sequence_id: this.selectedSequenceId,
+                  project_id: this.currentProduction.id
+                }
+                this.$emit('add-shot', shot, shot => {
+                  this.loading.addShot = false
+                  this.selectSequence(this.selectedSequenceId)
+                  this.names.shot = stringHelpers.generateNextName(
+                    shotName,
+                    parseInt(10)
+                  )
+                })
+              }
+            }
+          }
+        }
+      }
     }
   },
 
@@ -402,6 +448,16 @@ export default {
   border-radius: 0;
   border-bottom-left-radius: 10px;
   border-bottom-right-radius: 10px;
+}
+
+.shot-column .button1 {
+  margin-left: 0;
+  border-radius: 0;
+  border-top-left-radius: 10px;
+  border-top-right-radius: 10px;
+  background-color: #23d160;
+  border-color: transparent;
+  color: #fff;
 }
 
 .shot-column .input {
