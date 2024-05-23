@@ -1564,7 +1564,9 @@
             "role_mode":"角色模型",
             "wait_approval":"审批中",
             "completed":"完成",
-            "repair":"返修"
+            "repair":"返修",
+            "add1":"添加1个",
+            "add10":"添加10个"
         }
     }
 }

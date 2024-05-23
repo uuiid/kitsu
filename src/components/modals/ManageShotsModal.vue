@@ -125,10 +125,11 @@
                 v-model="names.shot"
               />
             </div>
-            <div class="flexrow buttons">
+            <div class="flexrow">
               <button
                 :class="{
                   button: true,
+                  'is-fullwidth': true,
                   'is-success': true,
                   'is-loading': loading.addShot
                 }"
@@ -140,6 +141,7 @@
               <button
                 :class="{
                   button: true,
+                  'is-fullwidth': true,
                   'is-success': true,
                   'is-loading': loading.addShot
                 }"
@@ -450,16 +452,6 @@ export default {
   border-bottom-right-radius: 10px;
 }
 
-.shot-column .button1 {
-  margin-left: 0;
-  border-radius: 0;
-  border-top-left-radius: 10px;
-  border-top-right-radius: 10px;
-  background-color: #23d160;
-  border-color: transparent;
-  color: #fff;
-}
-
 .shot-column .input {
   border-radius: 0;
 }
@@ -496,5 +488,12 @@ input::placeholder {
 
 .shot-padding {
   margin-right: 1em;
+}
+
+.flexrow {
+  display: flex;
+  align-items: center;
+  margin-bottom: 0;
+  margin-right: 10px;
 }
 </style>
