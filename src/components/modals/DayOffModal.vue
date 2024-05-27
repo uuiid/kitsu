@@ -74,7 +74,7 @@
 <script>
 import { mapGetters } from 'vuex'
 import Datepicker from 'vuejs-datepicker'
-import { en, fr } from 'vuejs-datepicker/dist/locale'
+import { en, fr, zh } from 'vuejs-datepicker/dist/locale'
 import { AlertTriangleIcon } from 'vue-feather-icons'
 
 import { modalMixin } from '@/components/modals/base_modal'
@@ -130,6 +130,8 @@ export default {
     locale() {
       if (this.user.locale === 'fr_FR') {
         return fr
+      } else if (this.user.locale === 'zh_Hans_CN') {
+        return zh
       } else {
         return en
       }
