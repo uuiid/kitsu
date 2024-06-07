@@ -813,7 +813,7 @@ export default {
             data = this.task.entity_data
             production = this.task.project_name
             task_type = this.task.entity_type_name ?? ''
-            season = data.ji_shu ?? ''
+            season = data.gui_dang ?? ''
             name = data.pin_yin_ming_cheng ?? ''
             number = data.bian_hao ?? ''
             UE_Version = data.ban_ben ?? 5
@@ -822,7 +822,7 @@ export default {
             data = asset.data
             production = asset.project_name
             task_type = asset.asset_type_name ?? ''
-            season = data.ji_shu ?? ''
+            season = data.gui_dang ?? ''
             name = data.pin_yin_ming_cheng ?? ''
             number = data.bian_hao ?? ''
             UE_Version = data.ban_ben ?? 5

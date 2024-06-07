@@ -218,7 +218,7 @@ export default {
             production = asset.project_name
             task_type = asset.asset_type_name ?? ''
           }
-          season = data.ji_shu ?? ''
+          season = data.gui_dang ?? ''
           name = data.pin_yin_ming_cheng ?? ''
           number = data.bian_hao ?? ''
           UE_Version = data.ban_ben ?? 5
