@@ -154,7 +154,7 @@ import { sortPeople } from '@/lib/sorting'
 import stringHelpers from '@/lib/string'
 
 import csv from '@/lib/csv'
-import { monthToString, range } from '@/lib/time'
+import { range } from '@/lib/time'
 import { formatFullDate } from '@/lib/time'
 
 import AddTaskSheetModal from '@/components/modals/AddTaskSheetModal.vue'
@@ -319,7 +319,7 @@ export default {
         monthRange = range(month, currentMonth)
       }
       return monthRange.map(month => ({
-        label: monthToString(month),
+        label: month,
         value: `${month}`
       }))
     },
