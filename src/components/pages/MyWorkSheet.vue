@@ -410,7 +410,7 @@ export default {
         return
       }
       const nameData = [
-        moment().format('HH-mm-ss'),
+        moment().utcOffset(8).format('HH-mm-ss'),
         this.person.name,
         this.yearString,
         this.monthString
@@ -421,13 +421,10 @@ export default {
         '制作人',
         '项目',
         '集数',
-        '镜头',
         '开始时间',
         '结束时间',
         '持续时间/day',
         '时间备注',
-        '备注',
-        '类别',
         '名称',
         '等级'
       ]
@@ -441,18 +438,15 @@ export default {
         line.push(department)
         line.push(this.person.first_name)
         let episodes = ''
-        let shot = ''
         if (theTaskType.for_entity.includes('Shot')) {
           episodes = t.sequence_name.replaceAll('EP', '') ?? ''
-          shot = t.entity_name
         } else {
           episodes = t.entity_data.ji_shu_lie
         }
         line.push(
-          `《${t.project_name}》 第${Math.floor(Number(episodes) / 20) + 1}季`
+          `《${t.project_name}》第${Math.ceil(Number(episodes) / 20)}季`
         )
-        line.push(`EP ${episodes}`)
-        line.push(shot)
+        line.push(`EP${episodes}`)
         line.push(formatFullDate(t.start_time))
         line.push(formatFullDate(t.end_time))
         const duration = Number(
@@ -460,8 +454,6 @@ export default {
         ).toFixed(9)
         line.push(duration)
         line.push(t.time_remark)
-        line.push(t.user_remark)
-        line.push(`${t.project_name}/${t.type_name}`)
         line.push(t.entity_name)
         const level = t.entity_data.deng_ji
         line.push(level)
