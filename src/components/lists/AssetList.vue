@@ -1064,7 +1064,7 @@ td.metadata-descriptor {
   grid-template-columns: repeat(9, 186px);
   grid-gap: 5px;
   display: grid;
-  margin-left: 43px;
+  margin-left: 50px;
   margin-bottom: 10px;
 }
 
