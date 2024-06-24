@@ -30,7 +30,11 @@
               />
               <show-assignations-button class="flexrow-item" />
               <show-infos-button class="flexrow-item" />
-              <big-thumbnails-button class="flexrow-item" />
+              <big-thumbnails-button
+                class="flexrow-item"
+                v-show="!isSimpleThumbnails"
+              />
+              <simple-thumbnails-button class="flexrow-item" />
             </div>
             <div class="flexrow" v-if="isCurrentUserManager">
               <button-simple
@@ -104,7 +108,6 @@
         />
       </div>
     </div>
-
     <div
       id="side-column"
       class="column side-column"
@@ -262,6 +265,7 @@ import AssetList from '@/components/lists/AssetList'
 import AddMetadataModal from '@/components/modals/AddMetadataModal'
 import AddThumbnailsModal from '@/components/modals/AddThumbnailsModal'
 import BigThumbnailsButton from '@/components/widgets/BigThumbnailsButton'
+import SimpleThumbnailsButton from '@/components/widgets/SimpleThumbnailsButton'
 import BuildFilterModal from '@/components/modals/BuildFilterModal'
 import ButtonSimple from '@/components/widgets/ButtonSimple'
 import ComboboxDepartment from '@/components/widgets/ComboboxDepartment'
@@ -287,6 +291,7 @@ export default {
     AddMetadataModal,
     AddThumbnailsModal,
     BigThumbnailsButton,
+    SimpleThumbnailsButton,
     BuildFilterModal,
     ButtonSimple,
     ComboboxDepartment,
@@ -451,7 +456,8 @@ export default {
       'productionAssetTaskTypes',
       'selectedAssets',
       'taskTypeMap',
-      'user'
+      'user',
+      'isSimpleThumbnails'
     ]),
 
     addThumbnailsModal() {

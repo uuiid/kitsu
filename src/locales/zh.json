@@ -1591,7 +1591,9 @@
             "user_remark":"备注",
             "type":"类型",
             "overtime":"加班",
-            "leave":"请假"
+            "leave":"请假",
+            "simple_thumbnails":"预览模式",
+            "close_simple_thumbnails":"关闭预览模式"
         }
     }
 }
