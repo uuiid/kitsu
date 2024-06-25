@@ -129,6 +129,24 @@ const csv = {
     XLSX.writeFile(wb, `${name}.xlsx`)
   },
 
+  buildCsvFileAll(name, headers, sheets) {
+    const wb = XLSX.utils.book_new()
+    const entries = [headers]
+    sheets.forEach(s => {
+      for (const e of s.entries) {
+        entries.push(e)
+      }
+    })
+    const ws = XLSX.utils.aoa_to_sheet(entries)
+    XLSX.utils.book_append_sheet(wb, ws, 'ALL')
+    sheets.forEach(s => {
+      s.entries.unshift(headers)
+      const ws = XLSX.utils.aoa_to_sheet(s.entries)
+      XLSX.utils.book_append_sheet(wb, ws, s.name)
+    })
+    XLSX.writeFile(wb, `${name}.xlsx`)
+  },
+
   generateStatReports(
     name,
     mainStats,

@@ -1593,7 +1593,11 @@
             "overtime":"加班",
             "leave":"请假",
             "simple_thumbnails":"预览模式",
-            "close_simple_thumbnails":"关闭预览模式"
+            "close_simple_thumbnails":"关闭预览模式",
+            "batch-export-list":"导出人员列表",
+            "batch-export":"批量导出",
+            "select-person-tip":"无用户数据",
+            "filter-person":"筛选部门人员"
         }
     }
 }

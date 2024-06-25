@@ -131,11 +131,56 @@
         />
       </div>
     </div>
-
-    <div class="column side-column" v-if="nbSelectedTasks > 0">
-      <task-info :task="selectedTasks.values().next().value" with-actions />
+    <div class="column side-column">
+      <div class="department-import flexcolumn mt2">
+        <combobox-department
+          class="flexrow-item export-btn"
+          :label="$t('doodle.filter-person')"
+          :department-list="departments"
+          :with-empty-choice="false"
+          v-model="selectedDepartment"
+        />
+        <p class="label mt2">
+          {{ $t('doodle.batch-export-list') }}
+        </p>
+        <button-simple
+          class="flexrow-item mt05 export-btn"
+          :text="$t('doodle.batch-export')"
+          @click="batchExport"
+        />
+      </div>
+      <div class="export-list">
+        <div
+          :key="`unlisted-person-${person.id}`"
+          class="flexrow person-to-add mb05"
+          @click="selectPerson(person)"
+          v-for="person in filterPersonList"
+        >
+          <input
+            type="checkbox"
+            class="mr1"
+            :checked="person.checked ? person.checked : false"
+            @input="event => onCheckChanged(person, event)"
+          />
+          <people-avatar
+            class="flexrow-item"
+            :font-size="14"
+            :key="person.id"
+            :person="person"
+            :size="30"
+            :with-link="false"
+          />
+          <people-name
+            class="flexrow-item"
+            :style="{
+              color: person.name_color ? person.name_color : '#4a4a4a'
+            }"
+            :person="person"
+            :with-link="false"
+          />
+        </div>
+      </div>
     </div>
-
     <add-task-sheet-modal
       :active="modals.edit"
       ref="add-task-sheet-modal"
@@ -164,7 +209,10 @@ import RouteSectionTabs from '@/components/widgets/RouteSectionTabs.vue'
 import WorkSheetList from '@/components/lists/WorkSheetList.vue'
 import WorkDutyList from '@/components/lists/WorkDutyList.vue'
 import PeopleField from '@/components/widgets/PeopleField.vue'
+import PeopleAvatar from '@/components/widgets/PeopleAvatar'
+import PeopleName from '@/components/widgets/PeopleName'
 import ButtonSimple from '@/components/widgets/ButtonSimple'
+import ComboboxDepartment from '@/components/widgets/ComboboxDepartment'
 
 export default {
   name: 'work-sheet',
@@ -175,8 +223,11 @@ export default {
     WorkSheetList,
     WorkDutyList,
     AddTaskSheetModal,
+    PeopleAvatar,
     PeopleField,
-    ButtonSimple
+    PeopleName,
+    ButtonSimple,
+    ComboboxDepartment
   },
 
   data() {
@@ -196,9 +247,13 @@ export default {
       },
       person: null,
       tasks: [],
+      personTasks: [],
       sortedTasks: [],
       companyOptionList: [],
-      dutys: []
+      dutys: [],
+      selectPersons: [],
+      selectedDepartment: null,
+      filterPersonList: []
     }
   },
 
@@ -227,6 +282,8 @@ export default {
         this.onChangePerson(this.person)
       }
     })
+    //--------------------
+    this.filterPersonList = this.personList
   },
 
   afterDestroy() {},
@@ -237,9 +294,7 @@ export default {
       'doneSelectionGrid',
       'isTodosLoading',
       'isTodosLoadingError',
-      'nbSelectedTasks',
       'openProductions',
-      'selectedTasks',
       'taskStatuses',
       'taskTypeMap',
       'timeSpentMap',
@@ -252,7 +307,8 @@ export default {
       'displayedPeople',
       'activePeopleWithoutBot',
       'activePeople',
-      'departmentMap'
+      'departmentMap',
+      'departments'
     ]),
 
     notPendingTasks() {
@@ -416,7 +472,17 @@ export default {
         this.monthString
       ]
       const name = stringHelpers.slugify(nameData.join('_'))
-      const headers = [
+      const headers = this.exportHeader()
+      const entries = [headers]
+      this.sortedTasks.forEach(t => {
+        const line = this.exportLine(this.person, t)
+        entries.push(line)
+      })
+      csv.buildCsvFile(name, entries)
+    },
+
+    exportHeader() {
+      return [
         '部门',
         '制作人',
         '项目',
@@ -428,38 +494,33 @@ export default {
         '名称',
         '等级'
       ]
-      const entries = [headers]
-      this.sortedTasks.forEach(t => {
-        const line = []
-        const theTaskType = this.taskTypeMap.get(t.task_type_id)
-        const department = this.departmentMap.get(
-          theTaskType.department_id
-        ).name
-        line.push(department)
-        line.push(this.person.first_name)
-        let episodes = ''
-        if (theTaskType.for_entity.includes('Shot')) {
-          episodes = t.sequence_name.replaceAll('EP', '') ?? ''
-        } else {
-          episodes = t.entity_data.ji_shu_lie
-        }
-        line.push(
-          `《${t.project_name}》第${Math.ceil(Number(episodes) / 20)}季`
-        )
-        line.push(`EP${episodes}`)
-        line.push(formatFullDate(t.start_time))
-        line.push(formatFullDate(t.end_time))
-        const duration = Number(
-          t.duration / (1000 * 1000 * 60 * 60 * 24)
-        ).toFixed(9)
-        line.push(duration)
-        line.push(t.time_remark)
-        line.push(t.entity_name)
-        const level = t.entity_data.deng_ji
-        line.push(level)
-        entries.push(line)
-      })
-      csv.buildCsvFile(name, entries)
+    },
+
+    exportLine(person, t) {
+      const line = []
+      const theTaskType = this.taskTypeMap.get(t.task_type_id)
+      const department = this.departmentMap.get(theTaskType.department_id).name
+      line.push(department)
+      line.push(person.first_name)
+      let episodes = ''
+      if (theTaskType.for_entity.includes('Shot')) {
+        episodes = t.sequence_name.replaceAll('EP', '') ?? ''
+      } else {
+        episodes = t.entity_data.ji_shu_lie
+      }
+      line.push(`《${t.project_name}》第${Math.ceil(Number(episodes) / 20)}季`)
+      line.push(`EP${episodes}`)
+      line.push(formatFullDate(t.start_time))
+      line.push(formatFullDate(t.end_time))
+      const duration = Number(
+        t.duration / (1000 * 1000 * 60 * 60 * 24)
+      ).toFixed(9)
+      line.push(duration)
+      line.push(t.time_remark)
+      line.push(t.entity_name)
+      const level = t.entity_data.deng_ji
+      line.push(level)
+      return line
     },
 
     async reload() {
@@ -474,7 +535,23 @@ export default {
         }
         const taskInfos = await this.loadOpenTasks(params)
         this.tasks = taskInfos.data
-        this.isMore = taskInfos.is_more
+      } catch (error) {
+        this.isLoadingError = true
+        console.error(error)
+      }
+      this.isLoading = false
+    },
+
+    async loadPersonTask(person_id) {
+      this.isLoading = true
+      this.personTasks = []
+      try {
+        const params = {
+          project_id: this.productionId,
+          person_id: person_id
+        }
+        const taskInfos = await this.loadOpenTasks(params)
+        this.personTasks = taskInfos.data
       } catch (error) {
         this.isLoadingError = true
         console.error(error)
@@ -759,6 +836,25 @@ export default {
           }
         }
       })
+      this.person.tasks = this.sortedTasks
+    },
+    setPersonTask(data) {
+      const l_tasks = []
+      data.forEach(item => {
+        for (const t of this.personTasks) {
+          if (item.kitsu_task_ref_id === t.id) {
+            const tt = t
+            tt.duration = item.duration
+            tt.doodle_task_id = item.id
+            tt.time_remark = item.remark
+            tt.start_time = item.start_time
+            tt.end_time = item.end_time
+            tt.user_remark = item.user_remark
+            l_tasks.push(tt)
+          }
+        }
+      })
+      return l_tasks
     },
     addSortTask(data) {
       data.forEach(n => {
@@ -775,12 +871,89 @@ export default {
     },
     removeSortTask(ent) {
       this.sortedTasks = this.sortedTasks.filter(task => task.id != ent.id)
+      this.person.tasks = this.sortedTasks
     },
     showAllUser() {
       if (['admin', 'manager', 'supervisor'].includes(this.user.role)) {
         return true
       }
       return false
+    },
+    batchExport() {
+      if (this.selectPersons.length <= 0) return
+      const nameData = [
+        moment().utcOffset(8).format('HH-mm-ss'),
+        this.yearString,
+        this.monthString
+      ]
+      const name = stringHelpers.slugify(nameData.join('_'))
+      const headers = this.exportHeader()
+      const sheets = []
+      this.selectPersons.forEach(p => {
+        const sheet = {}
+        const entries = []
+        if (p.tasks && p.tasks.length > 0) {
+          for (const t of p.tasks) {
+            const line = this.exportLine(p, t)
+            entries.push(line)
+          }
+        }
+        sheet.name = p.first_name
+        sheet.entries = entries
+        sheets.push(sheet)
+      })
+      csv.buildCsvFileAll(name, headers, sheets)
+    },
+    selectPerson(person) {},
+    onCheckChanged(person, event) {
+      person.checked = event.target.checked
+      if (person.checked) {
+        const year = this.yearString
+        const month = this.monthString
+        const user_id = person.id
+        const l_params = {
+          user_id,
+          year,
+          month
+        }
+        const action = 'getTaskTime'
+        this.$store
+          .dispatch(action, l_params)
+          .then(res => {
+            if (res.data) {
+              this.loadPersonTask(person.id).then(e => {
+                person.name_color = '#4a4a4a'
+                person.tasks = this.setPersonTask(res.data)
+                if (!this.selectPersons.includes(person))
+                  this.selectPersons.push(person)
+              })
+            }
+          })
+          .catch(err => {
+            console.log('getTaskTime Error')
+            if (err.response) {
+              if (err.response.statusCode == 404) {
+                person.name_color = '#e74c3c'
+                alert(this.$t('doodle.select-person-tip'))
+              }
+            } else {
+              alert(err.message)
+            }
+            person.checked = false
+            this.$forceUpdate()
+          })
+      } else {
+        this.selectPersons = this.selectPersons.filter(p => p.id != person.id)
+      }
+      this.$forceUpdate()
+    },
+    updateDepartment() {
+      const department = this.selectedDepartment
+      this.filterPersonList = []
+      this.personList.forEach(p => {
+        if (p.departments.includes(department)) this.filterPersonList.push(p)
+      })
+      //this.$forceUpdate()
     }
   },
 
@@ -813,6 +986,10 @@ export default {
 
     $route() {
       this.currentSection = this.$route.query.section || 'workSheet'
+    },
+
+    selectedDepartment() {
+      this.updateDepartment()
     }
   },
 
@@ -859,5 +1036,34 @@ export default {
 
 .button {
   margin-left: 0.8em;
+}
+
+.side-column {
+  border-left: 1px solid $light-grey;
+}
+
+.label {
+  color: var(--text-alt);
+  font-size: 0.8em;
+  letter-spacing: 1px;
+  text-transform: uppercase;
+  margin-bottom: 0;
+  margin-left: 10px;
+}
+
+.export-list {
+  border: 1px solid var(--border);
+  border-radius: 5px;
+  margin-top: 0.5em;
+  padding: 0.5em;
+  flex: 1;
+  overflow-y: auto;
+  margin-left: 0.5em;
+  margin-right: 0.5em;
+}
+
+.export-btn {
+  margin-left: 0.5em;
+  margin-right: 0.5em;
 }
 </style>
