@@ -274,7 +274,9 @@ export default {
     const data = {
       name: searchFilter.name,
       search_query: searchFilter.search_query,
-      search_filter_group_id: searchFilter.search_filter_group_id
+      search_filter_group_id: searchFilter.search_filter_group_id,
+      is_shared: searchFilter.is_shared,
+      project_id: searchFilter.project_id
     }
     return client.pput(`/api/data/user/filters/${searchFilter.id}`, data)
   },
@@ -325,7 +327,7 @@ export default {
     return client.pget(`/api/data/persons/${personId}/day-offs/${date}`)
   },
 
-  setDayOff(personId, startDate, endDate, description) {
+  createDayOff(personId, startDate, endDate, description) {
     // Date is a string with following format: YYYYY-MM-DD.
     const data = {
       person_id: personId,
@@ -336,7 +338,18 @@ export default {
     return client.ppost('/api/data/day-offs', data)
   },
 
-  unsetDayOff(dayOff) {
+  updateDayOff(id, personId, startDate, endDate, description) {
+    // Date is a string with following format: YYYYY-MM-DD.
+    const data = {
+      person_id: personId,
+      date: startDate,
+      end_date: endDate || startDate,
+      description
+    }
+    return client.pput(`/api/data/day-offs/${id}`, data)
+  },
+
+  deleteDayOff(dayOff) {
     return client.pdel(`/api/data/day-offs/${dayOff.id}`)
   },
 

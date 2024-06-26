@@ -34,7 +34,9 @@
             <combobox-task-type
               class="flexrow-item"
               :label="$t('status_automations.fields.in_task_type')"
-              :task-type-list="form.inEntityTaskTypes"
+              :task-type-list="
+                form.inEntityTaskTypes.filter(({ archived }) => !archived)
+              "
               v-model="form.inTaskTypeId"
               @enter="confirmClicked"
             />
@@ -70,7 +72,9 @@
             <combobox-task-type
               class="flexrow-item"
               :label="$t('status_automations.fields.out_task_type')"
-              :task-type-list="form.outEntityTaskTypes"
+              :task-type-list="
+                form.outEntityTaskTypes.filter(({ archived }) => !archived)
+              "
               :open-top="true"
               @enter="confirmClicked"
               v-model="form.outTaskTypeId"
@@ -91,7 +95,6 @@
             :label="$t('status_automations.fields.import_last_revision')"
             @enter="confirmClicked"
             v-model="form.importLastRevision"
-            v-if="isEditing"
           />
 
           <combobox-boolean

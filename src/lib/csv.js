@@ -66,7 +66,13 @@ const csv = {
     } else if (detailLevel === 'day') {
       range = getDayRange(year, month, currentYear, currentMonth)
     }
-    for (const unit in range) headers.push(parseInt(unit) + 1)
+    for (const unit in range) {
+      let value = parseInt(unit) + 1
+      if (detailLevel === 'day') {
+        value = `${year}-${String(month).padStart(2, 0)}-${String(value).padStart(2, 0)}`
+      }
+      headers.push(value)
+    }
     return headers
   },
 
@@ -150,19 +156,15 @@ const csv = {
   generateStatReports(
     name,
     mainStats,
-    taskTyeMap,
+    taskTypeMap,
     taskStatusMap,
     entryMap,
     countMode
   ) {
-    const headers = csv.getStatReportsHeaders(
-      mainStats,
-      taskTyeMap,
-      taskStatusMap
-    )
+    const headers = csv.getStatReportsHeaders(mainStats, taskTypeMap)
     const entries = csv.getStatReportsEntries(
       mainStats,
-      taskTyeMap,
+      taskTypeMap,
       taskStatusMap,
       entryMap,
       countMode
@@ -171,7 +173,7 @@ const csv = {
     return csv.buildCsvFile(name, lines)
   },
 
-  getStatReportsHeaders(mainStats, taskTypeMap, taskStatusMap) {
+  getStatReportsHeaders(mainStats, taskTypeMap) {
     const taskTypeIds = getStatsTaskTypeIds(mainStats, taskTypeMap)
     const initialHeaders = ['Name', '', 'All', '']
     return taskTypeIds.reduce((acc, taskTypeId) => {
@@ -256,19 +258,15 @@ const csv = {
   generateRetakeStatReports(
     name,
     mainStats,
-    taskTyeMap,
+    taskTypeMap,
     taskStatusMap,
     entryMap,
     countMode
   ) {
-    const headers = csv.getStatReportsHeaders(
-      mainStats,
-      taskTyeMap,
-      taskStatusMap
-    )
+    const headers = csv.getStatReportsHeaders(mainStats, taskTypeMap)
     const entries = csv.getRetakeStatReportsEntries(
       mainStats,
-      taskTyeMap,
+      taskTypeMap,
       taskStatusMap,
       entryMap,
       countMode
@@ -373,8 +371,7 @@ const csv = {
       detailLevel,
       headers,
       year,
-      month,
-      week
+      month
     )
     csv.buildCsvFile(name, entries)
   },
@@ -386,8 +383,7 @@ const csv = {
     detailLevel,
     headers,
     year,
-    month,
-    week
+    month
   ) {
     const entries = [headers]
     people.forEach(person => {
@@ -396,11 +392,9 @@ const csv = {
         if (index > 0) {
           let key = year
           if (detailLevel === 'day') {
-            key = `${year}-${(month + '').padStart(2, '0')}-${(
-              index + ''
-            ).padStart(2, '0')}`
+            key = `${year}-${String(month).padStart(2, '0')}-${String(index).padStart(2, '0')}`
           } else {
-            key = `${year}-${('' + index).padStart(2, '0')}`
+            key = `${year}-${String(index).padStart(2, '0')}`
           }
           if (
             quotas &&

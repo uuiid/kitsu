@@ -103,6 +103,7 @@
                     :is-assigned="isAssigned"
                     :last-preview-files="taskPreviews"
                     :light="!isWide"
+                    :link="currentPreviewComment?.links?.[0]"
                     :previews="currentPreview ? currentPreview.previews : []"
                     :read-only="isPreviewPlayerReadOnly"
                     :task="task"
@@ -586,6 +587,14 @@ export default {
         : null
     },
 
+    currentPreviewComment() {
+      return this.taskComments.find(comment =>
+        comment.previews?.some(
+          preview => preview.revision === this.currentRevision
+        )
+      )
+    },
+
     currentPreviewId() {
       const index = this.currentPreviewIndex
       if (
@@ -705,14 +714,6 @@ export default {
       })
     },
 
-    lastFivePreviews() {
-      if (this.taskPreviews) {
-        return this.taskPreviews.slice(0, 5)
-      } else {
-        return []
-      }
-    },
-
     pinnedCount() {
       if (!this.taskComments) return 0
       return this.taskComments.filter(c => c.pinned).length
@@ -775,7 +776,8 @@ export default {
       attachment,
       checklist,
       taskStatusId,
-      revision = undefined
+      revision = undefined,
+      link = undefined
     ) {
       const theTaskType = this.taskTypeMap.get(this.task.task_type_id)
       const department = this.departmentMap.get(theTaskType.department_id).name
@@ -914,10 +916,13 @@ export default {
           attachment,
           checklist,
           comment,
+          links: link ? [link] : null,
           revision
         }
-        let action = 'commentTask'
-        if (this.previewForms.length > 0) action = 'commentTaskWithPreview'
+        const action =
+          this.previewForms.length > 0
+            ? 'commentTaskWithPreview'
+            : 'commentTask'
         this.loading.addComment = true
         this.errors.addComment = false
         this.errors.addCommentMaxRetakes = false
