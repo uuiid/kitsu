@@ -61,6 +61,7 @@ import {
   SET_IS_SHOW_INFOS,
   SET_IS_SHOW_INFOS_BREAKDOWN,
   SET_IS_BIG_THUMBNAILS,
+  SET_IS_SIMPLE_THUMBNAILS,
   DELETE_PREVIEW_END,
   LOAD_PERSON_TASKS_END,
   REGISTER_USER_TASKS,
@@ -95,6 +96,7 @@ const initialState = {
   nbSelectedTasks: 0,
   nbSelectedValidations: 0,
   isBigThumbnails: false,
+  isSimpleThumbnails: false,
   isShowAssignations: true,
   isShowInfos: true,
 
@@ -132,11 +134,25 @@ const getters = {
     return state.taskComments[taskId]?.find(comment => comment.id === commentId)
   },
 
+  getTaskStatus: state => id => {
+    return state.taskStatuses.find(taskStatus => taskStatus.id === id)
+  },
+
+  taskStatusOptions: state =>
+    state.taskStatuses.map(status => ({
+      label: status.short_name,
+      value: status.id,
+      color: status.color,
+      isArtistAllowed: status.is_artist_allowed
+    })),
+
+  selectedValidations: state => state.selectedValidations,
   selectedTasks: state => state.selectedTasks,
   nbSelectedTasks: state => state.nbSelectedTasks,
   nbSelectedValidations: state => state.nbSelectedValidations,
   taskSearchQueries: state => state.taskSearchQueries,
   isBigThumbnails: state => state.isBigThumbnails,
+  isSimpleThumbnails: state => state.isSimpleThumbnails,
   isShowAssignations: state => state.isShowAssignations,
   isShowInfos: state => state.isShowInfos,
   taskEntityPreviews: state => state.taskEntityPreviews,
@@ -733,6 +749,14 @@ const actions = {
     commit(SET_IS_BIG_THUMBNAILS, false)
   },
 
+  setSimpleThumbnails({ commit, state }) {
+    commit(SET_IS_SIMPLE_THUMBNAILS, true)
+  },
+
+  setCloseSimpleThumbnails({ commit, state }) {
+    commit(SET_IS_SIMPLE_THUMBNAILS, false)
+  },
+
   loadPreviewFileFormData({ commit }, previewForms) {
     commit(PREVIEW_FILE_SELECTED, previewForms)
   },
@@ -1248,6 +1272,10 @@ const mutations = {
 
   [SET_IS_BIG_THUMBNAILS](state, isBigThumbnails) {
     state.isBigThumbnails = isBigThumbnails
+  },
+
+  [SET_IS_SIMPLE_THUMBNAILS](state, isSimpleThumbnails) {
+    state.isSimpleThumbnails = isSimpleThumbnails
   },
 
   [SET_IS_SHOW_ASSIGNATIONS](state, isShowAssignations) {
