@@ -412,6 +412,7 @@
 <script>
 import draggable from 'vuedraggable'
 import moment from 'moment'
+import { en, fr, zh } from 'vuejs-datepicker/dist/locale'
 import { mapActions, mapGetters } from 'vuex'
 
 import csv from '@/lib/csv'
@@ -590,6 +591,16 @@ export default {
       return this.isTVShow
         ? ['Episode', 'Sequence', 'Name']
         : ['Sequence', 'Name']
+    },
+
+    locale() {
+      if (this.user.locale === 'fr_FR') {
+        return fr
+      } else if (this.user.locale === 'zh_Hans_CN') {
+        return zh
+      } else {
+        return en
+      }
     },
 
     allowedProductionTypes() {
