@@ -47,6 +47,7 @@
             </th>
 
             <th
+              v-show="!isSimpleThumbnails"
               scope="col"
               class="episode"
               ref="th-episode"
@@ -56,6 +57,7 @@
             </th>
 
             <metadata-header
+              v-show="!isSimpleThumbnails"
               :ref="`editor-${j}`"
               :key="'sticky-header' + descriptor.id"
               :descriptor="descriptor"
@@ -71,6 +73,7 @@
 
             <template v-if="!isLoading">
               <validation-header
+                v-show="!isSimpleThumbnails"
                 :ref="`validation-${columnIndexInGrid}`"
                 :key="'sticky-header' + columnId"
                 :hidden-columns="hiddenColumns"
@@ -93,6 +96,7 @@
             </template>
 
             <th
+              v-show="!isSimpleThumbnails"
               ref="th-ready-for"
               scope="col"
               class="ready-for"
@@ -108,6 +112,7 @@
             </th>
 
             <th
+              v-show="!isSimpleThumbnails"
               scope="col"
               class="description"
               ref="th-description"
@@ -117,6 +122,7 @@
             </th>
 
             <th
+              v-show="!isSimpleThumbnails"
               scope="col"
               class="time-spent number-cell"
               ref="th-spent"
@@ -131,6 +137,7 @@
             </th>
 
             <th
+              v-show="!isSimpleThumbnails"
               scope="col"
               class="estimation number-cell"
               :title="$t('main.estimation')"
@@ -159,6 +166,7 @@
 
             <template v-if="isShowInfos">
               <metadata-header
+                v-show="!isSimpleThumbnails"
                 :key="'header' + descriptor.id"
                 :descriptor="descriptor"
                 @show-metadata-header-menu="
@@ -170,6 +178,7 @@
 
             <template v-if="!isLoading">
               <validation-header
+                v-show="!isSimpleThumbnails"
                 :key="'header' + columnId"
                 :hidden-columns="hiddenColumns"
                 :column-id="columnId"
@@ -187,7 +196,12 @@
               />
             </template>
 
-            <th scope="col" class="actions" ref="actionsSection">
+            <th
+              scope="col"
+              class="actions"
+              ref="actionsSection"
+              v-show="!isSimpleThumbnails"
+            >
               <button-simple
                 :class="{
                   'is-small': true,
@@ -251,6 +265,7 @@
               scope="row"
               :key="`row${asset.id}`"
               :title="asset.shared ? $t('library.from_library') : undefined"
+              v-show="!isSimpleThumbnails"
               v-for="(asset, i) in group"
             >
               <th
@@ -502,9 +517,31 @@
                 @restore-clicked="$emit('restore-clicked', asset)"
                 v-if="isCurrentUserManager && !asset.shared"
               />
-
               <td class="actions" v-else></td>
             </tr>
+
+            <div class="container-gird" v-show="isSimpleThumbnails">
+              <div class="grid" :key="'row' + asset.id" v-for="asset in group">
+                <div class="gird-box">
+                  <entity-thumbnail
+                    class="entity-thumbnail flexrow-item"
+                    :entity="asset"
+                    :width="150"
+                    :height="100"
+                    :empty-width="150"
+                    :empty-height="100"
+                  />
+                  <router-link
+                    tabindex="-1"
+                    class="asset-link asset-name flexrow-item text-item"
+                    :to="assetPath(asset.id)"
+                    :title="asset.full_name"
+                  >
+                    {{ asset.name }}
+                  </router-link>
+                </div>
+              </div>
+            </div>
           </tbody>
         </template>
       </table>
@@ -1114,12 +1151,14 @@ td.ready-for {
       in srgb,
       var(--shared-color) 20%,
       transparent
+      'isSimpleThumbnails',
     ) !important;
 
     &:hover {
       opacity: 1;
     }
   }
+
   > td:not(.description-cell) {
     font-size: 0;
 
@@ -1159,5 +1198,30 @@ td.metadata-descriptor {
   height: 3.1rem;
   max-width: 120px;
   padding: 0;
+}
+
+.gird-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.container-gird {
+  grid-auto-flow: row dense;
+  grid-template-columns: repeat(9, 186px);
+  grid-gap: 5px;
+  display: grid;
+  margin-left: 50px;
+  margin-bottom: 10px;
+}
+
+.gird {
+  margin: 1px;
+  display: flex;
+  justify-content: center;
+}
+
+.text-item {
+  overflow: hidden;
+  max-width: 150px;
 }
 </style>
