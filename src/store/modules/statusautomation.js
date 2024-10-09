@@ -94,6 +94,9 @@ const mutations = {
   [LOAD_STATUS_AUTOMATIONS_END](state, statusAutomations) {
     state.statusAutomations = statusAutomations
     cache.statusAutomationMap = new Map()
+    if (!statusAutomations) {
+      return
+    }
     statusAutomations.forEach(statusAutomation => {
       cache.statusAutomationMap.set(statusAutomation.id, statusAutomation)
     })
