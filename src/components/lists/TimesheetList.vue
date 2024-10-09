@@ -208,6 +208,7 @@
 
 <script>
 import moment from 'moment-timezone'
+import { en, fr, zh } from 'vuejs-datepicker/dist/locale'
 import { mapGetters } from 'vuex'
 
 import { PAGE_SIZE } from '@/lib/pagination'
@@ -321,6 +322,16 @@ export default {
       'taskTypeMap',
       'user'
     ]),
+
+    locale() {
+      if (this.user.locale === 'fr_FR') {
+        return fr
+      } else if (this.user.locale === 'zh_Hans_CN') {
+        return zh
+      } else {
+        return en
+      }
+    },
 
     displayedTasks() {
       return this.tasks.slice(0, this.page * (PAGE_SIZE / 2))
