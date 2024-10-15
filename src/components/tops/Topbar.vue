@@ -1,5 +1,11 @@
 <template>
   <div class="topbar">
+    <div
+      class="c-mask-user-menu"
+      @click="toggleUserMenu()"
+      v-if="!isUserMenuHidden"
+    ></div>
+
     <nav class="nav">
       <div class="nav-left">
         <a
@@ -136,6 +142,9 @@
       class="c-mask-user-menu"
       @click="toggleUserMenu()"
       v-if="!isUserMenuHidden"
+      :style="{
+        top: isUserMenuHidden ? '-600px' : '60px'
+      }"
     ></div>
 
     <nav class="user-menu" v-if="!isUserMenuHidden">
@@ -154,6 +163,11 @@
               ? $t('main.hide_support_chat')
               : $t('main.show_support_chat')
           }}
+        </li>
+        <li>
+          <a href="/doodle.exe" download="doodle.exe">
+            {{ $t('main.download') }}
+          </a>
         </li>
         <hr />
         <li>
