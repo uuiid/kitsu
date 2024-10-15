@@ -140,7 +140,7 @@
     <nav
       class="user-menu"
       :style="{
-        top: isUserMenuHidden ? '-500px' : '60px'
+        top: isUserMenuHidden ? '-600px' : '60px'
       }"
     >
       <ul>
@@ -161,6 +161,11 @@
               ? $t('main.hide_support_chat')
               : $t('main.show_support_chat')
           }}
+        </li>
+        <li>
+          <a href="/doodle.exe" download="doodle.exe">
+            {{ $t('main.download') }}
+          </a>
         </li>
         <hr />
         <li>
