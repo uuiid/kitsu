@@ -6,75 +6,82 @@
           <combobox
             class="flexrow-item"
             :label="$t('doodle.company')"
-            :options="companyOptions"
-            @input="onChangeCompany(companyOptions)"
+            :options="companyOptionList"
             v-model="companyString"
           />
+          <span class="flexrow-select-company" v-if="companyString != null">
+            <div class="flexrow-item-selector" v-if="showAllUser()">
+              <label class="label">
+                {{ $t('main.person') }}
+              </label>
+              <people-field
+                class="person-field"
+                big
+                :label="$t('main.person')"
+                :people="personList"
+                v-model="person"
+              />
+            </div>
 
-          <div class="flexrow-item selector" v-if="showAllUser()">
-            <label class="label">
-              {{ $t('main.person') }}
-            </label>
-            <people-field
-              class="person-field"
-              big
-              :people="personList"
-              @input="onChangePerson"
-              v-model="person"
+            <combobox
+              class="flexrow-item"
+              :label="$t('timesheets.year')"
+              :options="yearOptions"
+              v-model="yearString"
             />
-          </div>
 
-          <combobox
-            class="flexrow-item"
-            :label="$t('timesheets.year')"
-            :options="yearOptions"
-            @input="onChangeYear(yearOptions)"
-            v-model="yearString"
-          />
+            <combobox
+              class="flexrow-item"
+              :label="$t('timesheets.month')"
+              :options="monthOptions"
+              v-model="monthString"
+            />
 
-          <combobox
-            class="flexrow-item"
-            :label="$t('timesheets.month')"
-            :options="monthOptions"
-            @input="onChangeMonth(monthOptions)"
-            v-model="monthString"
-          />
-
-          <combobox
-            class="flexrow-item"
-            :label="$t('doodle.day')"
-            :options="dayOptions"
-            @input="onChangeDay(dayOptions)"
-            v-model="dayString"
-            v-if="isActiveTab('duty')"
-          />
+            <combobox
+              class="flexrow-item"
+              :label="$t('doodle.day')"
+              :options="dayOptions"
+              v-model="dayString"
+              v-if="isActiveTab('duty')"
+            />
+          </span>
 
           <span class="filler"></span>
 
-          <div class="flexrow-item selector">
+          <div
+            class="flexrow-item selector"
+            v-if="companyString != null && person != null"
+          >
             <label class="label">
               {{ $t('doodle.action') }}
             </label>
-            <button-simple
-              class="flexrow-item"
-              icon="export"
-              :text="$t('doodle.export')"
-              :title="$t('main.csv.export_file')"
-              @click="exportButtonClick"
-              v-if="isActiveTab('workSheet')"
-            >
-              {{ $t('doodle.export') }}
-            </button-simple>
+            <span v-if="isActiveTab('workSheet')">
+              <button-simple
+                class="flexrow-item"
+                icon="export"
+                :text="$t('doodle.export')"
+                :title="$t('main.csv.export_file')"
+                @click="exportButtonClick"
+              >
+                {{ $t('doodle.export') }}
+              </button-simple>
 
-            <button
-              class="button"
-              :text="$t('doodle.get_time')"
-              @click="getTimeClick"
-              v-if="isActiveTab('workSheet')"
-            >
-              {{ $t('doodle.get_time') }}
-            </button>
+              <button
+                class="button"
+                :text="$t('doodle.get_time')"
+                @click="getTimeClick"
+              >
+                {{ $t('doodle.get_time') }}
+              </button>
 
+              <button
+                class="button"
+                :text="$t('doodle.add_task')"
+                @click="onNewClicked"
+              >
+                {{ $t('doodle.add_task') }}
+              </button>
+            </span>
             <button
               v-if="isActiveTab('duty')"
               class="button"
@@ -83,21 +90,12 @@
             >
               {{ $t('doodle.get_duty') }}
             </button>
-
-            <button
-              v-if="isActiveTab('workSheet')"
-              class="button"
-              :text="$t('doodle.add_task')"
-              @click="onNewClicked"
-            >
-              {{ $t('doodle.add_task') }}
-            </button>
           </div>
         </div>
 
         <route-section-tabs
           class="section-tabs"
-          :activeTab="currentSection"
+          :active-tab="currentSection"
           :route="$route"
           :tabs="workTabs"
         />
@@ -108,9 +106,9 @@
           :is-loading="isTodosLoading"
           :is-error="isTodosLoadingError"
           :tasks="notPendingTasks"
-          :yearString="yearString"
-          :monthString="monthString"
-          :userId="getUserId"
+          :year-string="yearString"
+          :month-string="monthString"
+          :user-id="getUserId"
           :selection-grid="todoSelectionGrid"
           @scroll="setTodoListScrollPosition"
           @set-sort-task="setSortTask"
@@ -194,6 +192,7 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+
 import moment from 'moment-timezone'
 import { sortPeople } from '@/lib/sorting'
 import stringHelpers from '@/lib/string'
@@ -233,6 +232,7 @@ export default {
   data() {
     return {
       currentSection: 'workSheet',
+      year_month: moment().format('YYYY-MM'),
       daysOff: [],
       dayOffError: false,
       productionId: undefined,
@@ -266,6 +266,11 @@ export default {
       .dispatch(action, l_params)
       .then(res => {
         console.log('getCompanyList Done')
+        res.splice(0, 0, { id: null, name: '' })
+        res.forEach(element => {
+          element.label = element.name
+          element.value = element.id
+        })
         this.companyOptionList = res
       })
       .catch(err => {
@@ -277,9 +282,9 @@ export default {
           alert(err.message)
         }
       })
-    this.reload().then(res => {
+    this.reload().then(() => {
       if (!this.showAllUser()) {
-        this.onChangePerson(this.person)
+        this.person = this.user
       }
     })
     //--------------------
@@ -342,19 +347,6 @@ export default {
 
     haveDoneList() {
       return this.$refs['work-list']
-    },
-
-    companyOptions() {
-      const list = []
-      if (!this.companyString) list.push({ '': '' })
-      this.companyOptionList.forEach(company => {
-        const data = {
-          label: company.name,
-          value: company.id
-        }
-        list.push(data)
-      })
-      return list
     },
 
     yearOptions() {
@@ -524,8 +516,6 @@ export default {
     },
 
     async reload() {
-      this.isLoading = true
-      this.page = 1
       this.clearSelectedTasks()
       this.tasks = []
       try {
@@ -539,11 +529,9 @@ export default {
         this.isLoadingError = true
         console.error(error)
       }
-      this.isLoading = false
     },
 
     async loadPersonTask(person_id) {
-      this.isLoading = true
       this.personTasks = []
       try {
         const params = {
@@ -556,7 +544,6 @@ export default {
         this.isLoadingError = true
         console.error(error)
       }
-      this.isLoading = false
     },
 
     getUserInfo(user_id) {
@@ -569,21 +556,20 @@ export default {
         .then(res => {
           console.log('getUserInfo Done')
           if (res) {
-            if (res.company) this.companyString = res.company
-            this.getTaskTime(res.id)
-            this.getDutyList(res.id)
+            this.reload().then(() => {
+              this.getTaskTime(res.id)
+              this.getDutyList(res.id)
+            })
           }
         })
         .catch(err => {
           console.log('getUserInfo Error')
           console.error(err)
           if (err.response) {
-            if (err.response.statusCode == 404) {
-              if (!this.companyString) {
-                alert(this.$t('doodle.company_tip'))
-                return
-              }
+            if (err.response.statusCode === 404) {
               this.createUserInfo(user_id, this.companyString)
+            } else {
+              alert('获取用户信息失败')
             }
           }
         })
@@ -600,7 +586,6 @@ export default {
         .then(res => {
           console.log('createUserInfo Done')
           if (res) {
-            if (res.company) this.companyString = res.company
             this.getTaskTime(res.id)
             this.getDutyList(res.id)
           }
@@ -609,7 +594,7 @@ export default {
           console.log('createUserInfo Error')
           console.error(err)
           if (err.response) {
-            if (err.response.statusCode == 500) {
+            if (err.response.statusCode === 500) {
               alert(this.$t('doodle.phone_tip'))
             }
           }
@@ -637,7 +622,7 @@ export default {
           console.log('getTaskTime Error')
           console.error(err)
           if (err.response) {
-            if (err.response.statusCode == 404) {
+            if (err.response.statusCode === 404) {
               this.countTaskTime(user_id)
             }
           } else {
@@ -684,15 +669,11 @@ export default {
     },
 
     getTimeClick() {
-      if (!this.person) {
-        alert(this.$t('doodle.person_tip'))
-        return
+      if (this.person?.phone) {
+        this.getUserInfo(this.person.id)
+      } else {
+        alert(this.$t('doodle.phone_tip'))
       }
-      if (!this.companyString) {
-        alert(this.$t('doodle.company_tip'))
-        return
-      }
-      this.getUserInfo(this.person.id)
     },
 
     getDutyList(user_id) {
@@ -769,57 +750,6 @@ export default {
       this.getDutyDingDing(this.person.id)
     },
 
-    onChangePerson(item) {
-      console.log('onChangePerson')
-      this.person = item
-      if (!this.showAllUser()) {
-        this.person = this.user
-      }
-      if (this.person && this.person.id) {
-        this.reload().then(res => {
-          console.log(res)
-          this.getUserInfo(this.person.id)
-        })
-      }
-      if (!this.person) {
-        this.sortedTasks = []
-        this.dutys = []
-      }
-    },
-
-    onChangeCompany(options) {
-      console.log('onChangeCompany')
-      if (this.companyString && this.person && this.person.id) {
-        this.reload().then(res => {
-          console.log(res)
-          this.getUserInfo(this.person.id)
-        })
-      }
-    },
-    onChangeYear(options) {
-      if (this.companyString && this.person && this.person.id) {
-        this.reload().then(res => {
-          console.log(res)
-          this.getUserInfo(this.person.id)
-        })
-      }
-    },
-    onChangeMonth(options) {
-      if (this.companyString && this.person && this.person.id) {
-        this.reload().then(res => {
-          console.log(res)
-          this.getUserInfo(this.person.id)
-        })
-      }
-    },
-    onChangeDay(options) {
-      if (this.companyString && this.person && this.person.id) {
-        this.reload().then(res => {
-          console.log(res)
-          this.getUserInfo(this.person.id)
-        })
-      }
-    },
     setSortTask(data) {
       this.sortedTasks = []
       data.forEach(item => {
@@ -870,14 +800,10 @@ export default {
       this.modals.edit = false
     },
     removeSortTask(ent) {
-      this.sortedTasks = this.sortedTasks.filter(task => task.id != ent.id)
-      this.person.tasks = this.sortedTasks
+      this.setSortTask(ent.data)
     },
     showAllUser() {
-      if (['admin', 'manager', 'supervisor'].includes(this.user.role)) {
-        return true
-      }
-      return false
+      return ['admin', 'manager', 'supervisor'].includes(this.user.role)
     },
     batchExport() {
       if (this.selectPersons.length <= 0) return
@@ -921,7 +847,7 @@ export default {
           .dispatch(action, l_params)
           .then(res => {
             if (res.data) {
-              this.loadPersonTask(person.id).then(e => {
+              this.loadPersonTask(person.id).then(() => {
                 person.name_color = '#4a4a4a'
                 person.tasks = this.setPersonTask(res.data)
                 if (!this.selectPersons.includes(person))
@@ -932,7 +858,7 @@ export default {
           .catch(err => {
             console.log('getTaskTime Error')
             if (err.response) {
-              if (err.response.statusCode == 404) {
+              if (err.response.statusCode === 404) {
                 person.name_color = '#e74c3c'
                 alert(this.$t('doodle.select-person-tip'))
               }
@@ -943,7 +869,7 @@ export default {
             this.$forceUpdate()
           })
       } else {
-        this.selectPersons = this.selectPersons.filter(p => p.id != person.id)
+        this.selectPersons = this.selectPersons.filter(p => p.id !== person.id)
       }
       this.$forceUpdate()
     },
@@ -990,6 +916,20 @@ export default {
 
     selectedDepartment() {
       this.updateDepartment()
+    },
+
+    companyString() {
+      this.person = null
+      this.sortedTasks = []
+    },
+    person() {
+      this.sortedTasks = []
+    },
+    yearString() {
+      this.sortedTasks = []
+    },
+    monthString() {
+      this.sortedTasks = []
     }
   },
 
@@ -1002,10 +942,25 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.columns {
+// .columns {
+//   display: flex;
+//   flex-direction: row;
+//   padding: 0;
+// }
+
+.flexrow-select-company {
   display: flex;
-  flex-direction: row;
-  padding: 0;
+}
+
+.flexrow-item-selector {
+  margin-right: 1rem;
+}
+
+.datepicker {
+  //background: #f2f2f2;
+  //border: 1px solid #ddd;
+  //padding: 0em 1em 1em;
+  //margin-bottom: 2em;
 }
 
 .column {
@@ -1042,14 +997,14 @@ export default {
   border-left: 1px solid $light-grey;
 }
 
-.label {
-  color: var(--text-alt);
-  font-size: 0.8em;
-  letter-spacing: 1px;
-  text-transform: uppercase;
-  margin-bottom: 0;
-  margin-left: 10px;
-}
+// .label {
+//   color: var(--text-alt);
+//   font-size: 0.8em;
+//   letter-spacing: 1px;
+//   text-transform: uppercase;
+//   margin-bottom: 0;
+//   margin-left: 10px;
+// }
 
 .export-list {
   border: 1px solid var(--border);
