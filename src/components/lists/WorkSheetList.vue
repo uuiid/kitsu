@@ -195,7 +195,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-
+import { TrashIcon } from 'lucide-vue'
 import { selectionListMixin } from '@/components/mixins/selection'
 import { formatListMixin } from '@/components/mixins/format'
 import { descriptorMixin } from '@/components/mixins/descriptors'
@@ -212,7 +212,6 @@ import TaskTypeCell from '@/components/cells/TaskTypeCell'
 import TableInfo from '@/components/widgets/TableInfo'
 import MetadataHeader from '@/components/cells/MetadataHeader'
 
-
 export default {
   name: 'work-sheet-list',
   mixins: [formatListMixin, selectionListMixin, descriptorMixin],
@@ -225,6 +224,7 @@ export default {
     TableInfo,
     TaskTypeCell,
     MetadataHeader,
+    TrashIcon
   },
 
   props: {
@@ -485,7 +485,7 @@ export default {
         .dispatch(action, l_params)
         .then(res => {
           console.log('removeTaskTime Done')
-          this.$emit('remove-sort-task', entry)
+          this.$emit('remove-sort-task', res)
         })
         .catch(err => {
           console.log('removeTaskTime Error')
