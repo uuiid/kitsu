@@ -421,8 +421,17 @@ const csv = {
           const xlsx_data = e.target.result
           const workbook = XLSX.read(xlsx_data, { type: 'array' })
           const ws = workbook.Sheets[workbook.SheetNames[0]]
-          const data = XLSX.utils.sheet_to_json(ws, { header: 1 })
-          resolve(data)
+          const data1 = XLSX.utils.sheet_to_json(ws, { header: 1 })
+          const data2 = data1.filter(value => {
+            return (
+              value.every(v1 => {
+                return v1 !== '' && typeof v1 === 'string'
+                  ? v1?.match?.(/\S+/g)
+                  : true
+              }) && value.length > 0
+            )
+          })
+          resolve(data2)
         }
         reader.readAsArrayBuffer(data)
       } else {
