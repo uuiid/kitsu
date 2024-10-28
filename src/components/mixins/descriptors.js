@@ -5,6 +5,13 @@
 import { mapGetters } from 'vuex'
 
 export const descriptorMixin = {
+
+  data() {
+    return {
+      descriptorMixinIsReversal: false
+    }
+  },
+
   computed: {
     ...mapGetters([
       'isCurrentUserSupervisor',
@@ -98,11 +105,13 @@ export const descriptorMixin = {
       const column = this.currentProduction.descriptors.find(
         d => d.id === columnId
       )
+      this.descriptorMixinIsReversal = !this.descriptorMixinIsReversal
       this.$emit('change-sort', {
         type: 'metadata',
         column: column.field_name,
         name: column.name,
-        data_type: column.data_type
+        data_type: column.data_type,
+        isReversal: this.descriptorMixinIsReversal
       })
       this.showMetadataHeaderMenu()
     },
