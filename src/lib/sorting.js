@@ -276,6 +276,7 @@ export const sortAssetResult = (result, sorting, taskTypeMap, taskMap) => {
           a.name.localeCompare(b.name, undefined, { numeric: true })
         )
     )
+    if(sortInfo.isReversal) result.reverse()
   } else {
     result = sortAssets(result)
   }
