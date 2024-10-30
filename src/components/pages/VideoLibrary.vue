@@ -34,7 +34,7 @@
         >
           <div class="treeView">
             <tree-view
-              v-for="item in videoTypeTree"
+              v-for="item in videoTypeTreeData"
               :key="item.id"
               ref="TreeView"
               :item="item"
@@ -246,10 +246,6 @@ export default {
     },
     hasSelectedAssets() {
       return this.selectedAssets.size > 0
-    },
-
-    videoTypeTree() {
-      return this.listToTree(this.originalVideoTypes)
     }
   },
 
@@ -442,6 +438,11 @@ export default {
       }
       this.$refs.edit_video_library_add_type_modal.videoTypeToCreat.type =
         this.ancestorLabels
+    }
+  },
+  watch: {
+    originalVideoTypes(value) {
+      this.videoTypeTreeData = this.listToTree(value)
     }
   }
 }
