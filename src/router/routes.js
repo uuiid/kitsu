@@ -20,6 +20,7 @@ import Shots from '@/components/pages/Shots.vue'
 import TaskType from '@/components/pages/TaskType.vue'
 import Todos from '@/components/pages/Todos.vue'
 import Edits from '@/components/pages/Edits.vue'
+import VideoLibrary from '../components/pages/VideoLibrary.vue'
 
 const AssetLibrary = () => import('@/components/pages/AssetLibrary.vue')
 const AllTasks = () => import('@/components/pages/AllTasks.vue')
@@ -194,7 +195,11 @@ export const routes = [
         component: AssetLibrary,
         name: 'asset-library'
       },
-
+      {
+        path: 'video-library',
+        component: VideoLibrary,
+        name: 'video-library'
+      },
       {
         path: 'asset-types',
         name: 'asset-types',

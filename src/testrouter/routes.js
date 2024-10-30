@@ -22,6 +22,7 @@ import Todos from '@/components/pages/Todos.vue'
 import Edits from '@/components/pages/Edits.vue'
 
 import AssetLibrary from '@/components/pages/AssetLibrary.vue'
+import VideoLibrary from '@/components/pages/VideoLibrary.vue'
 import Asset from '@/components/pages/Asset.vue'
 import AssetTypes from '@/components/pages/AssetTypes.vue'
 import Backgrounds from '@/components/pages/Backgrounds.vue'
@@ -93,7 +94,8 @@ export const routes = [
         edge: '>90',
         vivaldi: '>2.8',
         opera: '>=50',
-        safari: '>=14'
+        safari: '>=14',
+        Electron: '>=29'
       })
       if (!isValidBrowser) {
         return next({ name: 'wrong-browser' })
@@ -178,7 +180,11 @@ export const routes = [
         component: AssetLibrary,
         name: 'asset-library'
       },
-
+      {
+        path: 'video-library',
+        component: VideoLibrary,
+        name: 'video-library'
+      },
       {
         path: 'asset-types',
         component: AssetTypes,
