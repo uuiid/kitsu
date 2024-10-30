@@ -58,6 +58,33 @@ const client = {
         })
     })
   },
+  ppostFileData(path, file) {
+    return new Promise((resolve, reject) => {
+      let data = null
+      const reader = new FileReader()
+      reader.onload = () => {
+        data = reader.result
+      }
+      reader.onloadend = () => {
+        superagent
+          .post(path)
+          .set('Content-Type', file.type)
+          .send(data)
+          .end((err, res) => {
+            if (res?.statusCode === 401) {
+              errors.backToLogin()
+              return reject(err)
+            } else {
+              if (err) {
+                err.body = res ? res.body : ''
+                return reject(err)
+              } else return resolve(res?.body)
+            }
+          })
+      }
+      reader.readAsArrayBuffer(file)
+    })
+  },
 
   ppatch(path, data) {
     return new Promise((resolve, reject) => {

@@ -1600,7 +1600,24 @@
               "updated_at": "更新日期"
             }
         },
-          
+        "video_library":{
+            "video_library":"视频库",
+            "no_video":"没有相关视频",
+            "filter":"过滤器",
+            "new_video":"添加视频",
+            "copy_video_path":"复制视频路径",
+            "delete":"删除",
+            "new_video_type":"添加视频类型",
+            "update_video":"上传视频",
+            "current_parent_type":"当前父类型",
+            "open_video":"打开视频",
+            "show_big_image":"查看大图",
+            "thumbnail":"缩略图",
+            "video_source_file":"视频源文件"
+            
+
+        },
+        
         "wrong_browser": {
             "title": "Kitsu不支持您的浏览器",
             "text": "itsu 只能与 Firefox 和 Chrome 浏览器一起使用。"

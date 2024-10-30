@@ -4,6 +4,7 @@
 
 <script>
 import assets from '@/assets/icons/fi-assets.svg'
+import videos from '@/assets/icons/fi-videos.svg'
 import assetTypeStats from '@/assets/icons/fi-asset-stats.svg'
 import addThumbnail from '@/assets/icons/fi-add-thumbnail.svg'
 import automations from '@/assets/icons/fi-automations.svg'
@@ -70,6 +71,7 @@ import waveform from '@/assets/icons/fi-waveform.svg'
 const icons = {
   'add-thumbnail': addThumbnail,
   assets,
+  videos,
   assetTypes: assetTypeStats,
   'asset-types': assets,
   automations,
