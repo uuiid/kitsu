@@ -132,6 +132,12 @@
                 {{ $t('library.asset_library') }}
               </router-link>
             </p>
+            <p @click="toggleSidebar()">
+              <router-link :to="{ name: 'video-library' }">
+                <kitsu-icon class="nav-icon" name="videos" />
+                {{ $t('video_library.video_library') }}
+              </router-link>
+            </p>
           </div>
 
           <div v-if="isCurrentUserAdmin">

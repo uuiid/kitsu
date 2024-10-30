@@ -29,6 +29,7 @@ import taskStatus from '@/store/modules/taskstatus'
 import taskTypes from '@/store/modules/tasktypes'
 import tasks from '@/store/modules/tasks'
 import user from '@/store/modules/user'
+import videolibrary from '@/store/modules/videolibrary'
 
 const modules = {
   assets,
@@ -57,7 +58,8 @@ const modules = {
   tasks,
   taskTypes,
   taskStatus,
-  user
+  user,
+  videolibrary
 }
 export default createStore({
   getters,
