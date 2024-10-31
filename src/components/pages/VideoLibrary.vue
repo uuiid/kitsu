@@ -180,7 +180,16 @@ export default {
         id: 'all',
         children: []
       },
-      videoTypeTreeData: [],
+      videoTypeTreeData: [
+        {
+          label: '所有',
+          parent_id: '',
+          id: 'all',
+          isOpen: true,
+          isSelected: false,
+          children: []
+        }
+      ],
       modals: {
         isAddMetadataDisplayed: false,
         isAddThumbnailsDisplayed: false,
@@ -317,6 +326,17 @@ export default {
           }
         ]
         return datas
+      } else {
+        return [
+          {
+            label: '所有',
+            parent_id: '',
+            id: 'all',
+            isOpen: true,
+            isSelected: false,
+            children: []
+          }
+        ]
       }
     },
     async menuAction(entity, action) {
