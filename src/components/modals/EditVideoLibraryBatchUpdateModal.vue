@@ -14,48 +14,33 @@
         <h1 class="title" v-else>
           {{ $t('video_library.new_video') }}
         </h1>
-        <label class="label">{{ $t('video_library.video_source_file') }}</label>
-        <list-view
-          ref="video"
-          :any-file-type="true"
-          :errored="form.video_errored"
-          @setError="value => (form.video_errored = value)"
-          @customEvents="getFiles"
-        >
-        </list-view>
-        <label class="label">{{ $t('video_library.thumbnail') }}</label>
-        <list-view
-          ref="image"
-          :is-active-text="true"
-          :is-active-image="true"
-          :errored="form.image_errored"
-          @setError="value => (form.image_errored = value)"
-        >
-        </list-view>
         <form @submit.prevent>
-          <text-field
-            ref="nameField"
-            :label="$t('assets.fields.name')"
-            :errored="form.name_errored"
-            :error-text="form.name_error_text"
-            @input="form.name_errored = false"
-            v-model="videoToCreat.label"
-            v-focus
-          />
           <text-field
             ref="typeField"
             :label="$t('assets.fields.type')"
             :readonly="true"
             :value="videoType"
           />
-          <textarea-field
-            ref="descriptionField"
-            :label="$t('assets.fields.description')"
-            v-model="videoToCreat.notes"
-          />
         </form>
-
+        <label class="label">{{ $t('video_library.video_source_file') }}</label>
+        <list-view
+          ref="video"
+          :is-active-file="true"
+          :errored="form.video_errored"
+          @setError="value => (form.video_errored = value)"
+          @customEvents="getFiles"
+        ></list-view>
         <div class="has-text-right">
+          <a
+            :class="{
+              button: true,
+              'is-primary': false,
+              'is-loading': isLoading
+            }"
+            @click="clearData"
+          >
+            {{ $t('video_library.clear_list') }}
+          </a>
           <a
             :class="{
               button: true,
@@ -85,18 +70,16 @@
 import { mapGetters, mapActions } from 'vuex'
 import { modalMixin } from '@/components/modals/base_modal'
 import TextField from '@/components/widgets/TextField.vue'
-import TextareaField from '@/components/widgets/TextareaField.vue'
 import ListView from '@/components/widgets/ListView.vue'
 
 export default {
-  name: 'edit-video-library-modal',
+  name: 'edit-video-library-batch-update-modal',
 
   mixins: [modalMixin],
 
   components: {
     TextField,
-    ListView,
-    TextareaField
+    ListView
   },
 
   props: {
@@ -141,25 +124,12 @@ export default {
   data() {
     return {
       form: {
-        image_errored: false,
         video_errored: false,
-        name: '',
-        name_errored: false,
         name_error_text: '',
-        description: '',
         source_id: null
       },
-      assetSuccessText: '',
+      assetSuccessText: ''
       //editVideos:[], /*{"label": "string","parent_id": "1c6ca187-e61f-4301-8dcb-0e9749e89eef","id": "497f6eca-6276-4993-bfeb-53cbbbba6f08","path": "string",notes": "string","active": true}*/
-      videoToCreat: {
-        id: '',
-        label: '',
-        path: '',
-        type: this.videoType,
-        notes: '',
-        parent_id: this.videoTypeId,
-        active: true
-      }
     }
   },
 
@@ -180,50 +150,29 @@ export default {
       this.$emit('cancel')
     },
 
-    checkData() {
-      if (!this.videoToCreat.label) {
-        this.form.name_errored = true
-        this.form.name_error_text = '空'
-      }
-      if (this.$refs.video.videos.length === 0) {
+    checkData(datas) {
+      if (datas.length === 0) {
         this.form.video_errored = true
         this.form.video_error_text = '空'
       }
-
-      if (this.$refs.image.images.length === 0) {
-        this.form.image_errored = true
-        this.form.image_error_text = '空'
-      }
     },
-
+    formatFiles(files) {
+      files.forEach(file => {
+        file.label = file.name
+        file.parent_id = this.videoTypeId
+        file.active = true
+        file.notes = ''
+      })
+    },
     confirmClicked() {
-      this.checkData()
-      if (
-        !(
-          this.form.name_errored &&
-          this.form.image_errored &&
-          this.form.image_errored
-        )
-      ) {
-        console.log(this.videoToCreat)
-        this.videoToCreat.parent_id = this.videoTypeId
-        this.videoToCreat.path = this.$refs.video.videos[0].path
-        this.videoToCreat.upimage = this.$refs.image.images[0]
-        this.$emit('onConfirm', this.videoToCreat)
+      this.checkData(this.$refs.video.files)
+      if (!this.form.video_errored) {
+        this.formatFiles(this.$refs.video.files)
+        this.$emit('onConfirm', this.$refs.video.files)
         this.clearData()
       }
     },
     clearData() {
-      this.videoToCreat = {
-        id: '',
-        label: '',
-        path: '',
-        type: this.videoType,
-        notes: '',
-        parent_id: this.videoTypeId,
-        active: true
-      }
-      this.$refs.image.init()
       this.$refs.video.init()
     }
   }

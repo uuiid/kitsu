@@ -143,6 +143,7 @@ export default {
 
     confirmClicked() {
       if (this.videoTypeToCreat.label) {
+        this.videoTypeToCreat.parent_id = this.videoTypeId
         this.$emit('onConfirm', this.videoTypeToCreat)
         this.clearData()
       }

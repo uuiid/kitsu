@@ -16,29 +16,37 @@
           :class="{ selectedItem: item.isSelected }"
           @click.stop="selectItem(item)"
         >
-          {{ item.name }}
         </span>
       </li>
     </ul>
-    <div v-if="videos.length > 0">
-      <div class="img-preview" v-for="video in videos" :key="video.id">
-        <video
-          alt="uploaded file"
+    <ul v-if="isActiveFile">
+      <li v-for="(item, index) in files" :key="index">
+        <div
+          class="list-view-item"
+          :class="{ selectedItem: item.isSelected }"
+          @click.stop="selectItem(item)"
+        >
+          {{ item.name }}
+        </div>
+      </li>
+    </ul>
+    <div class="parent_preview" v-if="videos.length > 0">
+      <div v-for="video in videos" :key="video.id">
+        <!--video
+          class="video-preview"
           :src="getURL(video)"
           v-if="isActiveVideo"
-        ></video>
-        <span>
-          {{ video.name }}
-        </span>
+        ></video-->
+        <div class="preview">{{ video.name }}</div>
       </div>
     </div>
-    <div v-if="images.length > 0">
+    <div class="parent_preview" v-if="images.length > 0">
       <div v-for="(image, index) in images" :key="index">
         <img
           class="img-preview"
-          alt="uploaded file"
           :src="getURL(image)"
           v-if="isActiveImage"
+          alt=""
         />
       </div>
     </div>
@@ -79,6 +87,10 @@ export default {
       type: Boolean,
       default: false
     },
+    isActiveFile: {
+      type: Boolean,
+      default: false
+    },
     errored: {
       type: Boolean,
       default: false
@@ -86,6 +98,10 @@ export default {
     errorText: {
       type: String,
       default: ''
+    },
+    anyFileType: {
+      type: Boolean,
+      default: false
     }
   },
   data() {
@@ -94,6 +110,8 @@ export default {
       isActive: false,
       images: [],
       videos: [],
+      files: [],
+      anyFile: [],
       placeholder: '拖入文件或Ctrl+V',
       isShowPlaceholder: true,
       currentItem: this.initData
@@ -114,16 +132,65 @@ export default {
       this.isShowPlaceholder = true
       this.images = []
       this.videos = []
+      this.files = []
     },
     handleData(files) {
+      console.log(files)
       this.isShowPlaceholder = false
-      if (this.isImage(files[0])) {
-        console.log(files[0])
-        this.images = files
-      } else if (this.isVideo(files[0])) {
+      if (this.anyFileType) {
         this.videos = files
-        //this.$emit("onVideos",this.videos);
+      } else if (this.isActiveImage && this.isImage(files[0])) {
+        this.images = files
+      } else if (this.isActiveVideo && this.isVideo(files[0])) {
+        this.videos = files
+      } else if (this.isActiveFile) {
+        const fs = require('fs')
+        //const { contextBridge, webUtils } = require('electron')
+        //const filesArray = Array.isArray(files) ? files : Array.from(files)
+        for (let i = 0; i < files.length; i++) {
+          const file = files[i]
+          //console.log(webUtils.getPathForFile(file))
+          if (fs.statSync(file.path).isDirectory()) {
+            this.files = [...this.files, ...this.getAllFiles(file.path)]
+          } else {
+            console.log(file)
+            const data = this.formatImageFile(file.path)
+            this.files.push(data)
+          }
+        }
+        this.currentItem = this.files[0]
       }
+    },
+    formatImageFile(filePath) {
+      const path = require('path')
+      if (
+        filePath.endsWith('.jpg') ||
+        filePath.endsWith('.jpeg') ||
+        filePath.endsWith('.png')
+      ) {
+        return {
+          name: path.basename(filePath, path.extname(filePath)),
+          isSelected: false,
+          path: filePath
+        }
+      }
+    },
+    getAllFiles(dirPath, arrayOfFiles = []) {
+      const fs = require('fs')
+      const files = fs.readdirSync(dirPath)
+      const path = require('path')
+      files.forEach(file => {
+        console.log(file)
+        const fullPath = path.join(dirPath, file)
+        if (fs.statSync(fullPath).isDirectory()) {
+          // 如果是目录，则递归调用
+          this.getAllFiles(fullPath, arrayOfFiles)
+        } else {
+          const data = this.formatImageFile(fullPath)
+          if (data) arrayOfFiles.push(data)
+        }
+      })
+      return arrayOfFiles
     },
     selectItem(selectedItem) {
       // 取消所有项的选中状态
@@ -133,13 +200,15 @@ export default {
       this.$set(selectedItem, 'isSelected', true)
     },
     handleDragEnter(event) {
-      this.$emit('setError', false)
+      event.preventDefault()
+      event.dataTransfer.dropEffect = 'copy'
+      const items = event.dataTransfer.files
+      console.log(items)
+      //this.$emit('setError', false)
     },
     handleDragOver(event) {
       event.preventDefault()
-      if (this.isDrop) {
-        event.dataTransfer.dropEffect = 'copy'
-      }
+      event.dataTransfer.dropEffect = 'copy'
     },
     handleDrop(event) {
       event.preventDefault()
@@ -169,7 +238,7 @@ export default {
       if (this.isActive && event.clipboardData.files) {
         const files = event.clipboardData.files
         this.handleData(files)
-        this.$emit('customEvents', files)
+        //this.$emit('customEvents', files)
       }
     }
   }
@@ -179,44 +248,93 @@ export default {
 <style lang="scss" scoped>
 .list-view {
   display: flex;
-  align-items: center;
-  justify-content: center;
+  //align-items: center;
+  //justify-content: center;
   border: 2px dotted #bdbdbd;
   min-height: 120px;
   margin-bottom: 30px;
   border-radius: 10px;
+  overflow: auto;
+  max-height: 300px;
+
   &:hover {
     border: 2px dotted $green;
   }
 }
+
 .list-view.error {
   border: 2px dotted $red;
+
   &:hover {
     border: 2px dotted $red;
   }
 }
+
 .list-view-item {
+  display: flex;
   font-size: 20px;
   width: auto;
   user-select: none;
   white-space: nowrap;
-  list-style: none;
+
   &:hover {
+    //background: linear-gradient(90deg, #66bb6a, #a5d6a7);
+    //background: linear-gradient(
+    //  90deg,
+    //  #4caf50 100%,
+    //  #ff8a80 100%,
+    //  #f44336 100%
+    //);
     background-color: var(--background-selectable);
+    width: 100%;
     cursor: pointer;
   }
 }
+
+.list-view ul {
+  list-style-type: none;
+}
+
+.progress-bar {
+  top: 0;
+  left: 0;
+  height: auto;
+  background-color: var(--background-selectable); /* 进度颜色 */
+  z-index: 0; /* 将进度条置于文本后面 */
+}
+
 .placeholder {
   display: flex;
+  align-items: center;
+  justify-content: center;
   user-select: none;
+  width: 100%;
   color: #bdbdbd;
 }
-.img-preview {
-  max-width: 120px;
-  max-height: 120px;
+
+.parent_preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
 }
-.uploaded file
-/* 定义选中项的红色背景 */
+
+.img-preview {
+  display: flex;
+  max-height: 120px;
+  max-width: 120px;
+  align-items: center;
+  justify-content: center;
+}
+
+.video-preview {
+  display: flex;
+  max-height: 200px;
+  max-width: 200px;
+  align-items: center;
+  justify-content: center;
+}
+
 .selectedItem {
   background-color: var(--background-selected);
 }

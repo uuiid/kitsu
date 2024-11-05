@@ -59,16 +59,26 @@
         :style="{ left: `${menuLeft}px`, top: `${menuTop}px` }"
         v-focus
       >
-        <li v-if="!isElectron" @click="menuAction('copyVideoPath')">
-          {{ $t('video_library.copy_video_path') }}
-        </li>
-        <li v-if="isElectron" @click="menuAction('openVideo')">
-          {{ $t('video_library.open_video') }}
-        </li>
-        <li @click="menuAction('showBigImage')">
-          {{ $t('video_library.show_big_image') }}
-        </li>
-        <li @click="menuAction('delete')">{{ $t('video_library.delete') }}</li>
+        <ul>
+          <li v-if="!isElectron" @click="menuAction('copyVideoPath')">
+            {{ $t('video_library.copy_video_path') }}
+          </li>
+          <li v-if="isElectron" @click="menuAction('openVideo')">
+            {{ $t('video_library.open_video') }}
+          </li>
+          <li @click="menuAction('showBigImage')">
+            {{ $t('video_library.show_big_image') }}
+          </li>
+          <li @click="menuAction('delete')" v-if="isCurrentUserManager">
+            {{ $t('video_library.delete') }}
+          </li>
+          <li @click="menuAction('deleteSelected')" v-if="isCurrentUserManager">
+            {{ $t('video_library.delete_selected') }}
+          </li>
+          <li @click="menuAction('clearSelected')">
+            {{ $t('video_library.clear_selected_video') }}
+          </li>
+        </ul>
       </div>
     </template>
   </a>
@@ -138,7 +148,7 @@ export default {
 
   mounted() {},
   computed: {
-    ...mapGetters(['isElectron']),
+    ...mapGetters(['isElectron', 'isCurrentUserManager']),
     isMovie() {
       return this.entity.preview_file_extension === 'mp4'
     },
@@ -189,7 +199,7 @@ export default {
     closeMenu() {
       this.isShowMenu = false
     },
-    handleClickOutside(event) {
+    handleClickOutside() {
       this.closeMenu()
       // 如果点击区域不在菜单或按钮上，关闭菜单
     }
@@ -278,16 +288,17 @@ span.view-icon {
   z-index: 1000; /* 确保菜单在最顶层显示 */
   width: auto;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
-  margin: 0, 0, 0, 0;
   border-radius: 10px;
 }
+
 .menu ul {
   list-style: none;
   padding-left: 0;
   margin-left: 0;
 }
+
 .menu li {
-  padding: 8px 0px;
+  padding: 8px 0;
   cursor: pointer;
   display: flex;
   justify-content: center;

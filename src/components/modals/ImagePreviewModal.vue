@@ -16,7 +16,7 @@
     </div>
 
     <div class="modal-content" @click="$emit('cancel')">
-      <img :src="previewPath" />
+      <img :src="previewPath" alt="" />
     </div>
   </div>
 </template>
@@ -93,7 +93,9 @@ export default {
   max-height: 100vh;
 
   img {
+    margin-top: 70px;
     max-height: 100vh;
+    overflow: auto;
   }
 }
 </style>
