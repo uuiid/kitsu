@@ -11,7 +11,11 @@ export default {
       active: video.active
     }
     const path = `/api/doodle/model_library/assets`
-    return client.ppost(path, data)
+    return client.ppost(path, [data])
+  },
+  newVideos(video) {
+    const path = `/api/doodle/model_library/assets`
+    return client.ppost(path, video)
   },
   getVideos() {
     const path = `/api/doodle/model_library/assets`
@@ -22,8 +26,31 @@ export default {
     return client.pdel(path)
   },
   modifyVideo(video) {
+    const tempVideo = {
+      id: video.id,
+      parent_id: video.parent_id,
+      label: video.label,
+      path: video.path,
+      notes: video.notes,
+      active: !video.active
+    }
     const path = `/api/doodle/model_library/assets/${video.id}`
-    return client.ppost(path, video)
+    return client.ppost(path, tempVideo)
+  },
+  modifyVideos(videos) {
+    const tempVideos = []
+    videos.forEach(video => {
+      tempVideos.push({
+        id: video.id,
+        parent_id: video.parent_id,
+        label: video.label,
+        path: video.path,
+        notes: video.notes,
+        active: !video.active
+      })
+    })
+    const path = `/api/doodle/model_library/assets`
+    return client.ppatch(path, tempVideos)
   },
   newVideoType(type) {
     const data = {
@@ -42,10 +69,9 @@ export default {
     const path = `/api/doodle/model_library/assets_tree/${video.id}`
     return client.pdel(path)
   },
-  addImage(id, image) {
-    const path = `/api/doodle/pictures/${id}`
-    //const formData = new FormData()
-    //formData.append("file",image)
+  addImage(image) {
+    const path = `/api/doodle/pictures/${image.id}`
+    console.log(path)
     return client.ppostFileData(path, image)
   }
 }

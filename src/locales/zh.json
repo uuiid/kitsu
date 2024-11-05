@@ -1031,7 +1031,7 @@
                 "active": "开启",
                 "archived": "已关闭"
             },
-            
+
             "style": {
                 "2d": "2D动画",
                 "3d": "3D动画",
@@ -1577,7 +1577,7 @@
             "confirm_unset_day_offs": "目前的休息日是从 {start} 到 {end}。 您确定要删除这段时间吗？",
             "error_days_off": "更新休息日时发生错误。"
         },
-        
+
         "library": {
             "asset_library": "资产库",
             "from_library": "来自资产库",
@@ -1601,23 +1601,28 @@
             }
         },
         "video_library":{
-            "video_library":"视频库",
-            "no_video":"没有相关视频",
+            "video_library":"素材库",
+            "no_video":"没有相关素材",
             "filter":"过滤器",
-            "new_video":"添加视频",
-            "copy_video_path":"复制视频路径",
+            "new_video":"添加素材",
+            "copy_video_path":"复制素材路径",
             "delete":"删除",
-            "new_video_type":"添加视频类型",
-            "update_video":"上传视频",
+            "new_video_type":"添加素材类型",
+            "update_video":"上传素材",
+            "batch_update_video":"批量上传",
             "current_parent_type":"当前父类型",
-            "open_video":"打开视频",
+            "open_video":"打开素材路径",
             "show_big_image":"查看大图",
             "thumbnail":"缩略图",
-            "video_source_file":"视频源文件"
-            
+            "video_source_file":"素材源文件",
+            "clear_list": "清除列表",
+            "clear_selected_video": "清除所有选择",
+            "delete_selected": "删除所有选择",
+            "warning": "警告"
+
 
         },
-        
+
         "wrong_browser": {
             "title": "Kitsu不支持您的浏览器",
             "text": "itsu 只能与 Firefox 和 Chrome 浏览器一起使用。"
