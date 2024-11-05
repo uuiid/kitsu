@@ -240,7 +240,9 @@ const helpers = {
       persons,
       query
     })
-    let result = indexSearch(cache.assetIndex, keywords) || cache.assets
+    let result = cache.assets.filter(asset => {
+      return asset.name.indexOf(keywords) !== -1
+    }) //indexSearch(cache.assetIndex, keywords) || cache.assets
     result = applyFilters(result, filters, taskMap)
     result = sortAssetResult(result, sorting, taskTypeMap, taskMap)
     cache.result = result
@@ -607,6 +609,7 @@ const actions = {
 
   setAssetSearch({ commit, state, rootGetters }, assetSearch) {
     const taskStatusMap = rootGetters.taskStatusMap
+    console.log(assetSearch)
     const taskTypeMap = rootGetters.taskTypeMap
     const taskMap = rootGetters.taskMap
     const production = rootGetters.currentProduction
