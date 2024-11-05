@@ -1,126 +1,145 @@
 <template>
-  <div class="columns fixed-page">
-    <div class="video-library">
-      <header class="filler">
-        <page-title
-          class="mt1 filler"
-          :text="$t('video_library.video_library')"
-          :bold="true"
-        />
-      </header>
-      <div class="video-flexrow">
-        <search-field
-          ref="search-field"
-          class="flexrow-item"
-          @change="onSearchChange"
-          :can-save="true"
-          v-focus
-        />
-        <button
-          class="update-video-button"
-          @click="showNewModal"
-          v-if="isElectron"
-        >
-          {{ $t('video_library.update_video') }}
-        </button>
-        <span class="update-video-error" v-if="modals.isDisplayedUpdateError">
-          请先选择类型</span
-        >
-      </div>
-      <div class="main-content">
-        <div
-          class="main-content-left"
-          :style="{ width: leftPanelWidth + 'px' }"
-        >
-          <div class="treeView">
-            <tree-view
-              v-for="item in videoTypeTreeData"
-              :key="item.id"
-              ref="TreeView"
-              :item="item"
-              @onSelectedChange="setSelected"
-              @onAddType="showNewTypeModal"
-              @onToggle="onToggle"
-            ></tree-view>
-          </div>
+  <div class="video_library">
+    <div class="columns fixed-page">
+      <div class="video-library">
+        <header class="filler">
+          <page-title
+            class="mt1 filler"
+            :text="$t('video_library.video_library')"
+            :bold="true"
+          />
+        </header>
+        <div class="video-flexrow">
+          <search-field
+            ref="search-field"
+            class="flexrow-item"
+            @change="onSearchChange"
+            :can-save="true"
+            v-focus
+          />
+          <button
+            class="update-video-button"
+            @click="showNewModal"
+            v-if="isElectron"
+          >
+            {{ $t('video_library.update_video') }}
+          </button>
+          <button
+            class="update-video-button"
+            @click="showBatchNewModal"
+            v-if="isElectron"
+          >
+            {{ $t('video_library.batch_update_video') }}
+          </button>
+          <span class="update-video-error" v-if="modals.isDisplayedUpdateError">
+            请先选择类型</span
+          >
         </div>
-        <div class="main-content-separator" @mousedown="onMouseDown"></div>
-        <div
-          class="main-content-center"
-          :style="{ width: rightPanelWidth + 'px' }"
-        >
-          <div class="entities mb2">
-            <table-info
-              :is-loading="false"
-              :is-error="false"
-              v-if="loading.sharedAssets || errors.sharedAssets"
-            />
-            <div
-              class="has-text-centered"
-              v-else-if="!sortedSharedAssetsByType.length"
-            >
-              {{ $t('video_library.no_video') }}
+        <div class="main-content">
+          <div
+            class="main-content-left"
+            :style="{ width: leftPanelWidth + 'px' }"
+          >
+            <div class="treeView">
+              <tree-view
+                v-for="item in videoTypeTreeData"
+                :key="item.id"
+                ref="TreeView"
+                :item="item"
+                @onSelectedChange="setSelected"
+                @onAddType="showNewTypeModal"
+                @onToggle="onToggle"
+              ></tree-view>
             </div>
-            <template v-else>
-              <h1 class="type-text">
-                {{ currentVideoType.label }} ({{
-                  sortedSharedAssetsByType.length
-                }})
-              </h1>
-              <ul class="items">
-                <li
-                  class="item flexcolumn"
-                  :class="{
-                    'selected-item': isSelected(entity)
-                  }"
-                  :key="entity.id"
-                  v-for="entity in sortedSharedAssetsByType"
-                  @click="toggleEntity(entity)"
-                >
-                  <div class="card" :title="entity.notes">
-                    <video-preview
-                      :empty-height="100"
-                      :empty-width="150"
-                      :height="100"
-                      :width="150"
-                      :entity="entity"
-                      :preview-file-id="entity.id"
-                      is-rounded-top-border
-                      @onMenuAction="menuAction"
-                    />
-                    <div class="item-description flexrow">
-                      <div class="entity-name ml1 flexrow">
-                        {{ entity.label }}
+          </div>
+          <div class="main-content-separator" @mousedown="onMouseDown"></div>
+          <div
+            class="main-content-center"
+            :style="{ width: rightPanelWidth + 'px' }"
+          >
+            <div class="entities mb2">
+              <table-info
+                :is-loading="false"
+                :is-error="false"
+                v-if="loading.sharedAssets || errors.sharedAssets"
+              />
+              <div
+                class="has-text-centered"
+                v-else-if="!sortedSharedAssetsByType.length"
+              >
+                {{ $t('video_library.no_video') }}
+              </div>
+              <template v-else>
+                <h1 class="type-text">
+                  {{ currentVideoType.label }} ({{
+                    sortedSharedAssetsByType.length
+                  }})
+                </h1>
+                <ul class="items">
+                  <li
+                    class="item flexcolumn"
+                    :class="{
+                      'selected-item': isSelected(entity)
+                    }"
+                    :key="entity.id"
+                    v-for="entity in sortedSharedAssetsByType"
+                    @click="toggleEntity(entity)"
+                  >
+                    <div class="card" :title="entity.notes">
+                      <video-preview
+                        :empty-height="100"
+                        :empty-width="150"
+                        :height="100"
+                        :width="150"
+                        :entity="entity"
+                        :preview-file-id="entity.id"
+                        is-rounded-top-border
+                        @onMenuAction="menuAction"
+                      />
+                      <div class="item-description flexrow">
+                        <div class="entity-name" :title="entity.label">
+                          {{ entity.label }}
+                        </div>
                       </div>
                     </div>
-                  </div>
-                </li>
-              </ul>
-            </template>
+                  </li>
+                </ul>
+              </template>
+            </div>
           </div>
         </div>
       </div>
+      <edit-video-library-modal
+        ref="edit_video_library_modal"
+        :active="modals.isNewDisplayed"
+        :video-type-id="currentVideoType.id"
+        :video-type="ancestorLabels"
+        @cancel="modals.isNewDisplayed = false"
+        @onConfirm="confirmNewVideo"
+      />
+      <edit-video-library-batch-update-modal
+        ref="edit_video_library_batch_update_modal"
+        :active="modals.isBatchNewDisplayed"
+        :video-type-id="currentVideoType.id"
+        :video-type="ancestorLabels"
+        @cancel="modals.isBatchNewDisplayed = false"
+        @onConfirm="confirmBatchNewVideo"
+      />
+      <edit-video-library-add-type-modal
+        ref="edit_video_library_add_type_modal"
+        :active="modals.isNewTypeDisplayed"
+        :video-type-id="currentVideoType.id"
+        :video-type="ancestorLabels"
+        @cancel="modals.isNewTypeDisplayed = false"
+        @onConfirm="confirmNewVideoType"
+      />
+      <image-preview-modal
+        ref="image_preview_modal"
+        :active="modals.isImagePreviewDisplayed"
+        :preview-file-id="currentSelectVideo.id"
+        @cancel="modals.isImagePreviewDisplayed = false"
+      />
     </div>
-    <edit-video-library-modal
-      ref="edit_video_library_modal"
-      :active="modals.isNewDisplayed"
-      :video-type-id="currentVideoType.id"
-      @cancel="modals.isNewDisplayed = false"
-      @onConfirm="confirmNewVideo"
-    />
-    <edit-video-library-add-type-modal
-      ref="edit_video_library_add_type_modal"
-      :active="modals.isNewTypeDisplayed"
-      :video-type-id="currentVideoType.id"
-      @cancel="modals.isNewTypeDisplayed = false"
-      @onConfirm="confirmNewVideoType"
-    />
-    <image-preview-modal
-      ref="image_preview_modal"
-      :active="modals.isImagepreviewDisplayed"
-      :preview-file-id="currentSelectVideo.id"
-      @cancel="modals.isImagepreviewDisplayed = false"
-    />
   </div>
 </template>
 
@@ -132,8 +151,10 @@ import PageTitle from '@/components/widgets/PageTitle.vue'
 import SearchField from '@/components/widgets/SearchField.vue'
 import TableInfo from '@/components/widgets/TableInfo.vue'
 import EditVideoLibraryModal from '@/components/modals/EditVideoLibraryModal.vue'
+import EditVideoLibraryBatchUpdateModal from '@/components/modals/EditVideoLibraryBatchUpdateModal.vue'
 import EditVideoLibraryAddTypeModal from '@/components/modals/EditVideoLibraryAddTypeModal.vue'
 import ImagePreviewModal from '@/components/modals/ImagePreviewModal.vue'
+
 export default {
   name: 'video-library',
   components: {
@@ -143,6 +164,7 @@ export default {
     TableInfo,
     TreeView,
     EditVideoLibraryModal,
+    EditVideoLibraryBatchUpdateModal,
     EditVideoLibraryAddTypeModal,
     ImagePreviewModal
   },
@@ -174,12 +196,6 @@ export default {
           })
         )
       },
-      currentVideoType: {
-        label: '所有',
-        parent_id: '',
-        id: 'all',
-        children: []
-      },
       videoTypeTreeData: [
         {
           label: '所有',
@@ -201,13 +217,15 @@ export default {
         isImportDisplayed: false,
         isImportRenderDisplayed: false,
         isNewDisplayed: false,
+        isBatchNewDisplayed: false,
         isNewTypeDisplayed: false,
-        isImagepreviewDisplayed: false,
+        isImagePreviewDisplayed: false,
         isDisplayedUpdateError: false
       },
       selectType: {},
       openType: [],
-      currentSelectVideo: {}
+      currentSelectVideo: {},
+      currentTypeAllId: []
     }
   },
 
@@ -224,14 +242,13 @@ export default {
   },
   computed: {
     ...mapGetters([
-      'displayedSharedAssets',
-      'displayedSharedAssetsByType',
-      'openProductions',
-      'productionMap',
       'selectedAssets',
       'videos',
       'originalVideoTypes',
-      'isElectron'
+      'isElectron',
+      'openedVideoTypes',
+      'currentVideoType',
+      'selectedVideos'
     ]),
     ancestorLabels() {
       const ancestors = this.getAncestors(
@@ -245,30 +262,34 @@ export default {
     },
 
     sortedSharedAssetsByType() {
+      this.getAllChildrenId(this.currentVideoType)
       return this.videos.filter(v => {
         return (
-          (v.parent_id === this.currentVideoType.id ||
+          (this.currentTypeAllId.includes(v.parent_id) ||
             this.currentVideoType.id === 'all') &&
           v.label.indexOf(this.keyWord) !== -1
         )
       })
-    },
-    hasSelectedAssets() {
-      return this.selectedAssets.size > 0
     }
   },
 
   methods: {
     ...mapActions([
       'loadVideos',
-      'setAssetSelection',
+      'setVideoSelection',
       'setSharedAssetSearch',
       'newVideosType',
       'newVideo',
+      'newVideos',
       'deleteVideo',
       'loadVideosType',
       'modifyVideo',
-      'setIsElectron'
+      'setIsElectron',
+      'setCurrentVideoType',
+      'setCurrentVideoTypeStatus',
+      'clearSelectedVideos',
+      'modifyVideos',
+      'setVideoTypeOpen'
     ]),
     handleResize() {
       this.rightPanelWidth = window.innerWidth - this.leftPanelWidth - 10
@@ -278,14 +299,16 @@ export default {
       try {
         await this.loadVideos()
       } catch (error) {
-        console.error(error)
         this.errors.sharedAssets = true
       }
       this.loading.sharedAssets = false
     },
-    confirmNewVideo(video, image) {
-      video.upimage = image
+    confirmNewVideo(video) {
+      console.log(video)
       this.newVideo(video)
+    },
+    confirmBatchNewVideo(videos) {
+      this.newVideos(videos)
     },
     confirmNewVideoType(videoType) {
       if (videoType.label) {
@@ -293,15 +316,12 @@ export default {
       }
     },
     checkElectron() {
-      this.setIsElectron(
-        typeof window !== 'undefined' &&
-          typeof window.process === 'object' &&
-          !!window.process.versions.electron
-      )
+      this.setIsElectron(navigator.userAgent.includes('Electron'))
     },
     listToTree(data) {
+      let out_data = []
+      const tree = []
       if (data.length > 0) {
-        const tree = []
         const lookup = {}
         data.forEach(item => {
           lookup[item.id] = { ...item, children: [] }
@@ -315,29 +335,24 @@ export default {
             tree.push(lookup[item.id])
           }
         })
-        const datas = [
-          {
-            label: '所有',
-            parent_id: '',
-            id: 'all',
-            isOpen: true,
-            isSelected: false,
-            children: tree
-          }
-        ]
-        return datas
-      } else {
-        return [
-          {
-            label: '所有',
-            parent_id: '',
-            id: 'all',
-            isOpen: true,
-            isSelected: false,
-            children: []
-          }
-        ]
       }
+      out_data = [
+        {
+          label: '所有',
+          parent_id: '',
+          id: 'all',
+          isOpen: true,
+          isSelected: true,
+          children: tree
+        }
+      ]
+      if (this.currentVideoType.id === undefined) {
+        this.setCurrentVideoType(out_data[0])
+      }
+      if (!this.openedVideoTypes.has(out_data[0].id)) {
+        this.setVideoTypeOpen(out_data[0])
+      }
+      return out_data
     },
     async menuAction(entity, action) {
       if (action === 'copyVideoPath') {
@@ -347,40 +362,34 @@ export default {
           console.log(error)
         }
       } else if (action === 'delete') {
-        entity.active = false
         this.modifyVideo(entity)
-        console.log(entity.id)
       } else if (action === 'openVideo') {
         if (this.isElectron) {
           const { shell } = require('electron')
-          shell.openPath(entity.path)
+          shell.showItemInFolder(entity.path)
         }
       } else if (action === 'showBigImage') {
-        this.modals.isImagepreviewDisplayed = true
+        this.modals.isImagePreviewDisplayed = true
         this.currentSelectVideo = entity
+      } else if (action === 'deleteSelected') {
+        this.modifyVideos()
+        //console.log('deleteSelected')
+      } else if (action === 'clearSelected') {
+        this.clearSelectedVideos()
       }
     },
-    onButteonClick() {
-      console.log(this.displayedSharedAssets)
-    },
     toggleEntity(entity) {
-      const selected = this.isSelected(entity)
-      this.setAssetSelection({ asset: entity, selected: !selected })
+      this.setVideoSelection(entity)
     },
     onToggle(item) {
       this.originalVideoTypes.forEach(i => {
         if (i.id === item.id) i.isOpen = item.isOpen
       })
     },
-    setSelected(item) {
-      this.$set(this.currentVideoType, 'isSelected', false)
-      this.currentVideoType = item
-      this.rightPanelWidth = window.innerWidth - this.leftPanelWidth - 10
-    },
+    setSelected(item) {},
     isSelected(entity) {
-      return this.selectedAssets.has(entity.id)
+      return this.selectedVideos.has(entity.id)
     },
-
     onSearchChange() {
       this.keyWord = this.searchField.getValue() || ''
     },
@@ -435,27 +444,44 @@ export default {
       path.push(this.currentVideoType)
       return path.slice(0, -1)
     },
+    getAllChildrenId(type) {
+      this.currentTypeAllId.push(type.id)
+      if (type.children && type.children.length > 0) {
+        type.children.forEach(i => {
+          if (i.children && i.children.length > 0) {
+            this.getAllChildrenId(i)
+          } else {
+            this.currentTypeAllId.push(i.id)
+          }
+        })
+      }
+    },
     showNewModal() {
-      if (this.currentVideoType.id !== 'all') {
-        this.$refs.edit_video_library_modal.videoToCreat.parent_id =
-          this.currentVideoType.id
+      if (
+        this.currentVideoType.id === 'all' ||
+        this.currentVideoType.id === undefined
+      ) {
+        this.modals.isDisplayedUpdateError = true
+      } else {
         this.modals.isNewDisplayed = true
         this.modals.isDisplayedUpdateError = false
-      } else {
-        this.modals.isDisplayedUpdateError = true
       }
-      this.$refs.edit_video_library_modal.videoToCreat.type =
-        this.ancestorLabels
+      //this.$refs.edit_video_library_modal.videoToCreat.type =
+      //this.ancestorLabels
+    },
+    showBatchNewModal() {
+      if (
+        this.currentVideoType.id === 'all' ||
+        this.currentVideoType.id === undefined
+      ) {
+        this.modals.isDisplayedUpdateError = true
+      } else {
+        this.modals.isBatchNewDisplayed = true
+        this.modals.isDisplayedUpdateError = false
+      }
     },
     showNewTypeModal() {
       this.modals.isNewTypeDisplayed = true
-      if (this.currentVideoType.id !== 'all') {
-        this.$refs.edit_video_library_add_type_modal.videoTypeToCreat.parent_id =
-          this.currentVideoType.id
-      } else {
-        this.$refs.edit_video_library_add_type_modal.videoTypeToCreat.parent_id =
-          ''
-      }
       this.$refs.edit_video_library_add_type_modal.videoTypeToCreat.type =
         this.ancestorLabels
     }
@@ -463,6 +489,15 @@ export default {
   watch: {
     originalVideoTypes(value) {
       this.videoTypeTreeData = this.listToTree(value)
+    },
+    currentVideoType() {
+      this.currentTypeAllId = []
+      //this.getAllChildrenId(this.currentVideoType)
+    }
+  },
+  metaInfo() {
+    return {
+      title: `${this.$t('video_library.video_library')} - Kitsu`
     }
   }
 }
@@ -478,10 +513,12 @@ export default {
   margin-left: auto;
   margin-right: auto;
 }
+
 .video-flexrow {
   display: flex;
   margin-bottom: 20px;
 }
+
 .main-content {
   display: flex;
   flex-direction: row;
@@ -496,6 +533,7 @@ export default {
   //border-left:thick dotted #ff0000;
   overflow: auto; // 启用滚动条
 }
+
 .main-content-separator {
   width: 2px;
   cursor: ew-resize;
@@ -512,26 +550,31 @@ export default {
   margin-left: 0.5cm;
   user-select: none;
 }
+
 .update-video-button {
   border-radius: 1em;
   min-width: 3cm;
   min-height: 1.2cm;
   background-color: var(--background);
-  border: 2px solid transparent;
-  border-color: var(--background-selected);
+  border: 2px solid var(--background-selected);
+  margin-right: 1em;
+
   &:hover {
     border-color: $green;
   }
+
   &:checked {
     border-color: var(--background-selectable);
   }
 }
+
 .update-video-error {
   margin-top: 10px;
   margin-left: 5px;
   font-size: 12px;
   color: $red;
 }
+
 .entities {
   height: 100%;
   overflow-x: auto;
@@ -572,13 +615,18 @@ export default {
       color: var(--text-strong);
       font-size: 0.9em;
       font-weight: bold;
-      max-width: 150px;
-      min-width: 150px;
+      white-space: nowrap;
+      max-width: 140px;
+      min-width: 140px;
       padding: 0.5em;
 
       .entity-name {
         margin-left: auto;
         margin-right: auto;
+        white-space: nowrap;
+        width: 120px;
+        overflow: hidden;
+        text-overflow: ellipsis;
       }
     }
   }

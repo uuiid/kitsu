@@ -1,4 +1,5 @@
 import videolibraryApi from '../api/videolibrary'
+
 const initialState = {
   videos: [],
   originalVideoTypes: [],
@@ -6,7 +7,24 @@ const initialState = {
   editVideo: {},
   editVideos: [],
   editVideoImage: null,
-  isElectron: false
+  isElectron: false,
+  currentVideoType: {},
+  selectedVideos: new Map(),
+  openedVideoTypes: new Map()
+}
+const helpers = {
+  getFileFromPath(filePath) {
+    const fs = require('fs')
+    return new Promise((resolve, reject) => {
+      fs.readFile(filePath, (err, data) => {
+        if (err) {
+          console.log(err)
+          return reject(err)
+        }
+        return resolve(data)
+      })
+    })
+  }
 }
 
 const state = {
@@ -30,24 +48,75 @@ const mutations = {
     state.editVideo = video
     state.videos.push(video)
   },
+  NEW_VIDEOS(state, videos) {
+    state.editVideo = videos[0]
+    state.videos = [...state.videos, ...videos]
+  },
   NEW_VIDEOS_TYPE(state, type) {
     state.originalVideoTypes.push(type)
   },
-  DLETE_VIDEO(state, video) {
+  DELETE_VIDEO_TYPE(state, type) {
+    state.originalVideoTypes = state.originalVideoTypes.filter(
+      item => item.id !== type.id
+    )
+  },
+  DELETE_VIDEO(state, video) {
     state.videos = state.videos.filter(item => item.id !== video.id)
+  },
+  DELETE_VIDEOS(state, videos) {
+    const idsToRemove = new Set(videos.map(video => video.id))
+    state.videos = state.videos.filter(item => !idsToRemove.has(item.id))
   },
   MODIFY_VIDEO(state, video) {},
   SET_IS_ELECTRON(state, isElectron) {
     state.isElectron = isElectron
+  },
+  SET_CURRENT_VIDEO_TYPE(state, videoType) {
+    state.currentVideoType.isSelected = false
+    state.currentVideoType = videoType
+    state.currentVideoType.isSelected = true
+  },
+  SET_CURRENT_VIDEO_TYPE_STATUS(state, videoType) {
+    videoType.isOpen = !videoType.isOpen
+    console.log(videoType)
+  },
+  SET_VIDEO_SELECTION(state, video) {
+    if (state.selectedVideos.has(video.id)) {
+      state.selectedVideos.delete(video.id)
+      state.selectedVideos = new Map(state.selectedVideos) // for reactivity
+    } else {
+      state.selectedVideos.set(video.id, video)
+      state.selectedVideos = new Map(state.selectedVideos) // for reactivity
+      //const maxX = state.displayedAssets.length
+      //const maxY = state.nbValidationColumns
+      // unselect previously selected tasks
+      //state.assetSelectionGrid = buildSelectionGrid(maxX, maxY)
+    }
+  },
+  CLEAR_SELECTED_VIDEOS(state) {
+    state.selectedVideos = new Map()
+  },
+  SET_VIDEO_TYPE_OPEN(state, videoType) {
+    videoType.isOpen = !videoType.isOpen
+    if (state.openedVideoTypes.has(videoType.id)) {
+      state.openedVideoTypes.delete(videoType.id)
+      state.openedVideoTypes = new Map(state.openedVideoTypes) // for reactivity
+    } else {
+      state.openedVideoTypes.set(videoType.id, videoType)
+      state.openedVideoTypes = new Map(state.openedVideoTypes) // for reactivity
+    }
   }
 }
 
 const getters = {
   videos: state => state.videos,
-  videosType: state => state.videosType,
+  videoTypes: state => state.videoTypes,
   editVideo: state => state.editVideo,
   originalVideoTypes: state => state.originalVideoTypes,
-  isElectron: state => state.isElectron
+  isElectron: state => state.isElectron,
+  openedVideoTypes: state => state.openedVideoTypes,
+  currentVideoType: state => state.currentVideoType,
+  selectedVideos: state => state.selectedVideos
 }
 const actions = {
   loadVideos({ commit }) {
@@ -58,22 +127,48 @@ const actions = {
         return res
       })
       .catch(err => {
-        console.log(err)
         return err
       })
   },
-  newVideos({ commit }, Videos) {
-    commit('NEW_VIDEOS', Videos)
-    return videolibraryApi.newVideo(Videos)
+  newVideos({ commit }, videos) {
+    const path = require('path')
+    return videolibraryApi.newVideos(videos).then(res => {
+      const imageUploadPromises = res.map(re => {
+        return helpers.getFileFromPath(re.path).then(data => {
+          re.data = data
+          re.filetype = 'image/' + path.extname(re.path).slice(1)
+          return videolibraryApi.addImage(re).then(() => {})
+        })
+      })
+      return Promise.all(imageUploadPromises)
+        .then(() => {
+          commit('NEW_VIDEOS', res)
+          return res
+        })
+        .catch(error => {
+          console.error('批量上传图片失败:', error)
+        })
+    })
   },
   newVideo({ commit }, video) {
     return videolibraryApi
       .newVideo(video)
       .then(res => {
-        videolibraryApi.addImage(res.id, video.upimage).then(imageres => {
-          commit('NEW_VIDEO', res)
-        })
-        return res
+        let data = null
+        const reader = new FileReader()
+        reader.onload = () => {
+          data = reader.result
+        }
+        reader.onloadend = () => {
+          const re = res[0]
+          re.data = data
+          re.filetype = video.upimage.type
+          videolibraryApi.addImage(re).then(() => {
+            commit('NEW_VIDEO', res[0])
+          })
+          return res
+        }
+        reader.readAsArrayBuffer(video.upimage)
       })
       .catch(err => {
         console.log(err)
@@ -83,17 +178,25 @@ const actions = {
   modifyVideo({ commit }, video) {
     return videolibraryApi
       .modifyVideo(video)
-      .then(res => {
-        commit('DLETE_VIDEO', video)
+      .then(() => {
+        commit('SET_VIDEO_SELECTION', video)
+        commit('DELETE_VIDEO', video)
       })
       .catch(err => {
         console.log(err)
         return err
       })
   },
+  modifyVideos({ commit }) {
+    const videos = Array.from(state.selectedVideos.values())
+    return videolibraryApi.modifyVideos(videos).then(() => {
+      commit('CLEAR_SELECTED_VIDEOS')
+      commit('DELETE_VIDEOS', videos)
+    })
+  },
   deleteVideo({ commit }, video) {
-    videolibraryApi.deleteVideo(video).then(res => {
-      commit('DLETE_VIDEO', video)
+    videolibraryApi.deleteVideo(video).then(() => {
+      commit('DELETE_VIDEO', video)
     })
   },
   loadVideosType({ commit }) {
@@ -120,11 +223,38 @@ const actions = {
         return err
       })
   },
-
   setIsElectron({ commit }, isElectron) {
     commit('SET_IS_ELECTRON', isElectron)
+  },
+  setCurrentVideoType({ commit }, videoType) {
+    commit('SET_CURRENT_VIDEO_TYPE', videoType)
+  },
+  setCurrentVideoTypeStatus({ commit }, status) {
+    commit('SET_CURRENT_VIDEO_TYPE_STATUS', status)
+  },
+  setVideoSelection({ commit }, video) {
+    commit('SET_VIDEO_SELECTION', video)
+  },
+  setVideoTypeOpen({ commit }, videoType) {
+    commit('SET_VIDEO_TYPE_OPEN', videoType)
+  },
+  clearSelectedVideos({ commit }) {
+    commit('CLEAR_SELECTED_VIDEOS')
+  },
+  deleteSelectedVideos({ commit }) {},
+  deleteVideoType({ commit }) {
+    return videolibraryApi
+      .deleteVideoType(state.currentVideoType)
+      .then(res => {
+        commit('DELETE_VIDEO_TYPE', state.currentVideoType)
+        return res
+      })
+      .catch(err => {
+        return err
+      })
   }
 }
+
 export default {
   state,
   getters,
