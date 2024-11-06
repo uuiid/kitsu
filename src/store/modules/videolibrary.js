@@ -96,6 +96,12 @@ const mutations = {
   CLEAR_SELECTED_VIDEOS(state) {
     state.selectedVideos = new Map()
   },
+  RESET_SELECTED_VIDEOS(state, videos) {
+    state.selectedVideos = new Map()
+    videos.forEach(video => {
+      state.selectedVideos.set(video.id, video)
+    })
+  },
   SET_VIDEO_TYPE_OPEN(state, videoType) {
     videoType.isOpen = !videoType.isOpen
     if (state.openedVideoTypes.has(videoType.id)) {
@@ -240,6 +246,9 @@ const actions = {
   },
   clearSelectedVideos({ commit }) {
     commit('CLEAR_SELECTED_VIDEOS')
+  },
+  resetSelectedVideos({ commit }, videos) {
+    commit('RESET_SELECTED_VIDEOS', videos)
   },
   deleteSelectedVideos({ commit }) {},
   deleteVideoType({ commit }) {

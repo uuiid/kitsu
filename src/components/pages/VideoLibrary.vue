@@ -225,11 +225,15 @@ export default {
       selectType: {},
       openType: [],
       currentSelectVideo: {},
-      currentTypeAllId: []
+      currentTypeAllId: [],
+      isShiftSelected: false,
+      shiftEndSelection: null
     }
   },
 
   mounted() {
+    window.addEventListener('keydown', this.handleKeydown)
+    window.addEventListener('keyup', this.handleKeyup)
     this.checkElectron()
     this.loadVideosType()
     this.loadVideos()
@@ -239,6 +243,8 @@ export default {
 
   beforeDestroy() {
     window.removeEventListener('resize', this.handleResize)
+    window.removeEventListener('keydown', this.handleKeydown)
+    window.removeEventListener('keyup', this.handleKeyup)
   },
   computed: {
     ...mapGetters([
@@ -289,10 +295,22 @@ export default {
       'setCurrentVideoTypeStatus',
       'clearSelectedVideos',
       'modifyVideos',
-      'setVideoTypeOpen'
+      'setVideoTypeOpen',
+      'resetSelectedVideos'
     ]),
     handleResize() {
       this.rightPanelWidth = window.innerWidth - this.leftPanelWidth - 10
+    },
+    handleKeyup(event) {
+      if (event.key === 'Shift') {
+        this.isShiftSelected = false
+        this.currentSelectVideo = this.shiftEndSelection //[...this.selectedVideos.entries()].at(-1)[1]
+      }
+    },
+    handleKeydown(event) {
+      if (event.key === 'Shift') {
+        this.isShiftSelected = true
+      }
     },
     async refresh(silent = false) {
       this.loading.sharedAssets = !silent
@@ -379,7 +397,28 @@ export default {
       }
     },
     toggleEntity(entity) {
-      this.setVideoSelection(entity)
+      if (this.isShiftSelected) {
+        if (!this.currentSelectVideo) {
+          this.currentSelectVideo = entity
+        } else {
+          this.shiftEndSelection = entity
+          const start = this.sortedSharedAssetsByType.indexOf(
+            this.currentSelectVideo
+          )
+          const end = this.sortedSharedAssetsByType.indexOf(entity)
+          let tempSelected = []
+          if (start < end) {
+            tempSelected = this.sortedSharedAssetsByType.slice(start, end + 1)
+          } else {
+            tempSelected = this.sortedSharedAssetsByType.slice(end, start + 1)
+          }
+          this
+          this.resetSelectedVideos(tempSelected)
+        }
+      } else {
+        this.currentSelectVideo = entity
+        this.setVideoSelection(entity)
+      }
     },
     onToggle(item) {
       this.originalVideoTypes.forEach(i => {
@@ -492,6 +531,7 @@ export default {
     },
     currentVideoType() {
       this.currentTypeAllId = []
+
       //this.getAllChildrenId(this.currentVideoType)
     }
   },
@@ -499,6 +539,9 @@ export default {
     return {
       title: `${this.$t('video_library.video_library')} - Kitsu`
     }
+  },
+  sortedSharedAssetsByType(value) {
+    console.log(value)
   }
 }
 </script>
