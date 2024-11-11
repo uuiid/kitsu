@@ -10,6 +10,13 @@
           v-model="form.name"
         />
         <text-field
+          ref="nameField"
+          :label="$t('productions.fields.en_str')"
+          @enter="runConfirmation"
+          v-focus
+          v-model="form.en_str"
+        />
+        <text-field
           ref="codeField"
           :label="$t('productions.fields.code')"
           @enter="runConfirmation"
@@ -105,6 +112,20 @@
           v-model="form.resolution"
           v-if="currentProduction && currentProduction.id"
         />
+        <text-field
+          ref="resolutionField"
+          :label="$t('productions.fields.path')"
+          @enter="runConfirmation"
+          v-model="form.path"
+          v-if="currentProduction && currentProduction.id"
+        />
+        <text-field
+          ref="resolutionField"
+          :label="$t('productions.fields.auto_upload_path')"
+          @enter="runConfirmation"
+          v-model="form.auto_upload_path"
+          v-if="currentProduction && currentProduction.id"
+        />
         <combobox-boolean
           ref="isClientsIsolatedField"
           :label="$t('productions.fields.is_clients_isolated')"
@@ -196,6 +217,7 @@ export default {
       homepageOptions: HOME_PAGE_OPTIONS,
       form: {
         name: '',
+        en_str: '',
         code: '',
         start_date: new Date(),
         end_date: new Date(),
@@ -208,6 +230,8 @@ export default {
         is_set_preview_automated: 'false',
         ratio: '',
         resolution: '',
+        path: '',
+        auto_upload_path: '',
         production_type: 'short'
       }
     }
@@ -271,6 +295,7 @@ export default {
       if (this.currentProduction) {
         this.form = {
           name: this.currentProduction.name,
+          en_str: this.currentProduction.en_str,
           code: this.currentProduction.code,
           start_date: parseSimpleDate(
             this.currentProduction.start_date
@@ -294,7 +319,9 @@ export default {
             : 'false',
           ratio: this.currentProduction.ratio,
           resolution: this.currentProduction.resolution,
-          homepage: this.currentProduction.homepage
+          homepage: this.currentProduction.homepage,
+          path: this.currentProduction.path,
+          auto_upload_path: this.currentProduction.auto_upload_path
         }
       } else {
         this.form = {

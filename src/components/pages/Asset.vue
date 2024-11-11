@@ -928,7 +928,8 @@ h2.subtitle {
   flex: unset;
   margin-bottom: 3em;
   min-width: 100%;
-  overflow: auto;
+  max-width: 100%;
+  overflow: hidden;
 }
 
 .datatable-row {

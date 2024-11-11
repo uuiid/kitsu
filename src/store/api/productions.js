@@ -46,7 +46,10 @@ export default {
       is_preview_download_allowed:
         production.is_preview_download_allowed === 'true',
       is_set_preview_automated: production.is_set_preview_automated === 'true',
-      homepage: production.homepage
+      homepage: production.homepage,
+      path: production.path,
+      auto_upload_path: production.auto_upload_path,
+      en_str: production.en_str
     }
     return client.pput(`/api/data/projects/${production.id}`, data)
   },

@@ -196,6 +196,8 @@ const helpers = {
       estimation += task.estimation
       taskIds.push(task.id)
       validations.set(task.task_type_id, task.id)
+      task.description = asset.description
+      task.data = asset.data
       taskMap.set(task.id, task)
     })
 

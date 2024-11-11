@@ -663,6 +663,7 @@ export default {
     },
 
     addInTaskTypeFilter(taskTypeFilter) {
+      console.log(taskTypeFilter)
       taskTypeFilter.values.push(this.taskStatuses[0].id)
     },
 
@@ -673,7 +674,14 @@ export default {
     },
 
     addInDescriptorFilter(descriptorFilter) {
-      descriptorFilter.values.push('')
+      const lastNum = Number(
+        descriptorFilter.values[descriptorFilter.values.length - 1]
+      )
+      if (lastNum) {
+        descriptorFilter.values.push((lastNum + 1).toString())
+      } else {
+        descriptorFilter.values.push('')
+      }
     },
 
     // Descriptors

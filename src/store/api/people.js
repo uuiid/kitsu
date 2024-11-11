@@ -93,7 +93,8 @@ export default {
         person.notifications_discord_enabled === 'true',
       notifications_discord_userid: person.notifications_discord_userid,
       departments: person.departments,
-      studio_id: person.studio_id
+      studio_id: person.studio_id,
+      dingding_company_id: person.dingding_company_id
     }
     return client.pput(`/api/data/persons/${person.id}`, data)
   },

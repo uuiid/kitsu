@@ -76,7 +76,10 @@ export default {
       'openedVideoTypes',
       'currentVideoType',
       'isCurrentUserManager'
-    ])
+    ]),
+    isShowMinus() {
+      return this.isCurrentUserManager && this.item.id !== 'all'
+    }
   },
   mounted() {
     if (this.item.isSelected) {

@@ -157,7 +157,14 @@
               :title="$t('menu.generate_playlist')"
             />
           </div>
-
+          <div
+            class="menu-item"
+            :title="$t('menu.openFolder')"
+            @click="$emit('openfolder')"
+            v-if="isElectron"
+          >
+            <folder-open :title="$t('menu.openFolder')" />
+          </div>
           <div
             v-if="
               (isCurrentViewAsset ||
@@ -812,7 +819,13 @@
 </template>
 
 <script>
-import { CheckSquareIcon, LinkIcon, PlayCircleIcon, XIcon } from 'lucide-vue'
+import {
+  CheckSquareIcon,
+  LinkIcon,
+  PlayCircleIcon,
+  XIcon,
+  FolderOpen
+} from 'lucide-vue'
 import { mapGetters, mapActions } from 'vuex'
 
 import { intersection } from '@/lib/array'
@@ -860,7 +873,8 @@ export default {
     SearchField,
     Spinner,
     ViewPlaylistModal,
-    XIcon
+    XIcon,
+    FolderOpen
   },
 
   data() {
@@ -959,6 +973,10 @@ export default {
       'taskTypeMap',
       'user'
     ]),
+
+    isElectron() {
+      return navigator.userAgent.includes('Electron')
+    },
 
     minimized() {
       return this.selectedBar === ''
@@ -1524,7 +1542,6 @@ export default {
       this.clearSelectedEdits()
       this.clearSelectedConcepts()
     },
-
     selectBar(barName) {
       localStorage.setItem(`${this.storagePrefix}-selected-bar`, barName, {
         expires: '1M'
@@ -1760,6 +1777,7 @@ div.assignation {
 .clear-assignation-button {
   margin: auto;
 }
+
 .clear-assignation-button:focus,
 .clear-assignation-button:active,
 .clear-assignation-button:hover {

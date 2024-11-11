@@ -19,6 +19,10 @@
             <th class="name" ref="th-name">
               {{ $t('tasks.fields.entity_name') }}
             </th>
+            <th class="description" ref="th-description">
+              {{ $t('assets.fields.description') }}
+            </th>
+            <th class="time-spent" ref="th-spent">集数列</th>
             <th class="status" ref="th-status">
               {{ $t('tasks.fields.task_status') }}
             </th>
@@ -95,6 +99,18 @@
             <td class="name">
               {{ getEntity(task.entity.id).name }}
             </td>
+
+            <description-cell
+              class="description"
+              :editable="isCurrentUserManager"
+              :entry="task"
+              :title="task.description"
+            />
+
+            <td class="time-spent">
+              {{ task.data.ji_shu_lie }}
+            </td>
+
             <validation-cell
               class="status unselectable"
               :task-test="task"
@@ -324,6 +340,7 @@ import PeopleAvatarWithMenu from '@/components/widgets/PeopleAvatarWithMenu.vue'
 import TableInfo from '@/components/widgets/TableInfo.vue'
 import ValidationCell from '@/components/cells/ValidationCell.vue'
 import ValidationTag from '@/components/widgets/ValidationTag.vue'
+import DescriptionCell from '@/components/cells/DescriptionCell.vue'
 
 export default {
   name: 'task-list',
@@ -331,6 +348,7 @@ export default {
   mixins: [domMixin, formatListMixin],
 
   components: {
+    DescriptionCell,
     DateField,
     EntityPreview,
     EntityThumbnail,
@@ -686,6 +704,7 @@ export default {
     },
 
     selectTask(event, index, task) {
+      console.log(task)
       if (
         event &&
         event.target &&
@@ -871,6 +890,18 @@ export default {
   font-weight: bold;
 }
 
+.description {
+  min-width: 200px;
+  width: 200px;
+  max-width: 200px;
+  overflow-wrap: break-word;
+}
+
+.time-spent {
+  min-width: 50px;
+  width: 50px;
+}
+
 .status {
   min-width: 140px;
   width: 140px;
@@ -1015,6 +1046,7 @@ td.retake-count {
       margin-top: 0.3em;
       padding: 0 0.5em;
     }
+
     .task-data {
       padding: 0 0.1em 0 0.3em;
 
@@ -1045,6 +1077,14 @@ td.retake-count {
   }
 
   td.name {
+    border-right: 1px solid var(--border);
+  }
+
+  td.description {
+    border-right: 1px solid var(--border);
+  }
+
+  td.time-spent {
     border-right: 1px solid var(--border);
   }
 

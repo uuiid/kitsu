@@ -36,10 +36,7 @@
                 {{ $t('tasks.my_checks') }}
               </router-link>
             </p>
-            <p
-              @click="toggleSidebar()"
-              v-if="isCurrentUserSupervisor || isCurrentUserManager"
-            >
+            <p @click="toggleSidebar()">
               <router-link :to="{ name: 'Worksheet' }">
                 <kitsu-icon class="nav-icon" name="my-worksheet" />
                 {{ $t('doodle.my_worksheet') }}
@@ -343,6 +340,7 @@ aside section {
 
 .company-logo {
   width: 200px;
+
   img {
     border-radius: 5px;
   }
