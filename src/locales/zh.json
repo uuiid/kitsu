@@ -666,7 +666,8 @@
             "run_custom_action": "执行自定义操作",
             "set_estimations": "设定预算",
             "set_thumbnails": "设定最后一次预览为缩略图",
-            "subscribe": "订阅通知"
+            "subscribe": "订阅通知",
+            "openFolder": "打开文件所在位置"
         },
 
         "my_checks" : {
@@ -979,6 +980,8 @@
                 "is_set_preview_automated": "自动将新预览设置为实体缩略图",
                 "max_retakes": "最大重新提交任务次数",
                 "name": "名称",
+                "en_str": "拼音名称",
+                "code": "缩写",
                 "ratio": "宽高比",
                 "resolution": "分辨率",
                 "status": "状态",
@@ -986,7 +989,9 @@
                 "nb_episodes": "集数",
                 "homepage": "主页（显示的第一页）",
                 "style": "样式",
-                "type": "类型"
+                "type": "类型",
+                "path": "路径",
+                "auto_upload_path": "上传路径"
             },
 
             "metadata": {

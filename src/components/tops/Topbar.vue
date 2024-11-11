@@ -165,7 +165,7 @@
           }}
         </li>
         <li>
-          <a href="/doodle.exe" download="doodle.exe">
+          <a href="/doodle.exe" download="doodle.exe" v-if="!isElectron">
             {{ $t('main.download') }}
           </a>
         </li>
@@ -553,6 +553,9 @@ export default {
       return this.sectionOptions.find(
         option => option.value === this.currentProjectSection
       )?.value
+    },
+    isElectron() {
+      return navigator.userAgent.includes('Electron')
     }
   },
 

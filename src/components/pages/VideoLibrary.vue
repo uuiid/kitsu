@@ -18,14 +18,22 @@
             v-focus
           />
           <button
-            class="update-video-button"
+            :class="{
+              button: true,
+              'is-primary': false,
+              'update-video-button': true
+            }"
             @click="showNewModal"
             v-if="isElectron"
           >
             {{ $t('video_library.update_video') }}
           </button>
           <button
-            class="update-video-button"
+            :class="{
+              button: true,
+              'is-primary': false,
+              'update-video-button': true
+            }"
             @click="showBatchNewModal"
             v-if="isElectron"
           >
@@ -382,10 +390,8 @@ export default {
       } else if (action === 'delete') {
         this.modifyVideo(entity)
       } else if (action === 'openVideo') {
-        if (this.isElectron) {
-          const { shell } = require('electron')
-          shell.showItemInFolder(entity.path)
-        }
+        console.log(window.api)
+        window.api.showItemInFolder(entity.path)
       } else if (action === 'showBigImage') {
         this.modals.isImagePreviewDisplayed = true
         this.currentSelectVideo = entity
@@ -598,17 +604,7 @@ export default {
   border-radius: 1em;
   min-width: 3cm;
   min-height: 1.2cm;
-  background-color: var(--background);
-  border: 2px solid var(--background-selected);
   margin-right: 1em;
-
-  &:hover {
-    border-color: $green;
-  }
-
-  &:checked {
-    border-color: var(--background-selectable);
-  }
 }
 
 .update-video-error {

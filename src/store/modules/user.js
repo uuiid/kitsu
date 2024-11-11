@@ -75,7 +75,8 @@ import {
   SET_NOTIFICATION_COUNT,
   LOAD_OPEN_PRODUCTIONS_END,
   RESET_ALL,
-  SET_CURRENT_PRODUCTION
+  SET_CURRENT_PRODUCTION,
+  LOAD_DINGDING_COMPANY
 } from '@/store/mutation-types'
 
 const helpers = {
@@ -117,7 +118,7 @@ const initialState = {
   userFilters: {},
   userFilterGroups: {},
   todoListScrollPosition: 0,
-
+  dingDingCompany: [],
   timeSpentMap: {},
   timeSpentTotal: 0
 }
@@ -155,6 +156,7 @@ const getters = {
   isTodosLoading: state => state.isTodosLoading,
   isTodosLoadingError: state => state.isTodosLoadingError,
   todoListScrollPosition: state => state.todoListScrollPosition,
+  dingDingCompany: state => state.dingDingCompany,
 
   timeSpentMap: state => state.timeSpentMap,
   timeSpentTotal: state => state.timeSpentTotal
@@ -371,6 +373,7 @@ const actions = {
     return peopleApi.getContext().then(context => {
       commit(LOAD_USER_FILTERS_END, context.search_filters)
       commit(LOAD_USER_FILTER_GROUPS_END, context.search_filter_groups)
+      commit(LOAD_DINGDING_COMPANY, context.dingding_companys)
       commit(LOAD_PRODUCTION_STATUS_END, context.project_status)
       commit(LOAD_DEPARTMENTS_END, context.departments)
       commit(LOAD_STUDIOS_END, context.studios)
@@ -716,6 +719,9 @@ const mutations = {
         }
       })
     })
+  },
+  [LOAD_DINGDING_COMPANY](state, dingding_company) {
+    state.dingDingCompany = dingding_company
   },
 
   [SET_TIME_SPENT](state, timeSpent) {
