@@ -156,7 +156,14 @@
             :title="$t('menu.generate_playlist')"
           />
         </div>
-
+        <div
+          class="menu-item"
+          :title="$t('menu.openFolder')"
+          @click="$emit('openfolder')"
+          v-if="isElectron"
+        >
+          <folder-open :title="$t('menu.openFolder')" />
+        </div>
         <div
           v-if="
             (isCurrentViewAsset ||
@@ -804,7 +811,8 @@ import {
   CheckSquareIcon,
   LinkIcon,
   PlayCircleIcon,
-  XIcon
+  XIcon,
+  FolderOpen
 } from 'lucide-vue-next'
 import { mapGetters, mapActions } from 'vuex'
 
@@ -860,7 +868,8 @@ export default {
     SearchField,
     Spinner,
     ViewPlaylistModal,
-    XIcon
+    XIcon,
+    FolderOpen
   },
 
   emits: ['export-task', 'set-frame-thumbnail'],
@@ -957,6 +966,10 @@ export default {
       'taskTypeMap',
       'user'
     ]),
+
+    isElectron() {
+      return navigator.userAgent.includes('Electron')
+    },
 
     minimized() {
       return this.selectedBar === ''
@@ -1751,6 +1764,7 @@ export default {
 .clear-assignation-button {
   margin: auto;
 }
+
 .clear-assignation-button:focus,
 .clear-assignation-button:active,
 .clear-assignation-button:hover {

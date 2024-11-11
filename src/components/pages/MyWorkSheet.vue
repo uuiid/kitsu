@@ -2,13 +2,10 @@
   <div class="columns fixed-page">
     <div class="column main-column">
       <div class="todos page">
-        <div class="flexrow">
-          <combobox
-            class="flexrow-item"
-            :label="$t('doodle.company')"
-            :options="companyOptionList"
-            v-model="companyString"
-          />
+        <div class="flexrow" v-if="!isShow">
+          <h1 class="title">请先前往简介设置电话和公司</h1>
+        </div>
+        <div class="flexrow" v-else>
           <span class="flexrow-select-company" v-if="companyString != null">
             <div class="flexrow-item-selector" v-if="showAllUser()">
               <label class="label">
@@ -19,6 +16,7 @@
                 big
                 :label="$t('main.person')"
                 :people="personList"
+                ref="person-field"
                 v-model="person"
               />
             </div>
@@ -129,7 +127,7 @@
         />
       </div>
     </div>
-    <div class="column side-column">
+    <div class="column side-column" v-if="isCurrentUserManager">
       <div class="department-import flexcolumn mt2">
         <combobox-department
           class="flexrow-item export-btn"
@@ -253,36 +251,40 @@ export default {
       dutys: [],
       selectPersons: [],
       selectedDepartment: null,
-      filterPersonList: []
+      filterPersonList: [],
+      isShow: false
     }
   },
 
   async mounted() {
     this.updateActiveTab()
+    if (this.user && this.user.dingding_company_id && this.user.phone) {
+      this.isShow = true
+    }
     //--------------------
-    const action = 'getCompanyList'
-    const l_params = {}
-    this.$store
-      .dispatch(action, l_params)
-      .then(res => {
-        console.log('getCompanyList Done')
-        res.splice(0, 0, { id: null, name: '' })
-        res.forEach(element => {
-          element.label = element.name
-          element.value = element.id
-        })
-        this.companyOptionList = res
-      })
-      .catch(err => {
-        console.log('checkFileError')
-        console.error(err)
-        if (err.response) {
-          alert(err.response.text)
-        } else {
-          alert(err.message)
-        }
-      })
+    const res = []
+    //res = [...res, ...this.dingDingCompany]
+    this.dingDingCompany.forEach(element => {
+      const temp = {
+        id: element.id,
+        value: element.id,
+        name: element.name,
+        label: element.name
+      }
+      if (element.id === this.user.dingding_company_id) {
+        res.unshift(temp)
+        this.companyString = element.name
+      } else {
+        res.push(temp)
+      }
+    })
+    //res.splice(0, 0, { id: null, name: '' })
+    this.companyOptionList = res
     this.reload().then(() => {
+      if (this.isShow) {
+        this.person = this.user
+        this.$refs['person-field'].item = this.user
+      }
       if (!this.showAllUser()) {
         this.person = this.user
       }
@@ -313,7 +315,9 @@ export default {
       'activePeopleWithoutBot',
       'activePeople',
       'departmentMap',
-      'departments'
+      'departments',
+      'dingDingCompany',
+      'isCurrentUserManager'
     ]),
 
     notPendingTasks() {
@@ -327,7 +331,6 @@ export default {
     getUserId() {
       return this.person ? this.person.id : null
     },
-
     workTabs() {
       return [
         {

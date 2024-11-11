@@ -54,6 +54,22 @@
         <text-field :label="$t('people.fields.phone')" v-model="form.phone" />
         <div class="field">
           <label class="label">
+            {{ $t('doodle.company') }}
+          </label>
+          <span class="select is-medium">
+            <select v-model="form.dingding_company_id">
+              <option
+                :key="company.id"
+                :value="company.id"
+                v-for="company in dingDingCompany"
+              >
+                {{ company.name }}
+              </option>
+            </select>
+          </span>
+        </div>
+        <div class="field">
+          <label class="label">
             {{ $t('profile.timezone') }}
           </label>
           <span class="select is-medium">
@@ -632,6 +648,7 @@ export default {
         notifications_discord_userid: '',
         email: '',
         phone: '',
+        dingding_company_id: '',
         timezone: 'Europe/Paris',
         locale: 'French'
       },
@@ -674,9 +691,9 @@ export default {
       }
     }
   },
-
   watch: {
     user() {
+      console.log(this.user)
       Object.assign(this.form, this.user)
     }
   },
@@ -686,15 +703,14 @@ export default {
       'changePassword',
       'isSaveProfileLoading',
       'isSaveProfileLoadingError',
-      'user'
+      'user',
+      'dingDingCompany'
     ]),
-
     timezones() {
       return moment.tz.names().filter(timezone => {
         return timezone.indexOf('/') > 0 && timezone.indexOf('Etc') < 0
       })
     },
-
     twoFAsEnabled() {
       const twoFAsEnabled = []
       if (this.user.fido_enabled) {
@@ -711,7 +727,6 @@ export default {
       }
       return twoFAsEnabled
     },
-
     twoFAEnabled() {
       return (
         this.user.totp_enabled ||
@@ -719,7 +734,6 @@ export default {
         this.user.fido_enabled
       )
     },
-
     twoFAVerificationNeeded() {
       return (
         this.twoFA.TOTPNeedTwoFA ||
@@ -728,7 +742,6 @@ export default {
         this.twoFA.newRecoveryCodesNeedTwoFA
       )
     },
-
     twoFAButtonsDisabled() {
       return (
         this.twoFA.TOTPPreEnabled ||
@@ -740,7 +753,6 @@ export default {
         this.twoFA.newRecoveryCodesNeedTwoFA
       )
     },
-
     textValidateNewTwoFA() {
       if (this.twoFA.TOTPPreEnabled) {
         return this.$t('profile.two_factor_authentication.totp.button_validate')
@@ -750,7 +762,6 @@ export default {
         )
       } else return ''
     },
-
     textValidateTwoFA() {
       if (this.twoFA.TOTPNeedTwoFA) {
         return this.$t(
@@ -770,7 +781,6 @@ export default {
         )
       } else return ''
     },
-
     validateTwoFAIsDisable() {
       return (
         this.twoFA.TOTPNeedTwoFA ||
@@ -778,14 +788,12 @@ export default {
         this.twoFA.FIDONeedTwoFA
       )
     },
-
     placeholderInputEnableOTP() {
       if (this.twoFA.TOTPPreEnabled) return this.$t('login.fields.totp')
       else if (this.twoFA.emailOTPPreEnabled)
         return this.$t('login.fields.email_otp')
       return ''
     },
-
     textWrongOTPError() {
       if (this.twoFA.TOTPPreEnabled) return this.$t('login.wrong_totp')
       else if (this.twoFA.emailOTPPreEnabled)
@@ -811,7 +819,6 @@ export default {
       'uploadAvatar',
       'unregisterFIDO'
     ]),
-
     localeChanged() {
       lang.setLocale(this.form.locale)
     },

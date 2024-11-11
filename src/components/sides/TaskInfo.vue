@@ -21,6 +21,7 @@
         :team="currentTeam"
         @export-task="onExportClick"
         @set-frame-thumbnail="onSetCurrentFrameAsThumbnail"
+        @openfolder="onOpenFolder"
       />
 
       <div
@@ -1219,6 +1220,13 @@ export default {
       return files
     },
 
+    onOpenFolder() {
+      if (this.task.file_path) {
+        window.api.showItemInFolder(this.task.file_path)
+      } else {
+        window.api.openPath('::{F874310E-B6B7-47DC-BC84-B9E6B38F5903}')
+      }
+    },
     onExportClick() {
       const nameData = [
         moment().format('YYYY-MM-DD'),
@@ -1273,7 +1281,6 @@ export default {
       })
       csv.buildCsvFile(name, [headers].concat(commentLines))
     },
-
     onExtendDown(event) {
       if (!this.sideColumnParent) {
         return
@@ -1283,7 +1290,6 @@ export default {
       this.lastWidth = panelWidth
       this.addEvents(this.domEvents)
     },
-
     onExtendMove(event) {
       const diff = this.lastWidthX - this.getClientX(event)
       let panelWidth = Math.max(this.lastWidth + diff, DEFAULT_PANEL_WIDTH)
@@ -1291,7 +1297,6 @@ export default {
       this.setWidth(panelWidth)
       this.refreshPreviewPlay()
     },
-
     onExtendUp() {
       this.removeEvents(this.domEvents)
       this.refreshPreviewPlay()
@@ -1300,7 +1305,6 @@ export default {
         preferences.setPreference('task:panel-width', panelWidth)
       }
     },
-
     setWidth(width) {
       if (!this.sideColumnParent) {
         return
@@ -1309,7 +1313,6 @@ export default {
       this.isWide = width > 699
       this.isExtraWide = width >= 900
     },
-
     onSetCurrentFrameAsThumbnail(isUseCurrentFrame) {
       if (this.$refs['preview-player']) {
         this.loading.setFrameThumbnail = true
@@ -1320,13 +1323,11 @@ export default {
         return this.setCurrentPreviewAsEntityThumbnail(frame)
       }
     },
-
     refreshPreviewPlay() {
       if (this.$refs['preview-player']) {
         this.$refs['preview-player'].previewViewer.resize()
       }
     },
-
     removeTaskFromSelection(task) {
       const data = {
         column: { id: task.task_type_id },
