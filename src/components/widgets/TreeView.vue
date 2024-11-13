@@ -12,10 +12,25 @@
         <chevron-down :size="18" v-if="isOpened(item)" />
         <chevron-right :size="18" v-if="!isOpened(item)" />
       </span>
+      <dot :size="18" v-else />
       {{ item.label }}
       <span v-if="isSelected(item)">
+        <arrow-up
+          :size="18"
+          @click="orderUp"
+          v-if="isShowRoot && isShowArrowUp"
+        />
+        <arrow-down
+          :size="18"
+          @click="orderDown"
+          v-if="isShowRoot && isShowArrowDown"
+        />
         <plus :size="18" @click="addType" />
-        <minus :size="18" v-if="isCurrentUserManager" @click="deleteType" />
+        <minus
+          :size="18"
+          v-if="isCurrentUserManager && isShowRoot"
+          @click="deleteType"
+        />
       </span>
     </span>
     <ul v-if="isOpened(item) && item.children && item.children.length">
@@ -36,7 +51,15 @@
 </template>
 
 <script>
-import { ChevronDown, ChevronRight, Plus, Minus } from 'lucide-vue'
+import {
+  ChevronDown,
+  ChevronRight,
+  Plus,
+  Minus,
+  ArrowUp,
+  ArrowDown,
+  Dot
+} from 'lucide-vue'
 import { mapActions, mapGetters } from 'vuex'
 import MessageBox from '@/components/modals/MessageBox.vue'
 
@@ -47,7 +70,10 @@ export default {
     ChevronRight,
     Plus,
     Minus,
-    MessageBox
+    MessageBox,
+    ArrowUp,
+    ArrowDown,
+    Dot
   },
   props: {
     options: {
@@ -75,10 +101,17 @@ export default {
     ...mapGetters([
       'openedVideoTypes',
       'currentVideoType',
-      'isCurrentUserManager'
+      'isCurrentUserManager',
+      'originalVideoTypes'
     ]),
-    isShowMinus() {
+    isShowRoot() {
       return this.isCurrentUserManager && this.item.id !== 'all'
+    },
+    isShowArrowDown() {
+      return this.showArrowDown()
+    },
+    isShowArrowUp() {
+      return this.showArrowUp()
     }
   },
   mounted() {
@@ -87,13 +120,34 @@ export default {
     }
   },
   methods: {
-    ...mapActions(['setVideoTypeOpen', 'deleteVideoType']),
+    ...mapActions([
+      'setVideoTypeOpen',
+      'deleteVideoType',
+      'modifyVideoTypeOrder'
+    ]),
     toggle(item) {
       this.setVideoTypeOpen(item)
     },
     isSelected(entity) {
       if (this.currentVideoType) {
         return this.currentVideoType.id === entity.id
+      } else {
+        return false
+      }
+    },
+    showArrowDown() {
+      if (this.isShowRoot && this.$parent.item.children.length > 0) {
+        return (
+          this.$parent.item.children[this.$parent.item.children.length - 1]
+            .id !== this.item.id
+        )
+      } else {
+        return false
+      }
+    },
+    showArrowUp() {
+      if (this.isShowRoot && this.$parent.item.children.length > 0) {
+        return this.$parent.item.children[0].id !== this.item.id
       } else {
         return false
       }
@@ -105,7 +159,30 @@ export default {
       this.$store.commit('SET_CURRENT_VIDEO_TYPE', selectedItem)
       this.$emit('onSelectedChange', selectedItem)
     },
-
+    orderUp() {
+      this.modifyVideoTypeOrder({
+        type: this.item,
+        other: this.originalVideoTypes.get(
+          this.$parent.item.children[
+            this.$parent.item.children.findIndex(
+              item => item.id === this.item.id
+            ) - 1
+          ].id
+        )
+      })
+    },
+    orderDown() {
+      this.modifyVideoTypeOrder({
+        type: this.item,
+        other: this.originalVideoTypes.get(
+          this.$parent.item.children[
+            this.$parent.item.children.findIndex(
+              item => item.id === this.item.id
+            ) + 1
+          ].id
+        )
+      })
+    },
     // 递归清除所有项的选中状态
     clearAllSelections(items) {
       items.forEach(item => {

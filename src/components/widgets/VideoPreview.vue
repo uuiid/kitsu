@@ -66,6 +66,9 @@
           <li v-if="isElectron" @click="menuAction('openVideo')">
             {{ $t('video_library.open_video') }}
           </li>
+          <li v-if="isElectron" @click="menuAction('modifyThumbnail')">
+            {{ $t('video_library.modify_thumbnail') }}
+          </li>
           <li @click="menuAction('showBigImage')">
             {{ $t('video_library.show_big_image') }}
           </li>
@@ -142,7 +145,8 @@ export default {
       isShowMenu: false,
       menuLeft: 0,
       menuTop: 0,
-      timerId: null
+      timerId: null,
+      refreshKey: 0
     }
   },
 
@@ -155,12 +159,18 @@ export default {
 
     thumbnailPath() {
       const previewFileId = this.previewFileId || this.entity.preview_file_id
-      return '/api/doodle/pictures/thumbnails/' + previewFileId + '.png'
+      return (
+        '/api/doodle/pictures/thumbnails/' +
+        previewFileId +
+        '.png?t' +
+        new Date().getTime() +
+        this.refreshKey
+      )
     },
 
     thumbnailKey() {
       const previewFileId = this.previewFileId || this.entity.preview_file_id
-      return `preview-${previewFileId}`
+      return `preview-${previewFileId + this.refreshKey.toString()}`
     }
   },
   beforeDestroy() {
@@ -194,7 +204,7 @@ export default {
     },
     menuAction(action) {
       this.$emit('onMenuAction', this.entity, action)
-      this.isShowMenu = false
+      this.closeMenu()
     },
     closeMenu() {
       this.isShowMenu = false
@@ -284,11 +294,13 @@ span.view-icon {
 .menu {
   position: fixed; /* 菜单固定在页面的顶层 */
   background-color: var(--background);
+  max-height: 160px;
   padding: 10px;
   z-index: 1000; /* 确保菜单在最顶层显示 */
   width: auto;
   box-shadow: 0 2px 10px rgba(0, 0, 0, 0.1);
   border-radius: 10px;
+  overflow-y: auto;
 }
 
 .menu ul {
