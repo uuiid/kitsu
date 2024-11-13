@@ -56,7 +56,6 @@
                 :item="item"
                 @onSelectedChange="setSelected"
                 @onAddType="showNewTypeModal"
-                @onToggle="onToggle"
               ></tree-view>
             </div>
           </div>
@@ -95,6 +94,7 @@
                   >
                     <div class="card" :title="entity.notes">
                       <video-preview
+                        :ref="entity.id"
                         :empty-height="100"
                         :empty-width="150"
                         :height="100"
@@ -105,7 +105,10 @@
                         @onMenuAction="menuAction"
                       />
                       <div class="item-description flexrow">
-                        <div class="entity-name" :title="entity.label">
+                        <div
+                          class="entity-name"
+                          :title="entityNameTitle(entity)"
+                        >
                           {{ entity.label }}
                         </div>
                       </div>
@@ -136,10 +139,17 @@
       <edit-video-library-add-type-modal
         ref="edit_video_library_add_type_modal"
         :active="modals.isNewTypeDisplayed"
-        :video-type-id="currentVideoType.id"
+        :parent-video-type="currentVideoType"
         :video-type="ancestorLabels"
         @cancel="modals.isNewTypeDisplayed = false"
         @onConfirm="confirmNewVideoType"
+      />
+      <edit-video-asset-modal
+        ref="edit_video_asset_modal"
+        :active="modals.isEditVideoAssetDisplayed"
+        :asset-to-edit="currentSelectVideo"
+        @cancel="modals.isEditVideoAssetDisplayed = false"
+        @onConfirm="confirmEditVideo"
       />
       <image-preview-modal
         ref="image_preview_modal"
@@ -162,6 +172,7 @@ import EditVideoLibraryModal from '@/components/modals/EditVideoLibraryModal.vue
 import EditVideoLibraryBatchUpdateModal from '@/components/modals/EditVideoLibraryBatchUpdateModal.vue'
 import EditVideoLibraryAddTypeModal from '@/components/modals/EditVideoLibraryAddTypeModal.vue'
 import ImagePreviewModal from '@/components/modals/ImagePreviewModal.vue'
+import EditVideoAssetModal from '@/components/modals/EditVideoAssetModal.vue'
 
 export default {
   name: 'video-library',
@@ -174,7 +185,8 @@ export default {
     EditVideoLibraryModal,
     EditVideoLibraryBatchUpdateModal,
     EditVideoLibraryAddTypeModal,
-    ImagePreviewModal
+    ImagePreviewModal,
+    EditVideoAssetModal
   },
 
   data() {
@@ -228,6 +240,7 @@ export default {
         isBatchNewDisplayed: false,
         isNewTypeDisplayed: false,
         isImagePreviewDisplayed: false,
+        isEditVideoAssetDisplayed: false,
         isDisplayedUpdateError: false
       },
       selectType: {},
@@ -248,7 +261,6 @@ export default {
     this.rightPanelWidth = window.innerWidth - this.leftPanelWidth - 10
     window.addEventListener('resize', this.handleResize)
   },
-
   beforeDestroy() {
     window.removeEventListener('resize', this.handleResize)
     window.removeEventListener('keydown', this.handleKeydown)
@@ -274,14 +286,16 @@ export default {
     searchField() {
       return this.$refs['search-field']
     },
-
     sortedSharedAssetsByType() {
       this.getAllChildrenId(this.currentVideoType)
       return this.videos.filter(v => {
         return (
           (this.currentTypeAllId.includes(v.parent_id) ||
             this.currentVideoType.id === 'all') &&
-          v.label.indexOf(this.keyWord) !== -1
+          (v.label.indexOf(this.keyWord) !== -1 ||
+            this.originalVideoTypes
+              .get(v.parent_id)
+              .label.indexOf(this.keyWord) !== -1)
         )
       })
     }
@@ -304,7 +318,8 @@ export default {
       'clearSelectedVideos',
       'modifyVideos',
       'setVideoTypeOpen',
-      'resetSelectedVideos'
+      'resetSelectedVideos',
+      'modifyVideoActive'
     ]),
     handleResize() {
       this.rightPanelWidth = window.innerWidth - this.leftPanelWidth - 10
@@ -312,7 +327,8 @@ export default {
     handleKeyup(event) {
       if (event.key === 'Shift') {
         this.isShiftSelected = false
-        this.currentSelectVideo = this.shiftEndSelection //[...this.selectedVideos.entries()].at(-1)[1]
+        if (this.shiftEndSelection)
+          this.currentSelectVideo = this.shiftEndSelection //[...this.selectedVideos.entries()].at(-1)[1]
       }
     },
     handleKeydown(event) {
@@ -320,14 +336,18 @@ export default {
         this.isShiftSelected = true
       }
     },
-    async refresh(silent = false) {
-      this.loading.sharedAssets = !silent
+    async refresh() {
       try {
         await this.loadVideos()
+        return true
       } catch (error) {
-        this.errors.sharedAssets = true
+        return error
       }
-      this.loading.sharedAssets = false
+    },
+    entityNameTitle(entity) {
+      return (
+        this.originalVideoTypes.get(entity.parent_id).label + '/' + entity.label
+      )
     },
     confirmNewVideo(video) {
       console.log(video)
@@ -341,27 +361,43 @@ export default {
         this.newVideosType(videoType)
       }
     },
+    async confirmEditVideo(video) {
+      this.modifyVideo(video).then(() => {
+        this.refresh().then(() => {
+          this.$refs[video.id][0].refreshKey += 1
+        })
+      })
+    },
     checkElectron() {
       this.setIsElectron(navigator.userAgent.includes('Electron'))
     },
+
     listToTree(data) {
       let out_data = []
       const tree = []
-      if (data.length > 0) {
+      const root = []
+      if (data.size > 0) {
         const lookup = {}
-        data.forEach(item => {
-          lookup[item.id] = { ...item, children: [] }
+        data.forEach((item, key) => {
+          lookup[key] = { ...item, children: [] }
         })
-        data.forEach(item => {
+        data.forEach((item, key) => {
           if (item.parent_id) {
             if (lookup[item.parent_id]) {
-              lookup[item.parent_id].children.push(lookup[item.id])
+              lookup[item.parent_id].children.push(lookup[key])
             }
           } else {
-            tree.push(lookup[item.id])
+            root.push(key)
           }
         })
+        Object.values(lookup).forEach(node => {
+          node.children.sort((a, b) => (a.order || 0) - (b.order || 0))
+        })
+        root.forEach(item => {
+          tree.push(lookup[item])
+        })
       }
+      tree.sort((a, b) => (a.order || 0) - (b.order || 0))
       out_data = [
         {
           label: '所有',
@@ -388,9 +424,8 @@ export default {
           console.log(error)
         }
       } else if (action === 'delete') {
-        this.modifyVideo(entity)
+        this.modifyVideoActive(entity)
       } else if (action === 'openVideo') {
-        console.log(window.api)
         window.api.showItemInFolder(entity.path)
       } else if (action === 'showBigImage') {
         this.modals.isImagePreviewDisplayed = true
@@ -400,6 +435,8 @@ export default {
         //console.log('deleteSelected')
       } else if (action === 'clearSelected') {
         this.clearSelectedVideos()
+      } else if (action === 'modifyThumbnail') {
+        this.modals.isEditVideoAssetDisplayed = true
       }
     },
     toggleEntity(entity) {
@@ -418,7 +455,6 @@ export default {
           } else {
             tempSelected = this.sortedSharedAssetsByType.slice(end, start + 1)
           }
-          this
           this.resetSelectedVideos(tempSelected)
         }
       } else {
@@ -426,11 +462,11 @@ export default {
         this.setVideoSelection(entity)
       }
     },
-    onToggle(item) {
-      this.originalVideoTypes.forEach(i => {
-        if (i.id === item.id) i.isOpen = item.isOpen
-      })
-    },
+    // onToggle(item) {
+    //   this.originalVideoTypes.forEach(i => {
+    //     //if (i.id === item.id) i.isOpen = item.isOpen
+    //   })
+    // },
     setSelected(item) {},
     isSelected(entity) {
       return this.selectedVideos.has(entity.id)
@@ -526,6 +562,7 @@ export default {
       }
     },
     showNewTypeModal() {
+      console.log(this.currentVideoType)
       this.modals.isNewTypeDisplayed = true
       this.$refs.edit_video_library_add_type_modal.videoTypeToCreat.type =
         this.ancestorLabels

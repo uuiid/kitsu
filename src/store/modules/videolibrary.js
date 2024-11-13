@@ -2,7 +2,7 @@ import videolibraryApi from '../api/videolibrary'
 
 const initialState = {
   videos: [],
-  originalVideoTypes: [],
+  originalVideoTypes: new Map(),
   videoTypes: {},
   editVideo: {},
   editVideos: [],
@@ -10,7 +10,9 @@ const initialState = {
   isElectron: false,
   currentVideoType: {},
   selectedVideos: new Map(),
-  openedVideoTypes: new Map()
+  openedVideoTypes: new Map(),
+  videoExtensions: ['mp4', 'mkv', 'rmvb'],
+  imageExtensions: ['jpg', 'jpeg', 'png']
 }
 const helpers = {
   getFileFromPath(filePath) {
@@ -42,7 +44,7 @@ const mutations = {
     state.videoTypes = videoTypes
   },
   SET_ORIGINAL_VIDEO_TYPES(state, videoTypes) {
-    state.originalVideoTypes = videoTypes
+    state.originalVideoTypes = new Map(videoTypes.map(item => [item.id, item]))
   },
   NEW_VIDEO(state, video) {
     state.editVideo = video
@@ -53,12 +55,12 @@ const mutations = {
     state.videos = [...state.videos, ...videos]
   },
   NEW_VIDEOS_TYPE(state, type) {
-    state.originalVideoTypes.push(type)
+    state.originalVideoTypes.set(type.id, type)
+    state.originalVideoTypes = new Map(state.originalVideoTypes)
   },
   DELETE_VIDEO_TYPE(state, type) {
-    state.originalVideoTypes = state.originalVideoTypes.filter(
-      item => item.id !== type.id
-    )
+    state.originalVideoTypes.delete(type.id)
+    state.originalVideoTypes = new Map(state.originalVideoTypes)
   },
   DELETE_VIDEO(state, video) {
     state.videos = state.videos.filter(item => item.id !== video.id)
@@ -111,6 +113,12 @@ const mutations = {
       state.openedVideoTypes.set(videoType.id, videoType)
       state.openedVideoTypes = new Map(state.openedVideoTypes) // for reactivity
     }
+  },
+  MODIFY_VIDEO_TYPE_ORDER(state, types) {
+    types.forEach(type => {
+      state.originalVideoTypes.set(type.id, type)
+    })
+    state.originalVideoTypes = new Map(state.originalVideoTypes)
   }
 }
 
@@ -122,7 +130,9 @@ const getters = {
   isElectron: state => state.isElectron,
   openedVideoTypes: state => state.openedVideoTypes,
   currentVideoType: state => state.currentVideoType,
-  selectedVideos: state => state.selectedVideos
+  selectedVideos: state => state.selectedVideos,
+  videoExtensions: state => state.videoExtensions,
+  imageExtensions: state => state.imageExtensions
 }
 const actions = {
   loadVideos({ commit }) {
@@ -140,11 +150,13 @@ const actions = {
     const path = require('path')
     return videolibraryApi.newVideos(videos).then(res => {
       const imageUploadPromises = res.map(re => {
-        return helpers.getFileFromPath(re.path).then(data => {
-          re.data = data
-          re.filetype = 'image/' + path.extname(re.path).slice(1)
-          return videolibraryApi.addImage(re).then(() => {})
-        })
+        if (!state.videoExtensions.includes(path.extname(re.path).slice(1))) {
+          return helpers.getFileFromPath(re.path).then(data => {
+            re.data = data
+            re.filetype = 'image/' + path.extname(re.path).slice(1)
+            return videolibraryApi.addImage(re).then(() => {})
+          })
+        }
       })
       return Promise.all(imageUploadPromises)
         .then(() => {
@@ -184,9 +196,21 @@ const actions = {
   modifyVideo({ commit }, video) {
     return videolibraryApi
       .modifyVideo(video)
-      .then(() => {
-        commit('SET_VIDEO_SELECTION', video)
-        commit('DELETE_VIDEO', video)
+      .then(res => {
+        if (video.active) {
+          if (video.upimage) {
+            return helpers.getFileFromPath(video.upimage.path).then(data => {
+              res.data = data
+              res.filetype = video.upimage.type
+              return videolibraryApi.addImage(res).then(re => {
+                return re
+              })
+            })
+          }
+        } else {
+          commit('SET_VIDEO_SELECTION', video)
+          commit('DELETE_VIDEO', video)
+        }
       })
       .catch(err => {
         console.log(err)
@@ -199,6 +223,17 @@ const actions = {
       commit('CLEAR_SELECTED_VIDEOS')
       commit('DELETE_VIDEOS', videos)
     })
+  },
+  modifyVideoActive({ commit }, video) {
+    return videolibraryApi
+      .modifyVideoActive(video)
+      .then(() => {
+        commit('SET_VIDEO_SELECTION', video)
+        commit('DELETE_VIDEO', video)
+      })
+      .catch(err => {
+        return err
+      })
   },
   deleteVideo({ commit }, video) {
     videolibraryApi.deleteVideo(video).then(() => {
@@ -261,6 +296,12 @@ const actions = {
       .catch(err => {
         return err
       })
+  },
+  modifyVideoTypeOrder({ commit }, { type, other }) {
+    return videolibraryApi.modifyVideoTypeOrder(type, other).then(res => {
+      commit('MODIFY_VIDEO_TYPE_ORDER', res)
+      return res
+    })
   }
 }
 

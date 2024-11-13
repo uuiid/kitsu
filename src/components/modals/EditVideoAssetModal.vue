@@ -9,25 +9,27 @@
     <div class="modal-content">
       <div class="box">
         <h1 class="title" v-if="assetToEdit && assetToEdit.id">
-          {{ $t('assets.edit_title') }} {{ assetToEdit.name }}
+          {{ $t('assets.edit_title') }}
         </h1>
         <h1 class="title" v-else>
-          {{ $t('video_library.new_video_type') }}
+          {{ $t('video_library.new_video') }}
         </h1>
         <form @submit.prevent>
           <text-field
-            ref="typeField"
-            :label="$t('video_library.current_parent_type')"
-            :readonly="true"
-            v-model="videoTypeToCreat.type"
-          />
-          <text-field
             ref="nameField"
             :label="$t('assets.fields.name')"
-            v-model="videoTypeToCreat.label"
-            v-focus
+            v-model="asset_to_import.label"
           />
         </form>
+        <label class="label">{{ $t('video_library.thumbnail') }}</label>
+        <list-view
+          ref="image"
+          :is-active-image="true"
+          :errored="form.image_errored"
+          :asset-to-edit="asset_to_import"
+          @setError="value => (form.image_errored = value)"
+          @customEvents="getFiles"
+        ></list-view>
         <div class="has-text-right">
           <a
             :class="{
@@ -55,12 +57,18 @@
 </template>
 
 <script>
+import { modalMixin } from '@/components/modals/base_modal'
 import TextField from '@/components/widgets/TextField.vue'
+import ListView from '@/components/widgets/ListView.vue'
 
 export default {
-  name: 'edit-video-library-add-type-modal',
+  name: 'edit-video-asset-modal',
+
+  mixins: [modalMixin],
+
   components: {
-    TextField
+    TextField,
+    ListView
   },
 
   props: {
@@ -91,84 +99,51 @@ export default {
     assetToEdit: {
       type: Object,
       default: () => {}
-    },
-    videoType: {
-      type: String,
-      default: ''
-    },
-    parentVideoType: {
-      type: Object,
-      default: () => {}
-    }
-  },
-  data() {
-    return {
-      form: {
-        name: '',
-        description: '',
-        source_id: null,
-        data: {
-          resolution: ''
-        },
-        is_shared: 'false'
-      },
-      assetSuccessText: '',
-      videoTypeToCreat: {
-        id: '',
-        label: '',
-        type: this.videoType,
-        parent_id: '',
-        order: 0,
-        isOpen: false,
-        isSelect: false
-      }
     }
   },
 
+  data() {
+    return {
+      form: {
+        image_errored: false,
+        name_error_text: '',
+        source_id: null
+      },
+      asset_to_import: {},
+      assetSuccessText: ''
+      //editVideos:[], /*{"label": "string","parent_id": "1c6ca187-e61f-4301-8dcb-0e9749e89eef","id": "497f6eca-6276-4993-bfeb-53cbbbba6f08","path": "string",notes": "string","active": true}*/
+    }
+  },
   mounted() {
     this.assetSuccessText = ''
   },
 
-  computed: {
-    resolution() {
-      return this.assetToEdit.data?.resolution || ''
-    }
-  },
+  computed: {},
 
   methods: {
     getFiles(files) {},
+
     onCancel() {
       this.$emit('cancel')
+      this.$refs.image.isShow = true
     },
 
-    confirmClicked() {
-      if (this.videoTypeToCreat.label) {
-        if (this.parentVideoType.children.length > 0) {
-          this.videoTypeToCreat.order =
-            this.parentVideoType.children[
-              this.parentVideoType.children.length - 1
-            ].order + 1
-        } else {
-          this.videoTypeToCreat.order = 0
-        }
-        if (this.parentVideoType.id === 'all') {
-          this.videoTypeToCreat.parent_id = ''
-        } else {
-          this.videoTypeToCreat.parent_id = this.parentVideoType.id
-        }
-        this.$emit('onConfirm', this.videoTypeToCreat)
-        this.clearData()
+    checkData(datas) {
+      if (datas.length === 0) {
+        this.form.image_errored = true
       }
     },
-    clearData() {
-      this.videoTypeToCreat = {
-        id: '',
-        label: '',
-        type: this.videoType,
-        parent_id: this.videoTypeId,
-        isOpen: false,
-        isSelect: false
+    confirmClicked() {
+      //this.checkData(this.$refs.image.images)
+      this.asset_to_import.upimage = this.$refs.image.images[0]
+      if (!this.form.image_errored) {
+        this.$emit('onConfirm', this.asset_to_import)
       }
+    }
+  },
+  watch: {
+    assetToEdit(value) {
+      this.asset_to_import = Object.assign({}, value)
     }
   }
 }
@@ -182,6 +157,10 @@ export default {
 .is-danger {
   color: #ff3860;
   font-style: italic;
+}
+
+.list-view {
+  min-height: 150px;
 }
 
 .info-message {

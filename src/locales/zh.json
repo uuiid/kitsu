@@ -1623,7 +1623,8 @@
             "clear_list": "清除列表",
             "clear_selected_video": "清除所有选择",
             "delete_selected": "删除所有选择",
-            "warning": "警告"
+            "warning": "警告",
+            "modify_thumbnail": "修改素材信息"
 
 
         },
