@@ -59,7 +59,6 @@ const client = {
     })
   },
   ppostFileData(path, file) {
-    console.log(file.filetype)
     return new Promise((resolve, reject) => {
       superagent
         .post(path)

@@ -32,6 +32,18 @@ export default {
       label: video.label,
       path: video.path,
       notes: video.notes,
+      active: video.active
+    }
+    const path = `/api/doodle/model_library/assets/${video.id}`
+    return client.ppost(path, tempVideo)
+  },
+  modifyVideoActive(video) {
+    const tempVideo = {
+      id: video.id,
+      parent_id: video.parent_id,
+      label: video.label,
+      path: video.path,
+      notes: video.notes,
       active: !video.active
     }
     const path = `/api/doodle/model_library/assets/${video.id}`
@@ -56,7 +68,8 @@ export default {
     const data = {
       label: type.label,
       parent_id: type.parent_id,
-      id: type.id
+      id: type.id,
+      order: type.order
     }
     const path = `/api/doodle/model_library/assets_tree`
     return client.ppost(path, data)
@@ -71,7 +84,23 @@ export default {
   },
   addImage(image) {
     const path = `/api/doodle/pictures/${image.id}`
-    console.log(path)
     return client.ppostFileData(path, image)
+  },
+  modifyVideoTypeOrder(type, other) {
+    const data = []
+    data.push({
+      label: type.label,
+      parent_id: type.parent_id,
+      id: type.id,
+      order: other.order
+    })
+    data.push({
+      label: other.label,
+      parent_id: other.parent_id,
+      id: other.id,
+      order: type.order
+    })
+    const path = `/api/doodle/model_library/assets_tree`
+    return client.ppatch(path, data)
   }
 }

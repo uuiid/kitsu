@@ -8,7 +8,9 @@
     @focus="handleFocus"
     @blur="handleBlur"
   >
-    <span class="placeholder" v-if="isShowPlaceholder">{{ placeholder }}</span>
+    <span class="placeholder" v-if="isShowPlaceholder && !assetToEdit">{{
+      placeholder
+    }}</span>
     <ul v-if="isActiveText">
       <li v-for="(item, index) in options" :key="index">
         <span
@@ -40,15 +42,16 @@
         <div class="preview">{{ video.name }}</div>
       </div>
     </div>
-    <div class="parent_preview" v-if="images.length > 0">
-      <div v-for="(image, index) in images" :key="index">
-        <img
-          class="img-preview"
-          :src="getURL(image)"
-          v-if="isActiveImage"
-          alt=""
-        />
+    <div class="parent_preview" v-if="isActiveImage">
+      <div v-for="(image, index) in images" :key="index" v-if="!isShow">
+        <img class="img-preview" :src="getURL(image)" alt="" />
       </div>
+      <img
+        class="img-preview"
+        :src="thumbnailPath"
+        v-if="isActiveImage && isShow"
+        alt=""
+      />
     </div>
     <div class="error" v-if="errored">
       {{ errorText }}
@@ -56,6 +59,8 @@
   </div>
 </template>
 <script>
+import { mapGetters } from 'vuex'
+
 export default {
   name: 'list-view',
   props: {
@@ -102,6 +107,10 @@ export default {
     anyFileType: {
       type: Boolean,
       default: false
+    },
+    assetToEdit: {
+      type: Object,
+      default: () => {}
     }
   },
   data() {
@@ -114,7 +123,8 @@ export default {
       anyFile: [],
       placeholder: '拖入文件或Ctrl+V',
       isShowPlaceholder: true,
-      currentItem: this.initData
+      currentItem: this.initData,
+      isShow: true
     }
   },
   mounted() {
@@ -123,6 +133,22 @@ export default {
   beforeDestroy() {
     window.removeEventListener('paste', this.onPastes)
   },
+  computed: {
+    ...mapGetters(['videoExtensions', 'imageExtensions']),
+    thumbnailPath() {
+      if (this.assetToEdit) {
+        const previewFileId = this.assetToEdit.id
+        return (
+          '/api/doodle/pictures/thumbnails/' +
+          previewFileId +
+          '.png?t' +
+          new Date().getTime()
+        )
+      } else {
+        return ''
+      }
+    }
+  },
   methods: {
     toggle(item) {
       //this.selectItem(item)
@@ -130,13 +156,14 @@ export default {
     },
     init() {
       this.isShowPlaceholder = true
+      this.isShow = true
       this.images = []
       this.videos = []
       this.files = []
     },
     handleData(files) {
-      console.log(files)
       this.isShowPlaceholder = false
+      this.isShow = false
       if (this.anyFileType) {
         this.videos = files
       } else if (this.isActiveImage && this.isImage(files[0])) {
@@ -164,9 +191,8 @@ export default {
     formatImageFile(filePath) {
       const path = require('path')
       if (
-        filePath.endsWith('.jpg') ||
-        filePath.endsWith('.jpeg') ||
-        filePath.endsWith('.png')
+        this.imageExtensions.includes(path.extname(filePath).slice(1)) ||
+        this.videoExtensions.includes(path.extname(filePath).slice(1))
       ) {
         return {
           name: path.basename(filePath, path.extname(filePath)),
@@ -202,9 +228,7 @@ export default {
     handleDragEnter(event) {
       event.preventDefault()
       event.dataTransfer.dropEffect = 'copy'
-      const items = event.dataTransfer.files
-      console.log(items)
-      //this.$emit('setError', false)
+      this.$emit('setError', false)
     },
     handleDragOver(event) {
       event.preventDefault()
@@ -321,8 +345,7 @@ export default {
 
 .img-preview {
   display: flex;
-  max-height: 120px;
-  max-width: 120px;
+  max-width: 200px;
   align-items: center;
   justify-content: center;
 }
