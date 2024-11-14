@@ -57,7 +57,7 @@
               selected:
                 selectionGrid && selectionGrid[i] ? selectionGrid[i][0] : false
             }"
-            @click="onLineClicked(i, $event)"
+            @click="onLineClicked(entry, $event)"
           >
             <td
               class="datatable-row-header datatable-row-header--nobd"
@@ -67,8 +67,8 @@
                 <input
                   type="checkbox"
                   class="mr1"
-                  :checked="entry.checked ? entry.checked : false"
-                  @input="event => onCheckChanged(entry, event)"
+                  v-model="entry.checked"
+                  @click.stop
                 />
                 <production-name-cell
                   :is-tooltip="true"
@@ -245,7 +245,6 @@ export default {
       const people = personIds.map(id => this.personMap.get(id))
       return sortPeople(people)
     },
-
     setScrollPosition(scrollPosition) {
       if (this.$refs.body) {
         this.$refs.body.scrollTop = scrollPosition
@@ -265,8 +264,9 @@ export default {
       }
     },
 
-    onLineClicked(i, event) {
-      console.log('validation-' + i + '-0')
+    onLineClicked(entry, event) {
+      entry.checked = !entry.checked
+      this.$forceUpdate()
     },
 
     getTaskType(entry) {
@@ -336,6 +336,7 @@ export default {
     },
 
     onCheckChanged(entry, event) {
+      console.log(entry.id)
       entry.checked = event.target.checked
     },
 

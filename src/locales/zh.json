@@ -1676,7 +1676,8 @@
             "batch-export-list":"导出人员列表",
             "batch-export":"批量导出",
             "select-person-tip":"无用户数据",
-            "filter-person":"筛选部门人员"
+            "filter-person":"筛选部门人员",
+            "duration_cue_word" : "回车或点击空白处确认"
         }
     }
 }
