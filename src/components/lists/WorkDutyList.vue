@@ -10,7 +10,7 @@
               ref="th-name"
               :style="{ left: colNamePosX }"
             >
-              {{ $t('tasks.fields.entity') }}
+              {{ $t('people.persons') }}
             </th>
             <th scope="col" class="episode">
               {{ $t('doodle.type') }}
@@ -39,21 +39,24 @@
               selected:
                 selectionGrid && selectionGrid[i] ? selectionGrid[i][0] : false
             }"
-            @click="onLineClicked(i, $event)"
+            @click="onLineClicked(i)"
           >
             <td
               class="name datatable-row-header"
               :style="{ left: colNamePosX }"
             >
               <div class="flexrow">
-                <entity-thumbnail
-                  :empty-width="60"
-                  :empty-height="40"
-                  :entity="{ preview_file_id: entry.entity_preview_file_id }"
+                <people-avatar
+                  class="flexrow-item"
+                  :font-size="14"
+                  :key="person.id"
+                  :person="person"
+                  :size="30"
+                  :with-link="false"
                 />
-                <router-link class="entity-name" :to="entityPath(entry)">
-                  {{ entry.full_entity_name }}
-                </router-link>
+                <span class="entity-name">
+                  {{ person.full_name }}
+                </span>
               </div>
             </td>
 
@@ -108,16 +111,16 @@ import { descriptorMixin } from '@/components/mixins/descriptors'
 import { PAGE_SIZE } from '@/lib/pagination'
 import { formatSimpleDate } from '@/lib/time'
 
-import EntityThumbnail from '@/components/widgets/EntityThumbnail'
 import DescriptionCell from '@/components/cells/DescriptionCell'
 import TableInfo from '@/components/widgets/TableInfo'
+import PeopleAvatar from '@/components/widgets/PeopleAvatar.vue'
 
 export default {
   name: 'work-duty-list',
   mixins: [formatListMixin, selectionListMixin, descriptorMixin],
 
   components: {
-    EntityThumbnail,
+    PeopleAvatar,
     DescriptionCell,
     TableInfo
   },
@@ -150,6 +153,10 @@ export default {
     emptyText: {
       type: String,
       default: ''
+    },
+    person: {
+      type: Object,
+      default: () => {}
     }
   },
 
@@ -196,8 +203,8 @@ export default {
 
   methods: {
     getDutyType(entry) {
-      if (entry.type == 0) return this.$t('doodle.overtime')
-      if (entry.type == 1) return this.$t('doodle.leave')
+      if (entry.type === 0) return this.$t('doodle.overtime')
+      if (entry.type === 1) return this.$t('doodle.leave')
       return ''
     },
 
@@ -220,7 +227,7 @@ export default {
       }
     },
 
-    onLineClicked(i, event) {
+    onLineClicked(i) {
       console.log('validation-' + i + '-0')
     },
 
@@ -287,8 +294,8 @@ export default {
 }
 
 .name {
-  width: 300px;
-  min-width: 300px;
+  width: 200px;
+  min-width: 200px;
 }
 
 .description {

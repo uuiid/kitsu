@@ -9,7 +9,7 @@
               class="production datatable-row-header datatable-row-header--nobd"
               ref="th-prod"
             >
-              {{ $t('tasks.fields.production') }}
+              {{ $t('library.fields.production') }}
             </th>
             <th
               scope="col"
@@ -85,7 +85,7 @@
               selected:
                 selectionGrid && selectionGrid[i] ? selectionGrid[i][0] : false
             }"
-            @click="onLineClicked(i, $event)"
+            @click="onLineClicked(entry, $event)"
             v-show="entry && !entry.visible"
           >
             <td
@@ -93,9 +93,9 @@
               scope="row"
             >
               <production-name-cell
+                class="entity-name"
                 :is-tooltip="true"
                 :entry="productionMap.get(entry.project_id)"
-                :only-avatar="true"
               />
             </td>
             <task-type-cell
@@ -115,7 +115,7 @@
                   :entity="{ preview_file_id: entry.entity_preview_file_id }"
                 />
                 <router-link class="entity-name" :to="entityPath(entry)">
-                  {{ entry.full_entity_name }}
+                  {{ entry.entity_name }}
                 </router-link>
               </div>
             </td>
@@ -128,6 +128,7 @@
 
             <description-cell
               class="description"
+              :title="entry.entity_description"
               :entry="{ description: entry.entity_description }"
               v-if="isDescriptionPresent && !isToCheck"
             />
@@ -142,12 +143,13 @@
                 />
               </div>
             </td>
-            <td class="estimation">
+            <td class="estimation" :title="$t('doodle.duration_cue_word')">
               <input
                 class="input-editor"
                 @keyup.enter="event => durationDate(event, entry)"
                 min="0"
                 :value="getDurationValue(entry.duration)"
+                @focusout="event => durationDate(event, entry)"
               />
             </td>
             <td class="start-date" v-if="!isToCheck">
@@ -162,7 +164,26 @@
             <td class="user-remark">
               {{ entry.user_remark }}
             </td>
-            <td class="actions has-text-right">
+            <td class="user-remark">
+              {{ entry.user_remark }}
+            </td>
+            <td class="user-remark">
+              {{ entry.entity_data.pin_yin_ming_cheng }}
+            </td>
+            <td class="normal">
+              {{ entry.entity_data.ban_ben }}
+            </td>
+            <td class="normal">
+              {{ entry.entity_data.ji_shu }}
+            </td>
+            <td class="normal">
+              {{ entry.entity_data.ji_shu_lie }}
+            </td>
+            <td class="normal">
+              {{ entry.entity_data.deng_ji }}
+            </td>
+            <td class="normal"></td>
+            <td class="actions has-text-centered">
               <button
                 class="button"
                 data-test="button-delete"
@@ -378,9 +399,7 @@ export default {
       }
     },
 
-    onLineClicked(i, event) {
-      console.log('validation-' + i + '-0')
-    },
+    onLineClicked(entry, event) {},
 
     getTaskType(entry) {
       const taskType = this.taskTypeMap.get(entry.task_type_id)
@@ -500,39 +519,37 @@ export default {
 
     durationDate(event, entry) {
       const duration = event.target.value
-      const user_id = this.userId
-      const year = this.yearString
-      const month = this.monthString
-      const task_id = entry.doodle_task_id
-      if (!task_id) {
-        alert(this.$t('doodle.calculate_tip'))
-        return
+      if (duration !== this.getDurationValue(entry.duration)) {
+        const user_id = this.userId
+        const year = this.yearString
+        const month = this.monthString
+        const task_id = entry.doodle_task_id
+        if (!task_id) {
+          alert(this.$t('doodle.calculate_tip'))
+          return
+        }
+        const action = 'setTaskTime'
+        const l_params = {
+          user_id,
+          year,
+          month,
+          task_id,
+          duration
+        }
+        this.$store
+          .dispatch(action, l_params)
+          .then(res => {
+            console.log('setTaskTime Done')
+            if (res.data) {
+              this.$emit('set-sort-task', res.data)
+            }
+          })
+          .catch(err => {
+            console.log('getUserInfo Error')
+            console.error(err)
+            this.$emit('set-sort-task', ['error'])
+          })
       }
-      const action = 'setTaskTime'
-      const l_params = {
-        user_id,
-        year,
-        month,
-        task_id,
-        duration
-      }
-      this.$store
-        .dispatch(action, l_params)
-        .then(res => {
-          console.log('setTaskTime Done')
-          if (res.data) {
-            this.$emit('set-sort-task', res.data)
-          }
-        })
-        .catch(err => {
-          console.log('getUserInfo Error')
-          console.error(err)
-          if (err.response) {
-            alert(err.response.text)
-          } else {
-            alert(err.message)
-          }
-        })
     },
 
     getEpisodes(entry) {
@@ -560,8 +577,13 @@ export default {
 }
 
 .name {
-  width: 300px;
-  min-width: 300px;
+  width: 200px;
+  min-width: 200px;
+}
+
+.normal {
+  width: 100px;
+  min-width: 100px;
 }
 
 .description {
@@ -579,9 +601,9 @@ export default {
 }
 
 .production {
-  width: 70px;
-  min-width: 70px;
-  max-width: 70px;
+  width: 150px;
+  min-width: 150px;
+  max-width: 150px;
 }
 
 .type {
@@ -606,8 +628,8 @@ export default {
 }
 
 .estimation {
-  width: 60px;
-  min-width: 60px;
+  width: 80px;
+  min-width: 80px;
 }
 
 td.estimation {
@@ -622,7 +644,7 @@ td.estimation {
 }
 
 .time-remark {
-  min-width: 400px;
+  min-width: 200px;
 }
 
 .user-remark {
@@ -630,6 +652,14 @@ td.estimation {
 }
 
 td.due-date {
+  border-right: 1px solid var(--border);
+}
+
+td.normal {
+  border-right: 1px solid var(--border);
+}
+
+td.user-remark {
   border-right: 1px solid var(--border);
 }
 
