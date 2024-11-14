@@ -85,6 +85,17 @@ export default {
     WorkSheetAddTaskList
   },
 
+  props: {
+    tasks: {
+      type: Array,
+      default: () => []
+    },
+    active: {
+      default: false,
+      type: Boolean
+    }
+  },
+
   data() {
     return {
       yearString: `${moment().year()}`,
@@ -107,7 +118,7 @@ export default {
     ]),
 
     notPendingTasks() {
-      return this.sortedTasks
+      return this.tasks
     },
 
     yearOptions() {
@@ -131,13 +142,6 @@ export default {
         label: monthToString(month),
         value: `${month}`
       }))
-    }
-  },
-
-  props: {
-    active: {
-      default: false,
-      type: Boolean
     }
   },
 
@@ -190,7 +194,7 @@ export default {
     },
     addselectedTask() {
       const data = []
-      this.sortedTasks.forEach(t => {
+      this.notPendingTasks.forEach(t => {
         if (t.checked) {
           data.push(t)
         }

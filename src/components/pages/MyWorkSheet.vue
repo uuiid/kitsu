@@ -66,14 +66,6 @@
 
               <button
                 class="button"
-                :text="$t('doodle.get_time')"
-                @click="getTimeClick"
-              >
-                {{ $t('doodle.get_time') }}
-              </button>
-
-              <button
-                class="button"
                 :text="$t('doodle.add_task')"
                 @click="onNewClicked"
               >
@@ -103,13 +95,13 @@
           :empty-text="$t('people.no_task_assigned')"
           :is-loading="isTodosLoading"
           :is-error="isTodosLoadingError"
-          :tasks="notPendingTasks"
+          :tasks="sortCalculatedTasks"
           :year-string="yearString"
           :month-string="monthString"
           :user-id="getUserId"
           :selection-grid="todoSelectionGrid"
           @scroll="setTodoListScrollPosition"
-          @set-sort-task="setSortTask"
+          @set-sort-task="onWorkSheetEvent"
           @remove-sort-task="removeSortTask"
           v-if="isActiveTab('workSheet')"
         />
@@ -123,6 +115,7 @@
           :is-error="isTodosLoadingError"
           :selection-grid="doneSelectionGrid"
           :done="true"
+          :person="person"
           v-if="isActiveTab('duty')"
         />
       </div>
@@ -182,6 +175,7 @@
       ref="add-task-sheet-modal"
       :text="$t('doodle.add_task')"
       :title="$t('doodle.add_task')"
+      :tasks="notPendingTasks"
       @cancel="modals.edit = false"
       @add-sort-task="addSortTask"
     />
@@ -246,13 +240,14 @@ export default {
       person: null,
       tasks: [],
       personTasks: [],
-      sortedTasks: [],
       companyOptionList: [],
       dutys: [],
       selectPersons: [],
       selectedDepartment: null,
       filterPersonList: [],
-      isShow: false
+      isShow: false,
+      calculatedTasks: new Map(),
+      prepareCalculateTasks: []
     }
   },
 
@@ -297,6 +292,7 @@ export default {
 
   computed: {
     ...mapGetters([
+      'taskMap',
       'displayedTodos',
       'doneSelectionGrid',
       'isTodosLoading',
@@ -317,13 +313,18 @@ export default {
       'departmentMap',
       'departments',
       'dingDingCompany',
-      'isCurrentUserManager'
+      'isCurrentUserManager',
+      'people'
     ]),
 
     notPendingTasks() {
-      return this.sortedTasks
+      return this.tasks.filter(task => {
+        return ![...this.calculatedTasks.keys()].includes(task.id)
+      })
     },
-
+    sortCalculatedTasks() {
+      return [...this.calculatedTasks.values()]
+    },
     notPendingDutys() {
       return this.dutys.filter(task => task != null)
     },
@@ -405,10 +406,15 @@ export default {
         return sortPeople(
           production.team
             .map(personId => this.personMap.get(personId))
-            .filter(person => !person.is_bot)
+            .filter(
+              person =>
+                !person.is_bot && person.dingding_company_id && person.phone
+            )
         )
       } else {
-        return this.activePeopleWithoutBot
+        return this.activePeopleWithoutBot.filter(
+          person => person.dingding_company_id && person.phone
+        )
       }
     }
   },
@@ -469,7 +475,7 @@ export default {
       const name = stringHelpers.slugify(nameData.join('_'))
       const headers = this.exportHeader()
       const entries = [headers]
-      this.sortedTasks.forEach(t => {
+      Array.from(this.calculatedTasks.values()).forEach(t => {
         const line = this.exportLine(this.person, t)
         entries.push(line)
       })
@@ -523,7 +529,6 @@ export default {
       this.tasks = []
       try {
         const params = {
-          project_id: this.productionId,
           person_id: this.person ? this.person.id : null
         }
         const taskInfos = await this.loadOpenTasks(params)
@@ -550,32 +555,10 @@ export default {
     },
 
     getUserInfo(user_id) {
-      const action = 'getUserInfo'
-      const l_params = {
-        user_id
-      }
-      this.$store
-        .dispatch(action, l_params)
-        .then(res => {
-          console.log('getUserInfo Done')
-          if (res) {
-            this.reload().then(() => {
-              this.getTaskTime(res.id)
-              this.getDutyList(res.id)
-            })
-          }
-        })
-        .catch(err => {
-          console.log('getUserInfo Error')
-          console.error(err)
-          if (err.response) {
-            if (err.response.statusCode === 404) {
-              this.createUserInfo(user_id, this.companyString)
-            } else {
-              alert('获取用户信息失败')
-            }
-          }
-        })
+      this.reload().then(() => {
+        this.getTaskTime(user_id)
+        this.getDutyList(user_id)
+      })
     },
 
     createUserInfo(user_id, company) {
@@ -616,7 +599,6 @@ export default {
       this.$store
         .dispatch(action, l_params)
         .then(res => {
-          console.log('getTaskTime Done')
           if (res.data) {
             this.setSortTask(res.data)
           }
@@ -636,7 +618,11 @@ export default {
 
     countTaskTime(user_id) {
       const data_list = []
-      this.sortedTasks.forEach(task => {
+      this.prepareCalculateTasks = [
+        ...this.prepareCalculateTasks,
+        ...this.calculatedTasks.values()
+      ]
+      this.prepareCalculateTasks.forEach(task => {
         const data = {}
         data.start_date = task.start_date || task.created_at
         data.end_date = task.end_date || task.updated_at
@@ -691,7 +677,6 @@ export default {
       this.$store
         .dispatch(action, l_params)
         .then(res => {
-          console.log('getDutyList Done')
           this.dutys = res
         })
         .catch(err => {
@@ -752,24 +737,33 @@ export default {
       }
       this.getDutyDingDing(this.person.id)
     },
-
+    onWorkSheetEvent(data) {
+      if (data[0] === 'error') {
+        this.getTaskTime(this.person.id)
+      } else {
+        this.setSortTask(data)
+      }
+    },
     setSortTask(data) {
-      this.sortedTasks = []
+      this.calculatedTasks = new Map()
+      const tasksMap = this.tasks.reduce((acc, task) => {
+        acc.set(task.id, task)
+        return acc
+      }, new Map())
       data.forEach(item => {
-        for (const t of this.tasks) {
-          if (item.kitsu_task_ref_id === t.id) {
-            const tt = t
-            tt.duration = item.duration
-            tt.doodle_task_id = item.id
-            tt.time_remark = item.remark
-            tt.start_time = item.start_time
-            tt.end_time = item.end_time
-            tt.user_remark = item.user_remark
-            this.sortedTasks.push(tt)
-          }
+        const temp = tasksMap.get(item.kitsu_task_ref_id)
+        if (temp) {
+          temp.duration = item.duration
+          temp.doodle_task_id = item.id
+          temp.time_remark = item.remark
+          temp.start_time = item.start_time
+          temp.end_time = item.end_time
+          temp.user_remark = item.user_remark
+          temp.checked = false
+          this.calculatedTasks.set(temp.id, temp)
         }
       })
-      this.person.tasks = this.sortedTasks
+      this.person.tasks = [...this.calculatedTasks.values()]
     },
     setPersonTask(data) {
       const l_tasks = []
@@ -790,15 +784,7 @@ export default {
       return l_tasks
     },
     addSortTask(data) {
-      data.forEach(n => {
-        let contain = false
-        for (const t of this.sortedTasks) {
-          if (t.id === n.id) {
-            contain = true
-          }
-        }
-        if (!contain) this.sortedTasks.push(n)
-      })
+      this.prepareCalculateTasks = data
       this.countTaskTime(this.person.id)
       this.modals.edit = false
     },
@@ -885,7 +871,6 @@ export default {
       //this.$forceUpdate()
     }
   },
-
   socket: {
     events: {
       'task:update'(eventData) {
@@ -898,7 +883,6 @@ export default {
       }
     }
   },
-
   watch: {
     productionId() {
       this.$router.push({
@@ -908,34 +892,29 @@ export default {
         }
       })
     },
-
     '$route.query.section'() {
       this.updateActiveTab()
     },
-
     $route() {
       this.currentSection = this.$route.query.section || 'workSheet'
     },
-
     selectedDepartment() {
       this.updateDepartment()
     },
-
     companyString() {
       this.person = null
-      this.sortedTasks = []
+      this.calculatedTasks = new Map()
     },
     person() {
-      this.sortedTasks = []
+      this.getTimeClick()
     },
     yearString() {
-      this.sortedTasks = []
+      this.getTimeClick()
     },
     monthString() {
-      this.sortedTasks = []
+      this.getTimeClick()
     }
   },
-
   metaInfo() {
     return {
       title: `${this.$t('doodle.my_worksheet')} - Kitsu`
