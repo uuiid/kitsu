@@ -45,7 +45,7 @@
             :class="{
               button: true,
               'is-primary': true,
-              'is-loading': isLoading
+              'is-loading': isUpdatingVideo
             }"
             @click="confirmClicked"
           >
@@ -138,7 +138,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['editVideo'])
+    ...mapGetters(['editVideo', 'isUpdatingVideo'])
   },
 
   methods: {
@@ -164,12 +164,12 @@ export default {
         file.notes = ''
       })
     },
-    confirmClicked() {
+    async confirmClicked() {
+      this.$store.commit('SET_IS_UPDATING_VIDEOS')
       this.checkData(this.$refs.video.files)
       if (!this.form.video_errored) {
         this.formatFiles(this.$refs.video.files)
         this.$emit('onConfirm', this.$refs.video.files)
-        this.clearData()
       }
     },
     clearData() {

@@ -112,13 +112,8 @@
                     }"
                     :key="entity.id"
                     v-for="entity in sortedSharedAssetsByType"
-                    @click="
-                      isEditVideoSelection
-                        ? toggleEntity(entity)
-                        : openFileWith(entity)
-                    "
                   >
-                    <div class="card" :title="entity.notes">
+                    <div class="card">
                       <video-preview
                         :ref="entity.id"
                         :empty-height="100"
@@ -130,6 +125,11 @@
                         :title="$t('video_library.open_file')"
                         is-rounded-top-border
                         @onMenuAction="menuAction"
+                        @onClickedImg="
+                          isEditVideoSelection
+                            ? toggleEntity(entity)
+                            : openFileWith(entity)
+                        "
                       />
                       <div class="item-description flexrow">
                         <div
@@ -382,11 +382,13 @@ export default {
       )
     },
     confirmNewVideo(video) {
-      console.log(video)
       this.newVideo(video)
     },
     confirmBatchNewVideo(videos) {
-      this.newVideos(videos)
+      this.newVideos(videos).then(res => {
+        this.$refs.edit_video_library_batch_update_modal.clearData()
+        return res
+      })
     },
     confirmNewVideoType(videoType) {
       if (videoType.label) {

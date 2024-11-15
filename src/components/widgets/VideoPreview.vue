@@ -46,6 +46,7 @@
         }"
         :width="width || ''"
         alt=""
+        @click="$emit('onClickedImg')"
       />
       <span class="view-icon" ref="menuButton" @click.stop="onPictureClicked()">
         <align-justify :size="18" />

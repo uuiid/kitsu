@@ -180,7 +180,6 @@ export default {
           if (fs.statSync(file.path).isDirectory()) {
             this.files = [...this.files, ...this.getAllFiles(file.path)]
           } else {
-            console.log(file)
             const data = this.formatImageFile(file.path)
             this.files.push(data)
           }
@@ -190,15 +189,19 @@ export default {
     },
     formatImageFile(filePath) {
       const path = require('path')
-      if (
-        this.imageExtensions.includes(path.extname(filePath).slice(1)) ||
+      const data = {
+        name: path.basename(filePath, path.extname(filePath)),
+        isSelected: false,
+        path: filePath
+      }
+      if (this.imageExtensions.includes(path.extname(filePath).slice(1))) {
+        data.has_thumbnail = true
+        return data
+      } else if (
         this.videoExtensions.includes(path.extname(filePath).slice(1))
       ) {
-        return {
-          name: path.basename(filePath, path.extname(filePath)),
-          isSelected: false,
-          path: filePath
-        }
+        data.has_thumbnail = false
+        return data
       }
     },
     getAllFiles(dirPath, arrayOfFiles = []) {
