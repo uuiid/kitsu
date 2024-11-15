@@ -205,9 +205,9 @@ export default {
           this.form.image_errored
         )
       ) {
-        console.log(this.videoToCreat)
         this.videoToCreat.parent_id = this.videoTypeId
         this.videoToCreat.path = this.$refs.video.videos[0].path
+        this.videoToCreat.has_thumbnail = true
         this.videoToCreat.upimage = this.$refs.image.images[0]
         this.$emit('onConfirm', this.videoToCreat)
         this.clearData()

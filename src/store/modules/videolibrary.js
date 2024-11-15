@@ -13,7 +13,8 @@ const initialState = {
   openedVideoTypes: new Map(),
   videoExtensions: ['mp4', 'mkv', 'rmvb'],
   imageExtensions: ['jpg', 'jpeg', 'png'],
-  isEditVideoSelection: false
+  isEditVideoSelection: false,
+  isUpdatingVideo: false
 }
 const helpers = {
   getFileFromPath(filePath) {
@@ -124,6 +125,9 @@ const mutations = {
   SET_IS_EDIT_VIDEO_SELECTION(state) {
     state.isEditVideoSelection = !state.isEditVideoSelection
     state.selectedVideos = new Map()
+  },
+  SET_IS_UPDATING_VIDEOS(state) {
+    state.isUpdatingVideo = !state.isUpdatingVideo
   }
 }
 
@@ -138,7 +142,8 @@ const getters = {
   selectedVideos: state => state.selectedVideos,
   videoExtensions: state => state.videoExtensions,
   imageExtensions: state => state.imageExtensions,
-  isEditVideoSelection: state => state.isEditVideoSelection
+  isEditVideoSelection: state => state.isEditVideoSelection,
+  isUpdatingVideo: state => state.isUpdatingVideo
 }
 const actions = {
   loadVideos({ commit }) {
@@ -167,10 +172,12 @@ const actions = {
       return Promise.all(imageUploadPromises)
         .then(() => {
           commit('NEW_VIDEOS', res)
+          commit('SET_IS_UPDATING_VIDEOS')
           return res
         })
         .catch(error => {
           console.error('批量上传图片失败:', error)
+          return error
         })
     })
   },
