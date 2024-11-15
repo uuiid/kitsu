@@ -24,7 +24,7 @@
               'update-video-button': true
             }"
             @click="showNewModal"
-            v-if="isElectron"
+            v-if="isElectron && isCurrentUserManager"
           >
             {{ $t('video_library.update_video') }}
           </button>
@@ -35,10 +35,21 @@
               'update-video-button': true
             }"
             @click="showBatchNewModal"
-            v-if="isElectron"
+            v-if="isElectron && isCurrentUserManager"
           >
             {{ $t('video_library.batch_update_video') }}
           </button>
+          <!--button
+            :class="{
+              button: true,
+              'is-primary': false,
+              'update-video-button': true
+            }"
+            @click="refresh"
+          >
+            <refresh-cw></refresh-cw>
+            {{ $t('video_library.refresh') }}
+          </button-->
           <span class="update-video-error" v-if="modals.isDisplayedUpdateError">
             请先选择类型</span
           >
@@ -77,11 +88,22 @@
                 {{ $t('video_library.no_video') }}
               </div>
               <template v-else>
-                <h1 class="type-text">
-                  {{ currentVideoType.label }} ({{
-                    sortedSharedAssetsByType.length
-                  }})
-                </h1>
+                <div class="list-head">
+                  <h1 class="type-text">
+                    {{ currentVideoType.label }} ({{
+                      sortedSharedAssetsByType.length
+                    }})
+                  </h1>
+                  <button-simple
+                    :text="
+                      isEditVideoSelection
+                        ? $t('main.cancel') + $t('main.edit')
+                        : $t('main.edit')
+                    "
+                    @click="editVideoSelection"
+                    v-if="isCurrentUserManager"
+                  />
+                </div>
                 <ul class="items">
                   <li
                     class="item flexcolumn"
@@ -90,7 +112,11 @@
                     }"
                     :key="entity.id"
                     v-for="entity in sortedSharedAssetsByType"
-                    @click="toggleEntity(entity)"
+                    @click="
+                      isEditVideoSelection
+                        ? toggleEntity(entity)
+                        : openFileWith(entity)
+                    "
                   >
                     <div class="card" :title="entity.notes">
                       <video-preview
@@ -101,6 +127,7 @@
                         :width="150"
                         :entity="entity"
                         :preview-file-id="entity.id"
+                        :title="$t('video_library.open_file')"
                         is-rounded-top-border
                         @onMenuAction="menuAction"
                       />
@@ -173,10 +200,12 @@ import EditVideoLibraryBatchUpdateModal from '@/components/modals/EditVideoLibra
 import EditVideoLibraryAddTypeModal from '@/components/modals/EditVideoLibraryAddTypeModal.vue'
 import ImagePreviewModal from '@/components/modals/ImagePreviewModal.vue'
 import EditVideoAssetModal from '@/components/modals/EditVideoAssetModal.vue'
+import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
 
 export default {
   name: 'video-library',
   components: {
+    ButtonSimple,
     VideoPreview,
     PageTitle,
     SearchField,
@@ -274,7 +303,9 @@ export default {
       'isElectron',
       'openedVideoTypes',
       'currentVideoType',
-      'selectedVideos'
+      'selectedVideos',
+      'isCurrentUserManager',
+      'isEditVideoSelection'
     ]),
     ancestorLabels() {
       const ancestors = this.getAncestors(
@@ -338,6 +369,7 @@ export default {
     },
     async refresh() {
       try {
+        await this.loadVideosType()
         await this.loadVideos()
         return true
       } catch (error) {
@@ -419,7 +451,7 @@ export default {
     async menuAction(entity, action) {
       if (action === 'copyVideoPath') {
         try {
-          await navigator.clipboard.writeText(entity.path)
+          navigator.clipboard.writeText(entity.path)
         } catch (error) {
           console.log(error)
         }
@@ -461,6 +493,9 @@ export default {
         this.currentSelectVideo = entity
         this.setVideoSelection(entity)
       }
+    },
+    openFileWith(entity) {
+      if (this.isElectron) window.api.openPath(entity.path)
     },
     // onToggle(item) {
     //   this.originalVideoTypes.forEach(i => {
@@ -535,6 +570,12 @@ export default {
             this.currentTypeAllId.push(i.id)
           }
         })
+      }
+    },
+    editVideoSelection() {
+      this.$store.commit('SET_IS_EDIT_VIDEO_SELECTION')
+      if (this.isEditVideoSelection) {
+        this.resetSelectedVideos(this.sortedSharedAssetsByType)
       }
     },
     showNewModal() {
@@ -628,12 +669,18 @@ export default {
   z-index: 10;
 }
 
-.type-text {
-  //width: 400%;
-  font-size: 30px;
+.list-head {
+  display: flex;
+  flex-direction: row;
+  justify-content: space-between;
   border-bottom: 2px solid #dadada;
   margin-bottom: 0.2cm;
-  margin-left: 0.5cm;
+  margin-left: 0.1cm;
+}
+
+.type-text {
+  font-size: 30px;
+  margin-left: 0.4cm;
   user-select: none;
 }
 
@@ -704,6 +751,29 @@ export default {
         overflow: hidden;
         text-overflow: ellipsis;
       }
+    }
+  }
+
+  .shake {
+    display: inline-block;
+    animation: shake 0.5s ease-in-out infinite; /* 设置动画持续时间和无限循环 */
+  }
+
+  @keyframes shake {
+    0% {
+      transform: translateX(0) rotate(0deg);
+    }
+    25% {
+      transform: translateX(-1px) rotate(-1deg);
+    }
+    50% {
+      transform: translateX(1px) rotate(1deg);
+    }
+    75% {
+      transform: translateX(-1px) rotate(-1deg);
+    }
+    100% {
+      transform: translateX(0) rotate(0deg);
     }
   }
 
