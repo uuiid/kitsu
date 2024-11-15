@@ -18,14 +18,14 @@
         <arrow-up
           :size="18"
           @click="orderUp"
-          v-if="isShowRoot && isShowArrowUp"
+          v-if="isShowRoot && isShowArrowUp && isCurrentUserManager"
         />
         <arrow-down
           :size="18"
           @click="orderDown"
-          v-if="isShowRoot && isShowArrowDown"
+          v-if="isShowRoot && isShowArrowDown && isCurrentUserManager"
         />
-        <plus :size="18" @click="addType" />
+        <plus :size="18" @click="addType" v-if="isCurrentUserManager" />
         <minus
           :size="18"
           v-if="isCurrentUserManager && isShowRoot"

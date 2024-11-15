@@ -39,7 +39,7 @@
         class="thumbnail-picture"
         loading="lazy"
         :key="thumbnailKey"
-        :src="thumbnailPath"
+        :src="entity.has_thumbnail ? thumbnailPath : ''"
         :style="{
           width: 'auto',
           'max-height': `${emptyHeight}px`
