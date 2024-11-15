@@ -12,7 +12,8 @@ const initialState = {
   selectedVideos: new Map(),
   openedVideoTypes: new Map(),
   videoExtensions: ['mp4', 'mkv', 'rmvb'],
-  imageExtensions: ['jpg', 'jpeg', 'png']
+  imageExtensions: ['jpg', 'jpeg', 'png'],
+  isEditVideoSelection: false
 }
 const helpers = {
   getFileFromPath(filePath) {
@@ -119,6 +120,10 @@ const mutations = {
       state.originalVideoTypes.set(type.id, type)
     })
     state.originalVideoTypes = new Map(state.originalVideoTypes)
+  },
+  SET_IS_EDIT_VIDEO_SELECTION(state) {
+    state.isEditVideoSelection = !state.isEditVideoSelection
+    state.selectedVideos = new Map()
   }
 }
 
@@ -132,7 +137,8 @@ const getters = {
   currentVideoType: state => state.currentVideoType,
   selectedVideos: state => state.selectedVideos,
   videoExtensions: state => state.videoExtensions,
-  imageExtensions: state => state.imageExtensions
+  imageExtensions: state => state.imageExtensions,
+  isEditVideoSelection: state => state.isEditVideoSelection
 }
 const actions = {
   loadVideos({ commit }) {
