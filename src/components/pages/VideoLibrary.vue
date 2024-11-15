@@ -722,6 +722,7 @@ export default {
     },
     sortedSharedAssetsByType() {
       this.pageStartIndex = 0
+      this.currentPage = 0
     }
   },
   metaInfo() {
