@@ -111,7 +111,7 @@
                       'selected-item': isSelected(entity)
                     }"
                     :key="entity.id"
-                    v-for="entity in sortedSharedAssetsByType"
+                    v-for="entity in pagedAssets"
                   >
                     <div class="card">
                       <video-preview
@@ -142,6 +142,45 @@
                     </div>
                   </li>
                 </ul>
+                <div class="pagination">
+                  <div class="">
+                    <button
+                      :class="{ button: true }"
+                      @click="
+                        pageStartIndex > 0 ? (pageStartIndex -= 1) : () => {}
+                      "
+                    >
+                      <chevron-left />
+                    </button>
+
+                    <button
+                      :key="page"
+                      :value="page"
+                      :class="{
+                        button: true,
+                        'is-primary': currentPage === page - 1
+                      }"
+                      @click="onClickPageNumber(page)"
+                      v-for="page in displayablePageNumber"
+                    >
+                      {{ page }}
+                    </button>
+
+                    <button
+                      :class="{ button: true }"
+                      @click="
+                        pageStartIndex < pageNumbers.length - 3
+                          ? (pageStartIndex += Math.min(
+                              pageNumbers.length - 3 - pageStartIndex,
+                              3
+                            ))
+                          : () => {}
+                      "
+                    >
+                      <chevron-right />
+                    </button>
+                  </div>
+                </div>
               </template>
             </div>
           </div>
@@ -190,6 +229,7 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+import { ChevronLeft, ChevronRight } from 'lucide-vue'
 import TreeView from '@/components/widgets/TreeView.vue'
 import VideoPreview from '@/components/widgets/VideoPreview.vue'
 import PageTitle from '@/components/widgets/PageTitle.vue'
@@ -215,7 +255,9 @@ export default {
     EditVideoLibraryBatchUpdateModal,
     EditVideoLibraryAddTypeModal,
     ImagePreviewModal,
-    EditVideoAssetModal
+    EditVideoAssetModal,
+    ChevronLeft,
+    ChevronRight
   },
 
   data() {
@@ -277,7 +319,10 @@ export default {
       currentSelectVideo: {},
       currentTypeAllId: [],
       isShiftSelected: false,
-      shiftEndSelection: null
+      shiftEndSelection: null,
+      currentPage: 0,
+      maxNum: 504,
+      pageStartIndex: 0
     }
   },
 
@@ -305,7 +350,8 @@ export default {
       'currentVideoType',
       'selectedVideos',
       'isCurrentUserManager',
-      'isEditVideoSelection'
+      'isEditVideoSelection',
+      'imageExtensions'
     ]),
     ancestorLabels() {
       const ancestors = this.getAncestors(
@@ -316,6 +362,27 @@ export default {
     },
     searchField() {
       return this.$refs['search-field']
+    },
+    displayablePageNumber() {
+      return this.pageNumbers.slice(
+        this.pageStartIndex,
+        this.pageStartIndex + 3
+      )
+    },
+    pageNumbers() {
+      return Array.from(
+        {
+          length:
+            Math.floor(this.sortedSharedAssetsByType.length / this.maxNum) + 1
+        },
+        (_, index) => index + 1
+      )
+    },
+    pagedAssets() {
+      return this.sortedSharedAssetsByType.slice(
+        this.countMinPage(),
+        this.countMaxPage()
+      )
     },
     sortedSharedAssetsByType() {
       this.getAllChildrenId(this.currentVideoType)
@@ -367,6 +434,20 @@ export default {
         this.isShiftSelected = true
       }
     },
+    onClickPageNumber(pageNumber) {
+      this.currentPage = pageNumber - 1
+      if (
+        this.currentPage - this.pageStartIndex === 2 &&
+        this.currentPage < this.pageNumbers.length - 1
+      ) {
+        this.pageStartIndex += 1
+      } else if (
+        this.currentPage - this.pageStartIndex === 0 &&
+        this.currentPage > 0
+      ) {
+        this.pageStartIndex -= 1
+      }
+    },
     async refresh() {
       try {
         await this.loadVideosType()
@@ -375,6 +456,18 @@ export default {
       } catch (error) {
         return error
       }
+    },
+    countMinPage() {
+      return Math.min(
+        this.sortedSharedAssetsByType.length,
+        this.currentPage * this.maxNum
+      )
+    },
+    countMaxPage() {
+      return Math.min(
+        this.sortedSharedAssetsByType.length,
+        (this.currentPage + 1) * this.maxNum
+      )
     },
     entityNameTitle(entity) {
       return (
@@ -470,6 +563,7 @@ export default {
       } else if (action === 'clearSelected') {
         this.clearSelectedVideos()
       } else if (action === 'modifyThumbnail') {
+        this.currentSelectVideo = entity
         this.modals.isEditVideoAssetDisplayed = true
       }
     },
@@ -497,8 +591,15 @@ export default {
       }
     },
     openFileWith(entity) {
-      if (this.isElectron) window.api.openPath(entity.path)
+      const path = require('path')
+      if (this.imageExtensions.includes(path.extname(entity.path).slice(1))) {
+        this.modals.isImagePreviewDisplayed = true
+        this.currentSelectVideo = entity
+      } else {
+        if (this.isElectron) window.api.openPath(entity.path)
+      }
     },
+
     // onToggle(item) {
     //   this.originalVideoTypes.forEach(i => {
     //     //if (i.id === item.id) i.isOpen = item.isOpen
@@ -511,7 +612,6 @@ export default {
     onSearchChange() {
       this.keyWord = this.searchField.getValue() || ''
     },
-
     updateRoute({ production, search }) {
       const query = {
         ...this.$route.query,
@@ -619,15 +719,15 @@ export default {
       this.currentTypeAllId = []
 
       //this.getAllChildrenId(this.currentVideoType)
+    },
+    sortedSharedAssetsByType() {
+      this.pageStartIndex = 0
     }
   },
   metaInfo() {
     return {
       title: `${this.$t('video_library.video_library')} - Kitsu`
     }
-  },
-  sortedSharedAssetsByType(value) {
-    console.log(value)
   }
 }
 </script>
@@ -680,6 +780,22 @@ export default {
   margin-left: 0.1cm;
 }
 
+.pagination {
+  display: flex;
+  justify-content: right;
+  width: 100%;
+  margin-top: 10px;
+  //border: thick dotted #ff0000;
+}
+
+.pagination button {
+  margin-left: 0.2cm;
+  //cursor: not-allowed;
+  &:hover {
+    cursor: pointer;
+  }
+}
+
 .type-text {
   font-size: 30px;
   margin-left: 0.4cm;
@@ -701,58 +817,64 @@ export default {
 }
 
 .entities {
-  height: 100%;
-  overflow-x: auto;
-  overflow-y: auto;
+  height: 90%;
   user-select: none;
+}
 
-  .items {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 20px;
+.items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  height: 100%;
+  overflow: auto;
+}
+
+.button.is-primary {
+  border-radius: 30%;
+  background: #00b242;
+}
+
+.item {
+  background-color: var(--background);
+  border: 5px solid transparent;
+  border-radius: 1em;
+  transition: border-color 0.2s ease-in-out;
+  cursor: pointer;
+  max-height: 142px;
+
+  &:hover {
+    border-color: var(--background-selectable);
   }
 
-  .item {
-    background-color: var(--background);
-    border: 5px solid transparent;
-    border-radius: 1em;
-    transition: border-color 0.2s ease-in-out;
-    cursor: pointer;
+  &.selected-item {
+    border-color: var(--background-selected);
+  }
 
-    &:hover {
-      border-color: var(--background-selectable);
+  .card {
+    border-radius: inherit;
+    box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);
+
+    .dark & {
+      background-color: var(--background-alt);
     }
+  }
 
-    &.selected-item {
-      border-color: var(--background-selected);
-    }
+  .item-description {
+    color: var(--text-strong);
+    font-size: 0.9em;
+    font-weight: bold;
+    white-space: nowrap;
+    max-width: 140px;
+    min-width: 140px;
+    padding: 0.5em;
 
-    .card {
-      border-radius: inherit;
-      box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);
-
-      .dark & {
-        background-color: var(--background-alt);
-      }
-    }
-
-    .item-description {
-      color: var(--text-strong);
-      font-size: 0.9em;
-      font-weight: bold;
+    .entity-name {
+      margin-left: auto;
+      margin-right: auto;
       white-space: nowrap;
-      max-width: 140px;
-      min-width: 140px;
-      padding: 0.5em;
-
-      .entity-name {
-        margin-left: auto;
-        margin-right: auto;
-        white-space: nowrap;
-        width: 120px;
-        overflow: hidden;
-        text-overflow: ellipsis;
-      }
+      width: 120px;
+      overflow: hidden;
+      text-overflow: ellipsis;
     }
   }
 
