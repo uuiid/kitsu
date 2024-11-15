@@ -35,19 +35,20 @@
     v-else
   >
     <template v-if="!cover">
-      <img
-        class="thumbnail-picture"
-        loading="lazy"
-        :key="thumbnailKey"
-        :src="entity.has_thumbnail ? thumbnailPath : ''"
-        :style="{
-          width: 'auto',
-          'max-height': `${emptyHeight}px`
-        }"
-        :width="width || ''"
-        alt=""
-        @click="$emit('onClickedImg')"
-      />
+      <div class="thumbnail-picture-parent" @click="$emit('onClickedImg')">
+        <img
+          class="thumbnail-picture"
+          loading="lazy"
+          :key="thumbnailKey"
+          :src="entity.has_thumbnail ? thumbnailPath : ''"
+          :style="{
+            width: 'auto',
+            'max-height': `${emptyHeight}px`
+          }"
+          :width="width || ''"
+          alt=""
+        />
+      </div>
       <span class="view-icon" ref="menuButton" @click.stop="onPictureClicked()">
         <align-justify :size="18" />
       </span>
@@ -224,6 +225,14 @@ export default {
   width: 300px;
   min-height: 200px;
   cursor: pointer;
+}
+
+.thumbnail-picture-parent {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  width: 100%;
+  height: 100%;
 }
 
 .button-play {
