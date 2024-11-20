@@ -194,11 +194,17 @@ export default {
         isSelected: false,
         path: filePath
       }
-      if (this.imageExtensions.includes(path.extname(filePath).slice(1))) {
+      if (
+        this.imageExtensions.includes(
+          path.extname(filePath).slice(1).toLowerCase()
+        )
+      ) {
         data.has_thumbnail = true
         return data
       } else if (
-        this.videoExtensions.includes(path.extname(filePath).slice(1))
+        this.videoExtensions.includes(
+          path.extname(filePath).slice(1).toLowerCase()
+        )
       ) {
         data.has_thumbnail = false
         return data

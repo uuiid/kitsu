@@ -498,7 +498,6 @@ export default {
     checkElectron() {
       this.setIsElectron(navigator.userAgent.includes('Electron'))
     },
-
     listToTree(data) {
       let out_data = []
       const tree = []
@@ -591,8 +590,11 @@ export default {
       }
     },
     openFileWith(entity) {
-      const path = require('path')
-      if (this.imageExtensions.includes(path.extname(entity.path).slice(1))) {
+      if (
+        this.imageExtensions.includes(
+          entity.path.split('.').pop().toLowerCase()
+        )
+      ) {
         this.modals.isImagePreviewDisplayed = true
         this.currentSelectVideo = entity
       } else {

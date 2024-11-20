@@ -129,16 +129,18 @@ export default {
     },
 
     checkData(datas) {
-      if (datas.length === 0) {
+      if (datas.length !== 0) {
         this.form.image_errored = true
       }
     },
     confirmClicked() {
-      //this.checkData(this.$refs.image.images)
+      this.checkData(this.$refs.image.images)
       this.asset_to_import.upimage = this.$refs.image.images[0]
-      if (!this.form.image_errored) {
-        this.$emit('onConfirm', this.asset_to_import)
+      this.asset_to_import.has_thumbnail = this.assetToEdit.has_thumbnail
+      if (this.form.image_errored) {
+        this.asset_to_import.has_thumbnail = true
       }
+      this.$emit('onConfirm', this.asset_to_import)
     }
   },
   watch: {
