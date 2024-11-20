@@ -5,7 +5,7 @@
       'is-active': active
     }"
   >
-    <div class="modal-background" @click="$emit('cancel')"></div>
+    <div class="modal-background" @click="onCancel()"></div>
     <div class="new-window">
       <a class="mr1" :href="previewDlPath" v-if="previewFileId">
         <arrow-down-icon />
@@ -15,8 +15,11 @@
       </a>
     </div>
 
-    <div class="modal-content" @click="$emit('cancel')">
+    <div class="modal-content" @click="onCancel()">
       <img :src="previewPath" alt="" />
+    </div>
+    <div class="prompt" :class="{ 'prompt-animation': isPrompt }">
+      <span>{{ prompt }}</span>
     </div>
   </div>
 </template>
@@ -52,7 +55,18 @@ export default {
       default: () => {}
     }
   },
-
+  data() {
+    return {
+      prompt: '',
+      isPrompt: false
+    }
+  },
+  mounted() {
+    window.addEventListener('keydown', this.handleKeydown)
+  },
+  beforeDestroy() {
+    window.removeEventListener('keydown', this.handleKeydown)
+  },
   computed: {
     previewPath() {
       if (this.previewFileId) {
@@ -69,6 +83,33 @@ export default {
     previewDlPath() {
       const previewId = this.previewFileId
       return `/api/doodle/pictures/${previewId}.png`
+    }
+  },
+  methods: {
+    onCancel() {
+      this.isPrompt = false
+      this.prompt = ''
+      this.$emit('cancel')
+    },
+    async handleKeydown(event) {
+      if (event.ctrlKey && event.key === 'c') {
+        try {
+          const response = await fetch(this.previewDlPath)
+          const blob = await response.blob()
+
+          // 使用 Clipboard API 将图片写入剪切板
+          await navigator.clipboard.write([
+            new ClipboardItem({
+              'image/png': blob
+            })
+          ])
+          this.prompt = '已复制'
+          this.isPrompt = true
+        } catch (error) {
+          this.prompt = '复制失败'
+        }
+      }
+      // 在此可以处理相关的逻辑，例如自定义复制行为
     }
   }
 }
@@ -97,5 +138,26 @@ export default {
     max-height: 100vh;
     overflow: auto;
   }
+}
+
+@keyframes moveUp {
+  0% {
+    transform: translateY(0);
+    opacity: 1;
+  }
+  100% {
+    transform: translateY(-20px);
+    opacity: 0;
+  }
+}
+
+.prompt {
+  position: fixed;
+  font-size: 20px;
+  bottom: 20%;
+}
+
+.prompt-animation {
+  animation: moveUp 3s forwards;
 }
 </style>

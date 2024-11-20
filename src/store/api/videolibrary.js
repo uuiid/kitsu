@@ -8,7 +8,8 @@ export default {
       id: video.id,
       path: video.path,
       notes: video.notes,
-      active: video.active
+      active: video.active,
+      has_thumbnail: video.has_thumbnail
     }
     const path = `/api/doodle/model_library/assets`
     return client.ppost(path, [data])
@@ -32,7 +33,8 @@ export default {
       label: video.label,
       path: video.path,
       notes: video.notes,
-      active: video.active
+      active: video.active,
+      has_thumbnail: video.has_thumbnail
     }
     const path = `/api/doodle/model_library/assets/${video.id}`
     return client.ppost(path, tempVideo)

@@ -11,8 +11,18 @@ const initialState = {
   currentVideoType: {},
   selectedVideos: new Map(),
   openedVideoTypes: new Map(),
-  videoExtensions: ['mp4', 'mkv', 'rmvb'],
-  imageExtensions: ['jpg', 'jpeg', 'png'],
+  videoExtensions: [
+    'mp4',
+    'mkv',
+    'rmvb',
+    'avi',
+    'flv',
+    'mov',
+    'mpeg',
+    'm4v',
+    'wmv'
+  ],
+  imageExtensions: ['jpg', 'jpeg', 'png', 'gif'],
   isEditVideoSelection: false,
   isUpdatingVideo: false
 }
