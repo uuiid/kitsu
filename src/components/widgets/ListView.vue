@@ -214,7 +214,7 @@ export default {
     },
     formatFiles(file) {
       const path = require('path')
-      const data = {
+      return {
         name: path.basename(file.path, path.extname(file.path)),
         isSelected: false,
         path: file.path,
@@ -222,7 +222,6 @@ export default {
         extension: file.type,
         file: file
       }
-      return data
     },
     getAllFiles(dirPath, arrayOfFiles = []) {
       const fs = require('fs')
