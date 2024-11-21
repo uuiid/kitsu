@@ -104,44 +104,46 @@
                     v-if="isCurrentUserManager"
                   />
                 </div>
-                <ul class="items">
-                  <li
-                    class="item flexcolumn"
-                    :class="{
-                      'selected-item': isSelected(entity)
-                    }"
-                    :key="entity.id"
-                    v-for="entity in pagedAssets"
-                  >
-                    <div class="card">
-                      <video-preview
-                        :ref="entity.id"
-                        :empty-height="100"
-                        :empty-width="150"
-                        :height="100"
-                        :width="150"
-                        :entity="entity"
-                        :preview-file-id="entity.id"
-                        :title="$t('video_library.open_file')"
-                        is-rounded-top-border
-                        @onMenuAction="menuAction"
-                        @onClickedImg="
-                          isEditVideoSelection
-                            ? toggleEntity(entity)
-                            : openFileWith(entity)
-                        "
-                      />
-                      <div class="item-description flexrow">
-                        <div
-                          class="entity-name"
-                          :title="entityNameTitle(entity)"
-                        >
-                          {{ entity.label }}
+                <div class="list-body">
+                  <ul class="items">
+                    <li
+                      class="item flexcolumn"
+                      :class="{
+                        'selected-item': isSelected(entity)
+                      }"
+                      :key="entity.id"
+                      v-for="entity in pagedAssets"
+                    >
+                      <div class="card">
+                        <video-preview
+                          :ref="entity.id"
+                          :empty-height="100"
+                          :empty-width="150"
+                          :height="100"
+                          :width="150"
+                          :entity="entity"
+                          :preview-file-id="entity.id"
+                          :title="$t('video_library.open_file')"
+                          is-rounded-top-border
+                          @onMenuAction="menuAction"
+                          @onClickedImg="
+                            isEditVideoSelection
+                              ? toggleEntity(entity)
+                              : openFileWith(entity)
+                          "
+                        />
+                        <div class="item-description flexrow">
+                          <div
+                            class="entity-name"
+                            :title="entityNameTitle(entity)"
+                          >
+                            {{ entity.label }}
+                          </div>
                         </div>
                       </div>
-                    </div>
-                  </li>
-                </ul>
+                    </li>
+                  </ul>
+                </div>
                 <div class="pagination">
                   <div class="">
                     <button
@@ -221,6 +223,7 @@
         ref="image_preview_modal"
         :active="modals.isImagePreviewDisplayed"
         :preview-file-id="currentSelectVideo.id"
+        :preview-file-type="currentSelectVideo.extension"
         @cancel="modals.isImagePreviewDisplayed = false"
       />
     </div>
@@ -351,7 +354,8 @@ export default {
       'selectedVideos',
       'isCurrentUserManager',
       'isEditVideoSelection',
-      'imageExtensions'
+      'imageExtensions',
+      'refreshTimer'
     ]),
     ancestorLabels() {
       const ancestors = this.getAncestors(
@@ -489,11 +493,9 @@ export default {
       }
     },
     async confirmEditVideo(video) {
-      this.modifyVideo(video).then(() => {
-        this.refresh().then(() => {
-          this.$refs[video.id][0].refreshKey += 1
-        })
-      })
+      await this.modifyVideo(video)
+      await this.refresh()
+      this.$refs[video.id][0].refreshKey += 1
     },
     checkElectron() {
       this.setIsElectron(navigator.userAgent.includes('Electron'))
@@ -725,6 +727,11 @@ export default {
     sortedSharedAssetsByType() {
       this.pageStartIndex = 0
       this.currentPage = 0
+      if (new Date() - this.refreshTimer > 60000) {
+        this.refresh().then(() => {
+          this.$store.commit('SET_REFRESH_TIMER')
+        })
+      }
     }
   },
   metaInfo() {
@@ -783,6 +790,18 @@ export default {
   margin-left: 0.1cm;
 }
 
+.list-body {
+  height: 90%;
+  overflow: auto;
+  //border: thick dotted #ff0000;
+}
+.items {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 20px;
+  //height: 100%;
+  //overflow: auto;
+}
 .pagination {
   display: flex;
   justify-content: right;
@@ -820,16 +839,10 @@ export default {
 }
 
 .entities {
-  height: 90%;
-  user-select: none;
-}
-
-.items {
   display: flex;
-  flex-wrap: wrap;
-  gap: 20px;
+  flex-direction: column;
   height: 100%;
-  overflow: auto;
+  user-select: none;
 }
 
 .button.is-primary {

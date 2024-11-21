@@ -24,7 +24,8 @@ const initialState = {
   ],
   imageExtensions: ['jpg', 'jpeg', 'png', 'gif'],
   isEditVideoSelection: false,
-  isUpdatingVideo: false
+  isUpdatingVideo: false,
+  refreshTimer: new Date()
 }
 const helpers = {
   getFileFromPath(filePath) {
@@ -36,6 +37,69 @@ const helpers = {
           return reject(err)
         }
         return resolve(data)
+      })
+    })
+  },
+  getDateFromFile(file) {
+    return new Promise((resolve, reject) => {
+      let data = null
+      const reader = new FileReader()
+      reader.onload = () => {
+        data = reader.result
+      }
+      reader.readAsArrayBuffer(file)
+      reader.onloadend = () => {
+        resolve(data)
+      }
+    })
+  },
+  handleVideo(re, res_obj) {
+    const videoElement = document.createElement('video')
+    videoElement.muted = true
+    const canvas = document.createElement('canvas')
+    const context = canvas.getContext('2d')
+    return new Promise((resolve, reject) => {
+      videoElement.src = window.URL.createObjectURL(res_obj.get(re.path).file)
+      videoElement.addEventListener('error', () => {
+        videoElement.remove()
+        canvas.remove()
+        resolve()
+      })
+      videoElement.addEventListener('loadedmetadata', () => {
+        canvas.width = videoElement.videoWidth
+        canvas.height = videoElement.videoHeight
+
+        videoElement.currentTime = Math.min(
+          Math.floor(Math.random() * (8 - 2 + 1)) + 2,
+          videoElement.duration
+        )
+        videoElement.addEventListener('seeked', async () => {
+          try {
+            context.clearRect(0, 0, canvas.width, canvas.height)
+            context.drawImage(videoElement, 0, 0, canvas.width, canvas.height)
+
+            canvas.toBlob(
+              async blob => {
+                try {
+                  const arrayBuffer = await blob.arrayBuffer()
+                  videoElement.remove()
+                  canvas.remove()
+                  resolve(Buffer.from(arrayBuffer))
+                } catch (error) {
+                  videoElement.remove()
+                  canvas.remove()
+                  reject(error)
+                }
+              },
+              'image/png',
+              1.0
+            )
+          } catch (error) {
+            videoElement.remove()
+            canvas.remove()
+            reject(error)
+          }
+        })
       })
     })
   }
@@ -138,6 +202,9 @@ const mutations = {
   },
   SET_IS_UPDATING_VIDEOS(state) {
     state.isUpdatingVideo = !state.isUpdatingVideo
+  },
+  SET_REFRESH_TIMER(state) {
+    state.refreshTimer = new Date()
   }
 }
 
@@ -153,7 +220,8 @@ const getters = {
   videoExtensions: state => state.videoExtensions,
   imageExtensions: state => state.imageExtensions,
   isEditVideoSelection: state => state.isEditVideoSelection,
-  isUpdatingVideo: state => state.isUpdatingVideo
+  isUpdatingVideo: state => state.isUpdatingVideo,
+  refreshTimer: state => state.refreshTimer
 }
 const actions = {
   loadVideos({ commit }) {
@@ -168,27 +236,53 @@ const actions = {
       })
   },
   newVideos({ commit }, videos) {
+    commit('SET_IS_UPDATING_VIDEOS')
     const path = require('path')
+    const res_obj = videos.reduce((acc, video) => {
+      return acc.set(video.path, video)
+    }, new Map())
     return videolibraryApi.newVideos(videos).then(res => {
       const imageUploadPromises = res.map(re => {
-        if (!state.videoExtensions.includes(path.extname(re.path).slice(1))) {
+        if (
+          state.imageExtensions.includes(
+            path.extname(re.path).slice(1).toLowerCase()
+          )
+        ) {
           return helpers.getFileFromPath(re.path).then(data => {
-            re.data = data
-            re.filetype = 'image/' + path.extname(re.path).slice(1)
-            return videolibraryApi.addImage(re).then(() => {})
+            const image = {
+              id: re.id,
+              data: data,
+              filetype: re.extension
+            }
+            return videolibraryApi.addImage(image).then(() => {})
           })
+        } else if (
+          state.videoExtensions.includes(path.extname(re.path).slice(1))
+        ) {
+          return helpers
+            .handleVideo(re, res_obj)
+            .then(data => {
+              const image = {
+                id: re.id,
+                data: data,
+                filetype: 'image/png'
+              }
+              return videolibraryApi.addImage(image).then(() => {})
+            })
+            .catch(error => {
+              console.error(`视频处理失败: ${re.path}`, error)
+              re.has_thumbnail = false
+              videolibraryApi.modifyVideo(re).then(() => {
+                return re
+              })
+            })
         }
       })
-      return Promise.all(imageUploadPromises)
-        .then(() => {
-          commit('NEW_VIDEOS', res)
-          commit('SET_IS_UPDATING_VIDEOS')
-          return res
-        })
-        .catch(error => {
-          console.error('批量上传图片失败:', error)
-          return error
-        })
+      return Promise.all(imageUploadPromises).then(() => {
+        commit('NEW_VIDEOS', res)
+        commit('SET_IS_UPDATING_VIDEOS')
+        return res
+      })
     })
   },
   newVideo({ commit }, video) {
@@ -217,18 +311,31 @@ const actions = {
       })
   },
   modifyVideo({ commit }, video) {
+    commit('SET_IS_UPDATING_VIDEOS')
     return videolibraryApi
       .modifyVideo(video)
       .then(res => {
         if (video.active) {
           if (video.upimage) {
-            return helpers.getFileFromPath(video.upimage.path).then(data => {
-              res.data = data
-              res.filetype = video.upimage.type
-              return videolibraryApi.addImage(res).then(re => {
-                return re
+            const image = {
+              id: res.id,
+              filetype: video.upimage.type
+            }
+            if (video.upimage.path) {
+              return helpers.getFileFromPath(video.upimage.path).then(data => {
+                image.data = data
+                return videolibraryApi.addImage(image).then(re => {
+                  commit('SET_IS_UPDATING_VIDEOS')
+                  return re
+                })
               })
-            })
+            } else {
+              return helpers.getDateFromFile(video.upimage).then(data => {
+                image.data = data
+                commit('SET_IS_UPDATING_VIDEOS')
+                return videolibraryApi.addImage(image).then(() => {})
+              })
+            }
           }
         } else {
           commit('SET_VIDEO_SELECTION', video)
@@ -236,7 +343,7 @@ const actions = {
         }
       })
       .catch(err => {
-        console.log(err)
+        commit('SET_IS_UPDATING_VIDEOS')
         return err
       })
   },
