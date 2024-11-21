@@ -9,14 +9,28 @@ export default {
       path: video.path,
       notes: video.notes,
       active: video.active,
-      has_thumbnail: video.has_thumbnail
+      has_thumbnail: video.has_thumbnail,
+      extension: video.extension
     }
     const path = `/api/doodle/model_library/assets`
     return client.ppost(path, [data])
   },
-  newVideos(video) {
+  newVideos(videos) {
+    const data = []
+    videos.forEach(video => {
+      data.push({
+        label: video.label,
+        parent_id: video.parent_id,
+        id: video.id,
+        path: video.path,
+        notes: video.notes,
+        active: video.active,
+        has_thumbnail: video.has_thumbnail,
+        extension: video.extension
+      })
+    })
     const path = `/api/doodle/model_library/assets`
-    return client.ppost(path, video)
+    return client.ppost(path, data)
   },
   getVideos() {
     const path = `/api/doodle/model_library/assets`

@@ -53,6 +53,10 @@ export default {
     attachment: {
       type: Object,
       default: () => {}
+    },
+    previewFileType: {
+      type: String,
+      default: ''
     }
   },
   data() {
@@ -72,7 +76,7 @@ export default {
       if (this.previewFileId) {
         const id = this.previewFileId
         return this.active && this.previewFileId
-          ? '/api/doodle/pictures/' + id + '.png'
+          ? '/api/doodle/pictures/' + id + this.previewFileExtension()
           : ''
       } else if (this.attachment) {
         return getDownloadAttachmentPath(this.attachment)
@@ -90,6 +94,10 @@ export default {
       this.isPrompt = false
       this.prompt = ''
       this.$emit('cancel')
+    },
+    previewFileExtension() {
+      if (this.previewFileType.split('/')[1] === 'gif') return '.gif'
+      else return '.png'
     },
     async handleKeydown(event) {
       if (event.ctrlKey && event.key === 'c') {
