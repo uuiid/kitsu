@@ -165,7 +165,6 @@ export default {
       })
     },
     async confirmClicked() {
-      this.$store.commit('SET_IS_UPDATING_VIDEOS')
       this.checkData(this.$refs.video.files)
       if (!this.form.video_errored) {
         this.formatFiles(this.$refs.video.files)

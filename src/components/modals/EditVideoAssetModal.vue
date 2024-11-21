@@ -35,7 +35,7 @@
             :class="{
               button: true,
               'is-primary': true,
-              'is-loading': isLoading
+              'is-loading': isUpdatingVideo
             }"
             @click="confirmClicked"
           >
@@ -60,6 +60,7 @@
 import { modalMixin } from '@/components/modals/base_modal'
 import TextField from '@/components/widgets/TextField.vue'
 import ListView from '@/components/widgets/ListView.vue'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'edit-video-asset-modal',
@@ -118,7 +119,9 @@ export default {
     this.assetSuccessText = ''
   },
 
-  computed: {},
+  computed: {
+    ...mapGetters(['editVideo', 'isUpdatingVideo'])
+  },
 
   methods: {
     getFiles(files) {},

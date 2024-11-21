@@ -171,16 +171,18 @@ export default {
       } else if (this.isActiveVideo && this.isVideo(files[0])) {
         this.videos = files
       } else if (this.isActiveFile) {
-        const fs = require('fs')
+        const path = require('path')
         //const { contextBridge, webUtils } = require('electron')
         //const filesArray = Array.isArray(files) ? files : Array.from(files)
         for (let i = 0; i < files.length; i++) {
           const file = files[i]
+          const file_extname = path.extname(file.path).slice(1).toLowerCase()
           //console.log(webUtils.getPathForFile(file))
-          if (fs.statSync(file.path).isDirectory()) {
-            this.files = [...this.files, ...this.getAllFiles(file.path)]
-          } else {
-            const data = this.formatImageFile(file.path)
+          if (
+            this.videoExtensions.includes(file_extname) ||
+            this.imageExtensions.includes(file_extname)
+          ) {
+            const data = this.formatFiles(file)
             this.files.push(data)
           }
         }
@@ -209,6 +211,18 @@ export default {
         data.has_thumbnail = false
         return data
       }
+    },
+    formatFiles(file) {
+      const path = require('path')
+      const data = {
+        name: path.basename(file.path, path.extname(file.path)),
+        isSelected: false,
+        path: file.path,
+        has_thumbnail: true,
+        extension: file.type,
+        file: file
+      }
+      return data
     },
     getAllFiles(dirPath, arrayOfFiles = []) {
       const fs = require('fs')
