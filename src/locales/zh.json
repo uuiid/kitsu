@@ -1566,10 +1566,24 @@
       "warning": "警告",
       "modify_thumbnail": "修改素材信息",
       "open_file": "打开文件",
-      "refresh": "刷新"
+      "refresh": "刷新",
+      "open_asset_type": "打开该资产类型"
     },
     "scan-project": {
-      "scan-project": "扫描资产"
+      "scan-project": "扫描资产",
+      "start-scan-asset": "开始扫描资产",
+      "name": "名称",
+      "filed": {
+        "number": "编号",
+        "name": "名称",
+        "version_name": "版本名称",
+        "assets_type": "资产类型",
+        "season": "季数",
+        "base_path": "基本路径",
+        "maya_file": "maya rig路径",
+        "solve_file_": "解算路径",
+        "ue_file": "ue路径"
+      }
     },
     "wrong_browser": {
       "title": "Kitsu不支持您的浏览器",

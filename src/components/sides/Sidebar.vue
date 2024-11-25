@@ -123,7 +123,7 @@
                 {{ $t('search.title') }}
               </router-link>
             </p>
-            <p @click="toggleSidebar()">
+            <p @click="toggleSidebar()" v-if="false">
               <router-link :to="{ name: 'asset-library' }">
                 <kitsu-icon class="nav-icon" name="assets" />
                 {{ $t('library.asset_library') }}
@@ -133,6 +133,12 @@
               <router-link :to="{ name: 'video-library' }">
                 <kitsu-icon class="nav-icon" name="videos" />
                 {{ $t('video_library.video_library') }}
+              </router-link>
+            </p>
+            <p @click="toggleSidebar()">
+              <router-link :to="{ name: 'scan-project' }">
+                <kitsu-icon class="nav-icon" name="scan-project" />
+                {{ $t('scan-project.scan-project') }}
               </router-link>
             </p>
           </div>

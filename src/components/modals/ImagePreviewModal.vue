@@ -137,12 +137,12 @@ export default {
 }
 
 .modal-content {
-  width: 100%;
+  width: 95%;
   text-align: center;
   max-height: 100vh;
 
   img {
-    margin-top: 70px;
+    margin-top: 60px;
     max-height: 100vh;
     overflow: auto;
   }

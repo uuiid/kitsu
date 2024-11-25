@@ -30,7 +30,7 @@ import taskStatus from '@/store/modules/taskstatus'
 import taskTypes from '@/store/modules/tasktypes'
 import tasks from '@/store/modules/tasks'
 import user from '@/store/modules/user'
-import videolibrary from '@/store/modules/videolibrary'
+import videoLibrary from '@/store/modules/videolibrary'
 
 Vue.use(Vuex)
 
@@ -62,7 +62,7 @@ const modules = {
   taskTypes,
   taskStatus,
   user,
-  videolibrary
+  videoLibrary
 }
 
 export default new Vuex.Store({
