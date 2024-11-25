@@ -60,6 +60,7 @@ import Timesheets from '@/components/pages/Timesheets.vue'
 import TaskStatus from '@/components/pages/TaskStatus.vue'
 import TaskTypes from '@/components/pages/TaskTypes.vue'
 import WrongBrowser from '@/components/pages/WrongBrowser.vue'
+import ScanProject from '@/components/pages/ScanProject.vue'
 
 const ADMIN_PAGES = [
   'asset-types',
@@ -184,6 +185,11 @@ export const routes = [
         path: 'video-library',
         component: VideoLibrary,
         name: 'video-library'
+      },
+      {
+        path: 'scan-project',
+        component: ScanProject,
+        name: 'scan-project'
       },
       {
         path: 'asset-types',

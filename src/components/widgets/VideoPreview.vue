@@ -35,7 +35,11 @@
     v-else
   >
     <template v-if="!cover">
-      <div class="thumbnail-picture-parent" @click="$emit('onClickedImg')">
+      <div
+        class="thumbnail-picture-parent"
+        @click.left="$emit('onClickedImg')"
+        @click.right="event => onPictureClicked(event)"
+      >
         <img
           class="thumbnail-picture"
           loading="lazy"
@@ -49,8 +53,12 @@
           alt=""
         />
       </div>
-      <span class="view-icon" ref="menuButton" @click.stop="onPictureClicked()">
-        <align-justify :size="18" />
+      <span
+        class="view-icon"
+        ref="menuButton"
+        @click.right="event => onPictureClicked(event)"
+      >
+        <!--align-justify :size="18" /-->
       </span>
       <div
         class="menu"
@@ -74,6 +82,9 @@
           <li @click="menuAction('showBigImage')">
             {{ $t('video_library.show_big_image') }}
           </li>
+          <li @click="menuAction('openVideoType')">
+            {{ $t('video_library.open_asset_type') }}
+          </li>
           <li @click="menuAction('delete')" v-if="isCurrentUserManager">
             {{ $t('video_library.delete') }}
           </li>
@@ -90,7 +101,6 @@
 </template>
 
 <script>
-import { AlignJustify } from 'lucide-vue'
 import { mapGetters } from 'vuex'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
 import VideoViewer from '@/components/previews/VideoViewer.vue'
@@ -137,8 +147,7 @@ export default {
   },
   components: {
     ButtonSimple,
-    VideoViewer,
-    AlignJustify
+    VideoViewer
   },
 
   data() {
@@ -180,19 +189,21 @@ export default {
     window.removeEventListener('click', this.handleClickOutside)
   },
   methods: {
-    onPictureClicked() {
-      this.timerId = setInterval(this.setMenuFocus, 10)
-      const buttonRect = this.$refs.menuButton.getBoundingClientRect()
-
-      // 设置菜单的位置，确保它在最顶层并且位于按钮上方或旁边
-      this.menuLeft = buttonRect.left + 12
-      this.menuTop = buttonRect.top - 10
-
+    onPictureClicked(event) {
       this.isShowMenu = true
+      this.$nextTick(() => {
+        const infoMenuRect = this.$refs.infoMenu.getBoundingClientRect()
+        this.menuLeft = Math.min(
+          window.innerWidth - infoMenuRect.width - 20,
+          event.pageX
+        )
+        this.menuTop = Math.min(
+          window.innerHeight - infoMenuRect.height - 10,
+          event.pageY
+        )
+      })
+
       this.$emit('onShowMenu')
-    },
-    setMenuFocus() {
-      clearInterval(this.timerId)
     },
     onVideoClicked() {
       if (this.isPlaying) {
@@ -269,7 +280,7 @@ span.thumbnail-empty {
 }
 
 span.view-icon {
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0);
   border-radius: 5px;
   color: $light-grey-light;
   display: none;
@@ -282,7 +293,7 @@ span.view-icon {
   transition: all 0.2s ease-in-out;
 
   &:hover {
-    background: rgba(0, 0, 0, 0.75);
+    background: rgba(0, 0, 0, 0);
     color: $white;
   }
 }
@@ -304,7 +315,7 @@ span.view-icon {
 .menu {
   position: fixed; /* 菜单固定在页面的顶层 */
   background-color: var(--background);
-  max-height: 160px;
+  max-height: 300px;
   padding: 10px;
   z-index: 1000; /* 确保菜单在最顶层显示 */
   width: auto;

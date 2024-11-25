@@ -118,5 +118,9 @@ export default {
     })
     const path = `/api/doodle/model_library/assets_tree`
     return client.ppatch(path, data)
+  },
+  getScanProject(bearer) {
+    const path = `/api/doodle/file?${bearer}`
+    return client.pget(path)
   }
 }
