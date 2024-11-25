@@ -216,7 +216,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { TrashIcon } from 'lucide-vue'
+import { TrashIcon } from 'lucide-vue-next'
 import { selectionListMixin } from '@/components/mixins/selection'
 import { formatListMixin } from '@/components/mixins/format'
 import { descriptorMixin } from '@/components/mixins/descriptors'

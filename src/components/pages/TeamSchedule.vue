@@ -194,7 +194,6 @@
  */
 import moment from 'moment-timezone'
 import { firstBy } from 'thenby'
-import { en, fr, zh } from 'vuejs-datepicker/dist/locale'
 import { mapGetters, mapActions } from 'vuex'
 
 import { getPersonTabPath } from '@/lib/path'
@@ -304,16 +303,6 @@ export default {
       'taskTypeMap',
       'user'
     ]),
-
-    locale() {
-      if (this.user.locale === 'fr_FR') {
-        return fr
-      } else if (this.user.locale === 'zh_Hans_CN') {
-        return zh
-      } else {
-        return en
-      }
-    },
 
     daysOffByPerson() {
       return this.daysOff.reduce((acc, dayOff) => {
