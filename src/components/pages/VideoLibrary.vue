@@ -13,7 +13,7 @@
           <search-field
             ref="search-field"
             class="flexrow-item"
-            @change="onSearchChange"
+            @enter="onSearchEnter"
             :can-save="true"
             v-focus
           />
@@ -59,7 +59,7 @@
             class="main-content-left"
             :style="{ width: leftPanelWidth + 'px' }"
           >
-            <div class="treeView">
+            <div class="treeView" @click="setSelected">
               <tree-view
                 v-for="item in videoTypeTreeData"
                 :key="item.id"
@@ -83,16 +83,14 @@
               />
               <div
                 class="has-text-centered"
-                v-else-if="!sortedSharedAssetsByType.length"
+                v-else-if="!displayAllAssets.length"
               >
                 {{ $t('video_library.no_video') }}
               </div>
               <template v-else>
                 <div class="list-head">
                   <h1 class="type-text">
-                    {{ currentVideoType.label }} ({{
-                      sortedSharedAssetsByType.length
-                    }})
+                    {{ currentVideoType.label }} ({{ displayAllAssets.length }})
                   </h1>
                   <button-simple
                     :text="
@@ -123,7 +121,6 @@
                           :width="150"
                           :entity="entity"
                           :preview-file-id="entity.id"
-                          :title="$t('video_library.open_file')"
                           is-rounded-top-border
                           @onMenuAction="menuAction"
                           @onClickedImg="
@@ -376,28 +373,46 @@ export default {
     pageNumbers() {
       return Array.from(
         {
-          length:
-            Math.floor(this.sortedSharedAssetsByType.length / this.maxNum) + 1
+          length: Math.floor(this.displayAllAssets.length / this.maxNum) + 1
         },
         (_, index) => index + 1
       )
     },
     pagedAssets() {
-      return this.sortedSharedAssetsByType.slice(
+      return this.displayAllAssets.slice(
         this.countMinPage(),
         this.countMaxPage()
       )
     },
-    sortedSharedAssetsByType() {
+    displayAllAssets() {
+      return this.keyWord.length === 0
+        ? this.sortedAssetsByType
+        : this.searchAssetsData
+    },
+    sortedAssetsByType() {
       this.getAllChildrenId(this.currentVideoType)
-      return this.videos.filter(v => {
+      return this.videos
+        .filter(v => {
+          return (
+            this.currentTypeAllId.includes(v.parent_id) ||
+            this.currentVideoType.id === 'all'
+          )
+        })
+        .sort((a, b) => a.label.localeCompare(b.label))
+    },
+    searchAssetsData() {
+      return this.sortedAssetsByType.filter(v => {
         return (
-          (this.currentTypeAllId.includes(v.parent_id) ||
-            this.currentVideoType.id === 'all') &&
-          (v.label.indexOf(this.keyWord) !== -1 ||
-            this.originalVideoTypes
-              .get(v.parent_id)
-              .label.indexOf(this.keyWord) !== -1)
+          v.label.indexOf(this.keyWord) !== -1 ||
+          (
+            (this.originalVideoTypes.get(
+              this.originalVideoTypes.get(v.parent_id).parent_id
+            )
+              ? this.originalVideoTypes.get(
+                  this.originalVideoTypes.get(v.parent_id).parent_id
+                ).label
+              : '') + this.originalVideoTypes.get(v.parent_id).label
+          ).indexOf(this.keyWord) !== -1
         )
       })
     }
@@ -452,6 +467,15 @@ export default {
         this.pageStartIndex -= 1
       }
     },
+    setAncestorOpened(targetId) {
+      const ancestors = this.getAncestors(this.videoTypeTreeData, targetId)
+      this.setCurrentVideoType(ancestors[ancestors.length - 1])
+      ancestors.forEach(v => {
+        if (!this.openedVideoTypes.has(v.id)) {
+          this.setVideoTypeOpen(v)
+        }
+      })
+    },
     async refresh() {
       try {
         await this.loadVideosType()
@@ -463,13 +487,13 @@ export default {
     },
     countMinPage() {
       return Math.min(
-        this.sortedSharedAssetsByType.length,
+        this.displayAllAssets.length,
         this.currentPage * this.maxNum
       )
     },
     countMaxPage() {
       return Math.min(
-        this.sortedSharedAssetsByType.length,
+        this.displayAllAssets.length,
         (this.currentPage + 1) * this.maxNum
       )
     },
@@ -566,6 +590,9 @@ export default {
       } else if (action === 'modifyThumbnail') {
         this.currentSelectVideo = entity
         this.modals.isEditVideoAssetDisplayed = true
+      } else if (action === 'openVideoType') {
+        this.setAncestorOpened(entity.parent_id)
+        console.log('openVideoType')
       }
     },
     toggleEntity(entity) {
@@ -574,15 +601,13 @@ export default {
           this.currentSelectVideo = entity
         } else {
           this.shiftEndSelection = entity
-          const start = this.sortedSharedAssetsByType.indexOf(
-            this.currentSelectVideo
-          )
-          const end = this.sortedSharedAssetsByType.indexOf(entity)
+          const start = this.displayAllAssets.indexOf(this.currentSelectVideo)
+          const end = this.displayAllAssets.indexOf(entity)
           let tempSelected = []
           if (start < end) {
-            tempSelected = this.sortedSharedAssetsByType.slice(start, end + 1)
+            tempSelected = this.displayAllAssets.slice(start, end + 1)
           } else {
-            tempSelected = this.sortedSharedAssetsByType.slice(end, start + 1)
+            tempSelected = this.displayAllAssets.slice(end, start + 1)
           }
           this.resetSelectedVideos(tempSelected)
         }
@@ -609,12 +634,17 @@ export default {
     //     //if (i.id === item.id) i.isOpen = item.isOpen
     //   })
     // },
-    setSelected(item) {},
+    setSelected(item) {
+      this.keyWord = ''
+    },
     isSelected(entity) {
       return this.selectedVideos.has(entity.id)
     },
-    onSearchChange() {
+    onSearchEnter() {
       this.keyWord = this.searchField.getValue() || ''
+    },
+    onSearchChange() {
+      if (!this.searchField.getValue()) this.keyWord = ''
     },
     updateRoute({ production, search }) {
       const query = {
@@ -681,7 +711,7 @@ export default {
     editVideoSelection() {
       this.$store.commit('SET_IS_EDIT_VIDEO_SELECTION')
       if (this.isEditVideoSelection) {
-        this.resetSelectedVideos(this.sortedSharedAssetsByType)
+        this.resetSelectedVideos(this.displayAllAssets)
       }
     },
     showNewModal() {
@@ -709,7 +739,7 @@ export default {
       }
     },
     showNewTypeModal() {
-      console.log(this.currentVideoType)
+      //console.log(this.currentVideoType)
       this.modals.isNewTypeDisplayed = true
       this.$refs.edit_video_library_add_type_modal.videoTypeToCreat.type =
         this.ancestorLabels
@@ -724,7 +754,7 @@ export default {
 
       //this.getAllChildrenId(this.currentVideoType)
     },
-    sortedSharedAssetsByType() {
+    displayAllAssets() {
       this.pageStartIndex = 0
       this.currentPage = 0
       if (new Date() - this.refreshTimer > 60000) {
@@ -795,6 +825,7 @@ export default {
   overflow: auto;
   //border: thick dotted #ff0000;
 }
+
 .items {
   display: flex;
   flex-wrap: wrap;
@@ -802,6 +833,7 @@ export default {
   //height: 100%;
   //overflow: auto;
 }
+
 .pagination {
   display: flex;
   justify-content: right;

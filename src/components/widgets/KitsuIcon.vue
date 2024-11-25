@@ -48,6 +48,7 @@ import user from '@/assets/icons/fi-user.svg'
 import userCheck from '@/assets/icons/fi-user-check.svg'
 import watch from '@/assets/icons/fi-eye.svg'
 import myWorksheet from '@/assets/icons/fi-task-status.svg'
+import scanProject from '@/assets/icons/fi-scan-assets.svg'
 
 // Player icons
 
@@ -131,7 +132,8 @@ const icons = {
   'user-check': userCheck,
   team,
   watch,
-  waveform
+  waveform,
+  'scan-project': scanProject
 }
 
 export default {

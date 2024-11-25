@@ -432,6 +432,11 @@ const actions = {
       commit('MODIFY_VIDEO_TYPE_ORDER', res)
       return res
     })
+  },
+  getScanProject({ commit }, bearer) {
+    return videolibraryApi.getScanProject(bearer).then(result => {
+      return result
+    })
   }
 }
 
