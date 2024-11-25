@@ -79,6 +79,7 @@ export default {
       default: () => {}
     }
   },
+  emits: ['on-confirm', 'cancel'],
 
   data() {
     return {
@@ -107,7 +108,7 @@ export default {
       this.$emit('cancel')
     },
     confirmClicked() {
-      this.$emit('onConfirm')
+      this.$emit('on-confirm')
     }
   }
 }

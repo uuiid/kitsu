@@ -13,7 +13,6 @@ export const descriptorMixin = {
     'metadata-changed'
   ],
 
-
   data() {
     return {
       descriptorMixinIsReversal: false

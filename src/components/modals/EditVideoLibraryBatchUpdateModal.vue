@@ -27,8 +27,8 @@
           ref="video"
           :is-active-file="true"
           :errored="form.video_errored"
-          @setError="value => (form.video_errored = value)"
-          @customEvents="getFiles"
+          @set-error="value => (form.video_errored = value)"
+          @custom-events="getFiles"
         ></list-view>
         <div class="has-text-right">
           <a
@@ -120,6 +120,7 @@ export default {
       default: ''
     }
   },
+  emits: ['on-confirm', 'cancel'],
 
   data() {
     return {
@@ -168,7 +169,7 @@ export default {
       this.checkData(this.$refs.video.files)
       if (!this.form.video_errored) {
         this.formatFiles(this.$refs.video.files)
-        this.$emit('onConfirm', this.$refs.video.files)
+        this.$emit('on-confirm', this.$refs.video.files)
       }
     },
     clearData() {

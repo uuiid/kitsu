@@ -19,8 +19,8 @@
           ref="video"
           :any-file-type="true"
           :errored="form.video_errored"
-          @setError="value => (form.video_errored = value)"
-          @customEvents="getFiles"
+          @set-error="value => (form.video_errored = value)"
+          @custom-events="getFiles"
         >
         </list-view>
         <label class="label">{{ $t('video_library.thumbnail') }}</label>
@@ -29,7 +29,7 @@
           :is-active-text="true"
           :is-active-image="true"
           :errored="form.image_errored"
-          @setError="value => (form.image_errored = value)"
+          @set-error="value => (form.image_errored = value)"
         >
         </list-view>
         <form @submit.prevent>
@@ -137,6 +137,7 @@ export default {
       default: ''
     }
   },
+  emits: ['on-confirm', 'cancel'],
 
   data() {
     return {
@@ -210,7 +211,7 @@ export default {
         this.videoToCreat.has_thumbnail = true
         this.videoToCreat.extension = this.$refs.video.videos[0].type
         this.videoToCreat.upimage = this.$refs.image.images[0]
-        this.$emit('onConfirm', this.videoToCreat)
+        this.$emit('on-confirm', this.videoToCreat)
         this.clearData()
       }
     },

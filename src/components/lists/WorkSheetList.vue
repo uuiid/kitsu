@@ -294,6 +294,7 @@ export default {
       default: ''
     }
   },
+  emits: ['set-sort-task', 'remove-sort-task', 'scroll'],
 
   data() {
     return {
@@ -312,8 +313,6 @@ export default {
       this.$refs['th-type'].offsetWidth +
       'px'
   },
-
-  beforeDestroy() {},
 
   computed: {
     ...mapGetters([

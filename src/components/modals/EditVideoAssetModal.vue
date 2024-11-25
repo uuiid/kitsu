@@ -27,8 +27,8 @@
           :is-active-image="true"
           :errored="form.image_errored"
           :asset-to-edit="asset_to_import"
-          @setError="value => (form.image_errored = value)"
-          @customEvents="getFiles"
+          @set-error="value => (form.image_errored = value)"
+          @custom-events="getFiles"
         ></list-view>
         <div class="has-text-right">
           <a
@@ -102,6 +102,7 @@ export default {
       default: () => {}
     }
   },
+  emits: ['on-confirm', 'cancel'],
 
   data() {
     return {
@@ -143,7 +144,7 @@ export default {
       if (this.form.image_errored) {
         this.asset_to_import.has_thumbnail = true
       }
-      this.$emit('onConfirm', this.asset_to_import)
+      this.$emit('on-confirm', this.asset_to_import)
     }
   },
   watch: {

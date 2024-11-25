@@ -198,6 +198,7 @@ export default {
       default: ''
     }
   },
+  emits: ['scroll'],
 
   data() {
     return {
@@ -216,8 +217,6 @@ export default {
       this.$refs['th-type'].offsetWidth +
       'px'
   },
-
-  beforeDestroy() {},
 
   computed: {
     ...mapGetters([

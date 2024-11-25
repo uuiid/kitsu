@@ -35,8 +35,6 @@
 import { mapGetters } from 'vuex'
 import { ChevronDownIcon } from 'lucide-vue-next'
 
-import DepartmentName from '@/components/widgets/DepartmentName.vue'
-
 export default {
   name: 'metadata-header',
 
@@ -57,8 +55,7 @@ export default {
   },
 
   components: {
-    ChevronDownIcon,
-    DepartmentName
+    ChevronDownIcon
   },
 
   emits: ['show-metadata-header-menu'],

@@ -42,8 +42,8 @@
         <div class="preview">{{ video.name }}</div>
       </div>
     </div>
-    <div class="parent_preview" v-if="isActiveImage">
-      <div v-for="(image, index) in images" :key="index" v-if="!isShow">
+    <div class="parent_preview" v-if="isActiveImage && isShow">
+      <div v-for="(image, index) in images" :key="index">
         <img class="img-preview" :src="getURL(image)" alt="" />
       </div>
       <img
@@ -113,6 +113,7 @@ export default {
       default: () => {}
     }
   },
+  emits: ['on-add-files', 'set-error'],
   data() {
     return {
       forms: [],
@@ -130,7 +131,7 @@ export default {
   mounted() {
     document.addEventListener('paste', this.onPastes, false)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     window.removeEventListener('paste', this.onPastes)
   },
   computed: {
@@ -250,7 +251,7 @@ export default {
     handleDragEnter(event) {
       event.preventDefault()
       event.dataTransfer.dropEffect = 'copy'
-      this.$emit('setError', false)
+      this.$emit('set-error', false)
     },
     handleDragOver(event) {
       event.preventDefault()

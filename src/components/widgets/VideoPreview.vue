@@ -9,7 +9,7 @@
         extension: entity.preview_file_extension
       }"
       :is-rounded-top-border="isRoundedTopBorder"
-      @click.native="onVideoClicked()"
+      @click="onVideoClicked()"
     />
     <button-simple
       class="button-play"
@@ -37,7 +37,7 @@
     <template v-if="!cover">
       <div
         class="thumbnail-picture-parent"
-        @click.left="$emit('onClickedImg')"
+        @click.left="$emit('on-clicked-img')"
         @click.right="event => onPictureClicked(event)"
       >
         <img
@@ -149,6 +149,7 @@ export default {
     ButtonSimple,
     VideoViewer
   },
+  emits: ['on-clicked-img', 'on-show-menu', 'on-menu-action'],
 
   data() {
     return {
@@ -184,7 +185,7 @@ export default {
       return `preview-${previewFileId + this.refreshKey.toString()}`
     }
   },
-  beforeDestroy() {
+  beforeUnmount() {
     // 移除点击事件监听器
     window.removeEventListener('click', this.handleClickOutside)
   },
@@ -202,8 +203,7 @@ export default {
           event.pageY
         )
       })
-
-      this.$emit('onShowMenu')
+      this.$emit('on-show-menu')
     },
     onVideoClicked() {
       if (this.isPlaying) {
@@ -216,7 +216,7 @@ export default {
       this.isPlaying = !this.isPlaying
     },
     menuAction(action) {
-      this.$emit('onMenuAction', this.entity, action)
+      this.$emit('on-menu-action', this.entity, action)
       this.closeMenu()
     },
     closeMenu() {
