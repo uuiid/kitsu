@@ -263,7 +263,6 @@
 import { CornerLeftUpIcon } from 'lucide-vue-next'
 import moment from 'moment'
 import firstBy from 'thenby'
-import { en, fr, zh } from 'vuejs-datepicker/dist/locale'
 import { mapGetters, mapActions } from 'vuex'
 
 import csv from '@/lib/csv'
@@ -602,15 +601,6 @@ export default {
 
     entityMap() {
       return this[`${this.entityType.toLowerCase()}Map`]
-    },
-
-    locale() {
-      if (this.user.locale === 'fr_FR') {
-        return fr
-      } else if (this.user.locale === 'zh_Hans_CN') {
-        return zh
-      }
-      return en
     },
 
     productionStartDate() {

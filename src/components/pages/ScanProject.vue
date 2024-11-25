@@ -100,7 +100,6 @@
                     v-for="(_, key) in tableHeadFiled"
                     @click="onClickTbody(asset, key)"
                     @copy="onCopyTBody(asset, key)"
-                    @mousemove="event => printText(event, asset, key)"
                   >
                     {{ formatTbodyData(asset, key) }}
                   </td>
@@ -129,7 +128,7 @@
 import { mapGetters, mapActions } from 'vuex'
 import PageTitle from '@/components/widgets/PageTitle.vue'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
-import { SearchIcon } from 'lucide-vue'
+import { SearchIcon } from 'lucide-vue-next'
 
 export default {
   name: 'scan-project',
