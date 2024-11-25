@@ -25,7 +25,6 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { en, fr, zh } from 'vuejs-datepicker/dist/locale'
 
 export default {
   name: 'date-field',
@@ -89,17 +88,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['user', 'isDarkTheme']),
-
-    locale() {
-      if (this.user.locale === 'fr_FR') {
-        return fr
-      } else if (this.user.locale === 'zh_Hans_CN') {
-        return zh
-      } else {
-        return en
-      }
-    }
+    ...mapGetters(['user', 'isDarkTheme'])
   },
 
   methods: {

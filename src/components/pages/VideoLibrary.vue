@@ -65,8 +65,8 @@
                 :key="item.id"
                 ref="TreeView"
                 :item="item"
-                @onSelectedChange="setSelected"
-                @onAddType="showNewTypeModal"
+                @on-selected-change="setSelected"
+                @on-add-type="showNewTypeModal"
               ></tree-view>
             </div>
           </div>
@@ -122,8 +122,8 @@
                           :entity="entity"
                           :preview-file-id="entity.id"
                           is-rounded-top-border
-                          @onMenuAction="menuAction"
-                          @onClickedImg="
+                          @on-menu-action="menuAction"
+                          @on-clicked-img="
                             isEditVideoSelection
                               ? toggleEntity(entity)
                               : openFileWith(entity)
@@ -191,7 +191,7 @@
         :video-type-id="currentVideoType.id"
         :video-type="ancestorLabels"
         @cancel="modals.isNewDisplayed = false"
-        @onConfirm="confirmNewVideo"
+        @on-confirm="confirmNewVideo"
       />
       <edit-video-library-batch-update-modal
         ref="edit_video_library_batch_update_modal"
@@ -199,7 +199,7 @@
         :video-type-id="currentVideoType.id"
         :video-type="ancestorLabels"
         @cancel="modals.isBatchNewDisplayed = false"
-        @onConfirm="confirmBatchNewVideo"
+        @on-confirm="confirmBatchNewVideo"
       />
       <edit-video-library-add-type-modal
         ref="edit_video_library_add_type_modal"
@@ -207,14 +207,14 @@
         :parent-video-type="currentVideoType"
         :video-type="ancestorLabels"
         @cancel="modals.isNewTypeDisplayed = false"
-        @onConfirm="confirmNewVideoType"
+        @on-confirm="confirmNewVideoType"
       />
       <edit-video-asset-modal
         ref="edit_video_asset_modal"
         :active="modals.isEditVideoAssetDisplayed"
         :asset-to-edit="currentSelectVideo"
         @cancel="modals.isEditVideoAssetDisplayed = false"
-        @onConfirm="confirmEditVideo"
+        @on-confirm="confirmEditVideo"
       />
       <image-preview-modal
         ref="image_preview_modal"
@@ -229,7 +229,7 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
-import { ChevronLeft, ChevronRight } from 'lucide-vue'
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import TreeView from '@/components/widgets/TreeView.vue'
 import VideoPreview from '@/components/widgets/VideoPreview.vue'
 import PageTitle from '@/components/widgets/PageTitle.vue'
@@ -335,7 +335,7 @@ export default {
     this.rightPanelWidth = window.innerWidth - this.leftPanelWidth - 10
     window.addEventListener('resize', this.handleResize)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     window.removeEventListener('resize', this.handleResize)
     window.removeEventListener('keydown', this.handleKeydown)
     window.removeEventListener('keyup', this.handleKeyup)
@@ -634,7 +634,7 @@ export default {
     //     //if (i.id === item.id) i.isOpen = item.isOpen
     //   })
     // },
-    setSelected(item) {
+    setSelected() {
       this.keyWord = ''
     },
     isSelected(entity) {

@@ -63,7 +63,6 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { en, fr, zh } from 'vuejs-datepicker/dist/locale'
 import { AlertTriangleIcon } from 'lucide-vue-next'
 import moment from 'moment-timezone'
 
@@ -123,16 +122,6 @@ export default {
 
     isEditing() {
       return Boolean(this.dayOffToEdit?.id)
-    },
-
-    locale() {
-      if (this.user.locale === 'fr_FR') {
-        return fr
-      } else if (this.user.locale === 'zh_Hans_CN') {
-        return zh
-      } else {
-        return en
-      }
     }
   },
 

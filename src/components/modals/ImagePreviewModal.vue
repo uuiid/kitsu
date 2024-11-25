@@ -25,7 +25,7 @@
 </template>
 
 <script>
-import { ArrowDownIcon, ArrowUpRightIcon } from 'lucide-vue'
+import { ArrowDownIcon, ArrowUpRightIcon } from 'lucide-vue-next'
 
 import { getDownloadAttachmentPath } from '@/lib/path'
 
@@ -59,6 +59,7 @@ export default {
       default: ''
     }
   },
+  emits: ['cancel'],
   data() {
     return {
       prompt: '',
@@ -68,7 +69,7 @@ export default {
   mounted() {
     window.addEventListener('keydown', this.handleKeydown)
   },
-  beforeDestroy() {
+  beforeUnmount() {
     window.removeEventListener('keydown', this.handleKeydown)
   },
   computed: {

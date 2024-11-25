@@ -95,6 +95,7 @@ export default {
       type: Boolean
     }
   },
+  emits: ['add-sort-task', 'cancel'],
 
   data() {
     return {

@@ -159,6 +159,7 @@ export default {
       default: () => {}
     }
   },
+  emits: ['scroll'],
 
   data() {
     return {
@@ -172,8 +173,6 @@ export default {
     this.page = 1
     this.resizeHeaders()
   },
-
-  beforeDestroy() {},
 
   computed: {
     ...mapGetters([

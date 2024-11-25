@@ -1150,8 +1150,7 @@ td.ready-for {
     background: color-mix(
       in srgb,
       var(--shared-color) 20%,
-      transparent
-      'isSimpleThumbnails',
+      transparent 'isSimpleThumbnails'
     ) !important;
 
     &:hover {

@@ -101,6 +101,7 @@ export default {
       default: () => {}
     }
   },
+  emits: ['on-confirm', 'cancel'],
   data() {
     return {
       form: {
@@ -156,7 +157,7 @@ export default {
         } else {
           this.videoTypeToCreat.parent_id = this.parentVideoType.id
         }
-        this.$emit('onConfirm', this.videoTypeToCreat)
+        this.$emit('on-confirm', this.videoTypeToCreat)
         this.clearData()
       }
     },

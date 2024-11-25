@@ -39,7 +39,7 @@
         :key="child.id"
         :item="child"
         :all="allOptions"
-        @onAddType="addType"
+        @on-add-type="addType"
       />
     </ul>
     <message-box
@@ -59,7 +59,7 @@ import {
   ArrowUp,
   ArrowDown,
   Dot
-} from 'lucide-vue'
+} from 'lucide-vue-next'
 import { mapActions, mapGetters } from 'vuex'
 import MessageBox from '@/components/modals/MessageBox.vue'
 
@@ -89,6 +89,7 @@ export default {
       default: () => {}
     }
   },
+  emits: ['on-selected-change', 'on-add-type'],
   data() {
     return {
       Options: this.options,
@@ -157,7 +158,7 @@ export default {
     },
     selectItem(selectedItem) {
       this.$store.commit('SET_CURRENT_VIDEO_TYPE', selectedItem)
-      this.$emit('onSelectedChange', selectedItem)
+      this.$emit('on-selected-change', selectedItem)
     },
     orderUp() {
       this.modifyVideoTypeOrder({
@@ -193,7 +194,7 @@ export default {
       })
     },
     addType() {
-      this.$emit('onAddType')
+      this.$emit('on-add-type')
     },
     deleteType() {
       this.deleteVideoType().then(res => {
