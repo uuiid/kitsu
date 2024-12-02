@@ -109,7 +109,7 @@ import { formatListMixin } from '@/components/mixins/format'
 import { descriptorMixin } from '@/components/mixins/descriptors'
 
 import { PAGE_SIZE } from '@/lib/pagination'
-import { formatSimpleDate } from '@/lib/time'
+import { formatFullDate } from '@/lib/time'
 
 import DescriptionCell from '@/components/cells/DescriptionCell'
 import TableInfo from '@/components/widgets/TableInfo'
@@ -214,7 +214,7 @@ export default {
     },
 
     formatDate(date) {
-      return date ? formatSimpleDate(date) : ''
+      return date ? formatFullDate(date) : ''
     },
 
     onBodyScroll(event, position) {
@@ -330,8 +330,7 @@ export default {
 .start-date,
 .due-date {
   min-width: 110px;
-  text-align: center;
-  width: 110px;
+  width: 180px;
 }
 
 td.due-date {

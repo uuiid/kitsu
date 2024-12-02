@@ -222,6 +222,7 @@
         :preview-file-id="currentSelectVideo.id"
         :preview-file-type="currentSelectVideo.extension"
         @cancel="modals.isImagePreviewDisplayed = false"
+        @switch-image="switchImage"
       />
     </div>
   </div>
@@ -593,6 +594,21 @@ export default {
       } else if (action === 'openVideoType') {
         this.setAncestorOpened(entity.parent_id)
         console.log('openVideoType')
+      }
+    },
+    switchImage(isNext) {
+      if (isNext) {
+        const start = this.displayAllAssets.indexOf(this.currentSelectVideo)
+        this.currentSelectVideo = this.displayAllAssets.slice(
+          start + 1,
+          start + 2
+        )[0]
+      } else {
+        const start = this.displayAllAssets.indexOf(this.currentSelectVideo)
+        this.currentSelectVideo = this.displayAllAssets.slice(
+          start - 1,
+          start
+        )[0]
       }
     },
     toggleEntity(entity) {
