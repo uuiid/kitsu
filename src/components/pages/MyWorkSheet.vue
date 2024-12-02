@@ -514,7 +514,7 @@ export default {
       line.push(formatFullDate(t.start_time))
       line.push(formatFullDate(t.end_time))
       const duration = Number(
-        t.duration / (1000 * 1000 * 60 * 60 * 24)
+        (t.duration / (1000 * 1000 * 60 * 60 * 24)) * 3
       ).toFixed(9)
       line.push(duration)
       line.push(t.time_remark)
@@ -905,8 +905,8 @@ export default {
       this.person = null
       this.calculatedTasks = new Map()
     },
-    person() {
-      this.getTimeClick()
+    person(val) {
+      if (val) this.getTimeClick()
     },
     yearString() {
       this.getTimeClick()
