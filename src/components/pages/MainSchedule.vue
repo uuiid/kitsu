@@ -45,7 +45,6 @@
  */
 import { mapGetters, mapActions } from 'vuex'
 import moment from 'moment-timezone'
-import { en, fr, zh } from 'vuejs-datepicker/dist/locale'
 import { getProductionSchedulePath } from '@/lib/path'
 
 import {
@@ -101,17 +100,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['openProductions', 'taskTypeMap', 'user']),
-
-    locale() {
-      if (this.user.locale === 'fr_FR') {
-        return fr
-      } else if (this.user.locale === 'zh_Hans_CN') {
-        return zh
-      } else {
-        return en
-      }
-    }
+    ...mapGetters(['openProductions', 'taskTypeMap', 'user'])
   },
 
   methods: {
