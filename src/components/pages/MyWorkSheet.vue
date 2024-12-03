@@ -375,7 +375,6 @@ export default {
         value: `${month}`
       }))
     },
-
     dayOptions() {
       const currentYear = `${moment().year()}`
       const currentMonth = moment().month() + 1
@@ -513,9 +512,7 @@ export default {
       line.push(`EP${episodes}`)
       line.push(formatFullDate(t.start_time))
       line.push(formatFullDate(t.end_time))
-      const duration = Number(
-        (t.duration / (1000 * 1000 * 60 * 60 * 24)) * 3
-      ).toFixed(9)
+      const duration = Number(t.duration / (1000 * 1000 * 60 * 60 * 8))
       line.push(duration)
       line.push(t.time_remark)
       line.push(t.entity_name)

@@ -42,7 +42,9 @@
               {{ $t('assets.fields.description') }}
             </th>
             <th scope="col" class="estimation">
-              {{ $t('tasks.fields.duration').substring(0, 3) }}.
+              {{ $t('tasks.fields.duration').substring(0, 3) }} ({{
+                allDuration
+              }})
             </th>
             <th scope="col" class="start-date" v-if="!isToCheck">
               {{ $t('doodle.start_date') }}
@@ -323,6 +325,14 @@ export default {
       'taskTypeMap',
       'user'
     ]),
+
+    allDuration() {
+      let duration = 0
+      this.tasks.forEach(task => {
+        duration += Number(task.duration)
+      })
+      return duration / (1000 * 1000 * 60 * 60 * 8)
+    },
 
     displayedTasks() {
       return this.tasks.slice(0, this.page * PAGE_SIZE)
