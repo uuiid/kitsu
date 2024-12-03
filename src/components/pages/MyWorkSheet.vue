@@ -675,6 +675,7 @@ export default {
         .dispatch(action, l_params)
         .then(res => {
           this.dutys = res
+          this.getTaskTime(user_id)
         })
         .catch(err => {
           console.log('getDutyList Error')
@@ -701,17 +702,20 @@ export default {
       this.$store
         .dispatch(action, l_params)
         .then(res => {
-          console.log('getDutyDingDing Done')
-          res.forEach(n => {
-            let contain = false
-            for (const t of this.dutys) {
-              if (t.id === n.id) {
-                contain = true
+          console.log(res)
+          if (res) {
+            res.forEach(n => {
+              let contain = false
+              for (const t of this.dutys) {
+                if (t.id === n.id) {
+                  contain = true
+                }
               }
-            }
-            if (!contain) this.dutys.push(n)
-          })
+              if (!contain) this.dutys.push(n)
+            })
+          }
         })
+
         .catch(err => {
           console.log('getDutyDingDing Error')
           console.error(err)
