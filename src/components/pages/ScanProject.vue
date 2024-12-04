@@ -106,10 +106,11 @@
                 </tr>
               </tbody>
             </table>
-            <div class="has-text-right">共:{{ assetData.length }}</div>
           </div>
         </div>
+        <div class="has-text-right">共:{{ assetData.length }}</div>
       </div>
+
       <div
         class="prompt"
         :class="{ 'prompt-animation': prompt.length > 0 }"
@@ -144,7 +145,17 @@ export default {
       selectedProduct: new Map(),
       selectedAssetType: new Map(),
       assetData: [],
-      tableHeadFiled: this.$t('scan_project.filed'),
+      tableHeadFiled: {
+        number: '编号',
+        name: '名称',
+        version_name: '版本名称',
+        assets_type: '资产类型',
+        season: '季数',
+        base_path: '基本路径',
+        ue_file: 'ue路径',
+        maya_file: 'maya rig路径',
+        solve_file_: '解算路径'
+      },
       searchQuery: '',
       prompt: '',
       text: 'CESHI',
@@ -202,6 +213,7 @@ export default {
 
         .catch(error => {
           this.assetData = []
+          console.log(error)
         })
     },
 
@@ -265,7 +277,7 @@ export default {
         clearInterval(intervalId)
       }, 2000)
     },
-    printText(event, asset, key) {
+    printText(event) {
       this.sty.top = `${event.pageY}px`
       this.sty.left = `${event.pageX}px`
       //this.text = this.formatTbodyData(asset, key)
