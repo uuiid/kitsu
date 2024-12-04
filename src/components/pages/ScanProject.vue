@@ -1,11 +1,11 @@
 <template>
-  <div @mousedown="isShowText = true" @mouseup="isShowText = false">
+  <div>
     <div class="columns fixed-page">
       <div class="scan-project">
         <header class="header interval">
           <page-title
             class="mt1"
-            :text="$t('scan-project.scan-project')"
+            :text="$t('scan_project.scan_project')"
             :bold="true"
           />
         </header>
@@ -50,7 +50,7 @@
         <div class="operate interval">
           <button-simple
             class="confirm-button"
-            :text="$t('scan-project.start-scan-asset')"
+            :text="$t('scan_project.start_scan_asset')"
             :class="{
               'is-loading': isLoading
             }"
@@ -64,7 +64,7 @@
             <input
               ref="search-field"
               class="input"
-              :placeholder="$t('scan-project.name')"
+              :placeholder="$t('scan_project.name')"
               v-model.trim="searchQuery"
             />
           </div>
@@ -144,7 +144,7 @@ export default {
       selectedProduct: new Map(),
       selectedAssetType: new Map(),
       assetData: [],
-      tableHeadFiled: this.$t('scan-project.filed'),
+      tableHeadFiled: this.$t('scan_project.filed'),
       searchQuery: '',
       prompt: '',
       text: 'CESHI',
@@ -164,7 +164,7 @@ export default {
     },
     displayAssetTypes() {
       return JSON.parse(JSON.stringify(this.assetTypes)).filter(
-        assetType => !assetType.name
+        assetType => assetType.name
       )
     },
     displaySoftAsset() {
@@ -274,7 +274,7 @@ export default {
   watch: {},
   metaInfo() {
     return {
-      title: `${this.$t('scan-project.scan-project')} - Kitsu`
+      title: `${this.$t('scan_project.scan_project')} - Kitsu`
     }
   }
 }
