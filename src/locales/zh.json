@@ -1567,22 +1567,36 @@
       "modify_thumbnail": "修改素材信息",
       "open_file": "打开文件",
       "refresh": "刷新",
-      "open_asset_type": "打开该资产类型"
+      "open_asset_type": "打开该资产类型",
+      "placeholder": "拖入文件或Ctrl+V"
     },
-    "scan-project": {
-      "scan-project": "扫描资产",
-      "start-scan-asset": "开始扫描资产",
+    "scan_project": {
+      "scan_project": "扫描资产",
+      "start_scan_asset": "开始扫描资产",
       "name": "名称",
       "filed": {
         "number": "编号",
         "name": "名称",
-        "version_name": "版本名称",
+        "version_name":                                                                                                                                                                                                                                                                                 "版本名称",
         "assets_type": "资产类型",
         "season": "季数",
         "base_path": "基本路径",
+        "ue_file": "ue路径",
         "maya_file": "maya rig路径",
-        "solve_file_": "解算路径",
-        "ue_file": "ue路径"
+        "solve_file_": "解算路径"
+      }
+    },
+    "doodle_work": {
+      "doodle_work": "自动工作台",
+      "add_doodle_work": "添加任务",
+      "view_log": "查看日志",
+      "filed": {
+        "name": "文件名",
+        "status": "状态",
+        "source_computer": "运行主机",
+        "run_time": "运行时间",
+        "submitter": "创建者",
+        "submit_time": "创建时间"
       }
     },
     "wrong_browser": {
