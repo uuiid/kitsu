@@ -79,8 +79,8 @@
         </thead>
         <tbody class="datatable-body" v-if="tasks.length > 0">
           <tr
-            v-for="(entry, i) in displayedTasks"
-            :key="entry + '-' + i"
+            v-for="(task, i) in displayedTasks"
+            :key="task.computing_time.id"
             :class="{
               'datatable-row': true,
               'datatable-row--selectable': true,
@@ -88,7 +88,6 @@
                 selectionGrid && selectionGrid[i] ? selectionGrid[i][0] : false
             }"
             @click="onLineClicked(entry, $event)"
-            v-show="entry && !entry.visible"
           >
             <td
               class="datatable-row-header datatable-row-header--nobd"
@@ -97,13 +96,13 @@
               <production-name-cell
                 class="entity-name"
                 :is-tooltip="true"
-                :entry="productionMap.get(entry.project_id)"
+                :entry="task.project"
               />
             </td>
             <task-type-cell
               class="type datatable-row-header datatable-row-header--nobd"
-              :production-id="entry.project_id"
-              :task-type="getTaskType(entry)"
+              :production-id="task.project.id"
+              :task-type="task.task_type"
               :style="{ left: colTypePosX }"
             />
             <td
@@ -114,24 +113,24 @@
                 <entity-thumbnail
                   :empty-width="60"
                   :empty-height="40"
-                  :entity="{ preview_file_id: entry.entity_preview_file_id }"
+                  :entity="{ preview_file_id: task.entity.preview_file_id }"
                 />
-                <router-link class="entity-name" :to="entityPath(entry)">
-                  {{ entry.entity_name }}
-                </router-link>
+                <!--router-link class="entity-name" :to="entityPath(task.entity)">
+              {{ task.entity.entity_name }}
+            </router-link-->
               </div>
             </td>
 
             <td class="episode">
               <div class="flexrow" :title="''">
-                {{ getEpisodes(entry) }}
+                {{ getEpisodes(task) }}
               </div>
             </td>
 
             <description-cell
               class="description"
-              :title="entry.entity_description"
-              :entry="{ description: entry.entity_description }"
+              :title="task.entity.entity_description"
+              :entry="{ description: task.entity.entity_description }"
               v-if="isDescriptionPresent && !isToCheck"
             />
             <td class="assignees" v-if="isToCheck">
@@ -141,48 +140,48 @@
                   :person="person"
                   :size="30"
                   :font-size="16"
-                  v-for="person in getSortedPeople(entry.assignees)"
+                  v-for="person in getSortedPeople(task.assignees)"
                 />
               </div>
             </td>
             <td class="estimation" :title="$t('doodle.duration_cue_word')">
               <input
                 class="input-editor"
-                @keyup.enter="event => durationDate(event, entry)"
+                @keyup.enter="event => durationDate(event, task.computing_time)"
                 min="0"
-                :value="getDurationValue(entry.duration)"
-                @focusout="event => durationDate(event, entry)"
+                :value="getDurationValue(task.computing_time.duration)"
+                @focusout="event => durationDate(event, task.computing_time)"
               />
             </td>
             <td class="start-date" v-if="!isToCheck">
-              {{ formatDate(entry.start_time) }}
+              {{ formatDate(task.computing_time.start_time) }}
             </td>
             <td class="due-date">
-              {{ formatDate(entry.end_time) }}
+              {{ formatDate(task.computing_time.end_time) }}
             </td>
             <td class="time-remark">
-              {{ entry.time_remark }}
+              {{ task.computing_time.time_remark }}
             </td>
             <td class="user-remark">
-              {{ entry.user_remark }}
+              {{ task.computing_time.user_remark }}
             </td>
             <td class="user-remark">
-              {{ entry.user_remark }}
+              {{ task.computing_time.user_remark }}
             </td>
             <td class="user-remark">
-              {{ entry.entity_data.pin_yin_ming_cheng }}
+              {{ task.entity.data.pin_yin_ming_cheng }}
             </td>
             <td class="normal">
-              {{ entry.entity_data.ban_ben }}
+              {{ task.entity.data.ban_ben }}
             </td>
             <td class="normal">
-              {{ entry.entity_data.ji_shu }}
+              {{ task.entity.data.ji_shu }}
             </td>
             <td class="normal">
-              {{ entry.entity_data.ji_shu_lie }}
+              {{ task.entity.data.ji_shu_lie }}
             </td>
             <td class="normal">
-              {{ entry.entity_data.deng_ji }}
+              {{ task.entity.data.deng_ji }}
             </td>
             <td class="normal"></td>
             <td class="actions has-text-centered">
@@ -190,7 +189,7 @@
                 class="button"
                 data-test="button-delete"
                 tabindex="-1"
-                @click="onRemove(entry)"
+                @click="onRemove(task)"
               >
                 <trash-icon class="icon is-small only-icon" />
               </button>
@@ -207,9 +206,6 @@
       v-if="tasks.length === 0 && !isLoading"
     >
       <p>
-        <!-- <img src="../../assets/illustrations/empty_todo.png" /> -->
-      </p>
-      <p>
         {{ emptyText }}
       </p>
     </div>
@@ -223,7 +219,6 @@ import { selectionListMixin } from '@/components/mixins/selection'
 import { formatListMixin } from '@/components/mixins/format'
 import { descriptorMixin } from '@/components/mixins/descriptors'
 
-import { PAGE_SIZE } from '@/lib/pagination'
 import { sortPeople } from '@/lib/sorting'
 import { formatSimpleDate } from '@/lib/time'
 
@@ -329,13 +324,13 @@ export default {
     allDuration() {
       let duration = 0
       this.tasks.forEach(task => {
-        duration += Number(task.duration)
+        duration += Number(task.computing_time.duration)
       })
       return duration / (1000 * 1000 * 60 * 60 * 8)
     },
 
     displayedTasks() {
-      return this.tasks.slice(0, this.page * PAGE_SIZE)
+      return this.tasks
     },
 
     isDescriptionPresent() {
@@ -532,7 +527,7 @@ export default {
         const user_id = this.userId
         const year = this.yearString
         const month = this.monthString
-        const task_id = entry.doodle_task_id
+        const task_id = entry.id
         if (!task_id) {
           alert(this.$t('doodle.calculate_tip'))
           return
@@ -561,13 +556,13 @@ export default {
       }
     },
 
-    getEpisodes(entry) {
+    getEpisodes(task) {
       let episodes = ''
-      const theTaskType = this.taskTypeMap.get(entry.task_type_id)
-      if (theTaskType.for_entity.includes('Shot')) {
-        episodes = entry.sequence_name.replaceAll('EP', '') ?? ''
+      //const theTaskType = this.taskTypeMap.get(entry.entity_type_id)
+      if (task.task_type.for_entity.includes('Shot')) {
+        episodes = task.entity.sequence_name.replaceAll('EP', '') ?? ''
       } else {
-        episodes = entry.entity_data.ji_shu_lie
+        episodes = task.entity.data.ji_shu_lie
       }
       return episodes
     }
