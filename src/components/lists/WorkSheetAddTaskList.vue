@@ -1,6 +1,6 @@
 <template>
   <div class="data-list task-list">
-    <div class="datatable-wrapper" ref="body" v-scroll="onBodyScroll">
+    <div class="datatable-wrapper" ref="body">
       <table class="datatable">
         <thead class="datatable-head">
           <tr>
@@ -196,20 +196,22 @@ export default {
     emptyText: {
       type: String,
       default: ''
+    },
+    page: {
+      type: Number,
+      default: 1
     }
   },
   emits: ['scroll'],
 
   data() {
     return {
-      page: 1,
       colTypePosX: '',
       colNamePosX: ''
     }
   },
 
   mounted() {
-    this.page = 1
     this.resizeHeaders()
     this.colTypePosX = this.$refs['th-prod'].offsetWidth + 'px'
     this.colNamePosX =
@@ -229,7 +231,11 @@ export default {
     ]),
 
     displayedTasks() {
-      return this.tasks.slice(0, this.page * PAGE_SIZE)
+      console.log(this.tasks.length)
+      return this.tasks.slice(
+        (this.page - 1) * PAGE_SIZE,
+        this.page * PAGE_SIZE
+      )
     },
 
     isDescriptionPresent() {
@@ -256,11 +262,11 @@ export default {
 
     onBodyScroll(event, position) {
       this.$emit('scroll', position.scrollTop)
-      const maxHeight =
-        this.$refs.body.scrollHeight - this.$refs.body.offsetHeight
-      if (maxHeight < position.scrollTop + 100) {
-        this.page++
-      }
+      // const maxHeight =
+      //   this.$refs.body.scrollHeight - this.$refs.body.offsetHeight
+      // if (maxHeight < position.scrollTop + 100) {
+      //   //this.page++
+      // }
     },
 
     onLineClicked(entry, event) {

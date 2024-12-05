@@ -42,15 +42,31 @@
         </div>
         <!-- <div class="datatable-wrapper" v-scroll="onBodyScroll"> -->
         <work-sheet-add-task-list
+          class="datatable-wrapper"
           ref="todo-list"
           :empty-text="$t('people.no_task_assigned')"
           :is-loading="isTodosLoading"
           :is-error="isTodosLoadingError"
           :tasks="notPendingTasks"
+          :page="pageNumber"
           :selection-grid="todoSelectionGrid"
         />
         <!-- </div> -->
         <p class="has-text-right">
+          <button
+            class="button flexrow-item"
+            @click="$emit('switch-page', 'back_page')"
+            v-if="pageNumber > 1"
+          >
+            上一页
+          </button>
+          <button
+            class="button flexrow-item"
+            @click="$emit('switch-page', 'next_page')"
+            v-if="isMore"
+          >
+            下一页
+          </button>
           <button
             class="button is-primary flexrow-item"
             @click="addselectedTask"
@@ -71,7 +87,7 @@
 import { mapActions, mapGetters } from 'vuex'
 import moment from 'moment-timezone'
 
-import { monthToString, range } from '@/lib/time'
+import { range } from '@/lib/time'
 import { modalMixin } from '@/components/modals/base_modal'
 
 import Combobox from '@/components/widgets/Combobox.vue'
@@ -93,9 +109,17 @@ export default {
     active: {
       default: false,
       type: Boolean
+    },
+    isMore: {
+      type: Boolean,
+      default: false
+    },
+    pageNumber: {
+      type: Number,
+      default: 1
     }
   },
-  emits: ['add-sort-task', 'cancel'],
+  emits: ['add-sort-task', 'cancel', 'switch-page'],
 
   data() {
     return {
@@ -119,6 +143,7 @@ export default {
     ]),
 
     notPendingTasks() {
+      console.log(this.tasks.length)
       return this.tasks
     },
 
@@ -140,7 +165,7 @@ export default {
         monthRange = range(month, currentMonth)
       }
       return monthRange.map(month => ({
-        label: monthToString(month),
+        label: month,
         value: `${month}`
       }))
     }
@@ -158,7 +183,7 @@ export default {
         const params = { person_id: this.person ? this.person.id : null }
         const taskInfos = await this.loadOpenTasks(params)
         this.sortedTasks = taskInfos.data
-        this.isMore = taskInfos.is_more
+        //this.isMore = taskInfos.is_more
       } catch (error) {
         this.isLoadingError = true
         console.error(error)
@@ -226,11 +251,17 @@ export default {
 
 .modal-content {
   max-height: calc(100vh - 75px);
+  height: 100%;
   top: 28px;
+  margin-bottom: 10px;
 }
 
 .modal-content .box {
   padding: 1em;
+}
+
+.datatable-wrapper {
+  max-height: calc(70vh);
 }
 
 .modal-content.wide {

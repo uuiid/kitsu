@@ -16,6 +16,7 @@
                 big
                 :label="$t('main.person')"
                 :people="personList"
+                :model-value="peopleFieldUser"
                 ref="person-field"
                 v-model="person"
               />
@@ -26,6 +27,7 @@
               :label="$t('timesheets.year')"
               :options="yearOptions"
               v-model="yearString"
+              v-show="person"
             />
 
             <combobox
@@ -33,6 +35,7 @@
               :label="$t('timesheets.month')"
               :options="monthOptions"
               v-model="monthString"
+              v-show="person"
             />
 
             <combobox
@@ -66,6 +69,9 @@
 
               <button
                 class="button"
+                :class="{
+                  'is-loading': isLoading
+                }"
                 :text="$t('doodle.add_task')"
                 @click="onNewClicked"
               >
@@ -132,11 +138,30 @@
         <p class="label mt2">
           {{ $t('doodle.batch-export-list') }}
         </p>
-        <button-simple
-          class="flexrow-item mt05 export-btn"
-          :text="$t('doodle.batch-export')"
-          @click="batchExport"
-        />
+        <div class="batch-export-action">
+          <combobox
+            class="flexrow-item"
+            :label="$t('timesheets.year')"
+            :options="yearOptions"
+            v-model="batchYearString"
+            v-show="person"
+          />
+          <combobox
+            class="flexrow-item"
+            :label="$t('timesheets.month')"
+            :options="monthOptions"
+            v-model="batchMonthString"
+            v-show="person"
+          />
+          <button-simple
+            class="flexrow-item mt05 export-btn"
+            :class="{
+              'is-loading': isExporting
+            }"
+            :text="$t('doodle.batch-export')"
+            @click="batchExport"
+          />
+        </div>
       </div>
       <div class="export-list">
         <div
@@ -176,8 +201,11 @@
       :text="$t('doodle.add_task')"
       :title="$t('doodle.add_task')"
       :tasks="notPendingTasks"
+      :is-more="isMore"
+      :page-number="pageNumber"
       @cancel="modals.edit = false"
       @add-sort-task="addSortTask"
+      @switch-page="pageLoadOpenTasks"
     />
   </div>
 </template>
@@ -204,6 +232,7 @@ import PeopleAvatar from '@/components/widgets/PeopleAvatar'
 import PeopleName from '@/components/widgets/PeopleName'
 import ButtonSimple from '@/components/widgets/ButtonSimple'
 import ComboboxDepartment from '@/components/widgets/ComboboxDepartment'
+import { PAGE_SIZE } from '@/lib/pagination.js'
 
 export default {
   name: 'work-sheet',
@@ -231,7 +260,9 @@ export default {
       selectedDate: moment().format('YYYY-MM-DD'),
       companyString: null,
       yearString: `${moment().year()}`,
+      batchYearString: `${moment().year()}`,
       monthString: `${moment().month() + 1}`,
+      batchMonthString: `${moment().month() + 1}`,
       dayString: `${moment().date()}`,
       modals: {
         del: false,
@@ -247,11 +278,16 @@ export default {
       filterPersonList: [],
       isShow: false,
       calculatedTasks: new Map(),
-      prepareCalculateTasks: []
+      prepareCalculateTasks: [],
+      isLoading: false,
+      isMore: false,
+      pageNumber: 1,
+      cacheTasks: [],
+      isExporting: false
     }
   },
 
-  async mounted() {
+  mounted() {
     this.updateActiveTab()
     if (this.user && this.user.dingding_company_id && this.user.phone) {
       this.isShow = true
@@ -275,15 +311,32 @@ export default {
     })
     //res.splice(0, 0, { id: null, name: '' })
     this.companyOptionList = res
-    this.reload().then(() => {
+    if (this.isShow) {
+      this.person = this.user
+      console.log(this.$refs['person-field'])
+      if (this.$refs['person-field'])
+        this.$refs['person-field'].item = this.user
+    }
+    this.$nextTick(() => {
       if (this.isShow) {
         this.person = this.user
-        this.$refs['person-field'].item = this.user
-      }
-      if (!this.showAllUser()) {
-        this.person = this.user
+        console.log(this.$refs['person-field'])
+        if (this.$refs['person-field'])
+          this.$refs['person-field'].item = this.user
       }
     })
+    if (!this.showAllUser()) {
+      this.person = this.user
+    }
+    // this.reload().then(() => {
+    //   if (this.isShow) {
+    //     this.person = this.user
+    //     this.$refs['person-field'].item = this.user
+    //   }
+    //   if (!this.showAllUser()) {
+    //     this.person = this.user
+    //   }
+    // })
     //--------------------
     this.filterPersonList = this.personList
   },
@@ -352,7 +405,9 @@ export default {
     haveDoneList() {
       return this.$refs['work-list']
     },
-
+    peopleFieldUser() {
+      return this.user
+    },
     yearOptions() {
       const year = 2018
       const currentYear = moment().year()
@@ -444,6 +499,7 @@ export default {
     },
 
     onNewClicked() {
+      this.isLoading = true
       if (!this.person) {
         alert(this.$t('doodle.person_tip'))
         return
@@ -452,8 +508,12 @@ export default {
         alert(this.$t('doodle.company_tip'))
         return
       }
-      this.modals.edit = true
-      this.$refs['add-task-sheet-modal'].reload(this.person)
+      this.clearSelectedTasks()
+      this.tasks = []
+      this.reload().then(() => {
+        this.isLoading = false
+        this.modals.edit = true
+      })
     },
 
     exportButtonClick() {
@@ -498,44 +558,56 @@ export default {
 
     exportLine(person, t) {
       const line = []
-      const theTaskType = this.taskTypeMap.get(t.task_type_id)
-      const department = this.departmentMap.get(theTaskType.department_id).name
+      //const theTaskType = this.taskTypeMap.get(t.task_type_id)
+      const department = this.departmentMap.get(t.task_type.department_id).name
       line.push(department)
       line.push(person.first_name)
       let episodes = ''
-      if (theTaskType.for_entity.includes('Shot')) {
-        episodes = t.sequence_name.replaceAll('EP', '') ?? ''
+      if (t.task_type.for_entity.includes('Shot')) {
+        episodes = t.entity.sequence_name.replaceAll('EP', '') ?? ''
       } else {
-        episodes = t.entity_data.ji_shu_lie
+        episodes = t.entity.data.ji_shu_lie
       }
-      line.push(`《${t.project_name}》第${Math.ceil(Number(episodes) / 20)}季`)
+      line.push(`《${t.project.name}》第${Math.ceil(Number(episodes) / 20)}季`)
       line.push(`EP${episodes}`)
-      line.push(formatFullDate(t.start_time))
-      line.push(formatFullDate(t.end_time))
-      const duration = Number(t.duration / (1000 * 1000 * 60 * 60 * 8))
+      line.push(formatFullDate(t.computing_time.start_time))
+      line.push(formatFullDate(t.computing_time.end_time))
+      const duration = Number(
+        t.computing_time.duration / (1000 * 1000 * 60 * 60 * 8)
+      )
       line.push(duration)
-      line.push(t.time_remark)
-      line.push(t.entity_name)
-      const level = t.entity_data.deng_ji
+      line.push(t.computing_time.time_remark)
+      line.push(t.entity.name)
+      const level = t.entity.data.deng_ji
       line.push(level)
       return line
     },
 
-    async reload() {
-      this.clearSelectedTasks()
-      this.tasks = []
+    async reload(page = 1) {
       try {
         const params = {
-          person_id: this.person ? this.person.id : null
+          person_id: this.person ? this.person.id : null,
+          page: page
         }
         const taskInfos = await this.loadOpenTasks(params)
-        this.tasks = taskInfos.data
+        console.log(taskInfos.data.length)
+        this.isMore = taskInfos.is_more
+        this.tasks.push(...taskInfos.data)
       } catch (error) {
         this.isLoadingError = true
         console.error(error)
       }
     },
-
+    async pageLoadOpenTasks(params) {
+      if (params === 'back_page') {
+        this.pageNumber--
+        this.isMore = true
+      } else {
+        if (this.tasks.length < (this.pageNumber + 1) * PAGE_SIZE)
+          await this.reload(this.pageNumber + 1)
+        this.pageNumber++
+      }
+    },
     async loadPersonTask(person_id) {
       this.personTasks = []
       try {
@@ -552,10 +624,12 @@ export default {
     },
 
     getUserInfo(user_id) {
-      this.reload().then(() => {
-        this.getTaskTime(user_id)
-        this.getDutyList(user_id)
-      })
+      this.getTaskTime(user_id)
+      this.getDutyList(user_id)
+      // this.reload().then(() => {
+      //   this.getTaskTime(user_id)
+      //   this.getDutyList(user_id)
+      // })
     },
 
     createUserInfo(user_id, company) {
@@ -596,8 +670,10 @@ export default {
       this.$store
         .dispatch(action, l_params)
         .then(res => {
-          if (res.data) {
+          if (res) {
             this.setSortTask(res.data)
+          } else {
+            this.setSortTask([])
           }
         })
         .catch(err => {
@@ -742,27 +818,20 @@ export default {
       if (data[0] === 'error') {
         this.getTaskTime(this.person.id)
       } else {
-        this.setSortTask(data)
+        this.resetTask(data)
       }
+    },
+    resetTask(data) {
+      data.forEach(item => {
+        if (this.calculatedTasks.has(item.kitsu_task_ref_id)) {
+          this.calculatedTasks.get(item.kitsu_task_ref_id).computing_time = item
+        }
+      })
     },
     setSortTask(data) {
       this.calculatedTasks = new Map()
-      const tasksMap = this.tasks.reduce((acc, task) => {
-        acc.set(task.id, task)
-        return acc
-      }, new Map())
       data.forEach(item => {
-        const temp = tasksMap.get(item.kitsu_task_ref_id)
-        if (temp) {
-          temp.duration = item.duration
-          temp.doodle_task_id = item.id
-          temp.time_remark = item.remark
-          temp.start_time = item.start_time
-          temp.end_time = item.end_time
-          temp.user_remark = item.user_remark
-          temp.checked = false
-          this.calculatedTasks.set(temp.id, temp)
-        }
+        this.calculatedTasks.set(item.computing_time.kitsu_task_ref_id, item)
       })
       this.person.tasks = [...this.calculatedTasks.values()]
     },
@@ -795,69 +864,58 @@ export default {
     showAllUser() {
       return ['admin', 'manager', 'supervisor'].includes(this.user.role)
     },
-    batchExport() {
-      if (this.selectPersons.length <= 0) return
-      const nameData = [
-        moment().utcOffset(8).format('HH-mm-ss'),
-        this.yearString,
-        this.monthString
-      ]
-      const name = stringHelpers.slugify(nameData.join('_'))
-      const headers = this.exportHeader()
-      const sheets = []
-      this.selectPersons.forEach(p => {
-        const sheet = {}
-        const entries = []
-        if (p.tasks && p.tasks.length > 0) {
-          for (const t of p.tasks) {
-            const line = this.exportLine(p, t)
-            entries.push(line)
-          }
+    async batchExport() {
+      this.isExporting = true
+      try {
+        if (this.selectPersons.length <= 0) {
+          this.isExporting = false
+          return
         }
-        sheet.name = p.first_name
-        sheet.entries = entries
-        sheets.push(sheet)
-      })
-      csv.buildCsvFileAll(name, headers, sheets)
+
+        const nameData = [
+          moment().utcOffset(8).format('HH-mm-ss'),
+          this.batchYearString,
+          this.batchMonthString
+        ]
+        const name = stringHelpers.slugify(nameData.join('_'))
+        const headers = this.exportHeader()
+        const sheets = []
+
+        const year = this.batchYearString
+        const month = this.batchMonthString
+        const day = this.dayString
+        const l_params = {
+          year,
+          month,
+          day
+        }
+        for (const p of this.selectPersons) {
+          const sheet = {}
+          const entries = []
+          l_params.user_id = p.id
+          const tasks = await this.$store.dispatch('getTaskTime', l_params)
+          if (tasks && tasks.data.length > 0) {
+            tasks.data.forEach(t => {
+              const line = this.exportLine(p, t)
+              entries.push(line)
+            })
+          }
+          sheet.name = p.first_name
+          sheet.entries = entries
+          sheets.push(sheet)
+        }
+        csv.buildCsvFileAll(name, headers, sheets)
+      } catch (err) {
+        console.error(err)
+      }
+      this.isExporting = false
     },
     selectPerson(person) {},
     onCheckChanged(person, event) {
       person.checked = event.target.checked
       if (person.checked) {
-        const year = this.yearString
-        const month = this.monthString
-        const user_id = person.id
-        const l_params = {
-          user_id,
-          year,
-          month
-        }
-        const action = 'getTaskTime'
-        this.$store
-          .dispatch(action, l_params)
-          .then(res => {
-            if (res.data) {
-              this.loadPersonTask(person.id).then(() => {
-                person.name_color = '#4a4a4a'
-                person.tasks = this.setPersonTask(res.data)
-                if (!this.selectPersons.includes(person))
-                  this.selectPersons.push(person)
-              })
-            }
-          })
-          .catch(err => {
-            console.log('getTaskTime Error')
-            if (err.response) {
-              if (err.response.statusCode === 404) {
-                person.name_color = '#e74c3c'
-                alert(this.$t('doodle.select-person-tip'))
-              }
-            } else {
-              alert(err.message)
-            }
-            person.checked = false
-            this.$forceUpdate()
-          })
+        if (!this.selectPersons.includes(person))
+          this.selectPersons.push(person)
       } else {
         this.selectPersons = this.selectPersons.filter(p => p.id !== person.id)
       }
@@ -907,6 +965,7 @@ export default {
       this.calculatedTasks = new Map()
     },
     person(val) {
+      console.log(val)
       if (val) this.getTimeClick()
     },
     yearString() {
@@ -944,6 +1003,13 @@ export default {
   //border: 1px solid #ddd;
   //padding: 0em 1em 1em;
   //margin-bottom: 2em;
+}
+
+.batch-export-action {
+  display: flex;
+  align-items: flex-end;
+  gap: 0.5rem;
+  margin-left: 0.5rem;
 }
 
 .column {
