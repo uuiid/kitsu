@@ -57,12 +57,9 @@
               selected:
                 selectionGrid && selectionGrid[i] ? selectionGrid[i][0] : false
             }"
-            @click="onLineClicked(entry, $event)"
+            @click="onLineClicked(entry)"
           >
-            <td
-              class="datatable-row-header datatable-row-header--nobd"
-              scope="row"
-            >
+            <td class="datatable-row-header datatable-row-header--nobd">
               <div class="flexrow">
                 <input
                   type="checkbox"
@@ -269,7 +266,7 @@ export default {
       // }
     },
 
-    onLineClicked(entry, event) {
+    onLineClicked(entry) {
       entry.checked = !entry.checked
       this.$forceUpdate()
     },

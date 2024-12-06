@@ -65,10 +65,10 @@ export default {
     )
   },
 
-  getTaskTime(data) {
+  async getTaskTime(data) {
     const month = data.month.padStart(2, '0')
     const year_month = `${data.year}-${month}`
-    return client.pget(
+    return await client.pget(
       `/api/doodle/computing_time/${data.user_id}/${year_month}`
     )
   },
