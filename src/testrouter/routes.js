@@ -192,6 +192,11 @@ export const routes = [
         name: 'scan-project'
       },
       {
+        path: 'doodle-work',
+        component: ScanProject,
+        name: 'doodle-work'
+      },
+      {
         path: 'asset-types',
         component: AssetTypes,
         children: [

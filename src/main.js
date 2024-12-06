@@ -18,6 +18,7 @@ import '@animxyz/core'
 
 import VueDatePicker from '@vuepic/vue-datepicker'
 import '@vuepic/vue-datepicker/dist/main.css'
+import { createPinia } from 'pinia'
 
 const app = createApp({
   components: { App },
@@ -35,9 +36,10 @@ app.use(VueWebsocket, IO, '/events')
 app.use(Autosize)
 app.use(VueChartkick)
 app.use(VueAnimXYZ)
+app.use(createPinia())
 
 app.component('vue-date-picker', VueDatePicker)
-
+app.config.globalProperties.$t = i18n.global.t
 // Make the current route part of the main state.
 sync(store, router)
 
