@@ -139,6 +139,7 @@
               <router-link :to="{ name: 'scan-project' }">
                 <kitsu-icon class="nav-icon" name="scan-project" />
                 {{ $t('scan-project.scan-project') }}
+                {{ $t('scan_project.scan_project') }}
               </router-link>
             </p>
           </div>
