@@ -283,7 +283,19 @@ export default {
       isMore: false,
       pageNumber: 1,
       cacheTasks: [],
-      isExporting: false
+      isExporting: false,
+      headers: [
+        '部门',
+        '制作人',
+        '项目',
+        '集数',
+        '开始时间',
+        '结束时间',
+        '持续时间/day',
+        '时间备注',
+        '名称',
+        '等级'
+      ]
     }
   },
 
@@ -532,28 +544,12 @@ export default {
         this.monthString
       ]
       const name = stringHelpers.slugify(nameData.join('_'))
-      const headers = this.exportHeader()
-      const entries = [headers]
+      const entries = [this.headers]
       Array.from(this.calculatedTasks.values()).forEach(t => {
         const line = this.exportLine(this.person, t)
         entries.push(line)
       })
       csv.buildCsvFile(name, entries)
-    },
-
-    exportHeader() {
-      return [
-        '部门',
-        '制作人',
-        '项目',
-        '集数',
-        '开始时间',
-        '结束时间',
-        '持续时间/day',
-        '时间备注',
-        '名称',
-        '等级'
-      ]
     },
 
     exportLine(person, t) {
@@ -859,7 +855,16 @@ export default {
       this.modals.edit = false
     },
     removeSortTask(ent) {
-      this.setSortTask(ent.data)
+      const temp = new Map(
+        ent.data.map(value => [value.kitsu_task_ref_id, value])
+      )
+      Array.from(this.calculatedTasks.keys()).forEach(item => {
+        if (temp.has(item)) {
+          this.calculatedTasks.get(item).computing_time = temp.get(item)
+        } else {
+          this.calculatedTasks.delete(item)
+        }
+      })
     },
     showAllUser() {
       return ['admin', 'manager', 'supervisor'].includes(this.user.role)
@@ -878,7 +883,6 @@ export default {
           this.batchMonthString
         ]
         const name = stringHelpers.slugify(nameData.join('_'))
-        const headers = this.exportHeader()
         const sheets = []
 
         const year = this.batchYearString
@@ -904,7 +908,7 @@ export default {
           sheet.entries = entries
           sheets.push(sheet)
         }
-        csv.buildCsvFileAll(name, headers, sheets)
+        csv.buildCsvFileAll(name, this.headers, sheets)
       } catch (err) {
         console.error(err)
       }

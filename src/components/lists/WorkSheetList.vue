@@ -87,12 +87,9 @@
               selected:
                 selectionGrid && selectionGrid[i] ? selectionGrid[i][0] : false
             }"
-            @click="onLineClicked(entry, $event)"
+            @click="onLineClicked(task, $event)"
           >
-            <td
-              class="datatable-row-header datatable-row-header--nobd"
-              scope="row"
-            >
+            <td class="datatable-row-header datatable-row-header--nobd">
               <production-name-cell
                 class="entity-name"
                 :is-tooltip="true"
@@ -116,8 +113,8 @@
                   :entity="{ preview_file_id: task.entity.preview_file_id }"
                 />
                 <!--router-link class="entity-name" :to="entityPath(task.entity)">
-              {{ task.entity.entity_name }}
-            </router-link-->
+            {{ task.entity.entity_name }}
+          </router-link-->
               </div>
             </td>
 
@@ -495,11 +492,11 @@ export default {
     },
 
     onRemove(entry) {
-      if (!entry.doodle_task_id) {
+      if (!entry) {
         alert(this.$t('doodle.calculate_tip'))
         return
       }
-      const time_task_id = entry.doodle_task_id
+      const time_task_id = entry.computing_time.id
       const action = 'removeTaskTime'
       const l_params = {
         time_task_id

@@ -97,7 +97,7 @@
                     }"
                     :key="asset.id + key"
                     :title="formatTbodyData(asset, key)"
-                    v-for="(_, key) in tableHeadFiled"
+                    v-for="([], key) in tableHeadFiled"
                     @click="onClickTbody(asset, key)"
                     @copy="onCopyTBody(asset, key)"
                   >
