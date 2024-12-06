@@ -159,7 +159,7 @@
         <div
           class="menu-item"
           :title="$t('menu.openFolder')"
-          @click="$emit('openfolder')"
+          @click="$emit('open-folder')"
           v-if="isElectron"
         >
           <folder-open :title="$t('menu.openFolder')" />
@@ -252,6 +252,17 @@
         <div
           class="menu-item"
           :class="{
+            active: selectedBar === 'custom-actions'
+          }"
+          :title="$t('menu.run_custom_action')"
+          @click="$emit('execute-doodle-work')"
+          v-if="isElectron && isTaskSelection"
+        >
+          <play-circle-icon />
+        </div>
+        <div
+          class="menu-item"
+          :class="{
             active: selectedBar === 'delete-assets'
           }"
           :title="$t('menu.delete_assets')"
@@ -272,7 +283,6 @@
         >
           <kitsu-icon name="trash" :title="$t('menu.delete_shots')" />
         </div>
-
         <div
           class="menu-item"
           :class="{
@@ -300,7 +310,6 @@
         </div>
 
         <div class="filler"></div>
-
         <div
           class="menu-item"
           :title="$t('main.csv.export_file')"
@@ -872,7 +881,12 @@ export default {
     FolderOpen
   },
 
-  emits: ['export-task', 'set-frame-thumbnail'],
+  emits: [
+    'export-task',
+    'set-frame-thumbnail',
+    'open-folder',
+    'execute-doodle-work'
+  ],
 
   data() {
     return {

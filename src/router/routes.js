@@ -22,6 +22,7 @@ import Todos from '@/components/pages/Todos.vue'
 import Edits from '@/components/pages/Edits.vue'
 import VideoLibrary from '../components/pages/VideoLibrary.vue'
 import ScanProject from '@/components/pages/ScanProject.vue'
+import DoodleWork from '@/components/pages/DoodleWork.vue'
 
 const AssetLibrary = () => import('@/components/pages/AssetLibrary.vue')
 const AllTasks = () => import('@/components/pages/AllTasks.vue')
@@ -205,6 +206,11 @@ export const routes = [
         path: 'scan-project',
         component: ScanProject,
         name: 'scan-project'
+      },
+      {
+        path: 'doodle-work',
+        component: DoodleWork,
+        name: 'doodle-work'
       },
       {
         path: 'asset-types',

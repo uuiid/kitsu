@@ -5,16 +5,19 @@
       'is-active': active
     }"
   >
-    <div class="modal-background" @click="onCancel()"></div>
-    <div class="new-window">
-      <a class="mr1" :href="previewDlPath" v-if="previewFileId">
-        <arrow-down-icon />
-      </a>
-      <a target="_blank" :href="previewPath">
-        <arrow-up-right-icon />
-      </a>
+    <div class="chevron chevron-left">
+      <chevron-left-icon
+        :size="30"
+        @click="onSwitchImage(false)"
+      ></chevron-left-icon>
     </div>
-
+    <div class="chevron chevron-right">
+      <chevron-right-icon
+        :size="30"
+        @click="onSwitchImage(true)"
+      ></chevron-right-icon>
+    </div>
+    <div class="modal-background" @click="onCancel()"></div>
     <div class="modal-content" @click="onCancel()">
       <img :src="previewPath" alt="" />
     </div>
@@ -25,7 +28,7 @@
 </template>
 
 <script>
-import { ArrowDownIcon, ArrowUpRightIcon } from 'lucide-vue-next'
+import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next'
 
 import { getDownloadAttachmentPath } from '@/lib/path'
 
@@ -37,8 +40,8 @@ export default {
   mixins: [modalMixin],
 
   components: {
-    ArrowDownIcon,
-    ArrowUpRightIcon
+    ChevronLeftIcon,
+    ChevronRightIcon
   },
 
   props: {
@@ -59,7 +62,7 @@ export default {
       default: ''
     }
   },
-  emits: ['cancel'],
+  emits: ['cancel', 'switch-image'],
   data() {
     return {
       prompt: '',
@@ -95,6 +98,13 @@ export default {
       this.isPrompt = false
       this.prompt = ''
       this.$emit('cancel')
+    },
+    onSwitchImage(isNext) {
+      if (isNext) {
+        this.$emit('switch-image', true)
+      } else {
+        this.$emit('switch-image', false)
+      }
     },
     previewFileExtension() {
       if (this.previewFileType.split('/')[1] === 'gif') return '.gif'
@@ -135,18 +145,46 @@ export default {
   right: 1em;
   top: 1em;
   z-index: 2;
+  max-width: 80%;
 }
 
 .modal-content {
   width: 95%;
   text-align: center;
   max-height: 100vh;
+  overflow: auto;
 
   img {
     margin-top: 60px;
-    max-height: 100vh;
+    max-height: 90vh;
     overflow: auto;
   }
+}
+
+.chevron {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: 25px;
+  position: absolute;
+  background-color: #1e1e1e;
+  width: 50px;
+  height: 50px;
+  top: 50%;
+  z-index: 2;
+
+  &:hover {
+    border-color: var(--background-selectable);
+    cursor: pointer;
+  }
+}
+
+.chevron-left {
+  left: 2%;
+}
+
+.chevron-right {
+  right: 2%;
 }
 
 @keyframes moveUp {

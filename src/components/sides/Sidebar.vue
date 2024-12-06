@@ -138,8 +138,13 @@
             <p @click="toggleSidebar()">
               <router-link :to="{ name: 'scan-project' }">
                 <kitsu-icon class="nav-icon" name="scan-project" />
-                {{ $t('scan-project.scan-project') }}
                 {{ $t('scan_project.scan_project') }}
+              </router-link>
+            </p>
+            <p @click="toggleSidebar()">
+              <router-link :to="{ name: 'doodle-work' }">
+                <kitsu-icon class="nav-icon" name="scan-project" />
+                {{ $t('doodle_work.doodle_work') }}
               </router-link>
             </p>
           </div>

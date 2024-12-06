@@ -490,6 +490,7 @@ export default {
 :focus {
   outline: none;
 }
+
 ::-moz-focus-inner {
   border: 0;
 }
@@ -681,6 +682,7 @@ body {
 
   .message {
     background: $dark-grey;
+
     .message-body {
       border-left: 5px solid $dark-grey-lightest;
       color: $white-grey;
@@ -694,7 +696,9 @@ body {
   h2 {
     border-bottom: 1px solid $grey;
   }
-} // End dark theme
+}
+
+// End dark theme
 
 .loading-info {
   background: white;
@@ -1153,6 +1157,7 @@ textarea.input:focus {
 
 .modal-content {
   max-height: calc(100vh - 140px);
+
   .box {
     border-radius: 0.5em;
     padding: 2.8em 3em 3em 3em;
@@ -1423,6 +1428,7 @@ tbody:last-child .empty-line:last-child {
   th.number-cell,
   td.number-cell {
     text-align: right;
+
     input {
       text-align: right;
     }
@@ -1434,6 +1440,7 @@ tbody:last-child .empty-line:last-child {
     .thumbnail-picture.thumbnail-empty {
       margin: 0 0.35rem 0 0;
     }
+
     &:first-child {
       border-bottom-left-radius: 10px;
       border-bottom-right-radius: 10px;
@@ -1458,9 +1465,11 @@ tbody:last-child .empty-line:last-child {
     &:last-child {
       border-bottom-left-radius: 10px;
       border-bottom-right-radius: 10px;
+
       td:first-child {
         border-bottom-left-radius: 10px;
       }
+
       td:last-child {
         border-bottom-right-radius: 10px;
       }
@@ -1473,6 +1482,7 @@ tbody:last-child .empty-line:last-child {
         td:first-child {
           border-top-left-radius: 10px;
         }
+
         td:last-child {
           border-top-right-radius: 10px;
         }
@@ -1486,17 +1496,21 @@ tbody:last-child .empty-line:last-child {
         th:first-child {
           border-top-left-radius: 10px;
         }
+
         td:first-child {
           border-top-left-radius: 10px;
         }
+
         td:last-child {
           border-top-right-radius: 10px;
         }
       }
+
       &:last-child {
         th:first-child {
           border-bottom-left-radius: 10px;
         }
+
         td:last-child {
           border-bottom-right-radius: 10px;
         }
@@ -1545,13 +1559,16 @@ tbody:last-child .empty-line:last-child {
     padding: 0.5rem 0.75rem;
     height: 38px;
   }
+
   .hidden-validation-cell {
     .validation-content {
       padding: 0.5rem 0.3rem;
     }
+
     .datatable-dropdown {
       display: none;
     }
+
     .header-icon {
       margin: 0 auto;
     }
@@ -1560,6 +1577,7 @@ tbody:last-child .empty-line:last-child {
       .department-dot {
         display: none;
       }
+
       .validation-content {
         padding-left: 2px;
       }
@@ -1569,6 +1587,7 @@ tbody:last-child .empty-line:last-child {
   .datatable-row-header {
     z-index: 4;
   }
+
   .header-icon {
     width: 15px;
     cursor: pointer;
@@ -1582,6 +1601,7 @@ tbody:last-child .empty-line:last-child {
 
 .datatable-row {
   user-select: none;
+
   &,
   & .datatable-row-header {
     background-color: var(--background);
@@ -1637,9 +1657,11 @@ tbody:last-child .empty-line:last-child {
       border-right: 1px solid var(--border);
     }
   }
+
   td {
     white-space: normal;
   }
+
   .hidden-validation-cell {
     min-width: 30px;
     max-width: 30px;
@@ -1699,6 +1721,7 @@ tbody:last-child .empty-line:last-child {
       rgba(var(--border-rgb), 0) 100%
     );
   }
+
   .datatable-type-header & {
     border-right: 0;
 
@@ -1808,6 +1831,7 @@ td.fps {
       background: transparent;
       cursor: col-resize;
     }
+
     &:hover .resizable-knob {
       background: var(--border);
     }
@@ -2066,9 +2090,11 @@ th.validation-cell {
     margin-bottom: 1em;
     text-transform: uppercase;
   }
+
   strong {
     font-size: inherit;
   }
+
   p,
   ul {
     margin-bottom: 1em;
@@ -2218,6 +2244,7 @@ th.validation-cell {
 
 .separator {
   margin: 0.5rem;
+
   &:before {
     content: '';
     border-left: 1px solid $dark-grey-lightest;
@@ -2356,6 +2383,7 @@ th.validation-cell {
 ::-webkit-scrollbar-thumb:active {
   background-color: #ccc;
 }
+
 .dark {
   ::-webkit-scrollbar-thumb {
     background-color: #46494f;

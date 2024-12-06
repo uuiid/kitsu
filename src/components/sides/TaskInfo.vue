@@ -21,7 +21,8 @@
         :team="currentTeam"
         @export-task="onExportClick"
         @set-frame-thumbnail="onSetCurrentFrameAsThumbnail"
-        @openfolder="onOpenFolder"
+        @open-folder="onOpenFolder"
+        @execute-doodle-work="executeDoodleWork"
       />
 
       <div
@@ -309,7 +310,6 @@
     </div>
   </div>
 </template>
-
 <script>
 import { CornerRightUpIcon, XIcon } from 'lucide-vue-next'
 import moment from 'moment'
@@ -1213,6 +1213,10 @@ export default {
       } else {
         window.api.openPath('::{F874310E-B6B7-47DC-BC84-B9E6B38F5903}')
       }
+    },
+    executeDoodleWork() {
+      console.log(this.taskTypeMap)
+      console.log(this.selectedTasks)
     },
     onExportClick() {
       const nameData = [

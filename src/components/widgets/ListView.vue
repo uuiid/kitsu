@@ -9,7 +9,7 @@
     @blur="handleBlur"
   >
     <span class="placeholder" v-if="isShowPlaceholder && !assetToEdit">{{
-      placeholder
+      $t('video_library.placeholder')
     }}</span>
     <ul v-if="isActiveText">
       <li v-for="(item, index) in options" :key="index">
@@ -122,7 +122,6 @@ export default {
       videos: [],
       files: [],
       anyFile: [],
-      placeholder: '拖入文件或Ctrl+V',
       isShowPlaceholder: true,
       currentItem: this.initData,
       isShow: true
