@@ -19,7 +19,7 @@
             ref="typeField"
             :label="$t('assets.fields.type')"
             :readonly="true"
-            :value="videoType"
+            :model-value="videoType"
           />
         </form>
         <label class="label">{{ $t('video_library.video_source_file') }}</label>
