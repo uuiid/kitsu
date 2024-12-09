@@ -25,7 +25,8 @@ const initialState = {
   imageExtensions: ['jpg', 'jpeg', 'png', 'gif'],
   isEditVideoSelection: false,
   isUpdatingVideo: false,
-  refreshTimer: new Date()
+  refreshTimer: new Date(),
+  updatedNum: 0
 }
 const helpers = {
   getFileFromPath(filePath) {
@@ -41,7 +42,7 @@ const helpers = {
     })
   },
   getDateFromFile(file) {
-    return new Promise((resolve, reject) => {
+    return new Promise(resolve => {
       let data = null
       const reader = new FileReader()
       reader.onload = () => {
@@ -205,6 +206,10 @@ const mutations = {
   },
   SET_REFRESH_TIMER(state) {
     state.refreshTimer = new Date()
+  },
+  SET_UPDATED_NUM(state, action) {
+    if (action === 'add') state.updatedNum++
+    else if (action === 'remove') state.updatedNum = 0
   }
 }
 
@@ -221,7 +226,8 @@ const getters = {
   imageExtensions: state => state.imageExtensions,
   isEditVideoSelection: state => state.isEditVideoSelection,
   isUpdatingVideo: state => state.isUpdatingVideo,
-  refreshTimer: state => state.refreshTimer
+  refreshTimer: state => state.refreshTimer,
+  updatedNum: state => state.updatedNum
 }
 const actions = {
   loadVideos({ commit }) {
@@ -235,55 +241,95 @@ const actions = {
         return err
       })
   },
-  newVideos({ commit }, videos) {
+  async newVideos({ commit }, videos) {
     commit('SET_IS_UPDATING_VIDEOS')
     const path = require('path')
     const res_obj = videos.reduce((acc, video) => {
       return acc.set(video.path, video)
     }, new Map())
-    return videolibraryApi.newVideos(videos).then(res => {
-      const imageUploadPromises = res.map(re => {
-        if (
-          state.imageExtensions.includes(
-            path.extname(re.path).slice(1).toLowerCase()
-          )
-        ) {
-          return helpers.getFileFromPath(re.path).then(data => {
-            const image = {
-              id: re.id,
-              data: data,
-              filetype: re.extension
-            }
-            return videolibraryApi.addImage(image).then(() => {})
-          })
-        } else if (
-          state.videoExtensions.includes(path.extname(re.path).slice(1))
-        ) {
-          return helpers
-            .handleVideo(re, res_obj)
-            .then(data => {
-              const image = {
-                id: re.id,
-                data: data,
-                filetype: 'image/png'
-              }
-              return videolibraryApi.addImage(image).then(() => {})
-            })
-            .catch(error => {
-              console.error(`视频处理失败: ${re.path}`, error)
-              re.has_thumbnail = false
-              videolibraryApi.modifyVideo(re).then(() => {
-                return re
-              })
-            })
+    const res = await videolibraryApi.newVideos(videos)
+    for (const video of res) {
+      if (
+        state.imageExtensions.includes(
+          path.extname(video.path).slice(1).toLowerCase()
+        )
+      ) {
+        try {
+          const data = await helpers.getFileFromPath(video.path)
+          const image = {
+            id: video.id,
+            data: data,
+            filetype: video.extension
+          }
+          await videolibraryApi.addImage(image)
+          commit('SET_UPDATED_NUM', 'add')
+        } catch (err) {
+          await videolibraryApi.modifyVideo(video)
         }
-      })
-      return Promise.all(imageUploadPromises).then(() => {
-        commit('NEW_VIDEOS', res)
-        commit('SET_IS_UPDATING_VIDEOS')
-        return res
-      })
-    })
+      } else if (
+        state.videoExtensions.includes(path.extname(video.path).slice(1))
+      ) {
+        try {
+          const data = await helpers.handleVideo(video, res_obj)
+          const image = {
+            id: video.id,
+            data: data,
+            filetype: video.extension
+          }
+          await videolibraryApi.addImage(image)
+          commit('SET_UPDATED_NUM', 'add')
+        } catch (err) {
+          await videolibraryApi.modifyVideo(video)
+        }
+      }
+    }
+    commit('SET_UPDATED_NUM', 'remove')
+    commit('NEW_VIDEOS', res)
+    commit('SET_IS_UPDATING_VIDEOS')
+    return res
+    // return videolibraryApi.newVideos(videos).then(res => {
+    //   const imageUploadPromises = res.map(re => {
+    //     if (
+    //       state.imageExtensions.includes(
+    //         path.extname(re.path).slice(1).toLowerCase()
+    //       )
+    //     ) {
+    //       return helpers.getFileFromPath(re.path).then(data => {
+    //         const image = {
+    //           id: re.id,
+    //           data: data,
+    //           filetype: re.extension
+    //         }
+    //         return videolibraryApi.addImage(image).then(() => {})
+    //       })
+    //     } else if (
+    //       state.videoExtensions.includes(path.extname(re.path).slice(1))
+    //     ) {
+    //       return helpers
+    //         .handleVideo(re, res_obj)
+    //         .then(data => {
+    //           const image = {
+    //             id: re.id,
+    //             data: data,
+    //             filetype: 'image/png'
+    //           }
+    //           return videolibraryApi.addImage(image).then(() => {})
+    //         })
+    //         .catch(error => {
+    //           console.error(`视频处理失败: ${re.path}`, error)
+    //           re.has_thumbnail = false
+    //           videolibraryApi.modifyVideo(re).then(() => {
+    //             return re
+    //           })
+    //         })
+    //     }
+    //   })
+    //   return Promise.all(imageUploadPromises).then(() => {
+    //     commit('NEW_VIDEOS', res)
+    //     commit('SET_IS_UPDATING_VIDEOS')
+    //     return res
+    //   })
+    // })
   },
   newVideo({ commit }, video) {
     return videolibraryApi

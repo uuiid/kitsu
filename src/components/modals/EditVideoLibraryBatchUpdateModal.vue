@@ -30,6 +30,12 @@
           @set-error="value => (form.video_errored = value)"
           @custom-events="getFiles"
         ></list-view>
+        <progress
+          class="progress"
+          :value="updatedNum"
+          :max="fileNums"
+          v-show="updatedNum > 0"
+        ></progress>
         <div class="has-text-right">
           <a
             :class="{
@@ -129,7 +135,8 @@ export default {
         name_error_text: '',
         source_id: null
       },
-      assetSuccessText: ''
+      assetSuccessText: '',
+      fileNums: 0
       //editVideos:[], /*{"label": "string","parent_id": "1c6ca187-e61f-4301-8dcb-0e9749e89eef","id": "497f6eca-6276-4993-bfeb-53cbbbba6f08","path": "string",notes": "string","active": true}*/
     }
   },
@@ -139,7 +146,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['editVideo', 'isUpdatingVideo'])
+    ...mapGetters(['editVideo', 'isUpdatingVideo', 'updatedNum'])
   },
 
   methods: {
@@ -169,6 +176,7 @@ export default {
       this.checkData(this.$refs.video.files)
       if (!this.form.video_errored) {
         this.formatFiles(this.$refs.video.files)
+        this.fileNums = this.$refs.video.files.length
         this.$emit('on-confirm', this.$refs.video.files)
       }
     },
@@ -189,6 +197,9 @@ export default {
   font-style: italic;
 }
 
+.progress::-webkit-progress-value {
+  background-color: #06b303;
+}
 .info-message {
   margin-top: 1em;
 }
