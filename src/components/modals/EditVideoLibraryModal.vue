@@ -46,7 +46,7 @@
             ref="typeField"
             :label="$t('assets.fields.type')"
             :readonly="true"
-            :value="videoType"
+            :model-value="videoType"
           />
           <textarea-field
             ref="descriptionField"
