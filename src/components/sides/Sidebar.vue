@@ -141,7 +141,7 @@
                 {{ $t('scan_project.scan_project') }}
               </router-link>
             </p>
-            <p @click="toggleSidebar()">
+            <p @click="toggleSidebar()" v-if="false">
               <router-link :to="{ name: 'doodle-work' }">
                 <kitsu-icon class="nav-icon" name="scan-project" />
                 {{ $t('doodle_work.doodle_work') }}
