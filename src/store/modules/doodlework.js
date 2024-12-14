@@ -85,9 +85,7 @@ class DoodleWorkFbx extends DoodleWorkBase {
   }
 
   formatData(file) {
-    const data = super.formatData(file)
-    console.log(this.task_data_filed.get('create_play_blast').checked)
-    return data
+    return super.formatData(file)
   }
 }
 
@@ -187,7 +185,6 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
   }
 
   formatData(file) {
-    console.log(this.productions)
     const data = super.formatData(file)
     const shotData = this.formatShotName(file)
     const resolution = this.formatResolution(file)
@@ -216,6 +213,7 @@ function initState() {
     isActiveSettingModal: false,
     isReload: true,
     isVisitor: false,
+    isPullProcessed: false,
     doodleWorkExeLocalRootPath: '',
     doodleWorkExeDownloadPath: '',
     doodleWorkZipFileVision: '',
@@ -242,7 +240,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     return state.value.isVisitor ? { id: uuid() } : user.state.user
   })
   const allProductions = computed(() => {
-    console.log(productions.state.openProductions)
     return state.value.isVisitor ? [] : productions.state.openProductions
   })
   const doodleWorkBase = new DoodleWorkBase(allProductions)
@@ -274,7 +271,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     return `${state.value.doodleWorkExeLocalRootPath}/Doodle-${state.value.doodleWorkZipFileVision}-win64`
   })
   const doodleWorkExePath = computed(() => {
-    return `${state.value.doodleWorkExeLocalRootPath}/Doodle-${state.value.doodleWorkZipFileVision}-win64/bin/doodle_kitsu_supplement.exe`
+    return `${doodleWorkFilePath.value}/bin/doodle_kitsu_supplement.exe`
   })
 
   // function sleep(ms) {
@@ -297,17 +294,15 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       const fs = require('fs')
       const os = require('os')
       state.value.doodleWorkExeLocalRootPath = `${os.homedir()}/.doodle`
-      console.log(window.api.DoodleExePort())
       if (window.api.DoodleExePort() === 0) {
         if (!fs.existsSync(doodleWorkExePath.value)) {
           if (!fs.existsSync(state.value.doodleWorkExeLocalRootPath)) {
-            console.log(state.value.doodleWorkExeLocalRootPath)
             fs.mkdirSync(state.value.doodleWorkExeLocalRootPath)
           }
           state.value.doodleWorkZipFileVision = (
             await doodlework.getToolVersion()
           ).version
-          if (!fs.existsSync(doodleWorkFilePath.value)) {
+          if (!fs.existsSync(doodleWorkExePath.value)) {
             await actions.downloadDoodleWorkExe(
               `/${doodleWorkZipFileName.value}`
             )
@@ -315,17 +310,21 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           await window.api.doodleExeRun(doodleWorkExePath.value, ['--local'])
         }
       }
+      state.value.isPullProcessed = true
       const port = window.api.DoodleExePort()
       if (port) state.value.localHttpPath = `http://127.0.0.1:${port}`
     },
     setLocalHttpPath: async () => {
       const port = window.api.DoodleExePort()
-      if (port) state.value.localHttpPath = `http://127.0.0.1:${port}`
+      if (port) {
+        state.value.localHttpPath = `http://127.0.0.1:${port}`
+        state.value.isPullProcessed = true
+        await this.getWorkSetting()
+      }
     },
 
     submitLocalDoodleWork: async () => {
       const port = window.api.DoodleExePort()
-      console.log(port)
       if (port) state.value.localHttpPath = `http://127.0.0.1:${port}`
       // await fetch(state.value.localHttpPath + `/api/doodle/local_setting`, {
       //   mode: 'no-cors'
@@ -349,9 +348,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       try {
         const response = await superagent.get(url).responseType('arraybuffer')
         const buffer = await Buffer.from(response.body)
-        console.log(response.body)
         if (!response.body) {
-          throw new Error('No data received from the URL.')
+          new Error('No data received from the URL.')
         }
         // const fs = require('fs')
         // const stream = fs.createWriteStream(doodleWorkZipFilePath.value)
@@ -439,7 +437,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
 
     getWorkSetting: async () => {
-      console.log(state.value.localHttpPath)
       state.value.doodleWorkSetting = await doodlework.getLocalSetting(
         state.value.localHttpPath
       )

@@ -1592,8 +1592,10 @@
       "view_log": "查看日志",
       "log": "日志",
       "visitor": "访客",
-      "logout" : "退出访客",
+      "logout": "退出访客",
       "is_sure_delete": "您确认删除吗?",
+      "initializing": "初始化中，请稍后...",
+      "set_success": "设置成功",
       "filed": {
         "name": "文件名",
         "status": "状态",
@@ -1601,7 +1603,7 @@
         "run_time": "运行时间",
         "submitter": "创建者",
         "submit_time": "创建时间",
-        "end_time":"结束时间"
+        "end_time": "结束时间"
       },
       "settings": {
         "authorize": "授权",

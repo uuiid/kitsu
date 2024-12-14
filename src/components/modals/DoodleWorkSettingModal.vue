@@ -2,6 +2,8 @@
 import TextField from '@/components/widgets/TextField.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import { computed } from 'vue'
+import { ElMessage } from 'element-plus'
+import i18n from '@/lib/i18n.js'
 
 const doodleWork = doodleWorkStore()
 
@@ -10,7 +12,7 @@ const readonlyFields = ['UE_version']
 const displayFields = computed(() => {
   return doodleWork.state.doodleWorkSetting
 })
-doodleWork.actions.getWorkSetting()
+if (doodleWork.state.localHttpPath) doodleWork.actions.getWorkSetting()
 const readUEVersion = path => {
   const fs = require('fs')
   const vision_file = `${path}\\Engine\\Binaries\\Win64\\UnrealEditor.version`
@@ -27,11 +29,27 @@ const onTextChange = (val, key) => {
     doodleWork.state.doodleWorkSetting['UE_version'] = readUEVersion(
       val.target.value
     )
+  } else if (key === 'maya_parallel_quantity') {
+    doodleWork.state.doodleWorkSetting['maya_parallel_quantity'] = Number(
+      val.target.value
+    )
   }
 }
 const textPlaceholder = (val, key) => {
   if (key === 'UE_path') return '请输入UE路径例：D:\\EpicGame\\UE_5.5'
   else return String(val)
+}
+
+const onConfirm = async () => {
+  try {
+    await doodleWork.actions.setWorkSetting()
+    ElMessage({
+      message: i18n.global.t('doodle_work.set_success'),
+      type: 'success'
+    })
+  } catch (error) {
+    ElMessage.error('error')
+  }
 }
 </script>
 
@@ -69,7 +87,7 @@ const textPlaceholder = (val, key) => {
               button: true,
               'is-primary': true
             }"
-            @click="doodleWork.actions.setWorkSetting"
+            @click="onConfirm"
           >
             {{ $t('main.confirmation') }}
           </a>

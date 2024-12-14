@@ -1,7 +1,7 @@
 <script setup>
 import PageTitle from '@/components/widgets/PageTitle.vue'
 import ExportFbx from '@/components/widgets/ExportFbx.vue'
-import { computed, onMounted, onUnmounted, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
 import AddDoodleWork from '@/components/modals/AddDoodleWork.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
@@ -9,8 +9,8 @@ import { useHead } from 'unhead'
 import { Settings } from 'lucide-vue-next'
 import i18n from '@/lib/i18n.js'
 import DoodleWorkSettingModal from '@/components/modals/DoodleWorkSettingModal.vue'
+import { ElMessage, ElNotification } from 'element-plus'
 //import router from '@/router/index.js'
-
 useHead({
   title: i18n.global.t('doodle_work.doodle_work')
 })
@@ -27,7 +27,14 @@ onUnmounted(() => {
 const currentPage = ref('')
 const isShowSettingButton = ref(false)
 const switchPage = pageName => {
-  currentPage.value = pageName
+  if (doodleWork.state.isPullProcessed) currentPage.value = pageName
+  else
+    ElNotification({
+      title: i18n.global.t('video_library.warning'),
+      message: i18n.global.t('doodle_work.initializing'),
+      type: 'warning',
+      duration: 2000
+    })
 }
 const homePage = computed(() => {
   return currentPage.value === 'home' || currentPage.value === ''
@@ -41,6 +48,19 @@ const onKeyupEvent = event => {
   console.log('onKeyupEvent', event.key)
   //if (event.key === 'Escape') router.push('/login')
 }
+
+const onClickSetting = () => {
+  if (doodleWork.state.isPullProcessed)
+    doodleWork.state.isActiveSettingModal = true
+  else
+    ElNotification({
+      title: i18n.global.t('video_library.warning'),
+      message: i18n.global.t('doodle_work.initializing'),
+      type: 'warning',
+      duration: 2000
+    })
+}
+
 const intervalId = setInterval(() => {
   if (doodleWork.state.localHttpPath) {
     doodleWork.actions.getWorkSetting()
@@ -49,6 +69,16 @@ const intervalId = setInterval(() => {
 }, 1000)
 onUnmounted(() => {
   clearInterval(intervalId)
+})
+const message = ElMessage({
+  message: i18n.global.t('doodle_work.initializing'),
+  type: 'warning',
+  duration: 0
+})
+watchEffect(() => {
+  if (doodleWork.state.isPullProcessed) {
+    message.close()
+  }
 })
 
 const pagedAssets = ref([
@@ -101,10 +131,7 @@ const pagedAssets = ref([
             <settings
               class="mt1 mt1-hover"
               v-show="true"
-              @click="
-                doodleWork.state.isActiveSettingModal =
-                  !doodleWork.state.isActiveSettingModal
-              "
+              @click="onClickSetting"
             />
             <p v-if="doodleWork.state.isVisitor" class="has-text-centered">
               <router-link :to="{ name: 'login' }">
