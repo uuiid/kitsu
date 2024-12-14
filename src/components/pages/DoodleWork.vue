@@ -1,10 +1,31 @@
 <script setup>
 import PageTitle from '@/components/widgets/PageTitle.vue'
 import ExportFbx from '@/components/widgets/ExportFbx.vue'
-import { computed, ref } from 'vue'
+import { computed, onMounted, onUnmounted, ref } from 'vue'
 import AddDoodleWork from '@/components/modals/AddDoodleWork.vue'
+import { doodleWorkStore } from '@/store/modules/doodlework.js'
+import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
+import { useHead } from 'unhead'
+import { Settings } from 'lucide-vue-next'
+import i18n from '@/lib/i18n.js'
+import DoodleWorkSettingModal from '@/components/modals/DoodleWorkSettingModal.vue'
+//import router from '@/router/index.js'
+
+useHead({
+  title: i18n.global.t('doodle_work.doodle_work')
+})
+const doodleWork = doodleWorkStore()
+doodleWork.actions.pullProcess()
+onMounted(() => {
+  document.addEventListener('keydown', onKeyupEvent)
+})
+
+onUnmounted(() => {
+  document.removeEventListener('keydown', onKeyupEvent)
+})
 
 const currentPage = ref('')
+const isShowSettingButton = ref(false)
 const switchPage = pageName => {
   currentPage.value = pageName
 }
@@ -14,6 +35,20 @@ const homePage = computed(() => {
 
 const pagTitle = computed(() => {
   return currentPage.value ? '-' + currentPage.value : currentPage.value
+})
+
+const onKeyupEvent = event => {
+  console.log('onKeyupEvent', event.key)
+  //if (event.key === 'Escape') router.push('/login')
+}
+const intervalId = setInterval(() => {
+  if (doodleWork.state.localHttpPath) {
+    doodleWork.actions.getWorkSetting()
+    clearInterval(intervalId)
+  } else doodleWork.actions.setLocalHttpPath()
+}, 1000)
+onUnmounted(() => {
+  clearInterval(intervalId)
 })
 
 const pagedAssets = ref([
@@ -48,14 +83,35 @@ const pagedAssets = ref([
   <div>
     <div class="columns fixed-page">
       <div class="doodle-work">
-        <header class="header interval">
-          <page-title
-            class="mt1 mt1-hover"
-            :text="$t('doodle_work.doodle_work')"
-            :bold="true"
-            @click="switchPage('')"
-          />
-          <page-title class="mt1" :text="pagTitle" :bold="true" />
+        <header
+          class="header interval"
+          @mouseenter="isShowSettingButton = true"
+          @mouseleave="isShowSettingButton = false"
+        >
+          <div class="header-row">
+            <page-title
+              class="mt1 mt1-hover"
+              :text="$t('doodle_work.doodle_work')"
+              :bold="true"
+              @click="switchPage('')"
+            />
+            <page-title class="mt1" :text="pagTitle" :bold="true" />
+          </div>
+          <div class="header-action">
+            <settings
+              class="mt1 mt1-hover"
+              v-show="true"
+              @click="
+                doodleWork.state.isActiveSettingModal =
+                  !doodleWork.state.isActiveSettingModal
+              "
+            />
+            <p v-if="doodleWork.state.isVisitor" class="has-text-centered">
+              <router-link :to="{ name: 'login' }">
+                {{ $t('doodle_work.logout') }}
+              </router-link>
+            </p>
+          </div>
         </header>
         <div class="list-body" v-if="homePage">
           <ul class="items">
@@ -90,14 +146,18 @@ const pagedAssets = ref([
         />
         <export-fbx
           class="datatable-wrapper"
+          name="导出ABC"
           v-if="currentPage === '导出ABC'"
         />
         <export-fbx
           class="datatable-wrapper"
+          name="自动灯光"
           v-if="currentPage === '自动灯光'"
         />
       </div>
       <add-doodle-work />
+      <doodle-work-log-modal v-if="doodleWork.state.isActiveLogModal" />
+      <doodle-work-setting-modal />
     </div>
   </div>
 </template>
@@ -112,12 +172,34 @@ const pagedAssets = ref([
   color: var(--text);
   margin-left: auto;
   margin-right: auto;
-  gap: 50px;
+  gap: 10px;
 }
 
 .header {
   display: flex;
   flex-direction: row;
+  align-items: center;
+  justify-content: space-between;
+  margin-right: 20px;
+}
+
+.header-row {
+  display: flex;
+  flex-direction: row;
+}
+
+.header-action {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 1em;
+}
+
+.has-text-centered {
+  margin-top: 10px;
+  padding: 5px;
+  border-radius: 5px;
+  border: 1px solid $green;
 }
 
 .mt1-hover {

@@ -58,7 +58,7 @@ export default {
     },
     modelValue: {
       default: '',
-      type: [String, Number]
+      type: [String, Number, Boolean]
     },
     placeholder: {
       default: '',
@@ -169,6 +169,7 @@ input.input {
   font-size: 1.2em;
   border-radius: 10px;
 }
+
 input.input.thin {
   height: 2.4em;
 }
@@ -192,6 +193,7 @@ input[type='number']::-webkit-inner-spin-button {
   -webkit-appearance: none;
   margin: 0;
 }
+
 input[type='number'] {
   -moz-appearance: textfield;
 }

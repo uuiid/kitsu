@@ -97,6 +97,15 @@
             {{ $t('login.forgot_password') }}
           </router-link>
         </p>
+        <p
+          v-if="false"
+          class="has-text-centered"
+          @click="doodleWorkStore().state.isVisitor = true"
+        >
+          <router-link :to="{ name: 'visitor-doodle-work' }">
+            {{ $t('doodle_work.visitor') }}
+          </router-link>
+        </p>
       </div>
     </div>
   </div>
@@ -105,7 +114,7 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import { MailIcon, LockIcon } from 'lucide-vue-next'
-
+import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TwoFactorAuthentication from '@/components/widgets/TwoFactorAuthentication.vue'
 
 export default {
@@ -157,6 +166,7 @@ export default {
   },
 
   methods: {
+    doodleWorkStore,
     ...mapActions(['logIn']),
 
     updateEmail(e) {

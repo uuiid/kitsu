@@ -7,13 +7,20 @@
             <img
               :src="logoPath"
               v-if="organisation && organisation.has_avatar"
+              alt="logo"
             />
             <img
               src="../../assets/kitsu-text-dark.svg"
               width="180"
               v-else-if="isDarkTheme"
+              alt="logo"
             />
-            <img src="../../assets/kitsu-text.svg" width="180" v-else />
+            <img
+              src="../../assets/kitsu-text.svg"
+              width="180"
+              v-else
+              alt="logo"
+            />
           </div>
         </router-link>
 
@@ -141,9 +148,9 @@
                 {{ $t('scan_project.scan_project') }}
               </router-link>
             </p>
-            <p @click="toggleSidebar()" v-if="false">
+            <p @click="toggleSidebar()">
               <router-link :to="{ name: 'doodle-work' }">
-                <kitsu-icon class="nav-icon" name="scan-project" />
+                <kitsu-icon class="nav-icon" name="doodle-work" />
                 {{ $t('doodle_work.doodle_work') }}
               </router-link>
             </p>

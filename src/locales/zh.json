@@ -1577,7 +1577,7 @@
       "filed": {
         "number": "编号",
         "name": "名称",
-        "version_name":                                                                                                                                                                                                                                                                                 "版本名称",
+        "version_name": "版本名称",
         "assets_type": "资产类型",
         "season": "季数",
         "base_path": "基本路径",
@@ -1590,13 +1590,32 @@
       "doodle_work": "自动工作台",
       "add_doodle_work": "添加任务",
       "view_log": "查看日志",
+      "log": "日志",
+      "visitor": "访客",
+      "logout" : "退出访客",
+      "is_sure_delete": "您确认删除吗?",
       "filed": {
         "name": "文件名",
         "status": "状态",
         "source_computer": "运行主机",
         "run_time": "运行时间",
         "submitter": "创建者",
-        "submit_time": "创建时间"
+        "submit_time": "创建时间",
+        "end_time":"结束时间"
+      },
+      "settings": {
+        "authorize": "授权",
+        "UE_path": "UE路径",
+        "maya_path": "maya路径",
+        "maya_parallel_quantity": "并行数量",
+        "UE_version": "UE版本"
+      },
+      "task_state": {
+        "submitted": "已提交",
+        "assigned": "已分配",
+        "running": "执行中",
+        "completed": "已完成",
+        "failed": "失败"
       }
     },
     "wrong_browser": {

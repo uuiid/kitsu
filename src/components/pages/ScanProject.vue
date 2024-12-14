@@ -284,7 +284,7 @@ export default {
     }
   },
   watch: {},
-  metaInfo() {
+  head() {
     return {
       title: `${this.$t('scan_project.scan_project')} - Kitsu`
     }

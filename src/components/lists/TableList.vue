@@ -1,6 +1,9 @@
 <script setup>
 import { computed, ref } from 'vue'
+import { useStore } from 'vuex'
+import i18n from '@/lib/i18n.js'
 
+const vuexStore = useStore()
 const props = defineProps({
   name: { type: String, default: '' },
   isDrop: { type: Boolean, default: false },
@@ -9,13 +12,13 @@ const props = defineProps({
     type: Object,
     default: () => {}
   },
-  bodyList: { type: Array, default: () => [] },
+  bodyList: { type: Map, default: () => Map() },
   isShowViewLog: { type: Boolean, default: false }
 })
-const emit = defineEmits(['submit', 'add-data', 'remove-data', 'view-log'])
+const emit = defineEmits(['submit', 'add-data', 'handle-action'])
 const isDragOver = ref(false)
 const displayWorkList = computed(() => {
-  return props.bodyList
+  return [...props.bodyList.values()]
 })
 const isShowPrompt = computed(() => {
   return displayWorkList.value <= 0
@@ -24,6 +27,44 @@ const isShowPrompt = computed(() => {
 const isActiveSubmit = computed(() => {
   return displayWorkList.value.length > 0 && props.isShowSubmit
 })
+
+const formatDiffTime = diffTime => {
+  const hours = Math.floor(diffTime / (1000 * 60 * 60))
+  const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60))
+  const seconds = Math.floor((diffTime % (1000 * 60)) / 1000)
+
+  // 格式化为 HH:mm:ss
+  return [
+    hours.toString().padStart(2, '0'),
+    minutes.toString().padStart(2, '0'),
+    seconds.toString().padStart(2, '0')
+  ].join(':')
+}
+
+const formatTableBodyData = (workTask, key) => {
+  if (key === 'submitter') {
+    const person = vuexStore.getters.personMap.get(workTask[key])
+    return person ? person.first_name : ''
+  } else if (key === 'run_time') {
+    if (workTask['status'] === 'running') {
+      const currentTime = new Date()
+      const date = new Date(workTask[key])
+      if (currentTime > date) {
+        return formatDiffTime(currentTime - date)
+      }
+      return '00:00:00'
+    } else if (['completed', 'failed'].includes(workTask['status'])) {
+      const date = new Date(workTask[key])
+      const end_time = new Date(workTask['end_time'])
+      return formatDiffTime(end_time - date)
+    }
+  } else if (key === 'status') {
+    if (i18n.global.tm('doodle_work.task_state'))
+      return i18n.global.t(`doodle_work.task_state.${workTask['status']}`)
+  }
+  return workTask[key]
+}
+
 const handleDragOver = event => {
   event.preventDefault()
   if (!isDragOver.value) {
@@ -41,26 +82,12 @@ const onDrop = event => {
   if (props.isDrop) {
     isDragOver.value = false
     const files = event.dataTransfer.files
-    const data = []
-    files.forEach(file => {
-      if (file.name.endsWith('.ma')) {
-        data.push({
-          name: file.name,
-          status: '等待',
-          source_computer: '本机',
-          submitter: '本机',
-          run_computer_id: '本机',
-          task_data: {
-            create_play_blast: true
-          }
-        })
-      }
-    })
-    emit('add-data', data)
+    emit('add-data', files)
   }
 }
-const handleRemove = index => {
-  emit('remove-data', index)
+
+const handleAction = (action_name, task_id) => {
+  emit('handle-action', action_name, task_id)
 }
 </script>
 
@@ -91,12 +118,12 @@ const handleRemove = index => {
         <tbody>
           <tr
             class="datatable-row"
-            :key="work.name"
-            v-for="(work, index) in displayWorkList"
+            :key="work.id"
+            v-for="work in displayWorkList"
           >
             <td :key="key" v-for="(value, key) in tableHeaderFiled">
               <span v-if="value.type === 'string'">
-                {{ work[key] }}
+                {{ formatTableBodyData(work, key) }}
               </span>
               <span v-else-if="value.type === 'boolean'">
                 <input type="checkbox" v-model="work.task_data[key]" />
@@ -108,14 +135,31 @@ const handleRemove = index => {
                 :class="{
                   button: true
                 }"
-                @click="handleRemove(index)"
-                >{{ $t('video_library.delete') }}</a
+                v-if="isShowViewLog"
+                @click="handleAction('cancel-task', work)"
+                >{{ $t('main.cancel') }}</a
               >
+              <el-popconfirm
+                :confirm-button-text="$t('main.confirmation')"
+                :cancel-button-text="$t('main.cancel')"
+                :title="$t('doodle_work.is_sure_delete')"
+                @confirm="handleAction('remove-task', work)"
+              >
+                <template #reference>
+                  <a
+                    class="action_item"
+                    :class="{
+                      button: true
+                    }"
+                    >{{ $t('video_library.delete') }}</a
+                  >
+                </template>
+              </el-popconfirm>
               <a
                 :class="{
                   button: true
                 }"
-                @click="emit('view-log', index)"
+                @click="handleAction('view-log', work)"
                 v-if="isShowViewLog"
                 >{{ $t('doodle_work.view_log') }}</a
               >
@@ -129,7 +173,7 @@ const handleRemove = index => {
         :class="{
           button: true
         }"
-        @click="$emit('submit', displayWorkList)"
+        @click="$emit('submit')"
       >
         {{ props.name }}
       </a>
@@ -197,6 +241,11 @@ const handleRemove = index => {
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+  }
+
+  .action {
+    text-overflow: initial;
+    //min-width: 220px;
   }
 }
 

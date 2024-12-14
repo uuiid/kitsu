@@ -920,5 +920,10 @@ export const routes = [
     path: '/:pathMatch(.*)',
     component: NotFound,
     name: 'not-found'
+  },
+  {
+    path: '/visitor-doodle-work',
+    component: DoodleWork,
+    name: 'visitor-doodle-work'
   }
 ]

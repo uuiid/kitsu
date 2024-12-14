@@ -49,6 +49,7 @@ import userCheck from '@/assets/icons/fi-user-check.svg'
 import watch from '@/assets/icons/fi-eye.svg'
 import myWorksheet from '@/assets/icons/fi-task-status.svg'
 import scanProject from '@/assets/icons/fi-scan-assets.svg'
+import doodleWork from '@/assets/icons/fi-doodle-work.svg'
 
 // Player icons
 
@@ -133,7 +134,8 @@ const icons = {
   team,
   watch,
   waveform,
-  'scan-project': scanProject
+  'scan-project': scanProject,
+  'doodle-work': doodleWork
 }
 
 export default {

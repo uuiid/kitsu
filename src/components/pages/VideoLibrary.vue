@@ -780,7 +780,7 @@ export default {
       }
     }
   },
-  metaInfo() {
+  head() {
     return {
       title: `${this.$t('video_library.video_library')} - Kitsu`
     }
