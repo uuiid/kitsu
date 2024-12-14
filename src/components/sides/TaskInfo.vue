@@ -1322,7 +1322,7 @@ export default {
         this.loading.setFrameThumbnail = true
         let frame = null
         if (isUseCurrentFrame) {
-          frame = this.currentFrameRaw
+          frame = this.currentFrameRaw + 1
         }
         return this.setCurrentPreviewAsEntityThumbnail(frame)
       }
