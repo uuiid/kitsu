@@ -4,34 +4,53 @@
       modal: true,
       'is-active': active
     }"
+    @wheel.prevent="onImage"
   >
-    <div class="chevron chevron-left">
-      <chevron-left-icon
-        :size="30"
-        @click="onSwitchImage(false)"
-      ></chevron-left-icon>
+    <div class="chevron chevron-left" @click="onSwitchImage(false)">
+      <chevron-left-icon :size="30"></chevron-left-icon>
     </div>
-    <div class="chevron chevron-right">
-      <chevron-right-icon
-        :size="30"
-        @click="onSwitchImage(true)"
-      ></chevron-right-icon>
+    <div class="chevron chevron-right" @click="onSwitchImage(true)">
+      <chevron-right-icon :size="30"></chevron-right-icon>
     </div>
-    <div class="modal-background" @click="onCancel()"></div>
-    <div class="modal-content" @click="onCancel()">
-      <img :src="previewPath" alt="" />
+    <div class="chevron chevron-right-top" @click="onCancel">
+      <x :size="30"></x>
     </div>
-    <div class="prompt" :class="{ 'prompt-animation': isPrompt }">
-      <span>{{ prompt }}</span>
+    <div class="modal-background"></div>
+    <div
+      class="image-container"
+      @mousedown="startDrag"
+      @mousemove.stop="drag"
+      @mouseup="endDrag"
+      @mouseleave="endDrag"
+      :style="{
+        transform: `translate(${translate.x}px, ${translate.y}px)`
+      }"
+    >
+      <img
+        class="image"
+        :src="previewPath"
+        ref="imagePreview"
+        alt=""
+        :style="{
+          transform: `scale(${imageScale})`,
+          transformOrigin: 'center center',
+          height: `85vh`
+        }"
+        draggable="false"
+        @mousedown.prevent
+        @dragstart.prevent
+        @contextmenu.prevent
+        v-focus
+      />
     </div>
   </div>
 </template>
 
 <script>
-import { ChevronLeftIcon, ChevronRightIcon } from 'lucide-vue-next'
+import { ChevronLeftIcon, ChevronRightIcon, X } from 'lucide-vue-next'
 
 import { getDownloadAttachmentPath } from '@/lib/path'
-
+import { ElMessage } from 'element-plus'
 import { modalMixin } from '@/components/modals/base_modal'
 
 export default {
@@ -41,7 +60,8 @@ export default {
 
   components: {
     ChevronLeftIcon,
-    ChevronRightIcon
+    ChevronRightIcon,
+    X
   },
 
   props: {
@@ -65,8 +85,16 @@ export default {
   emits: ['cancel', 'switch-image'],
   data() {
     return {
-      prompt: '',
-      isPrompt: false
+      imageScale: 1,
+      isDragging: false,
+      dragStart: {
+        x: 0,
+        y: 0
+      },
+      translate: {
+        x: 0,
+        y: 0
+      }
     }
   },
   mounted() {
@@ -95,9 +123,39 @@ export default {
   },
   methods: {
     onCancel() {
-      this.isPrompt = false
-      this.prompt = ''
+      this.initImagePreview()
       this.$emit('cancel')
+    },
+    initImagePreview() {
+      this.imageScale = 1
+      this.translate.y = 0
+      this.translate.x = 0
+      this.dragStart.x = 0
+      this.dragStart.y = 0
+    },
+    onImage(event) {
+      this.imageScale = Math.max(
+        0.001,
+        Math.min(50, this.imageScale - event.deltaY / 1000)
+      )
+      console.log(this.imageScale)
+    },
+    startDrag(event) {
+      this.isDragging = true
+      this.dragStart.x = event.clientX - this.translate.x
+      this.dragStart.y = event.clientY - this.translate.y
+      console.log(this.dragStart.x, this.dragStart.y)
+    },
+    drag(event) {
+      if (this.isDragging) {
+        this.translate.x = event.clientX - this.dragStart.x
+
+        this.translate.y = event.clientY - this.dragStart.y
+      }
+    },
+
+    endDrag() {
+      this.isDragging = false
     },
     onSwitchImage(isNext) {
       if (isNext) {
@@ -122,11 +180,17 @@ export default {
               'image/png': blob
             })
           ])
-          this.prompt = '已复制'
-          this.isPrompt = true
+          ElMessage({
+            message: '已复制',
+            type: 'success',
+            plain: true,
+            offset: 100
+          })
         } catch (error) {
-          this.prompt = '复制失败'
+          ElMessage.error('复制失败')
         }
+      } else if (event.key === 'Escape') {
+        this.initImagePreview()
       }
       // 在此可以处理相关的逻辑，例如自定义复制行为
     }
@@ -148,33 +212,43 @@ export default {
   max-width: 80%;
 }
 
-.modal-content {
-  width: 95%;
-  text-align: center;
-  max-height: 100vh;
-  overflow: auto;
+.image-container {
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  height: 100%;
+  width: 100%;
+  overflow: hidden;
+  cursor: grab;
+}
 
-  img {
-    margin-top: 60px;
-    max-height: 90vh;
-    overflow: auto;
-  }
+.image-container:active {
+  cursor: grabbing;
+}
+
+img {
+  transition: transform 0.2s ease;
+  max-width: none;
+  object-fit: contain;
+  user-select: none;
 }
 
 .chevron {
   display: flex;
   align-items: center;
   justify-content: center;
-  border-radius: 25px;
+  border-radius: 20px;
   position: absolute;
-  background-color: #1e1e1e;
-  width: 50px;
-  height: 50px;
+  color: rgba(221, 221, 221, 0.91);
+  background-color: rgb(0, 0, 0, 0.5);
+  width: 40px;
+  height: 40px;
   top: 50%;
   z-index: 2;
 
   &:hover {
     border-color: var(--background-selectable);
+    color: $red;
     cursor: pointer;
   }
 }
@@ -187,6 +261,11 @@ export default {
   right: 2%;
 }
 
+.chevron-right-top {
+  right: 2%;
+  top: 10%;
+}
+
 @keyframes moveUp {
   0% {
     transform: translateY(0);
@@ -196,15 +275,5 @@ export default {
     transform: translateY(-20px);
     opacity: 0;
   }
-}
-
-.prompt {
-  position: fixed;
-  font-size: 20px;
-  bottom: 20%;
-}
-
-.prompt-animation {
-  animation: moveUp 3s forwards;
 }
 </style>
