@@ -22,9 +22,6 @@
       @mousemove.stop="drag"
       @mouseup="endDrag"
       @mouseleave="endDrag"
-      :style="{
-        transform: `translate(${translate.x}px, ${translate.y}px)`
-      }"
     >
       <img
         class="image"
@@ -32,7 +29,7 @@
         ref="imagePreview"
         alt=""
         :style="{
-          transform: `scale(${imageScale})`,
+          transform: `translate(${translate.x}px, ${translate.y}px) scale(${imageScale})`,
           transformOrigin: 'center center',
           height: `85vh`
         }"
@@ -227,7 +224,7 @@ export default {
 }
 
 img {
-  transition: transform 0.2s ease;
+  //transition: transform 0.2s ease;
   max-width: none;
   object-fit: contain;
   user-select: none;
