@@ -18,6 +18,16 @@ class DoodleWorkBase {
     this.productions = productions
   }
 
+  formatResolution(file) {
+    const resolution = this.productions
+      .filter(production => production.code === file.name.split('_')[0])[0]
+      .resolution?.split(':')
+    return {
+      width: Number(resolution[0]),
+      height: Number(resolution[1])
+    }
+  }
+
   formatDataState(data) {}
 
   validateString(input) {
@@ -35,6 +45,7 @@ class DoodleWorkBase {
   }
 
   formatData(file) {
+    const resolution = this.formatResolution(file)
     const data = {
       id: uuid(),
       name: file.name,
@@ -44,7 +55,11 @@ class DoodleWorkBase {
       run_computer_id: 'CB3b915c-2F16-cE9d-c2cE-b45B5ebb583C',
       task_data: {
         path: file.path,
-        camera_film_aperture: Number(this.getFilmAperture(file))
+        camera_film_aperture: Number(this.getFilmAperture(file)),
+        image_size: {
+          width: resolution.width || 1920,
+          height: resolution.height || 1080
+        }
       },
       type: this.name
     }
@@ -154,16 +169,6 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
     data.task_data.layering = this.task_data_filed.get('layering').checked
   }
 
-  formatResolution(file) {
-    const resolution = this.productions
-      .filter(production => production.code === file.name.split('_')[0])[0]
-      .resolution?.split(':')
-    return {
-      width: Number(resolution[0]),
-      height: Number(resolution[1])
-    }
-  }
-
   formatShotName(file) {
     const shot_name = file.name.substring(0, file.name.lastIndexOf('.'))
     const shot_split = shot_name.split('_')
@@ -187,15 +192,10 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
   formatData(file) {
     const data = super.formatData(file)
     const shotData = this.formatShotName(file)
-    const resolution = this.formatResolution(file)
     data.task_data.episodes = shotData.episodes
     data.task_data.shot = {
       shot: shotData.shot,
       shot_enum: shotData.shot_enum
-    }
-    data.task_data.image_size = {
-      width: resolution.width || 1920,
-      height: resolution.height || 1080
     }
     data.task_data.project = this.productions.filter(
       production => production.code === file.name.split('_')[0]

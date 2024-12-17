@@ -8,7 +8,6 @@ const doodleWork = doodleWorkStore()
 const disPlayTaskDataFiled = computed(() => {
   if (doodleWork.currentDoodleWorkState) {
     if (doodleWork.currentDoodleWorkState.task_data_filed) {
-      console.log(doodleWork.currentDoodleWorkState.task_data_filed.values())
       return doodleWork.currentDoodleWorkState.task_data_filed
     }
   }
