@@ -21,7 +21,8 @@ class DoodleWorkBase {
   formatResolution(file) {
     const resolution = this.productions
       .filter(production => production.code === file.name.split('_')[0])[0]
-      .resolution?.split(':')
+      .resolution?.split('x')
+    console.log(resolution)
     return {
       width: Number(resolution[0]),
       height: Number(resolution[1])
