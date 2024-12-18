@@ -13,7 +13,11 @@
             <th class="asset-type" ref="th-type" v-if="isAssets">
               {{ $t('tasks.fields.asset_type') }}
             </th>
-            <th class="sequence" ref="th-type" v-else-if="!isEpisodes">
+            <th
+              class="sequence"
+              ref="th-type"
+              v-else-if="!isEpisodes && !isSequences"
+            >
               {{ $t('tasks.fields.sequence') }}
             </th>
             <th class="name" ref="th-name">
@@ -96,7 +100,7 @@
             <td class="asset-type" v-if="isAssets">
               {{ getEntity(task.entity.id).asset_type_name }}
             </td>
-            <td class="sequence" v-else-if="!isEpisodes">
+            <td class="sequence" v-else-if="!isEpisodes && !isSequences">
               {{ getEntity(task.entity.id).sequence_name }}
             </td>
             <td class="name">
@@ -365,6 +369,20 @@ import ValidationCell from '@/components/cells/ValidationCell.vue'
 import ValidationTag from '@/components/widgets/ValidationTag.vue'
 import DescriptionCell from '@/components/cells/DescriptionCell.vue'
 
+import assetStore from '@/store/modules/assets'
+import editStore from '@/store/modules/edits'
+import episodeStore from '@/store/modules/episodes'
+import shotStore from '@/store/modules/shots'
+import sequenceStore from '@/store/modules/sequences'
+
+const stores = {
+  assetStore,
+  episodeStore,
+  shotStore,
+  sequenceStore,
+  editStore
+}
+
 export default {
   name: 'task-list',
 
@@ -466,6 +484,10 @@ export default {
 
     isEpisodes() {
       return this.entityType === 'Episode'
+    },
+
+    isSequences() {
+      return this.entityType === 'Sequence'
     },
 
     isShots() {
@@ -739,7 +761,9 @@ export default {
     },
 
     getEntity(entityId) {
-      return this[`${this.entityType.toLowerCase()}Map`].get(entityId) || {}
+      const store = stores[`${this.entityType.toLowerCase()}Store`]
+      const map = store.cache[`${this.entityType.toLowerCase()}Map`]
+      return map.get(entityId) || {}
     },
 
     onKeyDown(event) {
