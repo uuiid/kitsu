@@ -115,7 +115,7 @@
             />
 
             <td class="time-spent">
-              {{ task.data.ji_shu_lie }}
+              {{ task.data?.ji_shu_lie || '' }}
             </td>
 
             <validation-cell
