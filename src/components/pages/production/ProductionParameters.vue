@@ -30,6 +30,7 @@
               :max-date="form.end_date"
               :label="$t('productions.fields.start_date')"
               :with-margin="false"
+              :model-value="form.start_date"
               v-model="form.start_date"
             />
           </div>
@@ -40,6 +41,7 @@
               :min-date="form.start_date"
               :label="$t('productions.fields.end_date')"
               :with-margin="false"
+              :model-value="form.end_date"
               v-model="form.end_date"
             />
           </div>
@@ -249,7 +251,9 @@ export default {
   },
 
   mounted() {
-    this.resetForm()
+    this.$nextTick(() => {
+      this.resetForm()
+    })
   },
 
   watch: {
@@ -300,7 +304,6 @@ export default {
     resetForm() {
       this.$refs.fileField?.reset()
       this.storeProductionPicture(null)
-
       if (this.currentProduction) {
         this.form = {
           name: this.currentProduction.name,
