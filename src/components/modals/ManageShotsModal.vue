@@ -167,6 +167,8 @@
 <script>
 import { mapGetters } from 'vuex'
 
+import shotStore from '@/store/modules/shots'
+
 import { modalMixin } from '@/components/modals/base_modal'
 
 import stringHelpers from '@/lib/string'
@@ -233,8 +235,7 @@ export default {
       'currentProduction',
       'displayedEpisodes',
       'displayedSequences',
-      'isTVShow',
-      'shots'
+      'isTVShow'
     ]),
 
     isAddEpisodeAllowed() {
@@ -259,6 +260,10 @@ export default {
         return this.names.shot === shot.name
       })
       return !isEmpty && !isExist && this.selectedSequenceId
+    },
+
+    shots() {
+      return shotStore.cache.shots
     }
   },
 
@@ -400,6 +405,9 @@ export default {
       if (this.active) {
         this.shotPadding = '1'
         this.sequences = this.displayedSequences
+        if (this.selectedSequenceId) {
+          this.selectSequence(this.selectedSequenceId)
+        }
         setTimeout(() => {
           if (this.isTVShow) {
             this.$refs.addEpisodeInput.focus()

@@ -51,6 +51,7 @@
               :is-repeating="isRepeating"
               :is-wireframe="isWireframe"
               :margin-bottom="marginBottom"
+              name="main"
               :nb-frames="nbFrames"
               :object-background-url="objectBackgroundUrl"
               :preview="currentPreview"
@@ -439,7 +440,7 @@
               is-reversed
               is-preview
               thin
-              :value="currentPreview?.id"
+              :model-value="currentPreview?.id"
               @update:model-value="changeCurrentPreviewFile"
             />
           </div>
