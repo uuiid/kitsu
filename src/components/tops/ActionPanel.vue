@@ -158,7 +158,7 @@
         </div>
         <div
           class="menu-item"
-          :title="$t('menu.openFolder')"
+          :title="$t('doodle.open_folder')"
           @click="$emit('open-folder')"
           v-if="isElectron"
         >

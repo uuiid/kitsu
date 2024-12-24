@@ -11,7 +11,7 @@
         />
         <text-field
           ref="nameField"
-          :label="$t('productions.fields.en_str')"
+          :label="$t('doodle_productions.fields.en_str')"
           @enter="runConfirmation"
           v-focus
           v-model="form.en_str"
@@ -112,14 +112,14 @@
         />
         <text-field
           ref="resolutionField"
-          :label="$t('productions.fields.path')"
+          :label="$t('doodle_productions.fields.path')"
           @enter="runConfirmation"
           v-model="form.path"
           v-if="currentProduction && currentProduction.id"
         />
         <text-field
           ref="resolutionField"
-          :label="$t('productions.fields.auto_upload_path')"
+          :label="$t('doodle_productions.fields.auto_upload_path')"
           @enter="runConfirmation"
           v-model="form.auto_upload_path"
           v-if="currentProduction && currentProduction.id"
