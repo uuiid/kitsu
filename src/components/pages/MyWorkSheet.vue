@@ -109,6 +109,7 @@
           @scroll="setTodoListScrollPosition"
           @set-sort-task="onWorkSheetEvent"
           @remove-sort-task="removeSortTask"
+          @set-user-remark="setUserRemark"
           v-if="isActiveTab('workSheet')"
         />
 
@@ -206,6 +207,7 @@
       @cancel="modals.edit = false"
       @add-sort-task="addSortTask"
       @switch-page="pageLoadOpenTasks"
+      @on-time-changed="timeLoadOpenTasks"
     />
   </div>
 </template>
@@ -293,7 +295,7 @@ export default {
         '结束时间',
         '持续时间/day',
         '时间备注',
-        '名称',
+        '名称(备注)',
         '等级'
       ]
     }
@@ -522,7 +524,8 @@ export default {
       }
       this.clearSelectedTasks()
       this.tasks = []
-      this.reload().then(() => {
+      const start_date = `${this.$refs['add-task-sheet-modal'].yearString}-${this.$refs['add-task-sheet-modal'].monthString}-01`
+      this.reload(start_date).then(() => {
         this.isLoading = false
         this.modals.edit = true
       })
@@ -572,28 +575,44 @@ export default {
         t.computing_time.duration / (1000 * 1000 * 60 * 60 * 8)
       )
       line.push(duration)
-      line.push(t.computing_time.time_remark)
-      line.push(t.entity.name)
+      line.push(t.computing_time.remark)
+      if (t.computing_time.user_remark)
+        line.push(`${t.entity.name}(${t.computing_time.user_remark})`)
+      else line.push(t.entity.name)
       const level = t.entity.data.deng_ji
       line.push(level)
       return line
     },
 
-    async reload(page = 1) {
+    async reload(
+      start_date = `${moment().year()}-${moment().month() + 1}-01`,
+      page = 1
+    ) {
       try {
+        //const [year, month] = start_date.split('-').map(Number)
+        //const date = new Date(year, month, 1)
+        //date.setMonth(date.getMonth())
+        //const due_date = `${date.getFullYear()}-${String(date.getMonth() + 1).padStart(2, '0')}-01`
         const params = {
           person_id: this.person ? this.person.id : null,
-          page: page
+          page: page,
+          start_date: start_date
         }
         const taskInfos = await this.loadOpenTasks(params)
-        console.log(taskInfos.data.length)
         this.isMore = taskInfos.is_more
-        this.tasks.push(...taskInfos.data)
+        if (page === 1) this.tasks = taskInfos.data
+        else this.tasks.push(...taskInfos.data)
       } catch (error) {
         this.isLoadingError = true
         console.error(error)
       }
     },
+
+    async timeLoadOpenTasks(year, month) {
+      this.pageNumber = 1
+      await this.reload(`${year}-${month}-01`, this.pageNumber)
+    },
+
     async pageLoadOpenTasks(params) {
       if (params === 'back_page') {
         this.pageNumber--
@@ -774,7 +793,6 @@ export default {
       this.$store
         .dispatch(action, l_params)
         .then(res => {
-          console.log(res)
           if (res) {
             res.forEach(n => {
               let contain = false
@@ -839,7 +857,7 @@ export default {
             const tt = t
             tt.duration = item.duration
             tt.doodle_task_id = item.id
-            tt.time_remark = item.remark
+            tt.remark = item.remark
             tt.start_time = item.start_time
             tt.end_time = item.end_time
             tt.user_remark = item.user_remark
@@ -866,6 +884,15 @@ export default {
         }
       })
     },
+
+    setUserRemark(entity, user_remark) {
+      if (this.calculatedTasks.has(entity.kitsu_task_ref_id)) {
+        this.calculatedTasks.get(
+          entity.kitsu_task_ref_id
+        ).computing_time.user_remark = user_remark
+      }
+    },
+
     showAllUser() {
       return ['admin', 'manager', 'supervisor'].includes(this.user.role)
     },
@@ -969,7 +996,6 @@ export default {
       this.calculatedTasks = new Map()
     },
     person(val) {
-      console.log(val)
       if (val) this.getTimeClick()
     },
     yearString() {
@@ -979,7 +1005,7 @@ export default {
       this.getTimeClick()
     }
   },
-  metaInfo() {
+  head() {
     return {
       title: `${this.$t('doodle.my_worksheet')} - Kitsu`
     }

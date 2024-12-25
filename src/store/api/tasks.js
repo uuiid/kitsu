@@ -91,6 +91,18 @@ export default {
     )
   },
 
+  setUserRemark(data) {
+    const month = data.month.padStart(2, '0')
+    const year_month = `${data.year}-${month}`
+    const commentData = {
+      user_remark: data.user_remark
+    }
+    return client.ppatch(
+      `/api/doodle/computing_time/${data.user_id}/${year_month}/${data.task_id}`,
+      commentData
+    )
+  },
+
   getDutyList(data) {
     const month = data.month.padStart(2, '0')
     const year_month = `${data.year}-${month}`

@@ -15,6 +15,7 @@
             :label="$t('timesheets.year')"
             :options="yearOptions"
             v-model="yearString"
+            @change="onDateChange"
           />
 
           <combobox
@@ -22,6 +23,7 @@
             :label="$t('timesheets.month')"
             :options="monthOptions"
             v-model="monthString"
+            @change="onDateChange"
           />
 
           <button
@@ -55,21 +57,21 @@
         <p class="has-text-right">
           <button
             class="button flexrow-item"
-            @click="$emit('switch-page', 'back_page')"
+            @click="$emit('switch-page', 'back_page', yearString, monthString)"
             v-if="pageNumber > 1"
           >
             上一页
           </button>
           <button
             class="button flexrow-item"
-            @click="$emit('switch-page', 'next_page')"
+            @click="$emit('switch-page', 'next_page', yearString, monthString)"
             v-if="isMore"
           >
             下一页
           </button>
           <button
             class="button is-primary flexrow-item"
-            @click="addselectedTask"
+            @click="addSelectedTask"
           >
             {{ $t('doodle.add_select_task') }}
           </button>
@@ -119,7 +121,7 @@ export default {
       default: 1
     }
   },
-  emits: ['add-sort-task', 'cancel', 'switch-page'],
+  emits: ['add-sort-task', 'cancel', 'switch-page', 'on-time-changed'],
 
   data() {
     return {
@@ -143,7 +145,6 @@ export default {
     ]),
 
     notPendingTasks() {
-      console.log(this.tasks.length)
       return this.tasks
     },
 
@@ -191,6 +192,10 @@ export default {
       this.isLoading = false
     },
 
+    onDateChange(event) {
+      this.$emit('on-time-changed', this.yearString, this.monthString)
+    },
+
     unselectAllMonthClick() {
       const year = this.yearString
       const month = this.monthString.padStart(2, '0')
@@ -218,7 +223,7 @@ export default {
       })
       this.$refs['todo-list'].$forceUpdate()
     },
-    addselectedTask() {
+    addSelectedTask() {
       const data = []
       this.notPendingTasks.forEach(t => {
         if (t.checked) {
@@ -228,7 +233,7 @@ export default {
       this.$emit('add-sort-task', data)
     }
   },
-
+  watch() {},
   socket: {
     events: {
       'task:update'(eventData) {

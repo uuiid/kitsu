@@ -53,7 +53,7 @@
               {{ $t('doodle.end_date') }}
             </th>
             <th scope="col" class="time-remark">
-              {{ $t('doodle.time_remark') }}
+              {{ $t('doodle.remark') }}
             </th>
             <th scope="col" class="user-remark">
               {{ $t('doodle.user_remark') }}
@@ -79,22 +79,29 @@
         </thead>
         <tbody class="datatable-body" v-if="tasks.length > 0">
           <tr
-            v-for="(task, i) in displayedTasks"
+            v-for="task in displayedTasks"
             :key="task.computing_time.id"
             :class="{
               'datatable-row': true,
               'datatable-row--selectable': true,
-              selected:
-                selectionGrid && selectionGrid[i] ? selectionGrid[i][0] : false
+              selected: task.checked || false
             }"
             @click="onLineClicked(task, $event)"
           >
             <td class="datatable-row-header datatable-row-header--nobd">
-              <production-name-cell
-                class="entity-name"
-                :is-tooltip="true"
-                :entry="task.project"
-              />
+              <div class="flexrow">
+                <input
+                  type="checkbox"
+                  class="mr1"
+                  v-model="task.checked"
+                  @click.stop
+                />
+                <production-name-cell
+                  class="entity-name"
+                  :is-tooltip="true"
+                  :entry="task.project"
+                />
+              </div>
             </td>
             <task-type-cell
               class="type datatable-row-header datatable-row-header--nobd"
@@ -113,8 +120,8 @@
                   :entity="{ preview_file_id: task.entity.preview_file_id }"
                 />
                 <!--router-link class="entity-name" :to="entityPath(task.entity)">
-            {{ task.entity.entity_name }}
-          </router-link-->
+{{ task.entity.entity_name }}
+</router-link-->
               </div>
             </td>
 
@@ -157,14 +164,20 @@
               {{ formatDate(task.computing_time.end_time) }}
             </td>
             <td class="time-remark">
-              {{ task.computing_time.time_remark }}
+              {{ task.computing_time.remark }}
             </td>
             <td class="user-remark">
-              {{ task.computing_time.user_remark }}
+              <input
+                class="input-editor"
+                @keyup.enter="
+                  event => setUserRemark(event, task.computing_time)
+                "
+                min="0"
+                :value="task.computing_time.user_remark"
+                @focusout="event => setUserRemark(event, task.computing_time)"
+              />
             </td>
-            <td class="user-remark">
-              {{ task.computing_time.user_remark }}
-            </td>
+            <td class="user-remark"></td>
             <td class="user-remark">
               {{ task.entity.data.pin_yin_ming_cheng }}
             </td>
@@ -226,6 +239,7 @@ import PeopleAvatar from '@/components/widgets/PeopleAvatar'
 import TaskTypeCell from '@/components/cells/TaskTypeCell'
 import TableInfo from '@/components/widgets/TableInfo'
 import MetadataHeader from '@/components/cells/MetadataHeader'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'work-sheet-list',
@@ -288,17 +302,22 @@ export default {
       default: ''
     }
   },
-  emits: ['set-sort-task', 'remove-sort-task', 'scroll'],
+  emits: ['set-sort-task', 'remove-sort-task', 'scroll', 'set-user-remark'],
 
   data() {
     return {
       page: 1,
       colTypePosX: '',
-      colNamePosX: ''
+      colNamePosX: '',
+      isShiftSelected: false,
+      isCtrlSelected: false,
+      startSelection: null
     }
   },
 
   mounted() {
+    window.addEventListener('keydown', this.handleKeydown)
+    window.addEventListener('keyup', this.handleKeyup)
     this.page = 1
     this.resizeHeaders()
     this.colTypePosX = this.$refs['th-prod'].offsetWidth + 'px'
@@ -306,6 +325,10 @@ export default {
       this.$refs['th-prod'].offsetWidth +
       this.$refs['th-type'].offsetWidth +
       'px'
+  },
+  beforeUnmount() {
+    window.removeEventListener('keydown', this.handleKeydown)
+    window.removeEventListener('keyup', this.handleKeyup)
   },
 
   computed: {
@@ -400,8 +423,37 @@ export default {
       }
     },
 
-    onLineClicked(entry, event) {},
+    onLineClicked(entry, event) {
+      if (this.isShiftSelected) {
+        if (this.startSelection) {
+          const start = this.tasks.indexOf(this.startSelection)
+          const end = this.tasks.indexOf(entry)
+          let entries = []
+          if (start < end) {
+            entries = this.tasks.slice(start, end + 1)
+          } else {
+            entries = this.tasks.slice(end, start + 1)
+          }
+          entries.forEach(entry => {
+            entry.checked = !entry.checked
+          })
+        }
+      } else if (this.isCtrlSelected) entry.checked = !entry.checked
+      this.startSelection = entry
+    },
 
+    handleKeyup(event) {
+      if (event.key === 'Shift') {
+        this.isShiftSelected = false
+      } else if (event.key === 'Control') this.isCtrlSelected = false
+    },
+    handleKeydown(event) {
+      if (event.key === 'Shift') {
+        this.isShiftSelected = true
+      } else if (event.key === 'Control') {
+        this.isCtrlSelected = true
+      }
+    },
     getTaskType(entry) {
       const taskType = this.taskTypeMap.get(entry.task_type_id)
       const production = this.productionMap.get(entry.project_id)
@@ -415,7 +467,6 @@ export default {
       }
       return taskType
     },
-
     entityPath(entity) {
       const entityType = entity.sequence_name ? 'shot' : 'asset'
       const route = {
@@ -448,7 +499,6 @@ export default {
 
       return route
     },
-
     resizeHeaders() {
       const tableBody = this.$refs['body-tbody']
       const isTableBodyContainLines = tableBody && tableBody.children
@@ -467,7 +517,6 @@ export default {
         })
       }
     },
-
     mergeMetadataDescriptors(descriptors) {
       const firstKeyEntityType = Object.keys(descriptors)[0]
       const firstKeyProjectId = Object.keys(descriptors[firstKeyEntityType])[0]
@@ -490,34 +539,62 @@ export default {
       )
       return mergedDescriptors
     },
-
-    onRemove(entry) {
+    async onRemove(entry) {
       if (!entry) {
         alert(this.$t('doodle.calculate_tip'))
         return
       }
-      const time_task_id = entry.computing_time.id
-      const action = 'removeTaskTime'
-      const l_params = {
-        time_task_id
-      }
-      this.$store
-        .dispatch(action, l_params)
-        .then(res => {
-          console.log('removeTaskTime Done')
-          this.$emit('remove-sort-task', res)
-        })
-        .catch(err => {
-          console.log('removeTaskTime Error')
-          console.error(err)
-          if (err.response) {
-            alert(err.response.text)
-          } else {
-            alert(err.message)
+      let res = {}
+      for (const entry of this.tasks) {
+        if (entry.checked) {
+          const time_task_id = entry.computing_time.id
+          const action = 'removeTaskTime'
+          const l_params = {
+            time_task_id
           }
-        })
+          res = await this.$store.dispatch(action, l_params)
+        }
+        this.$emit('remove-sort-task', res)
+      }
     },
-
+    setUserRemark(event, entry) {
+      const user_remark = event.target.value
+      if (user_remark !== entry.user_remark) {
+        const user_id = this.userId
+        const year = this.yearString
+        const month = this.monthString
+        const task_id = entry.id
+        if (!task_id) {
+          alert(this.$t('doodle.calculate_tip'))
+          return
+        }
+        const action = 'setUserRemark'
+        const l_params = {
+          user_id,
+          year,
+          month,
+          task_id,
+          user_remark
+        }
+        this.$store
+          .dispatch(action, l_params)
+          .then(res => {
+            console.log('setUserRemark Done')
+            if (res.data) {
+              this.$emit('set-user-remark', entry, user_remark)
+              ElMessage({
+                message: this.$t('doodle_work.set_success'),
+                type: 'success'
+              })
+            }
+          })
+          .catch(err => {
+            console.log('getUserInfo Error')
+            console.error(err)
+            this.$emit('set-user-remark', 'error')
+          })
+      }
+    },
     durationDate(event, entry) {
       const duration = event.target.value
       if (duration !== this.getDurationValue(entry.duration)) {
@@ -552,7 +629,6 @@ export default {
           })
       }
     },
-
     getEpisodes(task) {
       let episodes = ''
       //const theTaskType = this.taskTypeMap.get(entry.entity_type_id)

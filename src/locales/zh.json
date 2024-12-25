@@ -1750,7 +1750,7 @@
       "company_tip": "请先选择公司",
       "start_date": "开始日期",
       "end_date": "结束日期",
-      "time_remark": "时间备注",
+      "remark": "时间备注",
       "user_remark": "备注",
       "type": "类型",
       "overtime": "加班",

@@ -543,6 +543,23 @@ const actions = {
       })
   },
 
+  setUserRemark(
+    { commit, state },
+    { user_id, year, month, task_id, user_remark }
+  ) {
+    return tasksApi
+      .setUserRemark({
+        user_id,
+        year,
+        month,
+        task_id,
+        user_remark
+      })
+      .then(comment => {
+        return Promise.resolve(comment)
+      })
+  },
+
   getCompanyList({ commit }) {
     return tasksApi.getCompanyList()
   },
