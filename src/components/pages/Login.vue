@@ -98,7 +98,6 @@
           </router-link>
         </p>
         <p
-          v-if="false"
           class="has-text-centered"
           @click="doodleWorkStore().state.isVisitor = true"
         >

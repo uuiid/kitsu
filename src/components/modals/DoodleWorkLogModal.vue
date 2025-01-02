@@ -122,9 +122,12 @@ const logs = computed(() => {
 .modal-content {
   height: 85vh;
   width: 60vw;
+  overflow: hidden;
 }
 
 .box {
+  display: flex;
+  flex-direction: column;
   height: 100%;
 }
 
@@ -190,8 +193,8 @@ const logs = computed(() => {
 .log-content {
   display: flex;
   flex-direction: column;
-  max-height: 62vh;
   padding: 1em;
+  height: 100%;
   border-radius: 5px;
   border: 1px solid var(--text);
   overflow: auto;

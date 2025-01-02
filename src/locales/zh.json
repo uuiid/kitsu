@@ -1711,6 +1711,7 @@
         "UE_version": "UE版本"
       },
       "task_state": {
+        "waiting": "等待",
         "submitted": "已提交",
         "assigned": "已分配",
         "running": "执行中",

@@ -19,13 +19,14 @@ class DoodleWorkBase {
   }
 
   formatResolution(file) {
-    const resolution = this.productions
-      .filter(production => production.code === file.name.split('_')[0])[0]
-      .resolution?.split('x')
-    console.log(resolution)
-    return {
-      width: Number(resolution[0]),
-      height: Number(resolution[1])
+    if (this.productions) {
+      const resolution = this.productions
+        .filter(production => production.code === file.name.split('_')[0])[0]
+        .resolution?.split('x')
+      return {
+        width: Number(resolution[0]),
+        height: Number(resolution[1])
+      }
     }
   }
 
@@ -50,9 +51,9 @@ class DoodleWorkBase {
     const data = {
       id: uuid(),
       name: file.name,
-      status: '等待',
+      status: 'waiting',
       source_computer: '本机',
-      submitter: user.state.user?.id || '',
+      submitter: user.state.user?.id || 'CB3b915c-2F16-cE9d-c2cE-b45B5ebb583a',
       run_computer_id: 'CB3b915c-2F16-cE9d-c2cE-b45B5ebb583C',
       task_data: {
         path: file.path,
@@ -215,6 +216,7 @@ function initState() {
     isReload: true,
     isVisitor: false,
     isPullProcessed: false,
+    visitorContext: null,
     doodleWorkExeLocalRootPath: '',
     doodleWorkExeDownloadPath: '',
     doodleWorkZipFileVision: '',
@@ -241,7 +243,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     return state.value.isVisitor ? { id: uuid() } : user.state.user
   })
   const allProductions = computed(() => {
-    return state.value.isVisitor ? [] : productions.state.openProductions
+    return state.value.isVisitor
+      ? state.value.visitorContext.projects
+      : productions.state.openProductions
   })
   const doodleWorkBase = new DoodleWorkBase(allProductions)
   const doodleWorkFbx = new DoodleWorkFbx(allProductions)
@@ -425,7 +429,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         task_id,
         state.value.localHttpPath
       )
-      console.log(res)
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let value = await reader.read()
@@ -448,6 +451,13 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         state.value.doodleWorkSetting,
         state.value.localHttpPath
       )
+    },
+    checkIsVisitor: async () => {
+      const res = await doodlework.checkIsVisitor()
+      if (res.status !== 200) state.value.isVisitor = true
+    },
+    getVisitorContext: async () => {
+      state.value.visitorContext = await doodlework.getVisitorContext()
     }
   }
   return { state, actions, currentDoodleWorkState }

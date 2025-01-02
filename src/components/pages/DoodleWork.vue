@@ -10,6 +10,7 @@ import { Settings } from 'lucide-vue-next'
 import i18n from '@/lib/i18n.js'
 import DoodleWorkSettingModal from '@/components/modals/DoodleWorkSettingModal.vue'
 import { ElMessage, ElNotification } from 'element-plus'
+
 //import router from '@/router/index.js'
 useHead({
   title: i18n.global.t('doodle_work.doodle_work')
@@ -17,13 +18,14 @@ useHead({
 const doodleWork = doodleWorkStore()
 doodleWork.actions.pullProcess()
 onMounted(() => {
-  document.addEventListener('keydown', onKeyupEvent)
+  //document.addEventListener('keydown', onKeyupEvent)
+  doodleWork.actions.getVisitorContext()
 })
 
 onUnmounted(() => {
-  document.removeEventListener('keydown', onKeyupEvent)
+  //document.removeEventListener('keydown', onKeyupEvent)
 })
-
+doodleWork.actions.checkIsVisitor()
 const currentPage = ref('')
 const isShowSettingButton = ref(false)
 const switchPage = pageName => {
@@ -41,13 +43,17 @@ const homePage = computed(() => {
 })
 
 const pagTitle = computed(() => {
-  return currentPage.value ? '-' + currentPage.value : currentPage.value
+  return currentPage.value ? '->' + currentPage.value : currentPage.value
 })
 
-const onKeyupEvent = event => {
-  console.log('onKeyupEvent', event.key)
-  //if (event.key === 'Escape') router.push('/login')
-}
+const visitorShow = computed(() => {
+  return !doodleWork.state.isVisitor
+})
+
+// const onKeyupEvent = event => {
+//   console.log('onKeyupEvent', event.key)
+//   //if (event.key === 'Escape') router.push('/login')
+// }
 
 const onClickSetting = () => {
   if (doodleWork.state.isPullProcessed)
@@ -69,6 +75,7 @@ const intervalId = setInterval(() => {
 }, 1000)
 onUnmounted(() => {
   clearInterval(intervalId)
+  doodleWork.state.isVisitor = false
 })
 const message = ElMessage({
   message: i18n.global.t('doodle_work.initializing'),
@@ -88,7 +95,8 @@ const pagedAssets = ref([
     textIcon: 'F',
     disabled: true,
     description: '',
-    color: '#00b89c'
+    color: '#00b89c',
+    isVisible: true
   },
   {
     id: 1,
@@ -96,7 +104,8 @@ const pagedAssets = ref([
     textIcon: 'A',
     disabled: true,
     description: '',
-    color: '#d775ec'
+    color: '#d775ec',
+    isVisible: false
   },
   {
     id: 2,
@@ -104,7 +113,8 @@ const pagedAssets = ref([
     textIcon: 'L',
     disabled: true,
     description: '',
-    color: '#ec758b'
+    color: '#ec758b',
+    isVisible: false
   }
 ])
 </script>
@@ -133,7 +143,13 @@ const pagedAssets = ref([
               v-show="true"
               @click="onClickSetting"
             />
-            <p v-if="doodleWork.state.isVisitor" class="has-text-centered">
+            <p
+              v-if="doodleWork.state.isVisitor"
+              class="has-text-centered"
+              :class="{
+                button: true
+              }"
+            >
               <router-link :to="{ name: 'login' }">
                 {{ $t('doodle_work.logout') }}
               </router-link>
@@ -147,6 +163,7 @@ const pagedAssets = ref([
               :key="entity.id"
               v-for="entity in pagedAssets"
               @click="switchPage(entity.label)"
+              v-show="entity.isVisible || visitorShow"
             >
               <div class="card">
                 <span
@@ -226,7 +243,7 @@ const pagedAssets = ref([
   margin-top: 10px;
   padding: 5px;
   border-radius: 5px;
-  border: 1px solid $green;
+  //border: 1px solid $green;
 }
 
 .mt1-hover {

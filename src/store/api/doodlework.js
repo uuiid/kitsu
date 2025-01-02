@@ -40,5 +40,13 @@ export default {
   submitWorkTask(task, localPath = '') {
     const path = localPath + `/api/doodle/task`
     return client.ppost(path, task)
+  },
+  checkIsVisitor() {
+    const path = '/api/auth/authenticated'
+    return fetch(path, { method: 'OPTIONS' })
+  },
+  getVisitorContext() {
+    const path = '/api/data/user/context'
+    return client.pget(path)
   }
 }
