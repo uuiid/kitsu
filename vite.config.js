@@ -7,7 +7,13 @@ import { ElementPlusResolver } from 'unplugin-vue-components/resolvers'
 // https://vitejs.dev/config/
 export default defineConfig({
   plugins: [
-    vue({}),
+    vue({
+      template: {
+        compilerOptions: {
+          isCustomElement: tag => ['model-viewer'].includes(tag)
+        }
+      }
+    }),
     AutoImport({
       resolvers: [ElementPlusResolver()]
     }),
@@ -28,7 +34,8 @@ export default defineConfig({
   css: {
     preprocessorOptions: {
       scss: {
-        additionalData: `@import "@/variables.scss";`
+        additionalData: `@use "@/variables.scss" as *;`,
+        api: 'modern'
       }
     }
   },
