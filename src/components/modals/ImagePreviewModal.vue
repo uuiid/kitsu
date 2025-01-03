@@ -135,13 +135,11 @@ export default {
         0.001,
         Math.min(50, this.imageScale - event.deltaY / 1000)
       )
-      console.log(this.imageScale)
     },
     startDrag(event) {
       this.isDragging = true
       this.dragStart.x = event.clientX - this.translate.x
       this.dragStart.y = event.clientY - this.translate.y
-      console.log(this.dragStart.x, this.dragStart.y)
     },
     drag(event) {
       if (this.isDragging) {

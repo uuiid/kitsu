@@ -166,7 +166,7 @@
         </li>
         <li>
           <a href="/doodle.exe" download="doodle.exe" v-if="!isElectron">
-            {{ $t('main.download') }}
+            {{ $t('doodle.download') }}
           </a>
         </li>
         <hr />

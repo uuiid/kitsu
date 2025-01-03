@@ -1694,6 +1694,8 @@
       "is_sure_delete": "您确认删除吗?",
       "initializing": "初始化中，请稍后...",
       "set_success": "设置成功",
+      "install_success": "安装成功",
+      "install_fail": "安装失败",
       "filed": {
         "name": "文件名",
         "status": "状态",
@@ -1763,7 +1765,8 @@
       "select-person-tip": "无用户数据",
       "filter-person": "筛选部门人员",
       "duration_cue_word": "回车或点击空白处确认",
-      "open_folder": "打开文件夹"
+      "open_folder": "打开文件夹",
+      "download": "下载客户端"
     },
     "doodle_productions": {
       "fields": {
