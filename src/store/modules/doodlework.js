@@ -317,6 +317,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       }
       state.value.isPullProcessed = true
       const port = window.api.DoodleExePort()
+      state.value.doodleWorkZipFileVision = (
+        await doodlework.getToolVersion()
+      ).version
       if (port) state.value.localHttpPath = `http://127.0.0.1:${port}`
     },
     setLocalHttpPath: async () => {
@@ -324,7 +327,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       if (port) {
         state.value.localHttpPath = `http://127.0.0.1:${port}`
         state.value.isPullProcessed = true
-        await this.getWorkSetting()
+        await actions.getWorkSetting()
       }
     },
 
@@ -454,11 +457,26 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     checkIsVisitor: async () => {
       const res = await doodlework.checkIsVisitor()
-      if (res.status !== 200) state.value.isVisitor = true
+      if (res.status === 401) state.value.isVisitor = true
     },
     getVisitorContext: async () => {
       state.value.visitorContext = await doodlework.getVisitorContext()
+    },
+    copyFolder: async (sourcePath, destPath) => {
+      const fs = require('fs')
+      const path = require('path')
+      fs.mkdirSync(destPath, { recursive: true })
+      const files = fs.readdirSync(sourcePath, { withFileTypes: true })
+      for (const file of files) {
+        const sourceFilePath = path.join(sourcePath, file.name)
+        const destFilePath = path.join(destPath, file.name)
+        if (file.isDirectory()) {
+          await actions.copyFolder(sourceFilePath, destFilePath)
+        } else {
+          fs.copyFileSync(sourceFilePath, destFilePath)
+        }
+      }
     }
   }
-  return { state, actions, currentDoodleWorkState }
+  return { state, actions, currentDoodleWorkState, doodleWorkFilePath }
 })

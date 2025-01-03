@@ -43,7 +43,7 @@ export default {
   },
   checkIsVisitor() {
     const path = '/api/auth/authenticated'
-    return fetch(path, { method: 'OPTIONS' })
+    return fetch(path, { method: 'GET' })
   },
   getVisitorContext() {
     const path = '/api/data/user/context'

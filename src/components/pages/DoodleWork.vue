@@ -10,7 +10,7 @@ import { Settings } from 'lucide-vue-next'
 import i18n from '@/lib/i18n.js'
 import DoodleWorkSettingModal from '@/components/modals/DoodleWorkSettingModal.vue'
 import { ElMessage, ElNotification } from 'element-plus'
-
+import PluginsCentral from '@/components/widgets/PluginsCentral.vue'
 //import router from '@/router/index.js'
 useHead({
   title: i18n.global.t('doodle_work.doodle_work')
@@ -73,6 +73,7 @@ const intervalId = setInterval(() => {
     clearInterval(intervalId)
   } else doodleWork.actions.setLocalHttpPath()
 }, 1000)
+
 onUnmounted(() => {
   clearInterval(intervalId)
   doodleWork.state.isVisitor = false
@@ -114,6 +115,15 @@ const pagedAssets = ref([
     disabled: true,
     description: '',
     color: '#ec758b',
+    isVisible: false
+  },
+  {
+    id: 3,
+    label: '插件中心',
+    textIcon: 'P',
+    disabled: true,
+    description: '',
+    color: '#75adec',
     isVisible: false
   }
 ])
@@ -198,6 +208,7 @@ const pagedAssets = ref([
           name="自动灯光"
           v-if="currentPage === '自动灯光'"
         />
+        <plugins-central v-if="currentPage === '插件中心'" />
       </div>
       <add-doodle-work />
       <doodle-work-log-modal v-if="doodleWork.state.isActiveLogModal" />
