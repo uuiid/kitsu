@@ -150,7 +150,7 @@
           <combobox
             class="flexrow-item"
             :label="$t('timesheets.month')"
-            :options="monthOptions"
+            :options="batchMonthOptions"
             v-model="batchMonthString"
             v-show="person"
           />
@@ -437,6 +437,19 @@ export default {
       const currentMonth = moment().month() + 1
       let monthRange = range(month, 12)
       if (currentYear === this.yearString) {
+        monthRange = range(month, currentMonth)
+      }
+      return monthRange.map(month => ({
+        label: month,
+        value: `${month}`
+      }))
+    },
+    batchMonthOptions() {
+      const currentYear = `${moment().year()}`
+      const month = 1
+      const currentMonth = moment().month() + 1
+      let monthRange = range(month, 12)
+      if (currentYear === this.batchYearString) {
         monthRange = range(month, currentMonth)
       }
       return monthRange.map(month => ({
