@@ -552,7 +552,7 @@ export default {
         const line = this.exportLine(this.person, t)
         entries.push(line)
       })
-      csv.buildCsvFile(name, entries)
+      csv.buildCsvFile(name, entries, this.person.first_name)
     },
 
     exportLine(person, t) {

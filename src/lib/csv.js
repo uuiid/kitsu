@@ -128,10 +128,10 @@ const csv = {
     })
   },
 
-  buildCsvFile(name, entries) {
+  buildCsvFile(name, entries, sheetName = '') {
     const wb = XLSX.utils.book_new()
     const ws = XLSX.utils.aoa_to_sheet(entries)
-    XLSX.utils.book_append_sheet(wb, ws, name)
+    XLSX.utils.book_append_sheet(wb, ws, sheetName || name)
 
     XLSX.writeFile(wb, `${name}.xlsx`)
   },
