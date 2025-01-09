@@ -292,14 +292,17 @@
                     :empty-width="isBigThumbnails ? 150 : 50"
                     :empty-height="isBigThumbnails ? 100 : 32"
                   />
+                  <div class="selectable-text" :title="asset.full_name">
+                    {{ asset.name }}
+                  </div>
                   <router-link
                     tabindex="-1"
-                    class="asset-link asset-name flexrow-item"
+                    class="asset-link asset-name flexrow-item selectable-text"
                     :to="assetPath(asset.id)"
                     :title="asset.full_name"
                     v-if="!asset.shared"
                   >
-                    {{ asset.name }}
+                    &#8629;
                   </router-link>
                   <template v-else>
                     {{ asset.name }}
@@ -1220,6 +1223,10 @@ td.metadata-descriptor {
   margin: 1px;
   display: flex;
   justify-content: center;
+}
+
+.selectable-text {
+  user-select: text;
 }
 
 .text-item {
