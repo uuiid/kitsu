@@ -12,16 +12,10 @@ const props = defineProps(['name', 'isDrop'])
 doodleWork.state.currentDoodleWorkType = props.name
 const dialogFormVisible = ref(false)
 const isDragOver = ref(false)
-const onViewLog = work_task => {
-  doodleWork.state.viewLogWorkTask = work_task
-  doodleWork.state.isActiveLogModal = true
-  doodleWork.actions.getWorkTaskLog(work_task.id)
-}
 // const onQuantityChange = event => {
 //   console.log('onQuantityChange', event)
 //   doodleWork.actions.setWorkSetting()
 // }
-doodleWork.actions.loadLocalDoodleWork()
 setInterval(() => {
   if (doodleWork.doodleWorkStateMap.get('提取字幕').isReload) {
     console.log(doodleWork.doodleWorkStateMap.get('提取字幕').workList)
@@ -30,6 +24,7 @@ setInterval(() => {
       console.log(key)
       if (item.status === 'waiting') {
         extractCaption(item)
+        item.status = 'completed'
       }
     }
   }
@@ -44,8 +39,6 @@ const onAction = async (action_name, task) => {
       type: 'success',
       duration: 1000
     })
-  } else if (action_name === 'view-log') {
-    onViewLog(task)
   } else if (action_name === 'cancel-task') {
     try {
       await doodleWork.actions.cancelDoodleWorkTask(task)
@@ -115,6 +108,7 @@ const removeBeforeColonContent = text => {
   }
   return text
 }
+
 const cutContent = text => {
   if (
     doodleWork.currentDoodleWorkState.task_data_filed.get(4)?.checked &&
@@ -177,20 +171,15 @@ const onSubmit = () => {
       }
     }
     const srtContent = generateSRTContent(final_extract_captions)
-    // const blob = new Blob([srtContent], { type: 'text/plain' })
-    // const link = document.createElement('a')
-    // link.href = URL.createObjectURL(blob)
-    // link.download = 'example.srt' // 设置下载文件名
-    // link.click()
     if (doodleWork.state.outPath === '') {
       dialogFormVisible.value = true
       return
     } else {
       const fileName = task.file.name.split('.')[0]
-      const filePath = `${doodleWork.state.outPath}/${fileName}.srt`
+      const timestamp = Date.now()
+      const filePath = `${doodleWork.state.outPath}/${fileName}-${timestamp.toString()}.srt`
       fs.writeFileSync(filePath, srtContent)
     }
-    //fs.writeFileSync(task.file.name + `.srt`, srtContent)
   }
   ElNotification({
     title: '导出成功',
@@ -227,6 +216,7 @@ const onDrop = event => {
 const onSetOutPath = () => {
   console.log(doodleWork.state.outPath)
   dialogFormVisible.value = false
+  onSubmit()
 }
 
 watchEffect(() => {})

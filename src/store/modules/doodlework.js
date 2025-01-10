@@ -338,7 +338,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
   )
 
   const currentDoodleWorkState = computed(() => {
-    console.log(state.value.currentDoodleWorkType)
     const result = doodleWorkStateMap.value.get(
       state.value.currentDoodleWorkType
     )
@@ -410,6 +409,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
 
     submitLocalDoodleWork: async () => {
+      console.log(currentDoodleWorkState)
       const port = window.api.DoodleExePort()
       if (port) state.value.localHttpPath = `http://127.0.0.1:${port}`
       // await fetch(state.value.localHttpPath + `/api/doodle/local_setting`, {

@@ -17,15 +17,12 @@ useHead({
   title: i18n.global.t('doodle_work.doodle_work')
 })
 const doodleWork = doodleWorkStore()
-doodleWork.actions.pullProcess()
+if (navigator.userAgent.includes('Electron')) doodleWork.actions.pullProcess()
 onMounted(() => {
   //document.addEventListener('keydown', onKeyupEvent)
   doodleWork.actions.getVisitorContext()
 })
 
-onUnmounted(() => {
-  //document.removeEventListener('keydown', onKeyupEvent)
-})
 doodleWork.actions.checkIsVisitor()
 const currentPage = ref('')
 const isShowSettingButton = ref(false)
@@ -34,11 +31,17 @@ const switchPage = pageName => {
   else
     ElNotification({
       title: i18n.global.t('video_library.warning'),
-      message: i18n.global.t('doodle_work.initializing'),
+      message: messageContent.value,
       type: 'warning',
       duration: 2000
     })
 }
+const messageContent = computed(() => {
+  return navigator.userAgent.includes('Electron')
+    ? i18n.global.t('doodle_work.initializing')
+    : i18n.global.t('doodle_work.please_use_the_client')
+})
+
 const homePage = computed(() => {
   return currentPage.value === 'home' || currentPage.value === ''
 })
@@ -62,25 +65,30 @@ const onClickSetting = () => {
   else
     ElNotification({
       title: i18n.global.t('video_library.warning'),
-      message: i18n.global.t('doodle_work.initializing'),
+      message: messageContent.value,
       type: 'warning',
       duration: 2000
     })
 }
 
 const intervalId = setInterval(() => {
-  if (doodleWork.state.localHttpPath) {
-    doodleWork.actions.getWorkSetting()
+  if (navigator.userAgent.includes('Electron')) {
+    if (doodleWork.state.localHttpPath) {
+      doodleWork.actions.getWorkSetting()
+      clearInterval(intervalId)
+    } else doodleWork.actions.setLocalHttpPath()
+  } else {
     clearInterval(intervalId)
-  } else doodleWork.actions.setLocalHttpPath()
+  }
 }, 1000)
 
 onUnmounted(() => {
   clearInterval(intervalId)
   doodleWork.state.isVisitor = false
+  message.close()
 })
 const message = ElMessage({
-  message: i18n.global.t('doodle_work.initializing'),
+  message: messageContent.value,
   type: 'warning',
   duration: 0
 })
@@ -116,6 +124,15 @@ const pagedAssets = ref([
     disabled: true,
     description: '',
     color: '#ec758b',
+    isVisible: false
+  },
+  {
+    id: 3,
+    label: '提取字幕',
+    textIcon: 'Z',
+    disabled: true,
+    description: '',
+    color: '#ecd875',
     isVisible: false
   },
   {

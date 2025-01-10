@@ -1693,6 +1693,7 @@
       "logout": "退出访客",
       "is_sure_delete": "您确认删除吗?",
       "initializing": "初始化中，请稍后...",
+      "please_use_the_client": "请使用客户端",
       "set_success": "设置成功",
       "install_success": "安装成功",
       "install_fail": "安装失败",
@@ -1772,7 +1773,7 @@
     "doodle_productions": {
       "fields": {
         "en_str": "拼音全称",
-        "path" : "项目路径",
+        "path": "项目路径",
         "auto_upload_path": "自动上传路径"
       }
     }
