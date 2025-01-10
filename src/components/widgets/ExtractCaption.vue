@@ -18,7 +18,6 @@ const isDragOver = ref(false)
 // }
 setInterval(() => {
   if (doodleWork.doodleWorkStateMap.get('提取字幕').isReload) {
-    console.log(doodleWork.doodleWorkStateMap.get('提取字幕').workList)
     for (const [key, item] of doodleWork.doodleWorkStateMap.get('提取字幕')
       .workList) {
       console.log(key)
@@ -82,7 +81,6 @@ const extractCaption = async task => {
     const sub_extract_captions = cutContent(extract_caption)
     final_extract_captions.push(...sub_extract_captions)
   }
-  console.log(final_extract_captions)
 }
 
 const removeLastBlankSpace = text => {
@@ -214,7 +212,6 @@ const onDrop = event => {
   doodleWork.currentDoodleWorkState.addFilesData(files)
 }
 const onSetOutPath = () => {
-  console.log(doodleWork.state.outPath)
   dialogFormVisible.value = false
   onSubmit()
 }

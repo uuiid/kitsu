@@ -32,8 +32,13 @@ const workTask = computed(() => {
 })
 
 const intervalId = setInterval(() => {
-  if (workTask.value && workTask.value.status === 'running')
-    doodleWork.actions.getWorkTaskLog(doodleWork.state.viewLogWorkTask.id)
+  if (workTask.value && workTask.value.status === 'running') {
+    doodleWork.actions
+      .getWorkTaskLog(doodleWork.state.viewLogWorkTask.id)
+      .then(log => {
+        doodleWork.state.workTaskLogData = log
+      })
+  }
 }, 1000)
 
 onUnmounted(() => {

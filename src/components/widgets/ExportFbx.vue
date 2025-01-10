@@ -25,7 +25,9 @@ const handleDragOver = event => {
 const onViewLog = work_task => {
   doodleWork.state.viewLogWorkTask = work_task
   doodleWork.state.isActiveLogModal = true
-  doodleWork.actions.getWorkTaskLog(work_task.id)
+  doodleWork.actions.getWorkTaskLog(work_task.id).then(log => {
+    doodleWork.state.workTaskLogData = log
+  })
 }
 const onDrop = event => {
   event.preventDefault()

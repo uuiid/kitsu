@@ -126,7 +126,8 @@ const handleAction = (action_name, task_id) => {
                 :class="{
                   error:
                     work[key] === 'failed' ||
-                    (key === 'end_log' && work['status'] === 'failed')
+                    (key === 'end_log' && work['status'] === 'failed'),
+                  completed: work[key] === 'completed'
                 }"
                 v-if="value.type === 'string'"
               >
@@ -258,5 +259,9 @@ const handleAction = (action_name, task_id) => {
 
 .action_item {
   margin-right: 0.5em;
+}
+
+.completed {
+  color: $green;
 }
 </style>

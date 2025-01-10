@@ -101,6 +101,7 @@ watchEffect(() => {
 const pagedAssets = ref([
   {
     id: 0,
+    name: 'export_fbx',
     label: '导出FBX',
     textIcon: 'F',
     disabled: true,
@@ -110,6 +111,7 @@ const pagedAssets = ref([
   },
   {
     id: 1,
+    name: 'export_abc',
     label: '导出ABC',
     textIcon: 'A',
     disabled: true,
@@ -119,6 +121,7 @@ const pagedAssets = ref([
   },
   {
     id: 2,
+    name: 'auto_light',
     label: '自动灯光',
     textIcon: 'L',
     disabled: true,
@@ -128,6 +131,7 @@ const pagedAssets = ref([
   },
   {
     id: 3,
+    name: 'extract_caption',
     label: '提取字幕',
     textIcon: 'Z',
     disabled: true,

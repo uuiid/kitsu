@@ -275,7 +275,7 @@ class DoodleWorkExtractCaption extends DoodleWorkBase {
   }
 
   validateString(input) {
-    const regex = /.+[.doc|docx]$/
+    const regex = /\.docx?$/i
     return regex.test(input)
   }
 
@@ -493,9 +493,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         options
       )
       for (const item of data) {
-        if (item.status === 'failed') {
-          await actions.getWorkTaskLog(item.id)
-          const logs = state.value.workTaskLogData.split(/\r?\n/)
+        if (item.status === 'failed' && item.end_log === undefined) {
+          const logs_str = await actions.getWorkTaskLog(item.id)
+          const logs = logs_str.split(/\r?\n/)
           item.end_log = logs[logs.length - 2]
         }
         currentDoodleWorkState.value.workList.set(item.id, item)
@@ -519,7 +519,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       await doodlework.deleteWorkTask(workTaskId, state.value.localHttpPath)
       currentDoodleWorkState.value.workList.delete(workTaskId)
     },
-
     getWorkTaskLog: async task_id => {
       const res = await doodlework.getWorkLog(
         task_id,
@@ -528,14 +527,16 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let value = await reader.read()
-      state.value.workTaskLogData = decoder.decode(new Uint8Array(value.value))
+      let logs = decoder.decode(new Uint8Array(value.value))
       while (!value.done && state.value.isActiveLogModal) {
         value = await reader.read()
         const fullData = decoder.decode(new Uint8Array(value.value))
-        state.value.workTaskLogData += fullData
+        logs += fullData
       }
+      return new Promise(resolve => {
+        resolve(logs)
+      })
     },
-
     getWorkSetting: async () => {
       state.value.doodleWorkSetting = await doodlework.getLocalSetting(
         state.value.localHttpPath
