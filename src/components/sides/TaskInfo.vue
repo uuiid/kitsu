@@ -23,6 +23,7 @@
         @set-frame-thumbnail="onSetCurrentFrameAsThumbnail"
         @open-folder="onOpenFolder"
         @execute-doodle-work="executeDoodleWork"
+        @folder-up="updateTaskFile"
       />
 
       <div
@@ -337,6 +338,7 @@ import EditCommentModal from '@/components/modals/EditCommentModal.vue'
 import PreviewPlayer from '@/components/previews/PreviewPlayer.vue'
 import Spinner from '@/components/widgets/Spinner.vue'
 import TaskTypeName from '@/components/widgets/TaskTypeName.vue'
+import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 
 const DEFAULT_PANEL_WIDTH = 400
 
@@ -1230,6 +1232,9 @@ export default {
     executeDoodleWork() {
       console.log(this.taskTypeMap)
       console.log(this.selectedTasks)
+    },
+    updateTaskFile() {
+      updateTaskFilesStore().state.isShowUpdateModal = true
     },
     onExportClick() {
       const nameData = [

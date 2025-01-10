@@ -28,6 +28,7 @@ import Spinner from '@/components/widgets/Spinner.vue'
 import crisp from '@/lib/crisp'
 import localPreferences from '@/lib/preferences'
 import sentry from '@/lib/sentry'
+import { useDark, useToggle } from '@vueuse/core'
 
 export default {
   name: 'app',
@@ -139,6 +140,18 @@ export default {
     isDarkTheme: {
       immediate: true,
       handler() {
+        if (this.isDarkTheme) {
+          const isDark = useDark({
+            valueDark: 'dark'
+          })
+          useToggle(isDark)
+        } else {
+          const isDark = useDark({
+            valueDark: 'light',
+            valueLight: 'dark'
+          })
+          useToggle(isDark)
+        }
         const background = this.isDarkTheme ? '#36393F' : '#FFF'
         document.documentElement.style.background = background
         document.body.style.background = background

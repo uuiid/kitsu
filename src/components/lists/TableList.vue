@@ -122,7 +122,14 @@ const handleAction = (action_name, task_id) => {
             v-for="work in displayWorkList"
           >
             <td :key="key" v-for="(value, key) in tableHeaderFiled">
-              <span v-if="value.type === 'string'">
+              <span
+                :class="{
+                  error:
+                    work[key] === 'failed' ||
+                    (key === 'end_log' && work['status'] === 'failed')
+                }"
+                v-if="value.type === 'string'"
+              >
                 {{ formatTableBodyData(work, key) }}
               </span>
               <span v-else-if="value.type === 'boolean'">
@@ -237,8 +244,8 @@ const handleAction = (action_name, task_id) => {
   }
 
   td {
-    max-width: 150px;
-    white-space: nowrap;
+    max-width: 350px;
+    //white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
   }

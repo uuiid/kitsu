@@ -11,6 +11,7 @@ import i18n from '@/lib/i18n.js'
 import DoodleWorkSettingModal from '@/components/modals/DoodleWorkSettingModal.vue'
 import { ElMessage, ElNotification } from 'element-plus'
 import PluginsCentral from '@/components/widgets/PluginsCentral.vue'
+import ExtractCaption from '@/components/widgets/ExtractCaption.vue'
 //import router from '@/router/index.js'
 useHead({
   title: i18n.global.t('doodle_work.doodle_work')
@@ -207,6 +208,11 @@ const pagedAssets = ref([
           class="datatable-wrapper"
           name="自动灯光"
           v-if="currentPage === '自动灯光'"
+        />
+        <extract-caption
+          class="datatable-wrapper"
+          name="提取字幕"
+          v-if="currentPage === '提取字幕'"
         />
         <plugins-central v-if="currentPage === '插件中心'" />
       </div>

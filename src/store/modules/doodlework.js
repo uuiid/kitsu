@@ -12,10 +12,28 @@ import { v4 as uuid } from 'uuid'
 class DoodleWorkBase {
   constructor(productions) {
     this.name = ''
+    this.isShowFiled = true
     this.workList = new Map()
     this.uncommittedWorkList = new Map()
     this.task_data_filed = new Map()
+    this.isReload = false
     this.productions = productions
+    this.tableHeaderFiled = {
+      name: { name: '文件名', type: 'string' },
+      status: { name: '状态', type: 'string' },
+      source_computer: { name: '运行主机', type: 'string' },
+      run_time: { name: '运行时间', type: 'string' },
+      submitter: { name: '创建者', type: 'string' },
+      end_log: { name: '日志', type: 'string' },
+      submit_time: {
+        name: '创建时间',
+        type: 'string'
+      },
+      end_time: {
+        name: '结束时间',
+        type: 'string'
+      }
+    }
   }
 
   formatResolution(file) {
@@ -92,7 +110,8 @@ class DoodleWorkFbx extends DoodleWorkBase {
     this.task_data_filed.set('create_play_blast', {
       id: 'create_play_blast',
       name: '是否生成拍屏',
-      checked: true
+      checked: true,
+      type: Boolean
     })
   }
 
@@ -113,22 +132,26 @@ class DoodleWorkAbc extends DoodleWorkBase {
     this.task_data_filed.set('replace_ref_file', {
       id: 'replace_ref_file',
       name: '替换引用',
-      checked: true
+      checked: true,
+      type: Boolean
     })
     this.task_data_filed.set('sim_file', {
       id: 'sim_file',
       name: '解算文件',
-      checked: true
+      checked: true,
+      type: Boolean
     })
     this.task_data_filed.set('export_file', {
       id: 'export_file',
       name: '导出解算的文件',
-      checked: true
+      checked: true,
+      type: Boolean
     })
     this.task_data_filed.set('create_play_blast', {
       id: 'create_play_blast',
       name: '创建拍屏',
-      checked: true
+      checked: true,
+      type: Boolean
     })
   }
 
@@ -157,12 +180,14 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
     this.task_data_filed.set('is_sim', {
       id: 'is_sim',
       name: '解算文件',
-      checked: false
+      checked: false,
+      type: Boolean
     })
     this.task_data_filed.set('layering', {
       id: 'layering',
       name: '是否分层输出',
-      checked: false
+      checked: false,
+      type: Boolean
     })
   }
 
@@ -206,6 +231,64 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
   }
 }
 
+class DoodleWorkExtractCaption extends DoodleWorkBase {
+  constructor(productions) {
+    super(productions)
+    this.name = 'extract_caption'
+    this.isShowFiled = false
+    this.tableHeaderFiled = this.tableHeaderFiled = {
+      name: { name: '文件名', type: 'string' },
+      status: { name: '状态', type: 'string' }
+    }
+    this.task_data_filed.set(1, {
+      id: 1,
+      name: '去除所有标点(不包括括号和冒号)',
+      checked: false,
+      type: Boolean
+    })
+    this.task_data_filed.set(2, {
+      id: 2,
+      name: '去除括号内内容',
+      checked: false,
+      type: Boolean
+    })
+    this.task_data_filed.set(3, {
+      id: 3,
+      name: '去除冒号前内容',
+      checked: false,
+      type: Boolean
+    })
+    this.task_data_filed.set(4, {
+      id: 4,
+      name: '切断行',
+      checked: false,
+      type: Boolean
+    })
+    this.task_data_filed.set(5, {
+      id: 5,
+      name: '切断行大小',
+      checked: false,
+      type: Number,
+      number: 28,
+      parent_id: 4
+    })
+  }
+
+  validateString(input) {
+    const regex = /.+[.doc|docx]$/
+    return regex.test(input)
+  }
+
+  formatData(file) {
+    return {
+      id: uuid(),
+      name: file.name,
+      file: file,
+      status: 'waiting'
+    }
+  }
+}
+
 function initState() {
   return {
     workList: [],
@@ -225,15 +308,7 @@ function initState() {
     currentUser: {},
     viewLogWorkTask: {},
     workTaskLogData: '',
-    tableHeaderFiled: {
-      name: { name: '文件名', type: 'string' },
-      status: { name: '状态', type: 'string' },
-      source_computer: { name: '运行主机', type: 'string' },
-      run_time: { name: '运行时间', type: 'string' },
-      submitter: { name: '创建者', type: 'string' },
-      submit_time: { name: '创建时间', type: 'string' },
-      end_time: { name: '结束时间', type: 'string' }
-    }
+    outPath: ''
   }
 }
 
@@ -251,20 +326,23 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
   const doodleWorkFbx = new DoodleWorkFbx(allProductions)
   const doodleWorkAbc = new DoodleWorkAbc(allProductions)
   const doodleWorkAutoLight = new DoodleWorkAutoLight(allProductions)
+  const doodleWorkExtractCaption = new DoodleWorkExtractCaption(allProductions)
 
   const doodleWorkStateMap = ref(
     new Map([
       ['导出FBX', doodleWorkFbx],
       ['导出ABC', doodleWorkAbc],
-      ['自动灯光', doodleWorkAutoLight]
+      ['自动灯光', doodleWorkAutoLight],
+      ['提取字幕', doodleWorkExtractCaption]
     ])
   )
 
   const currentDoodleWorkState = computed(() => {
+    console.log(state.value.currentDoodleWorkType)
     const result = doodleWorkStateMap.value.get(
       state.value.currentDoodleWorkType
     )
-    return result ? result : doodleWorkBase
+    return result || doodleWorkBase
   })
   const doodleWorkZipFileName = computed(() => {
     return `Doodle-${state.value.doodleWorkZipFileVision}-win64.zip`
@@ -352,6 +430,16 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       })
     },
 
+    submitExtractCaptionTask: () => {
+      for (const item of [
+        ...currentDoodleWorkState.value.uncommittedWorkList.values()
+      ]) {
+        currentDoodleWorkState.value.workList.set(item.id, item)
+      }
+      currentDoodleWorkState.value.uncommittedWorkList = new Map()
+      currentDoodleWorkState.value.isReload = true
+    },
+
     downloadDoodleWorkExe: async url => {
       try {
         const response = await superagent.get(url).responseType('arraybuffer')
@@ -404,9 +492,14 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         state.value.localHttpPath,
         options
       )
-      data.forEach(item => {
+      for (const item of data) {
+        if (item.status === 'failed') {
+          await actions.getWorkTaskLog(item.id)
+          const logs = state.value.workTaskLogData.split(/\r?\n/)
+          item.end_log = logs[logs.length - 2]
+        }
         currentDoodleWorkState.value.workList.set(item.id, item)
-      })
+      }
     },
 
     cancelDoodleWorkTask: async task => {
@@ -478,5 +571,11 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       }
     }
   }
-  return { state, actions, currentDoodleWorkState, doodleWorkFilePath }
+  return {
+    state,
+    actions,
+    currentDoodleWorkState,
+    doodleWorkFilePath,
+    doodleWorkStateMap
+  }
 })

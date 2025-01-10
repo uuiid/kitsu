@@ -165,6 +165,14 @@
           <folder-open :title="$t('menu.openFolder')" />
         </div>
         <div
+          class="menu-item"
+          :title="$t('doodle.folder_up')"
+          @click="$emit('folder-up')"
+          v-if="isElectron && false"
+        >
+          <folder-up :title="$t('menu.openFolder')" />
+        </div>
+        <div
           v-if="
             (isCurrentViewAsset ||
               isCurrentViewShot ||
@@ -821,7 +829,8 @@ import {
   LinkIcon,
   PlayCircleIcon,
   XIcon,
-  FolderOpen
+  FolderOpen,
+  FolderUp
 } from 'lucide-vue-next'
 import { mapGetters, mapActions } from 'vuex'
 
@@ -878,14 +887,16 @@ export default {
     Spinner,
     ViewPlaylistModal,
     XIcon,
-    FolderOpen
+    FolderOpen,
+    FolderUp
   },
 
   emits: [
     'export-task',
     'set-frame-thumbnail',
     'open-folder',
-    'execute-doodle-work'
+    'execute-doodle-work',
+    'folder-up'
   ],
 
   data() {

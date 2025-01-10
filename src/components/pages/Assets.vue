@@ -1,120 +1,128 @@
 <template>
   <div class="columns fixed-page">
     <div class="column main-column">
-      <div class="assets page">
-        <div class="asset-list-header page-header">
-          <div class="flexrow mb1">
-            <search-field
-              ref="asset-search-field"
-              class="flexrow-item"
-              :can-save="true"
-              @change="onSearchChange"
-              @save="saveSearchQuery"
-              placeholder="ex: props modeling=wip"
-            />
-            <button-simple
-              class="flexrow-item"
-              :title="$t('entities.build_filter.title')"
-              icon="filter"
-              @click="modals.isBuildFilterDisplayed = true"
-            />
-            <button-simple
-              class="flexrow-item"
-              icon="assets"
-              :is-on="showSharedAssets"
-              :title="$t('breakdown.show_library')"
-              @click="showSharedAssets = !showSharedAssets"
-            />
-            <div class="flexrow-item filler"></div>
-            <div class="flexrow flexrow-item" v-if="!isCurrentUserClient">
-              <combobox-department
-                class="combobox-department flexrow-item"
-                :selectable-departments="selectableDepartments('Asset')"
-                :display-all-and-my-departments="true"
-                rounded
-                v-model="selectedDepartment"
-                v-if="departments.length > 0"
-              />
-              <show-assignations-button class="flexrow-item" />
-              <show-infos-button class="flexrow-item" />
-              <big-thumbnails-button
+      <div class="main-column-content">
+        <div class="assets page">
+          <div class="asset-list-header page-header">
+            <div class="flexrow mb1">
+              <search-field
+                ref="asset-search-field"
                 class="flexrow-item"
-                v-show="!isSimpleThumbnails"
+                :can-save="true"
+                @change="onSearchChange"
+                @save="saveSearchQuery"
+                placeholder="ex: props modeling=wip"
               />
-              <simple-thumbnails-button class="flexrow-item" />
+              <button-simple
+                class="flexrow-item"
+                :title="$t('entities.build_filter.title')"
+                icon="filter"
+                @click="modals.isBuildFilterDisplayed = true"
+              />
+              <button-simple
+                class="flexrow-item"
+                icon="assets"
+                :is-on="showSharedAssets"
+                :title="$t('breakdown.show_library')"
+                @click="showSharedAssets = !showSharedAssets"
+              />
+              <div class="flexrow-item filler"></div>
+              <div class="flexrow flexrow-item" v-if="!isCurrentUserClient">
+                <combobox-department
+                  class="combobox-department flexrow-item"
+                  :selectable-departments="selectableDepartments('Asset')"
+                  :display-all-and-my-departments="true"
+                  rounded
+                  v-model="selectedDepartment"
+                  v-if="departments.length > 0"
+                />
+                <show-assignations-button class="flexrow-item" />
+                <show-infos-button class="flexrow-item" />
+                <big-thumbnails-button
+                  class="flexrow-item"
+                  v-show="!isSimpleThumbnails"
+                />
+                <simple-thumbnails-button class="flexrow-item" />
+              </div>
+              <div class="flexrow" v-if="isCurrentUserManager">
+                <button-simple
+                  class="flexrow-item"
+                  :title="$t('entities.thumbnails.title')"
+                  icon="import-files"
+                  @click="showAddThumbnailsModal"
+                />
+                <button-simple
+                  class="flexrow-item"
+                  :title="$t('main.csv.import_file')"
+                  icon="import"
+                  @click="showImportModal"
+                />
+                <button-simple
+                  class="flexrow-item"
+                  icon="export"
+                  :title="$t('main.csv.export_file')"
+                  @click="onExportClick"
+                />
+                <button-simple
+                  class="flexrow-item"
+                  :text="$t('assets.new_asset')"
+                  icon="plus"
+                  @click="showNewModal"
+                />
+              </div>
             </div>
-            <div class="flexrow" v-if="isCurrentUserManager">
-              <button-simple
-                class="flexrow-item"
-                :title="$t('entities.thumbnails.title')"
-                icon="import-files"
-                @click="showAddThumbnailsModal"
-              />
-              <button-simple
-                class="flexrow-item"
-                :title="$t('main.csv.import_file')"
-                icon="import"
-                @click="showImportModal"
-              />
-              <button-simple
-                class="flexrow-item"
-                icon="export"
-                :title="$t('main.csv.export_file')"
-                @click="onExportClick"
-              />
-              <button-simple
-                class="flexrow-item"
-                :text="$t('assets.new_asset')"
-                icon="plus"
-                @click="showNewModal"
+            <div class="query-list">
+              <search-query-list
+                :groups="assetSearchFilterGroups"
+                :is-group-enabled="true"
+                :queries="assetSearchQueries"
+                type="asset"
+                @change-search="changeSearch"
+                @remove-search="removeSearchQuery"
+                v-if="!isAssetsLoading && !initialLoading"
               />
             </div>
           </div>
-          <div class="query-list">
-            <search-query-list
-              :groups="assetSearchFilterGroups"
-              :is-group-enabled="true"
-              :queries="assetSearchQueries"
-              type="asset"
-              @change-search="changeSearch"
-              @remove-search="removeSearchQuery"
-              v-if="!isAssetsLoading && !initialLoading"
-            />
-          </div>
+          <sorting-info
+            :sorting="assetSorting"
+            @clear-sorting="onChangeSortClicked(null)"
+            v-if="assetSorting?.length"
+          />
+          <asset-list
+            ref="asset-list"
+            :displayed-assets="
+              showSharedAssets
+                ? displayedAssetsByType
+                : displayedAssetsByTypeWithoutShared
+            "
+            :is-loading="isAssetsLoading || initialLoading"
+            :is-error="isAssetsLoadingError"
+            :validation-columns="assetValidationColumns"
+            :department-filter="departmentFilter"
+            @change-sort="onChangeSortClicked"
+            @create-tasks="showCreateTasksModal"
+            @delete-all-tasks="onDeleteAllTasksClicked"
+            @new-clicked="showNewModal"
+            @edit-clicked="onEditClicked"
+            @delete-clicked="onDeleteClicked"
+            @restore-clicked="onRestoreClicked"
+            @add-metadata="onAddMetadataClicked"
+            @edit-metadata="onEditMetadataClicked"
+            @delete-metadata="onDeleteMetadataClicked"
+            @metadata-changed="onMetadataChanged"
+            @asset-changed="onAssetChanged"
+            @field-changed="onFieldChanged"
+            @scroll="saveScrollPosition"
+            @asset-type-clicked="onAssetTypeClicked"
+            @keep-task-panel-open="onKeepTaskPanelOpenChanged"
+          />
         </div>
-
-        <sorting-info
-          :sorting="assetSorting"
-          @clear-sorting="onChangeSortClicked(null)"
-          v-if="assetSorting?.length"
-        />
-        <asset-list
-          ref="asset-list"
-          :displayed-assets="
-            showSharedAssets
-              ? displayedAssetsByType
-              : displayedAssetsByTypeWithoutShared
+        <task-update
+          v-if="false"
+          v-show="
+            updateTaskFilesStore().state.isShowUpdatePanel &&
+            updateTaskFilesStore().isShowUpdatePanel
           "
-          :is-loading="isAssetsLoading || initialLoading"
-          :is-error="isAssetsLoadingError"
-          :validation-columns="assetValidationColumns"
-          :department-filter="departmentFilter"
-          @change-sort="onChangeSortClicked"
-          @create-tasks="showCreateTasksModal"
-          @delete-all-tasks="onDeleteAllTasksClicked"
-          @new-clicked="showNewModal"
-          @edit-clicked="onEditClicked"
-          @delete-clicked="onDeleteClicked"
-          @restore-clicked="onRestoreClicked"
-          @add-metadata="onAddMetadataClicked"
-          @edit-metadata="onEditMetadataClicked"
-          @delete-metadata="onDeleteMetadataClicked"
-          @metadata-changed="onMetadataChanged"
-          @asset-changed="onAssetChanged"
-          @field-changed="onFieldChanged"
-          @scroll="saveScrollPosition"
-          @asset-type-clicked="onAssetTypeClicked"
-          @keep-task-panel-open="onKeepTaskPanelOpenChanged"
         />
       </div>
     </div>
@@ -258,6 +266,7 @@
       @confirm="confirmBuildFilter"
       @cancel="modals.isBuildFilterDisplayed = false"
     />
+    <task-update-files-modal />
   </div>
 </template>
 
@@ -293,6 +302,9 @@ import SortingInfo from '@/components/widgets/SortingInfo.vue'
 import ShowAssignationsButton from '@/components/widgets/ShowAssignationsButton.vue'
 import ShowInfosButton from '@/components/widgets/ShowInfosButton.vue'
 import TaskInfo from '@/components/sides/TaskInfo.vue'
+import TaskUpdate from '@/components/bottoms/TaskUpdate.vue'
+import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
+import TaskUpdateFilesModal from '@/components/modals/TaskUpdateFilesModal.vue'
 
 export default {
   name: 'assets',
@@ -300,6 +312,8 @@ export default {
   mixins: [searchMixin, entitiesMixin],
 
   components: {
+    TaskUpdateFilesModal,
+    TaskUpdate,
     AssetList,
     AddMetadataModal,
     AddThumbnailsModal,
@@ -560,6 +574,7 @@ export default {
   },
 
   methods: {
+    updateTaskFilesStore,
     ...mapActions([
       'addMetadataDescriptor',
       'changeAssetSort',
@@ -1088,9 +1103,17 @@ export default {
   align-items: flex-start;
 }
 
+.main-column-content {
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  height: 100vh;
+}
+
 .assets {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .columns {

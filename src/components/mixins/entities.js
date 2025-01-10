@@ -2,6 +2,7 @@ import { mapGetters, mapActions } from 'vuex'
 
 import func from '@/lib/func'
 import preferences from '@/lib/preferences'
+import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 
 /*
  * Common functions to shots and assets pages.
@@ -300,6 +301,9 @@ export const entitiesMixin = {
   watch: {
     selectedDepartment() {
       this.onSelectedDepartmentChanged()
+    },
+    isTaskSidePanelOpen(value) {
+      updateTaskFilesStore().state.isShowUpdatePanel = value
     }
   }
 }

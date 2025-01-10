@@ -7,6 +7,7 @@ import editStore from '@/store/modules/edits'
 import episodeStore from '@/store/modules/episodes'
 import sequenceStore from '@/store/modules/sequences'
 import shotStore from '@/store/modules/shots'
+import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles'
 
 const entityMaps = {
   asset: assetStore.cache.assetMap,
@@ -199,6 +200,7 @@ export const entityListMixin = {
         validationInfo.y += columnOffset
       }
       this.$emit('keep-task-panel-open', true)
+      updateTaskFilesStore().state.selectedTask = validationInfo
       if (validationInfo.isShiftKey) {
         if (this.lastSelection) {
           let startX = this.lastSelection.x

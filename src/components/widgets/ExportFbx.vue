@@ -84,7 +84,7 @@ watchEffect(() => {
 <template>
   <div class="datatable-main" @drop="onDrop" @dragover="handleDragOver">
     <table-list
-      :table-header-filed="doodleWork.state.tableHeaderFiled"
+      :table-header-filed="doodleWork.currentDoodleWorkState.tableHeaderFiled"
       :body-list="doodleWork.currentDoodleWorkState.workList"
       :is-drop="false"
       :is-show-view-log="true"
