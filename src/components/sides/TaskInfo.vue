@@ -509,7 +509,6 @@ export default {
       'isTVShow',
       'nbSelectedTasks',
       'personMap',
-      'previewFormData',
       'productionMap',
       'selectedAssets',
       'selectedConcepts',
