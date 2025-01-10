@@ -495,8 +495,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       for (const item of data) {
         if (item.status === 'failed' && item.end_log === undefined) {
           const logs_str = await actions.getWorkTaskLog(item.id)
-          const logs = logs_str.split(/\r?\n/)
-          item.end_log = logs[logs.length - 2]
+          const logs = logs_str.match(/^\[.*?] \[.*?] \[error].*$/gm)
+          item.end_log = logs[logs.length - 1]
         }
         currentDoodleWorkState.value.workList.set(item.id, item)
       }

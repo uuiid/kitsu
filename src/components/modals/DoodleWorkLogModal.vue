@@ -36,7 +36,10 @@ const intervalId = setInterval(() => {
     doodleWork.actions
       .getWorkTaskLog(doodleWork.state.viewLogWorkTask.id)
       .then(log => {
-        doodleWork.state.workTaskLogData = log
+        doodleWork.state.workTaskLogData += log.replace(
+          doodleWork.state.workTaskLogData,
+          ''
+        )
       })
   }
 }, 1000)
