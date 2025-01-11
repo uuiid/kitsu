@@ -33,7 +33,7 @@ const workTask = computed(() => {
 })
 //const dynamicsLog = computed()
 const load = () => {
-  const step = Math.min(100, logs.value.length - count)
+  const step = Math.min(2000, logs.value.length - count)
   dynamicsLog.value.push(...logs.value.slice(count, count + step))
   count += step
 }
