@@ -492,13 +492,22 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         state.value.localHttpPath,
         options
       )
+
       for (const item of data) {
-        if (item.status === 'failed' && item.end_log === undefined) {
+        if (
+          (currentDoodleWorkState.value.workList.get(item.id) === undefined &&
+            item.status === 'failed') ||
+          (item.status === 'failed' &&
+            currentDoodleWorkState.value.workList.get(item.id).end_log ===
+              undefined)
+        ) {
           const logs_str = await actions.getWorkTaskLog(item.id)
           const logs = logs_str.match(/^\[.*?] \[.*?] \[error].*$/gm)
           item.end_log = logs[logs.length - 1]
+          currentDoodleWorkState.value.workList.set(item.id, item)
+        } else if (item.status !== 'failed') {
+          currentDoodleWorkState.value.workList.set(item.id, item)
         }
-        currentDoodleWorkState.value.workList.set(item.id, item)
       }
     },
 

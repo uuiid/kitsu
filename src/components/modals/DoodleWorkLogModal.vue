@@ -1,6 +1,6 @@
 <script setup>
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
-import { computed, onUnmounted, ref } from 'vue'
+import { computed, onUnmounted, ref, watch } from 'vue'
 import { SearchIcon } from 'lucide-vue-next'
 
 const doodleWork = doodleWorkStore()
@@ -26,10 +26,17 @@ const logTypes = ref([
 ])
 
 const inputValue = ref('')
-
+let count = 0
+const dynamicsLog = ref([])
 const workTask = computed(() => {
   return doodleWork.state.viewLogWorkTask
 })
+//const dynamicsLog = computed()
+const load = () => {
+  const step = Math.min(100, logs.value.length - count)
+  dynamicsLog.value.push(...logs.value.slice(count, count + step))
+  count += step
+}
 
 const intervalId = setInterval(() => {
   if (workTask.value && workTask.value.status === 'running') {
@@ -47,18 +54,26 @@ const intervalId = setInterval(() => {
 onUnmounted(() => {
   clearInterval(intervalId)
 })
+const regex = computed(() => {
+  let temp = ``
+  logTypes.value.forEach(item => {
+    if (item.isSelected) {
+      temp += `\\[.*?\\[${item.name}].*$|`
+    }
+  })
+  temp = temp.substring(0, temp.length - 1)
+  return temp
+})
 
 const logs = computed(() => {
-  return doodleWork.state.workTaskLogData
-    .split(/\r?\n/)
-    .filter(
-      log =>
-        log &&
-        logTypes.value
-          .filter(item => item.isSelected)
-          .filter(item => log.includes(`[${item.name}]`)).length > 0 &&
-        log.includes(inputValue.value)
-    )
+  return (
+    doodleWork.state.workTaskLogData.match(new RegExp(regex.value, 'gm')) || []
+  )
+})
+watch(logs, () => {
+  dynamicsLog.value = []
+  count = 0
+  load()
 })
 </script>
 
@@ -111,14 +126,29 @@ const logs = computed(() => {
             </div>
           </div>
           <div class="log-content">
-            <div class="" :key="log" v-for="log in logs">
+            <ul
+              v-infinite-scroll="load"
+              class="infinite-list"
+              style="overflow: auto"
+            >
+              <li
+                :class="{
+                  error: log.includes('[error]')
+                }"
+                :key="index"
+                v-for="(log, index) in dynamicsLog"
+              >
+                {{ log }}
+              </li>
+            </ul>
+            <!--div class="" :key="index" v-for="(log, index) in logs">
               <span
                 :class="{
                   error: log.includes('[error]')
                 }"
                 >{{ log }}</span
               >
-            </div>
+            </div-->
           </div>
         </div>
       </div>
@@ -206,6 +236,27 @@ const logs = computed(() => {
   border-radius: 5px;
   border: 1px solid var(--text);
   overflow: auto;
+}
+
+.infinite-list {
+  height: 100%;
+  padding: 0;
+  margin: 0;
+  list-style: none;
+}
+
+.infinite-list .infinite-list-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 50px;
+  background: var(--el-color-primary-light-9);
+  margin: 10px;
+  color: var(--el-color-primary);
+}
+
+.infinite-list .infinite-list-item + .list-item {
+  margin-top: 10px;
 }
 
 .modal-content {
