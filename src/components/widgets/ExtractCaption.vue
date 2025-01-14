@@ -10,16 +10,16 @@ import { ElMessage, ElNotification } from 'element-plus'
 const doodleWork = doodleWorkStore()
 const props = defineProps(['name', 'isDrop'])
 doodleWork.state.currentDoodleWorkType = props.name
-const dialogFormVisible = ref(false)
 const isDragOver = ref(false)
 // const onQuantityChange = event => {
 //   console.log('onQuantityChange', event)
 //   doodleWork.actions.setWorkSetting()
 // }
 setInterval(() => {
-  if (doodleWork.doodleWorkStateMap.get('提取字幕').isReload) {
-    for (const [key, item] of doodleWork.doodleWorkStateMap.get('提取字幕')
-      .workList) {
+  if (doodleWork.doodleWorkStateMap.get('extract_caption').isReload) {
+    for (const [key, item] of doodleWork.doodleWorkStateMap.get(
+      'extract_caption'
+    ).workList) {
       console.log(key)
       if (item.status === 'waiting') {
         extractCaption(item)
@@ -27,7 +27,7 @@ setInterval(() => {
       }
     }
   }
-  doodleWork.doodleWorkStateMap.get('提取字幕').isReload = false
+  doodleWork.doodleWorkStateMap.get('extract_caption').isReload = false
 }, 1000)
 
 const onAction = async (action_name, task) => {
@@ -170,7 +170,8 @@ const onSubmit = () => {
     }
     const srtContent = generateSRTContent(final_extract_captions)
     if (doodleWork.state.outPath === '') {
-      dialogFormVisible.value = true
+      doodleWork.state.dialogFormVisible = true
+      doodleWork.state.setOutPathCallback = onSubmit
       return
     } else {
       const fileName = task.file.name.split('.')[0]
@@ -211,11 +212,6 @@ const onDrop = event => {
   const files = event.dataTransfer.files
   doodleWork.currentDoodleWorkState.addFilesData(files)
 }
-const onSetOutPath = () => {
-  dialogFormVisible.value = false
-  onSubmit()
-}
-
 watchEffect(() => {})
 </script>
 
@@ -275,19 +271,6 @@ watchEffect(() => {})
       @submit="onSubmit"
     ></table-list>
   </div>
-  <el-dialog v-model="dialogFormVisible" title="设置导出路径" width="500">
-    <el-form>
-      <el-form-item label="导出路径" :label-width="formLabelWidth">
-        <el-input v-model="doodleWork.state.outPath" autocomplete="off" />
-      </el-form-item>
-    </el-form>
-    <template #footer>
-      <div class="dialog-footer">
-        <el-button @click="dialogFormVisible = false">退出</el-button>
-        <el-button type="primary" @click="onSetOutPath"> 确认</el-button>
-      </div>
-    </template>
-  </el-dialog>
 </template>
 
 <style scoped lang="scss">

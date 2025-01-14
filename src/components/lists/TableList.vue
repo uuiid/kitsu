@@ -123,6 +123,7 @@ const handleAction = (action_name, task_id) => {
           >
             <td :key="key" v-for="(value, key) in tableHeaderFiled">
               <span
+                :title="key === 'end_log' ? formatTableBodyData(work, key) : ''"
                 :class="{
                   error:
                     work[key] === 'failed' ||

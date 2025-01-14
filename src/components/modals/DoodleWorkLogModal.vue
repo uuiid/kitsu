@@ -6,7 +6,7 @@ import { SearchIcon } from 'lucide-vue-next'
 const doodleWork = doodleWorkStore()
 
 //const logType = /^(?:\[[^\]]*]\s*){2}\[([^\]]+)]/
-
+const loading = ref(true)
 const logTypes = ref([
   {
     name: 'warning',
@@ -31,11 +31,12 @@ const dynamicsLog = ref([])
 const workTask = computed(() => {
   return doodleWork.state.viewLogWorkTask
 })
-//const dynamicsLog = computed()
+
 const load = () => {
-  const step = Math.min(2000, logs.value.length - count)
+  const step = Math.min(500, logs.value.length - count)
   dynamicsLog.value.push(...logs.value.slice(count, count + step))
   count += step
+  loading.value = logs.value.length - count > 0
 }
 
 const intervalId = setInterval(() => {
@@ -50,6 +51,18 @@ const intervalId = setInterval(() => {
       })
   }
 }, 1000)
+
+const onScroll = event => {
+  const target = event.target
+  const start = target.scrollHeight
+  if (
+    start - target.scrollTop === target.clientHeight &&
+    logs.value.length - count > 0
+  ) {
+    load()
+    target.scrollTo(0, start)
+  }
+}
 
 onUnmounted(() => {
   clearInterval(intervalId)
@@ -126,11 +139,7 @@ watch(logs, () => {
             </div>
           </div>
           <div class="log-content">
-            <ul
-              v-infinite-scroll="load"
-              class="infinite-list"
-              style="overflow: auto"
-            >
+            <ul class="infinite-list" style="overflow: auto" @scroll="onScroll">
               <li
                 :class="{
                   error: log.includes('[error]')

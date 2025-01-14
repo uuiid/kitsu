@@ -8,16 +8,15 @@ import productions from '@/store/modules/productions.js'
 import { v4 as uuid } from 'uuid'
 
 //import uuid from 'uuid'
-
-class DoodleWorkBase {
-  constructor(productions) {
+export class DoodleWorkBase {
+  constructor() {
     this.name = ''
     this.isShowFiled = true
     this.workList = new Map()
     this.uncommittedWorkList = new Map()
     this.task_data_filed = new Map()
     this.isReload = false
-    this.productions = productions
+    this.productions = productions.state.openProductions
     this.tableHeaderFiled = {
       name: { name: '文件名', type: 'string' },
       status: { name: '状态', type: 'string' },
@@ -105,8 +104,9 @@ class DoodleWorkBase {
 
 class DoodleWorkFbx extends DoodleWorkBase {
   constructor(productions) {
-    super(productions)
+    super()
     this.name = 'export_fbx'
+    this.productions = productions
     this.task_data_filed.set('create_play_blast', {
       id: 'create_play_blast',
       name: '是否生成拍屏',
@@ -126,8 +126,8 @@ class DoodleWorkFbx extends DoodleWorkBase {
 }
 
 class DoodleWorkAbc extends DoodleWorkBase {
-  constructor(productions) {
-    super(productions)
+  constructor() {
+    super()
     this.name = 'export_sim'
     this.task_data_filed.set('replace_ref_file', {
       id: 'replace_ref_file',
@@ -174,8 +174,8 @@ class DoodleWorkAbc extends DoodleWorkBase {
 }
 
 class DoodleWorkAutoLight extends DoodleWorkBase {
-  constructor(productions) {
-    super(productions)
+  constructor() {
+    super()
     this.name = 'auto_light'
     this.task_data_filed.set('is_sim', {
       id: 'is_sim',
@@ -196,8 +196,14 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
     data.task_data.layering = this.task_data_filed.get('layering').checked
   }
 
-  formatShotName(file) {
-    const shot_name = file.name.substring(0, file.name.lastIndexOf('.'))
+  formatShotName(file_name) {
+    console.log(file_name.lastIndexOf('.'))
+    const shot_name = file_name.substring(
+      0,
+      file_name.includes('.')
+        ? file_name.lastIndexOf('.')
+        : file_name.length - 1
+    )
     const shot_split = shot_name.split('_')
     let shot_num = shot_split[2]
     shot_num = shot_num.substring(2, shot_num.length)
@@ -218,7 +224,7 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
 
   formatData(file) {
     const data = super.formatData(file)
-    const shotData = this.formatShotName(file)
+    const shotData = this.formatShotName(file.name)
     data.task_data.episodes = shotData.episodes
     data.task_data.shot = {
       shot: shotData.shot,
@@ -232,8 +238,8 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
 }
 
 class DoodleWorkExtractCaption extends DoodleWorkBase {
-  constructor(productions) {
-    super(productions)
+  constructor() {
+    super()
     this.name = 'extract_caption'
     this.isShowFiled = false
     this.tableHeaderFiled = this.tableHeaderFiled = {
@@ -289,6 +295,45 @@ class DoodleWorkExtractCaption extends DoodleWorkBase {
   }
 }
 
+class DoodleWorkImageToVideo extends DoodleWorkAutoLight {
+  constructor() {
+    super()
+    this.name = 'image_to_video'
+    this.task_data_filed = new Map()
+  }
+
+  validateString(input) {
+    const regex = /^[A-Z]+_EP\d{3}_SC\d{3}[A-Z]?$/
+    return regex.test(input)
+  }
+
+  formatDataState() {}
+
+  formatData(file) {
+    const data = super.formatData(file)
+    data.task_data.image_to_move = null
+    data.task_data.user_name = user.state.user?.full_name
+    return data
+  }
+
+  addFilesData(files) {
+    const fs = require('fs')
+    files.forEach(file => {
+      if (
+        fs.statSync(file.path).isDirectory() &&
+        this.productions.filter(
+          production => production.code === file.name.split('_')[0]
+        ) &&
+        this.validateString(file.name)
+      ) {
+        const data = this.formatData(file)
+        this.uncommittedWorkList.set(data.id, data)
+      }
+    })
+    //this.uncommittedWorkList = [...this.uncommittedWorkList, ...data]
+  }
+}
+
 function initState() {
   return {
     workList: [],
@@ -308,7 +353,9 @@ function initState() {
     currentUser: {},
     viewLogWorkTask: {},
     workTaskLogData: '',
-    outPath: ''
+    outPath: '',
+    dialogFormVisible: false,
+    setOutPathCallback: null
   }
 }
 
@@ -322,18 +369,23 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       ? state.value.visitorContext.projects
       : productions.state.openProductions
   })
-  const doodleWorkBase = new DoodleWorkBase(allProductions)
+  // watch(state.value.isVisitor,()=>{
+  //
+  // })
+  const doodleWorkBase = new DoodleWorkBase()
   const doodleWorkFbx = new DoodleWorkFbx(allProductions)
-  const doodleWorkAbc = new DoodleWorkAbc(allProductions)
-  const doodleWorkAutoLight = new DoodleWorkAutoLight(allProductions)
-  const doodleWorkExtractCaption = new DoodleWorkExtractCaption(allProductions)
+  const doodleWorkAbc = new DoodleWorkAbc()
+  const doodleWorkAutoLight = new DoodleWorkAutoLight()
+  const doodleWorkExtractCaption = new DoodleWorkExtractCaption()
+  const doodleWorkImageToVideo = new DoodleWorkImageToVideo()
 
   const doodleWorkStateMap = ref(
     new Map([
-      ['导出FBX', doodleWorkFbx],
-      ['导出ABC', doodleWorkAbc],
-      ['自动灯光', doodleWorkAutoLight],
-      ['提取字幕', doodleWorkExtractCaption]
+      ['export_fbx', doodleWorkFbx],
+      ['export_abc', doodleWorkAbc],
+      ['auto_light', doodleWorkAutoLight],
+      ['extract_caption', doodleWorkExtractCaption],
+      ['image_to_video', doodleWorkImageToVideo]
     ])
   )
 
@@ -370,7 +422,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
   //     return null
   //   }
   // }
-
   const actions = {
     pullProcess: async () => {
       const fs = require('fs')
@@ -503,12 +554,21 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         ) {
           const logs_str = await actions.getWorkTaskLog(item.id)
           const logs = logs_str.match(/^\[.*?] \[.*?] \[error].*$/gm)
-          item.end_log = logs[logs.length - 1]
+          item.end_log = logs ? logs[logs?.length - 1] : ''
           currentDoodleWorkState.value.workList.set(item.id, item)
         } else if (item.status !== 'failed') {
           currentDoodleWorkState.value.workList.set(item.id, item)
         }
       }
+    },
+
+    isReloadDoodleWork: () => {
+      const temp = [...currentDoodleWorkState.value.workList.values()].filter(
+        item => {
+          return ['submitted', 'assigned', 'running'].includes(item.status)
+        }
+      )
+      currentDoodleWorkState.value.isReload = temp.length !== 0
     },
 
     cancelDoodleWorkTask: async task => {
@@ -536,14 +596,14 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       const reader = res.body.getReader()
       const decoder = new TextDecoder()
       let value = await reader.read()
-      let logs = decoder.decode(new Uint8Array(value.value))
+      let logs_str = decoder.decode(new Uint8Array(value.value))
       while (!value.done && state.value.isActiveLogModal) {
         value = await reader.read()
         const fullData = decoder.decode(new Uint8Array(value.value))
-        logs += fullData
+        logs_str += fullData
       }
       return new Promise(resolve => {
-        resolve(logs)
+        resolve(logs_str)
       })
     },
     getWorkSetting: async () => {
@@ -581,6 +641,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       }
     }
   }
+  actions.pullProcess()
   return {
     state,
     actions,

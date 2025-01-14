@@ -43,11 +43,13 @@ const messageContent = computed(() => {
 })
 
 const homePage = computed(() => {
-  return currentPage.value === 'home' || currentPage.value === ''
+  return currentPage.value.name === 'home' || currentPage.value === ''
 })
 
 const pagTitle = computed(() => {
-  return currentPage.value ? '->' + currentPage.value : currentPage.value
+  return currentPage.value.label
+    ? '->' + currentPage.value.label
+    : currentPage.value.label
 })
 
 const visitorShow = computed(() => {
@@ -107,7 +109,8 @@ const pagedAssets = ref([
     disabled: true,
     description: '',
     color: '#00b89c',
-    isVisible: true
+    isVisible: true,
+    isBaseTemplate: true
   },
   {
     id: 1,
@@ -117,7 +120,8 @@ const pagedAssets = ref([
     disabled: true,
     description: '',
     color: '#d775ec',
-    isVisible: false
+    isVisible: false,
+    isBaseTemplate: true
   },
   {
     id: 2,
@@ -127,7 +131,8 @@ const pagedAssets = ref([
     disabled: true,
     description: '',
     color: '#ec758b',
-    isVisible: false
+    isVisible: false,
+    isBaseTemplate: true
   },
   {
     id: 3,
@@ -137,10 +142,23 @@ const pagedAssets = ref([
     disabled: true,
     description: '',
     color: '#ecd875',
-    isVisible: false
+    isVisible: false,
+    isBaseTemplate: false
   },
   {
-    id: 3,
+    id: 4,
+    name: 'image_to_video',
+    label: '图片转视频',
+    textIcon: 'V',
+    disabled: true,
+    description: '',
+    color: '#00FF7F',
+    isVisible: false,
+    isBaseTemplate: true
+  },
+  {
+    id: 5,
+    name: 'plugin_center',
     label: '插件中心',
     textIcon: 'P',
     disabled: true,
@@ -149,6 +167,19 @@ const pagedAssets = ref([
     isVisible: false
   }
 ])
+const onSetOutPath = () => {
+  const fs = require('fs')
+  if (
+    doodleWork.state.outPath &&
+    fs.statSync(doodleWork.state.outPath).isDirectory()
+  ) {
+    doodleWork.state.dialogFormVisible = false
+    if (doodleWork.state.setOutPathCallback) {
+      doodleWork.state.setOutPathCallback()
+      doodleWork.state.setOutPathCallback = null
+    }
+  }
+}
 </script>
 
 <template>
@@ -194,7 +225,7 @@ const pagedAssets = ref([
               class="item flexcolumn"
               :key="entity.id"
               v-for="entity in pagedAssets"
-              @click="switchPage(entity.label)"
+              @click="switchPage(entity)"
               v-show="entity.isVisible || visitorShow"
             >
               <div class="card">
@@ -217,31 +248,40 @@ const pagedAssets = ref([
         </div>
         <export-fbx
           class="datatable-wrapper"
-          name="导出FBX"
-          v-if="currentPage === '导出FBX'"
+          :name="currentPage.name"
+          :is-set-out-path="currentPage.name === 'image_to_video'"
+          v-if="currentPage.isBaseTemplate"
         />
-        <export-fbx
-          class="datatable-wrapper"
-          name="导出ABC"
-          v-if="currentPage === '导出ABC'"
-        />
-        <export-fbx
-          class="datatable-wrapper"
-          name="自动灯光"
-          v-if="currentPage === '自动灯光'"
-        />
+
         <extract-caption
           class="datatable-wrapper"
-          name="提取字幕"
-          v-if="currentPage === '提取字幕'"
+          :name="currentPage.name"
+          v-if="currentPage.name === 'extract_caption'"
         />
-        <plugins-central v-if="currentPage === '插件中心'" />
+        <plugins-central v-if="currentPage.name === 'plugin_center'" />
       </div>
       <add-doodle-work />
       <doodle-work-log-modal v-if="doodleWork.state.isActiveLogModal" />
       <doodle-work-setting-modal />
     </div>
   </div>
+  <el-dialog
+    v-model="doodleWork.state.dialogFormVisible"
+    title="设置导出路径"
+    width="500"
+    @close="onSetOutPath"
+  >
+    <el-form>
+      <el-form-item label="导出路径">
+        <el-input v-model="doodleWork.state.outPath" autocomplete="off" />
+      </el-form-item>
+    </el-form>
+    <template #footer>
+      <div class="dialog-footer">
+        <el-button type="primary" @click="onSetOutPath"> 确认</el-button>
+      </div>
+    </template>
+  </el-dialog>
 </template>
 
 <style lang="scss" scoped>

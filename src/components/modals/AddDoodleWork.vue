@@ -26,9 +26,10 @@ const onAction = (action_name, task) => {
 
 const onSubmit = () => {
   if (doodleWork.currentDoodleWorkState.name === 'extract_caption') {
-    console.log('extract_caption')
     doodleWork.actions.submitExtractCaptionTask()
-  } else doodleWork.actions.submitLocalDoodleWork()
+  } else {
+    doodleWork.actions.submitLocalDoodleWork()
+  }
 }
 </script>
 

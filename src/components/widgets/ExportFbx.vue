@@ -1,5 +1,5 @@
 <script setup>
-import { onUnmounted, ref, watchEffect } from 'vue'
+import { onMounted, onUnmounted, ref, watch } from 'vue'
 //import { getCurrentInstance } from 'vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
@@ -7,9 +7,15 @@ import { ElMessage } from 'element-plus'
 
 //const _this = getCurrentInstance().appContext.config.globalProperties
 const doodleWork = doodleWorkStore()
-const props = defineProps(['name', 'isDrop'])
+const props = defineProps(['name', 'isDrop', 'isSetOutPath'])
 doodleWork.state.currentDoodleWorkType = props.name
 const isDragOver = ref(false)
+
+onMounted(() => {
+  if (props.isSetOutPath && doodleWork.state.outPath === '') {
+    doodleWork.state.dialogFormVisible = true
+  }
+})
 const handleDragOver = event => {
   event.preventDefault()
   if (!isDragOver.value) {
@@ -19,6 +25,23 @@ const handleDragOver = event => {
     } else {
       event.dataTransfer.dropEffect = 'copy'
     }
+  }
+}
+const reload = async () => {
+  doodleWork.currentDoodleWorkState.workList = new Map()
+  try {
+    await doodleWork.actions.loadLocalDoodleWork()
+    doodleWork.actions.isReloadDoodleWork()
+    ElMessage({
+      message: '刷新成功',
+      type: 'success'
+    })
+  } catch (e) {
+    console.error(e)
+    ElMessage({
+      message: '刷新失败',
+      type: 'error'
+    })
   }
 }
 
@@ -41,8 +64,12 @@ const onDrop = event => {
 //   doodleWork.actions.setWorkSetting()
 // }
 doodleWork.actions.loadLocalDoodleWork()
+doodleWork.actions.isReloadDoodleWork()
 const intervalId = setInterval(() => {
-  if (doodleWork.state.isReload) doodleWork.actions.loadLocalDoodleWork()
+  if (doodleWork.currentDoodleWorkState.isReload) {
+    doodleWork.actions.loadLocalDoodleWork()
+    doodleWork.actions.isReloadDoodleWork()
+  }
 }, 1000)
 
 const onAction = async (action_name, task) => {
@@ -66,20 +93,8 @@ const onAction = async (action_name, task) => {
 onUnmounted(() => {
   clearInterval(intervalId)
 })
-watchEffect(() => {
-  if (doodleWork.currentDoodleWorkState.workList) {
-    if (doodleWork.state.viewLogWorkTask)
-      doodleWork.state.viewLogWorkTask =
-        doodleWork.currentDoodleWorkState.workList.get(
-          doodleWork.state.viewLogWorkTask.id
-        )
-    const temp = [
-      ...doodleWork.currentDoodleWorkState.workList.values()
-    ].filter(item => {
-      return ['submitted', 'assigned', 'running'].includes(item.status)
-    })
-    doodleWork.state.isReload = temp.length !== 0
-  } else doodleWork.state.isReload = false
+watch(doodleWork.currentDoodleWorkState.workList, () => {
+  doodleWork.currentDoodleWorkState.isReload = true
 })
 </script>
 
@@ -88,12 +103,15 @@ watchEffect(() => {
     <table-list
       :table-header-filed="doodleWork.currentDoodleWorkState.tableHeaderFiled"
       :body-list="doodleWork.currentDoodleWorkState.workList"
+      name="刷新"
       :is-drop="false"
+      :is-show-submit="true"
       :is-show-view-log="true"
       @add-data="doodleWork.currentDoodleWorkState.addFilesData"
       @remove-data="doodleWork.currentDoodleWorkState.workList.delete"
       @view-log="onViewLog"
       @handle-action="onAction"
+      @submit="reload"
     ></table-list>
   </div>
 </template>
