@@ -1,6 +1,6 @@
 <script setup>
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
-import { computed, onUnmounted, ref, watch } from 'vue'
+import { computed, onUnmounted, ref, watch, onMounted, nextTick } from 'vue'
 import { SearchIcon } from 'lucide-vue-next'
 
 const doodleWork = doodleWorkStore()
@@ -31,7 +31,11 @@ const dynamicsLog = ref([])
 const workTask = computed(() => {
   return doodleWork.state.viewLogWorkTask
 })
-
+onMounted(() => {
+  nextTick(() => {
+    load()
+  })
+})
 const load = () => {
   const step = Math.min(500, logs.value.length - count)
   dynamicsLog.value.push(...logs.value.slice(count, count + step))
