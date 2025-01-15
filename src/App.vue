@@ -48,6 +48,7 @@ export default {
       'assetTypeMap',
       'currentEpisode',
       'currentProduction',
+      'departmentMap',
       'editMap',
       'episodeMap',
       'isCurrentUserAdmin',

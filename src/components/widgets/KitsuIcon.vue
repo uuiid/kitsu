@@ -81,6 +81,7 @@ const icons = {
   'big-thumbnail': bigThumbnail,
   box,
   breakdown,
+  brief: infos,
   compare,
   concepts,
   custom,
