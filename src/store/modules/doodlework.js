@@ -298,7 +298,7 @@ class DoodleWorkExtractCaption extends DoodleWorkBase {
 class DoodleWorkImageToVideo extends DoodleWorkAutoLight {
   constructor() {
     super()
-    this.name = 'image_to_video'
+    this.name = 'merge_video'
     this.task_data_filed = new Map()
   }
 
