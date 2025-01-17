@@ -168,9 +168,9 @@
           class="menu-item"
           :title="$t('doodle.folder_up')"
           @click="$emit('folder-up')"
-          v-if="isElectron && false"
+          v-if="isElectron && isModelGroup"
         >
-          <folder-up :title="$t('menu.openFolder')" />
+          <folder-up :title="$t('doodle.folder_up')" />
         </div>
         <div
           v-if="
@@ -848,6 +848,7 @@ import PeopleField from '@/components/widgets/PeopleField.vue'
 import SearchField from '@/components/widgets/SearchField.vue'
 import Spinner from '@/components/widgets/Spinner.vue'
 import ViewPlaylistModal from '@/components/modals/ViewPlaylistModal.vue'
+import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 
 export default {
   name: 'action-panel',
@@ -1197,6 +1198,16 @@ export default {
       return this.person ? this.person.id : null
     },
 
+    isModelGroup() {
+      for (const taskId of this.selectedTaskIds) {
+        const task = this.taskMap.get(taskId)
+        if (task.task_type_id !== '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34') {
+          return false
+        }
+      }
+      return true
+    },
+
     isInDepartment() {
       return this.selectedTaskIds.every(taskId => {
         const task = this.taskMap.get(taskId)
@@ -1260,6 +1271,7 @@ export default {
   },
 
   methods: {
+    updateTaskFilesStore,
     ...mapActions([
       'assignSelectedTasks',
       'changeSelectedTaskStatus',

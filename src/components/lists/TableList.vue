@@ -46,14 +46,19 @@ const formatTableBodyData = (workTask, key) => {
     const person = vuexStore.getters.personMap.get(workTask[key])
     return person ? person.first_name : ''
   } else if (key === 'run_time') {
-    if (workTask['status'] === 'running') {
+    if (workTask['status'] === 'running' || workTask['status'] === 'updating') {
+      if (workTask.computed_time) {
+        return workTask.computed_time
+      }
       const currentTime = new Date()
       const date = new Date(workTask[key])
       if (currentTime > date) {
         return formatDiffTime(currentTime - date)
       }
       return '00:00:00'
-    } else if (['completed', 'failed'].includes(workTask['status'])) {
+    } else if (
+      ['completed', 'failed', 'updated'].includes(workTask['status'])
+    ) {
       const date = new Date(workTask[key])
       const end_time = new Date(workTask['end_time'])
       return formatDiffTime(end_time - date)
@@ -128,7 +133,8 @@ const handleAction = (action_name, task_id) => {
                   error:
                     work[key] === 'failed' ||
                     (key === 'end_log' && work['status'] === 'failed'),
-                  completed: work[key] === 'completed'
+                  completed:
+                    work[key] === 'completed' || work[key] === 'updated'
                 }"
                 v-if="value.type === 'string'"
               >

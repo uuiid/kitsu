@@ -48,5 +48,9 @@ export default {
   getVisitorContext() {
     const path = '/api/data/user/context'
     return client.pget(path)
+  },
+  updateFile(task, file_data, type) {
+    const path = `/api/doodle/data/asset/${task.task_id}/file/${type}`
+    return client.ppostFileData(path, file_data)
   }
 }

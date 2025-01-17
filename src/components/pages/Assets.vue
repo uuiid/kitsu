@@ -266,7 +266,9 @@
       @confirm="confirmBuildFilter"
       @cancel="modals.isBuildFilterDisplayed = false"
     />
-    <task-update-files-modal />
+    <task-update-files-modal
+      v-if="updateTaskFilesStore().state.isShowUpdateModal"
+    />
   </div>
 </template>
 

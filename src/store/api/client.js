@@ -63,6 +63,7 @@ const client = {
       superagent
         .post(path)
         .set('Content-Type', file.filetype)
+        .set('Content-Disposition', file.disposition || '')
         .send(file.data)
         .end((err, res) => {
           if (res?.statusCode === 401) {
