@@ -209,6 +209,8 @@ const actions = {
 
   loadComment({ commit }, { commentId }) {
     return tasksApi.getTaskComment({ id: commentId }).then(comment => {
+      // FIXME: currently the API returns a list of comment IDs
+      comment.previews = comment.previews.map(id => ({ id }))
       commit(NEW_TASK_COMMENT_END, { comment })
       return comment
     })
@@ -1068,7 +1070,7 @@ const mutations = {
       comment.person
     )
 
-    if (taskId) {
+    if (!taskId) {
       taskId = comment.object_id
     }
     if (!state.taskComments[taskId]) state.taskComments[taskId] = []

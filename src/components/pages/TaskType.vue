@@ -830,7 +830,7 @@ export default {
             if (task) {
               const index = this.tasks.findIndex(t => t.id === taskId)
               this.$nextTick(() => {
-                this.$refs['task-list'].selectTask({}, index, task)
+                this.$refs['task-list']?.selectTask({}, index, task)
               })
             }
           })
@@ -1624,7 +1624,10 @@ export default {
           setTimeout(() => {
             this.resetTaskIndex()
             this.$nextTick(() => {
-              if (!this.selectedTasks.get(eventData.task_id)) {
+              if (
+                !this.selectedTasks.get(eventData.task_id) &&
+                this.searchField
+              ) {
                 this.onSearchChange(this.searchField.getValue())
               }
             })
