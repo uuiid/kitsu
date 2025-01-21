@@ -6,6 +6,7 @@ import i18n from '@/lib/i18n.js'
 const vuexStore = useStore()
 const props = defineProps({
   name: { type: String, default: '' },
+  runningLabel: { type: String, default: '' },
   isDrop: { type: Boolean, default: false },
   isShowSubmit: { type: Boolean, default: false },
   tableHeaderFiled: {
@@ -13,8 +14,17 @@ const props = defineProps({
     default: () => {}
   },
   bodyList: { type: Map, default: () => Map() },
-  isShowViewLog: { type: Boolean, default: false }
+  isShowViewLog: { type: Boolean, default: false },
+  isShowProgress: { type: Boolean, default: false }
 })
+const colors = [
+  { color: '#fa1b1b', percentage: 0 },
+  { color: '#f56c6c', percentage: 20 },
+  { color: '#e6a23c', percentage: 40 },
+  { color: '#6f7ad3', percentage: 60 },
+  { color: '#1989fa', percentage: 80 },
+  { color: '#5cb87a', percentage: 100 }
+]
 const emit = defineEmits(['submit', 'add-data', 'handle-action'])
 const isDragOver = ref(false)
 const displayWorkList = computed(() => {
@@ -65,7 +75,12 @@ const formatTableBodyData = (workTask, key) => {
     }
   } else if (key === 'status') {
     if (i18n.global.tm('doodle_work.task_state'))
-      return i18n.global.t(`doodle_work.task_state.${workTask['status']}`)
+      if (workTask['status'] === 'running') {
+        return props.runningLabel
+          ? i18n.global.t(`doodle_work.task_state.${props.runningLabel}`)
+          : i18n.global.t(`doodle_work.task_state.${workTask['status']}`)
+      }
+    return i18n.global.t(`doodle_work.task_state.${workTask['status']}`)
   }
   return workTask[key]
 }
@@ -91,6 +106,15 @@ const onDrop = event => {
   }
 }
 
+const onClipboard = event => {
+  event.preventDefault()
+  if (props.isDrop) {
+    isDragOver.value = false
+    const clipboardData = event.clipboardData || window.clipboardData
+    const files = clipboardData.files
+    emit('add-data', files)
+  }
+}
 const handleAction = (action_name, task_id) => {
   emit('handle-action', action_name, task_id)
 }
@@ -102,6 +126,7 @@ const handleAction = (action_name, task_id) => {
     :class="{ placeholder: isShowPrompt }"
     @drop="onDrop"
     @dragover="handleDragOver"
+    @paste="onClipboard"
   >
     <div v-if="isShowPrompt">
       {{ $t('video_library.placeholder') }}
@@ -128,11 +153,13 @@ const handleAction = (action_name, task_id) => {
           >
             <td :key="key" v-for="(value, key) in tableHeaderFiled">
               <span
-                :title="key === 'end_log' ? formatTableBodyData(work, key) : ''"
+                :title="
+                  key === 'last_line_log' ? formatTableBodyData(work, key) : ''
+                "
                 :class="{
                   error:
                     work[key] === 'failed' ||
-                    (key === 'end_log' && work['status'] === 'failed'),
+                    (key === 'last_line_log' && work['status'] === 'failed'),
                   completed:
                     work[key] === 'completed' || work[key] === 'updated'
                 }"
@@ -143,6 +170,13 @@ const handleAction = (action_name, task_id) => {
               <span v-else-if="value.type === 'boolean'">
                 <input type="checkbox" v-model="work.task_data[key]" />
               </span>
+              <el-progress
+                type="dashboard"
+                :percentage="Math.floor(work.progress * 100) || 0"
+                :color="colors"
+                :width="100"
+                v-else-if="value.type === 'progress'"
+              />
             </td>
             <td class="action">
               <a
@@ -244,8 +278,15 @@ const handleAction = (action_name, task_id) => {
   border-radius: 5px;
 }
 
+tr {
+  max-height: 50px; /* 限制行的最大高度 */
+}
+
 .datatable-row {
   overflow: hidden;
+  max-height: 10px;
+  min-height: 0;
+  height: 10px;
 
   &:hover {
     background-color: var(--background-selectable) !important;
@@ -253,6 +294,7 @@ const handleAction = (action_name, task_id) => {
 
   td {
     max-width: 350px;
+    max-height: 50px;
     //white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;

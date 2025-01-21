@@ -12,6 +12,10 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
     super()
     this.name = 'check_maya'
     this.productions = productions.state.openProductions
+    this.tableHeaderFiled['update_progress'] = {
+      name: '上传进度',
+      type: 'progress'
+    }
   }
 
   validateString(file) {
@@ -44,6 +48,7 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
         this.validateString(file.name)
       ) {
         const data = this.formatData(file)
+        data.updateType = updateTaskFilesStore().state.currentUpdateType
         this.uncommittedWorkList.set(data.id, data)
       }
     })
@@ -68,7 +73,8 @@ function initState() {
     updateTaskQueue: new Queue(),
     checkedTasks: new Map(),
     loadingNum: 0,
-    localHttpPath: ''
+    localHttpPath: '',
+    currentUpdateType: 0
   }
 }
 
@@ -110,8 +116,10 @@ export const updateTaskFilesStore = defineStore(
       },
       updateTaskFile: async task => {
         try {
-          if (task.file.name.endsWith('.uproject')) {
+          if (task.updateType === 3) {
             await actions.updateDir(task)
+          } else if (task.updateType === 2) {
+            await actions.updateFile(task.file.path, task, 'image')
           } else {
             await actions.updateFile(task.file.path, task)
           }
@@ -120,11 +128,12 @@ export const updateTaskFilesStore = defineStore(
           state.value.loadingNum -= 1
         } catch (e) {
           task.status = 'failed'
-          task.end_log = e.message
+          task.last_line_log = e.message
         }
         task.end_time = new Date().toISOString()
       },
       updateDir: async task => {
+        const fs = require('fs/promises')
         const path = require('path')
         const root_path = path.dirname(task.file.path)
         const files = []
@@ -133,10 +142,25 @@ export const updateTaskFilesStore = defineStore(
         await actions.walkDir(config_dir, files)
         await actions.walkDir(content_dir, files)
         files.push(task.file.path)
+        let totalSize = 0
+        for (const file of files) {
+          try {
+            const stats = await fs.stat(file) // 获取文件信息
+            totalSize += stats.size // 累加文件大小
+          } catch (err) {
+            console.error(`无法获取文件 ${file} 的大小:`, err)
+          }
+        }
+        task.totalSize = totalSize
+        let updated_size = 0
         for (const file of files) {
           await actions.updateFile(file, task, 'ue')
+          const stats = await fs.stat(file)
+          updated_size += stats.size
+          task.progress = updated_size / totalSize
         }
       },
+
       updateFile: async (file_path, task, type = 'maya') => {
         const data = await actions.getFileFromPath(file_path)
         const path = require('path')
@@ -146,7 +170,16 @@ export const updateTaskFilesStore = defineStore(
           data: data
         }
         task.task_id = state.value.selectedTask.task.id
-        return await doodlework.updateFile(task, file_data, type)
+        if (type === 'maya' || type === 'image')
+          return await doodlework.updateFile(
+            task,
+            file_data,
+            type,
+            (loaded, total) => {
+              task.progress = loaded / total
+            }
+          )
+        else await doodlework.updateFile(task, file_data, type, () => {})
       },
       isReloadDoodleWork() {
         const temp = [...state.value.allFiles.values()].filter(item => {
@@ -183,7 +216,7 @@ export const updateTaskFilesStore = defineStore(
         // })
         for (const item of [
           ...doodleWorkCheckFiles.uncommittedWorkList.values()
-        ]) {
+        ].filter(task => task.updateType === state.value.currentUpdateType)) {
           //doodleWorkCheckFiles.formatDataState(item)
           const data = Object.assign({}, item)
           data.file = ''
@@ -228,9 +261,9 @@ export const updateTaskFilesStore = defineStore(
         }
         if (data.status !== task.status) {
           if (data.status === 'failed') {
-            const logs_str = await actions.getWorkTaskLog(task.id)
-            const logs = logs_str.match(/^\[.*?] \[.*?] \[error].*$/gm)
-            task.end_log = logs ? logs[logs?.length - 1] : ''
+            // const logs_str = await doodleWork.actions.getWorkTaskLog(task.id,'mini')
+            // const logs = logs_str.match(/^\[.*?] \[.*?] \[error].*$/gm)
+            // task.last_line_log = logs ? logs[logs?.length - 1] : ''
             await actions.formatTask(task, data)
           } else if (data.status === 'completed') {
             await actions.formatTask(task, data)

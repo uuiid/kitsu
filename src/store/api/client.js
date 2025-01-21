@@ -58,13 +58,18 @@ const client = {
         })
     })
   },
-  ppostFileData(path, file) {
+  ppostFileData(path, file, onProgress = null) {
     return new Promise((resolve, reject) => {
       superagent
         .post(path)
         .set('Content-Type', file.filetype)
         .set('Content-Disposition', file.disposition || '')
         .send(file.data)
+        .on('progress', event => {
+          if (onProgress && event.direction === 'upload') {
+            onProgress(event.loaded, event.total) // 调用进度回调
+          }
+        })
         .end((err, res) => {
           if (res?.statusCode === 401) {
             errors.backToLogin()

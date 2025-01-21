@@ -21,6 +21,10 @@ export default {
     const path = localPath + `/api/doodle/task/${task_id}/log`
     return fetch(path)
   },
+  getWorkLogMini(task_id, localPath = '') {
+    const path = localPath + `/api/doodle/task/${task_id}/log/mini`
+    return fetch(path)
+  },
   getWorkTask(task_id, localPath = '') {
     const path = localPath + `/api/doodle/task/${task_id}`
     return client.pget(path)
@@ -49,8 +53,8 @@ export default {
     const path = '/api/data/user/context'
     return client.pget(path)
   },
-  updateFile(task, file_data, type) {
+  updateFile(task, file_data, type, onProgress) {
     const path = `/api/doodle/data/asset/${task.task_id}/file/${type}`
-    return client.ppostFileData(path, file_data)
+    return client.ppostFileData(path, file_data, onProgress)
   }
 }

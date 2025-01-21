@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref, watch } from 'vue'
+import { onMounted, onUnmounted, watch } from 'vue'
 //import { getCurrentInstance } from 'vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
@@ -9,24 +9,25 @@ import { ElMessage } from 'element-plus'
 const doodleWork = doodleWorkStore()
 const props = defineProps(['name', 'isDrop', 'isSetOutPath'])
 doodleWork.state.currentDoodleWorkType = props.name
-const isDragOver = ref(false)
+//const isDragOver = ref(false)
 
 onMounted(() => {
   if (props.isSetOutPath && doodleWork.state.outPath === '') {
     doodleWork.state.dialogFormVisible = true
   }
+  document.addEventListener('paste', onClipboard)
 })
-const handleDragOver = event => {
-  event.preventDefault()
-  if (!isDragOver.value) {
-    isDragOver.value = true
-    if (props.isDrop) {
-      event.dataTransfer.dropEffect = 'none'
-    } else {
-      event.dataTransfer.dropEffect = 'copy'
-    }
-  }
-}
+// const handleDragOver = event => {
+//   event.preventDefault()
+//   if (!isDragOver.value) {
+//     isDragOver.value = true
+//     if (props.isDrop) {
+//       event.dataTransfer.dropEffect = 'none'
+//     } else {
+//       event.dataTransfer.dropEffect = 'copy'
+//     }
+//   }
+// }
 const reload = async () => {
   doodleWork.currentDoodleWorkState.workList = new Map()
   try {
@@ -52,13 +53,27 @@ const onViewLog = work_task => {
     doodleWork.state.workTaskLogData = log
   })
 }
-const onDrop = event => {
-  event.preventDefault()
-  doodleWork.state.isActiveModal = true
-  isDragOver.value = false
-  const files = event.dataTransfer.files
+
+const onAddData = files => {
   doodleWork.currentDoodleWorkState.addFilesData(files)
+  if (doodleWork.currentDoodleWorkState.uncommittedWorkList.size > 0) {
+    doodleWork.state.isActiveModal = true
+  } else {
+    ElMessage({
+      message: '添加失败，请检查文件名称',
+      type: 'error'
+    })
+  }
 }
+
+const onClipboard = event => {
+  event.preventDefault()
+  const clipboardData = event.clipboardData || window.clipboardData
+  const files = clipboardData.files
+  console.log(doodleWork.state.isActiveModal)
+  if (!doodleWork.state.isActiveModal) onAddData(files)
+}
+
 // const onQuantityChange = event => {
 //   console.log('onQuantityChange', event)
 //   doodleWork.actions.setWorkSetting()
@@ -66,6 +81,7 @@ const onDrop = event => {
 doodleWork.actions.loadLocalDoodleWork()
 doodleWork.actions.isReloadDoodleWork()
 const intervalId = setInterval(() => {
+  doodleWork.actions.isReloadDoodleWork()
   if (doodleWork.currentDoodleWorkState.isReload) {
     doodleWork.actions.loadLocalDoodleWork()
     doodleWork.actions.isReloadDoodleWork()
@@ -92,6 +108,7 @@ const onAction = async (action_name, task) => {
 
 onUnmounted(() => {
   clearInterval(intervalId)
+  document.removeEventListener('paste', onClipboard)
 })
 watch(doodleWork.currentDoodleWorkState.workList, () => {
   doodleWork.currentDoodleWorkState.isReload = true
@@ -99,15 +116,15 @@ watch(doodleWork.currentDoodleWorkState.workList, () => {
 </script>
 
 <template>
-  <div class="datatable-main" @drop="onDrop" @dragover="handleDragOver">
+  <div class="datatable-main">
     <table-list
       :table-header-filed="doodleWork.currentDoodleWorkState.tableHeaderFiled"
       :body-list="doodleWork.currentDoodleWorkState.workList"
       name="刷新"
-      :is-drop="false"
+      :is-drop="true"
       :is-show-submit="true"
       :is-show-view-log="true"
-      @add-data="doodleWork.currentDoodleWorkState.addFilesData"
+      @add-data="onAddData"
       @remove-data="doodleWork.currentDoodleWorkState.workList.delete"
       @view-log="onViewLog"
       @handle-action="onAction"

@@ -23,7 +23,7 @@ export class DoodleWorkBase {
       source_computer: { name: '运行主机', type: 'string' },
       run_time: { name: '运行时间', type: 'string' },
       submitter: { name: '创建者', type: 'string' },
-      end_log: { name: '日志', type: 'string' },
+      last_line_log: { name: '日志', type: 'string' },
       submit_time: {
         name: '创建时间',
         type: 'string'
@@ -295,7 +295,7 @@ class DoodleWorkExtractCaption extends DoodleWorkBase {
   }
 }
 
-class DoodleWorkImageToVideo extends DoodleWorkAutoLight {
+class DoodleWorkMergeVideo extends DoodleWorkAutoLight {
   constructor() {
     super()
     this.name = 'merge_video'
@@ -303,7 +303,7 @@ class DoodleWorkImageToVideo extends DoodleWorkAutoLight {
   }
 
   validateString(input) {
-    const regex = /^[A-Z]+_EP\d{3}_SC\d{3}[A-Z]?$/
+    const regex = /^[A-Z]+_EP\d{3}_SC\d{3}[A-Z]?\.png$/
     return regex.test(input)
   }
 
@@ -311,8 +311,13 @@ class DoodleWorkImageToVideo extends DoodleWorkAutoLight {
 
   formatData(file) {
     const data = super.formatData(file)
+    const path = require('path')
     data.task_data.image_to_move = null
     data.task_data.user_name = user.state.user?.full_name
+    data.task_data.out_path = path.join(
+      doodleWorkStore().state.outPath,
+      file.name + '.mp4'
+    )
     return data
   }
 
@@ -331,6 +336,58 @@ class DoodleWorkImageToVideo extends DoodleWorkAutoLight {
       }
     })
     //this.uncommittedWorkList = [...this.uncommittedWorkList, ...data]
+  }
+}
+
+class DoodleWorkConnectVideo extends DoodleWorkMergeVideo {
+  constructor() {
+    super()
+    this.name = 'connect_video'
+  }
+
+  validateString(input) {
+    const regex = /^[A-Z]+_EP\d{3}_SC\d{3}[A-Z]?\.mp4$/
+    return regex.test(input)
+  }
+
+  addFilesData(files) {
+    const fs = require('fs')
+    const path = require('path')
+    const file_paths = []
+    files.forEach(file => {
+      if (
+        !fs.statSync(file.path).isDirectory() &&
+        this.productions.filter(
+          production => production.code === file.name.split('_')[0]
+        ) &&
+        this.validateString(file.name)
+      ) {
+        file_paths.push(file.path)
+      }
+    })
+    if (file_paths.length > 0) {
+      const data = this.formatData(files[0])
+      file_paths.sort()
+      console.log(file_paths)
+      data.name = `${path.basename(file_paths[0])}-${path.basename(file_paths[file_paths.length - 1])}`
+      data.task_data.paths = file_paths
+      data.task_data.out_path = path.join(
+        doodleWorkStore().state.outPath,
+        data.name.replace('.mp4', '')
+      )
+      this.uncommittedWorkList.set(data.id, data)
+    }
+  }
+
+  formatData(file) {
+    const data = super.formatData(file)
+    data.task_data.connect_video = null
+    delete data.task_data.image_to_move
+    delete data.task_data.path
+    delete data.task_data.project
+    delete data.task_data.episodes
+    delete data.task_data.shot
+    return data
   }
 }
 
@@ -377,15 +434,16 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
   const doodleWorkAbc = new DoodleWorkAbc()
   const doodleWorkAutoLight = new DoodleWorkAutoLight()
   const doodleWorkExtractCaption = new DoodleWorkExtractCaption()
-  const doodleWorkImageToVideo = new DoodleWorkImageToVideo()
-
+  const doodleWorkMergeVideo = new DoodleWorkMergeVideo()
+  const doodleWorkConnectVideo = new DoodleWorkConnectVideo()
   const doodleWorkStateMap = ref(
     new Map([
       ['export_fbx', doodleWorkFbx],
       ['export_abc', doodleWorkAbc],
       ['auto_light', doodleWorkAutoLight],
       ['extract_caption', doodleWorkExtractCaption],
-      ['image_to_video', doodleWorkImageToVideo]
+      ['merge_video', doodleWorkMergeVideo],
+      ['connect_video', doodleWorkConnectVideo]
     ])
   )
 
@@ -545,20 +603,20 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       )
 
       for (const item of data) {
-        if (
-          (currentDoodleWorkState.value.workList.get(item.id) === undefined &&
-            item.status === 'failed') ||
-          (item.status === 'failed' &&
-            currentDoodleWorkState.value.workList.get(item.id).end_log ===
-              undefined)
-        ) {
-          const logs_str = await actions.getWorkTaskLog(item.id)
-          const logs = logs_str.match(/^\[.*?] \[.*?] \[error].*$/gm)
-          item.end_log = logs ? logs[logs?.length - 1] : ''
-          currentDoodleWorkState.value.workList.set(item.id, item)
-        } else if (item.status !== 'failed') {
-          currentDoodleWorkState.value.workList.set(item.id, item)
-        }
+        // if (
+        //   (currentDoodleWorkState.value.workList.get(item.id) === undefined &&
+        //     item.status === 'failed') ||
+        //   (item.status === 'failed' &&
+        //     currentDoodleWorkState.value.workList.get(item.id).end_log ===
+        //       undefined)
+        // ) {
+        //   const logs_str = await actions.getWorkTaskLog(item.id)
+        //   const logs = logs_str.match(/^\[.*?] \[.*?] \[error].*$/gm)
+        //   item.end_log = logs ? logs[logs?.length - 1] : ''
+        //   currentDoodleWorkState.value.workList.set(item.id, item)
+        // } else if (item.status !== 'failed') {
+        currentDoodleWorkState.value.workList.set(item.id, item)
+        //}
       }
     },
 
@@ -588,19 +646,27 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       await doodlework.deleteWorkTask(workTaskId, state.value.localHttpPath)
       currentDoodleWorkState.value.workList.delete(workTaskId)
     },
-    getWorkTaskLog: async task_id => {
-      const res = await doodlework.getWorkLog(
-        task_id,
-        state.value.localHttpPath
-      )
-      const reader = res.body.getReader()
-      const decoder = new TextDecoder()
-      let value = await reader.read()
-      let logs_str = decoder.decode(new Uint8Array(value.value))
-      while (!value.done && state.value.isActiveLogModal) {
-        value = await reader.read()
-        const fullData = decoder.decode(new Uint8Array(value.value))
-        logs_str += fullData
+    getWorkTaskLog: async (task_id, type = null) => {
+      let res = null
+      if (type === null) {
+        res = await doodlework.getWorkLog(task_id, state.value.localHttpPath)
+      } else if (type === 'mini') {
+        res = await doodlework.getWorkLogMini(
+          task_id,
+          state.value.localHttpPath
+        )
+      }
+      let logs_str = ''
+      if (res) {
+        const reader = res.body.getReader()
+        const decoder = new TextDecoder()
+        let value = await reader.read()
+        logs_str = decoder.decode(new Uint8Array(value.value))
+        while (!value.done && state.value.isActiveLogModal) {
+          value = await reader.read()
+          const fullData = decoder.decode(new Uint8Array(value.value))
+          logs_str += fullData
+        }
       }
       return new Promise(resolve => {
         resolve(logs_str)

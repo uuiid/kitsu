@@ -1704,7 +1704,8 @@
         "run_time": "运行时间",
         "submitter": "创建者",
         "submit_time": "创建时间",
-        "end_time": "结束时间"
+        "end_time": "结束时间",
+        "upload_progress": "上传进度"
       },
       "settings": {
         "authorize": "授权",
@@ -1721,7 +1722,8 @@
         "completed": "已完成",
         "failed": "失败",
         "updating": "上传中",
-        "updated": "上传完成"
+        "updated": "上传完成",
+        "checking": "检查中"
       }
     },
     "doodle": {

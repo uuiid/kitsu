@@ -147,12 +147,23 @@ const pagedAssets = ref([
   },
   {
     id: 4,
-    name: 'image_to_video',
+    name: 'merge_video',
     label: '图片转视频',
     textIcon: 'V',
     disabled: true,
     description: '',
     color: '#00FF7F',
+    isVisible: false,
+    isBaseTemplate: true
+  },
+  {
+    id: 4,
+    name: 'connect_video',
+    label: '连接视频',
+    textIcon: 'C',
+    disabled: true,
+    description: '',
+    color: '#686aef',
     isVisible: false,
     isBaseTemplate: true
   },
@@ -168,17 +179,20 @@ const pagedAssets = ref([
   }
 ])
 const onSetOutPath = () => {
+  console.log('setOutPath')
   const fs = require('fs')
   if (
     doodleWork.state.outPath &&
     fs.statSync(doodleWork.state.outPath).isDirectory()
   ) {
-    doodleWork.state.dialogFormVisible = false
     if (doodleWork.state.setOutPathCallback) {
       doodleWork.state.setOutPathCallback()
       doodleWork.state.setOutPathCallback = null
     }
+  } else {
+    currentPage.value = ''
   }
+  doodleWork.state.dialogFormVisible = false
 }
 </script>
 
@@ -249,7 +263,9 @@ const onSetOutPath = () => {
         <export-fbx
           class="datatable-wrapper"
           :name="currentPage.name"
-          :is-set-out-path="currentPage.name === 'image_to_video'"
+          :is-set-out-path="
+            ['merge_video', 'connect_video'].includes(currentPage.name)
+          "
           v-if="currentPage.isBaseTemplate"
         />
 

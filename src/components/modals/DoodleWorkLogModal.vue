@@ -26,18 +26,25 @@ const logTypes = ref([
 ])
 
 const inputValue = ref('')
+const inputValueModle = ref('')
 let count = 0
 const dynamicsLog = ref([])
 const workTask = computed(() => {
   return doodleWork.state.viewLogWorkTask
 })
 onMounted(() => {
+  document.addEventListener('scroll', onScroll)
   nextTick(() => {
     load()
   })
 })
+
+const onClickLogType = logType => {
+  inputValue.value = ''
+  logType.isSelected = !logType.isSelected
+}
 const load = () => {
-  const step = Math.min(500, logs.value.length - count)
+  const step = Math.min(200, logs.value.length - count)
   dynamicsLog.value.push(...logs.value.slice(count, count + step))
   count += step
   loading.value = logs.value.length - count > 0
@@ -69,6 +76,7 @@ const onScroll = event => {
 }
 
 onUnmounted(() => {
+  document.removeEventListener('scroll', onScroll)
   clearInterval(intervalId)
 })
 const regex = computed(() => {
@@ -83,9 +91,16 @@ const regex = computed(() => {
 })
 
 const logs = computed(() => {
-  return (
-    doodleWork.state.workTaskLogData.match(new RegExp(regex.value, 'gm')) || []
+  let res = doodleWork.state.workTaskLogData.match(
+    new RegExp(regex.value, 'gm')
   )
+  if (res) {
+    res = res.filter(log => {
+      return new RegExp(`.*?${inputValue.value}.*$`, 'gmi').test(log)
+    })
+    res.reverse()
+  }
+  return res || []
 })
 watch(logs, () => {
   dynamicsLog.value = []
@@ -117,7 +132,7 @@ watch(logs, () => {
                 class="log-type-item"
                 :key="index"
                 v-for="(logType, index) in logTypes"
-                @click="logType.isSelected = !logType.isSelected"
+                @click="onClickLogType(logType)"
               >
                 <div
                   class="log-type-item-color"
@@ -138,7 +153,8 @@ watch(logs, () => {
                 ref="search-field"
                 class="input"
                 :placeholder="$t('scan_project.name')"
-                v-model.trim="inputValue"
+                v-model.trim="inputValueModle"
+                @keydown.enter="inputValue = inputValueModle"
               />
             </div>
           </div>
