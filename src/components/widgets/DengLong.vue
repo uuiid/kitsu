@@ -62,7 +62,7 @@
 .deng-box {
   position: fixed;
   top: -40px;
-  right: 150px;
+  right: 350px;
   z-index: 9999;
   pointer-events: none;
 }
@@ -70,7 +70,7 @@
 .deng-box1 {
   position: fixed;
   top: -30px;
-  right: 10px;
+  right: 250px;
   z-index: 9999;
   pointer-events: none;
 }
@@ -78,7 +78,7 @@
 .deng-box2 {
   position: fixed;
   top: -40px;
-  left: 150px;
+  left: 450px;
   z-index: 9999;
   pointer-events: none;
 }
@@ -86,7 +86,7 @@
 .deng-box3 {
   position: fixed;
   top: -30px;
-  left: 10px;
+  left: 350px;
   z-index: 9999;
   pointer-events: none;
 }
