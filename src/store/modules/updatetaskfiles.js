@@ -187,7 +187,7 @@ export const updateTaskFilesStore = defineStore(
             item.status
           )
         })
-        doodleWorkCheckFiles.isReload = temp.length !== 0
+        doodleWork.currentDoodleWorkState.isReload = temp.length !== 0
       },
       getFileFromPath(filePath) {
         const fs = require('fs')

@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, watch } from 'vue'
+import { onMounted, onUnmounted } from 'vue'
 //import { getCurrentInstance } from 'vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
@@ -81,13 +81,22 @@ const onClipboard = event => {
 doodleWork.actions.loadLocalDoodleWork()
 doodleWork.actions.isReloadDoodleWork()
 const intervalId = setInterval(() => {
-  doodleWork.actions.isReloadDoodleWork()
   if (doodleWork.currentDoodleWorkState.isReload) {
     doodleWork.actions.loadLocalDoodleWork()
+    doodleWork.actions.isReloadDoodleWork()
+  } else {
     doodleWork.actions.isReloadDoodleWork()
   }
 }, 1000)
 
+const reExecute = async () => {
+  doodleWork.currentDoodleWorkState.workList.forEach(work => {
+    if (work.status === 'failed') {
+      doodleWork.actions.resubmitLocalDoodleWork(work)
+    }
+  })
+  doodleWork.currentDoodleWorkState.isReload = true
+}
 const onAction = async (action_name, task) => {
   if (action_name === 'remove-task') {
     doodleWork.actions.deleteDoodleWorkTask(task.id)
@@ -110,9 +119,6 @@ onUnmounted(() => {
   clearInterval(intervalId)
   document.removeEventListener('paste', onClipboard)
 })
-watch(doodleWork.currentDoodleWorkState.workList, () => {
-  doodleWork.currentDoodleWorkState.isReload = true
-})
 </script>
 
 <template>
@@ -122,14 +128,36 @@ watch(doodleWork.currentDoodleWorkState.workList, () => {
       :body-list="doodleWork.currentDoodleWorkState.workList"
       name="刷新"
       :is-drop="true"
-      :is-show-submit="true"
+      :is-show-submit="false"
       :is-show-view-log="true"
       @add-data="onAddData"
       @remove-data="doodleWork.currentDoodleWorkState.workList.delete"
       @view-log="onViewLog"
       @handle-action="onAction"
-      @submit="reload"
     ></table-list>
+    <div
+      class="has-text-right"
+      v-show="doodleWork.currentDoodleWorkState.workList.size > 0"
+    >
+      <div class="buttons">
+        <a
+          :class="{
+            button: true
+          }"
+          @click="reload"
+        >
+          {{ `刷新` }}
+        </a>
+        <a
+          :class="{
+            button: true
+          }"
+          @click="reExecute"
+        >
+          {{ `重新执行错误任务` }}
+        </a>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -161,5 +189,11 @@ watch(doodleWork.currentDoodleWorkState.workList, () => {
 .input {
   max-width: 100px;
   max-height: 30px;
+}
+
+.buttons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 10px;
 }
 </style>

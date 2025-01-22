@@ -45,6 +45,10 @@ export default {
     const path = localPath + `/api/doodle/task`
     return client.ppost(path, task)
   },
+  resubmitWorkTask(task, localPath = '') {
+    const path = localPath + `/api/doodle/task/${task.id}/restart`
+    return client.ppost(path, task)
+  },
   checkIsVisitor() {
     const path = '/api/auth/authenticated'
     return fetch(path, { method: 'GET' })

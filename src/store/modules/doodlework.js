@@ -518,7 +518,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
 
     submitLocalDoodleWork: async () => {
-      console.log(currentDoodleWorkState)
       const port = window.api.DoodleExePort()
       if (port) state.value.localHttpPath = `http://127.0.0.1:${port}`
       // await fetch(state.value.localHttpPath + `/api/doodle/local_setting`, {
@@ -538,7 +537,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         currentDoodleWorkState.value.workList.set(result.id, result)
       })
     },
-
+    resubmitLocalDoodleWork: async task => {
+      await doodlework.resubmitWorkTask(task, state.value.localHttpPath)
+    },
     submitExtractCaptionTask: () => {
       for (const item of [
         ...currentDoodleWorkState.value.uncommittedWorkList.values()
