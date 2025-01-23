@@ -1230,6 +1230,7 @@ export default {
     },
 
     onProgressChanged(frame) {
+      this.reloadAnnotations()
       if (this.currentFrame !== frame) {
         this.clearCanvas()
         this.setCurrentFrame(frame)
@@ -1754,8 +1755,10 @@ export default {
     },
 
     async extractAnnotationSnapshots() {
-      const annotations = this.annotations.sort((a, b) => b.time < a.time)
       const files = []
+      const annotations = this.annotations.sort((a, b) => {
+        return parseInt(b.frame) < parseInt(a.frame) ? 1 : -1
+      })
       let index = 1
       for (const annotation of annotations) {
         const canvas = document.getElementById('annotation-snapshot')
@@ -1812,13 +1815,13 @@ export default {
       if (!['INPUT', 'TEXTAREA'].includes(event.target.tagName)) {
         if (event.keyCode === 46 || event.keyCode === 8) {
           this.deleteSelection()
-        } else if (event.code === 37) {
+        } else if (event.keyCode === 37) {
           // arrow left
           this.goPreviousFrame()
-        } else if (event.code === 39) {
+        } else if (event.keyCode === 39) {
           // arrow right
           this.goNextFrame()
-        } else if (event.code === 32) {
+        } else if (event.keyCode === 32) {
           // space
           let styles
           const playlistModal = document.getElementById('temp-playlist-modal')

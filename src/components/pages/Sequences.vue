@@ -7,7 +7,6 @@
             <search-field
               ref="sequence-search-field"
               :can-save="true"
-              :active="isSearchActive"
               @change="onSearchChange"
               @save="saveSearchQuery"
               placeholder="ex: e01 sequence=wip"
@@ -262,7 +261,6 @@ export default {
       ],
       historyEdit: {},
       initialLoading: true,
-      isSearchActive: false,
       optionalColumns: ['Description'],
       pageName: 'Sequences',
       parsedCSV: [],
@@ -510,7 +508,6 @@ export default {
     applySearch(searchQuery) {
       this.setSequenceSearch(searchQuery)
       this.setSearchInUrl()
-      this.isSearchActive = true
     },
 
     saveSearchQuery(searchQuery) {
@@ -638,11 +635,11 @@ export default {
   },
 
   watch: {
-    $route() {
+    $route(newRoute, previousRoute) {
       if (!this.$route.query) return
       const search = this.$route.query.search
       const actualSearch = this.$refs['sequence-search-field'].getValue()
-      if (search !== actualSearch) {
+      if (search !== actualSearch && !previousRoute.query.task_id) {
         this.searchField.setValue(search)
         this.applySearch(search)
       }

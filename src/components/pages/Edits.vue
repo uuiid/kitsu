@@ -7,7 +7,6 @@
             <search-field
               ref="edit-search-field"
               :can-save="true"
-              :active="isSearchActive"
               @change="onSearchChange"
               @enter="applySearch(searchField.getValue())"
               @save="saveSearchQuery"
@@ -326,7 +325,6 @@ export default {
       ],
       historyEdit: {},
       initialLoading: true,
-      isSearchActive: false,
       optionalColumns: ['Description'],
       pageName: 'Edits',
       parsedCSV: [],
@@ -830,7 +828,6 @@ export default {
 
     onSearchChange(clearSelection = true) {
       if (!this.searchField) return
-      this.isSearchActive = false
       const searchQuery = this.searchField.getValue() || ''
       if (searchQuery.length !== 1 && !this.isLongEditList) {
         this.applySearch(searchQuery)
@@ -851,7 +848,6 @@ export default {
     applySearch(searchQuery) {
       this.setEditSearch(searchQuery)
       this.setSearchInUrl()
-      this.isSearchActive = true
     },
 
     saveSearchQuery(searchQuery) {
@@ -964,11 +960,11 @@ export default {
   },
 
   watch: {
-    $route() {
+    $route(nextRoute, previousRoute) {
       if (!this.$route.query) return
       const search = this.$route.query.search
       const actualSearch = this.$refs['edit-search-field']?.getValue()
-      if (search !== actualSearch) {
+      if (search !== actualSearch && !previousRoute.query.task_id) {
         this.searchField.setValue(search)
         this.applySearch(search)
       }

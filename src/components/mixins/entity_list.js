@@ -9,14 +9,6 @@ import sequenceStore from '@/store/modules/sequences'
 import shotStore from '@/store/modules/shots'
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles'
 
-const entityMaps = {
-  asset: assetStore.cache.assetMap,
-  shot: shotStore.cache.shotMap,
-  sequence: sequenceStore.cache.sequenceMap,
-  episode: episodeStore.cache.episodeMap,
-  edit: editStore.cache.editMap
-}
-
 export const entityListMixin = {
   emits: [
     'change-sort',
@@ -519,6 +511,22 @@ export const entityListMixin = {
     },
 
     /*
+     * Get entity map for current entity type.
+     *
+     * Do not use computed property to avoid caching issues.
+     */
+    getEntityMap() {
+      const entityMaps = {
+        asset: assetStore.cache.assetMap,
+        shot: shotStore.cache.shotMap,
+        sequence: sequenceStore.cache.sequenceMap,
+        episode: episodeStore.cache.episodeMap,
+        edit: editStore.cache.editMap
+      }
+      return entityMaps[this.type]
+    },
+
+    /*
      * Select the task listed in the url query string (task_id field) if
      * present.
      */
@@ -526,7 +534,7 @@ export const entityListMixin = {
       const taskId = this.$route.query.task_id
       const task = this.taskMap.get(taskId)
       if (task) {
-        const entityMap = entityMaps[this.type]
+        const entityMap = this.getEntityMap()
         const entity = entityMap.get(task.entity_id)
 
         if (entity) {
