@@ -201,12 +201,6 @@ export const updateTaskFilesStore = defineStore(
           })
         })
       },
-      formatTask: async (task, data) => {
-        task.status = data.status
-        task.run_time = data.run_time
-        task.end_time = data.end_time
-        task.submit_time = data.submit_time
-      },
 
       submitLocalDoodleWork: async () => {
         const port = window.api.DoodleExePort()
@@ -228,22 +222,10 @@ export const updateTaskFilesStore = defineStore(
           const task = Object.assign({}, state.value.allFiles.get(item.id))
           state.value.allFiles.delete(item.id)
           task.id = result.id
-          await actions.formatTask(task, result)
+          await doodleWork.actions.formatTask(task, result)
           state.value.allFiles.set(task.id, task)
         }
         doodleWorkCheckFiles.uncommittedWorkList = new Map()
-      },
-      formatDiffTime: diffTime => {
-        const hours = Math.floor(diffTime / (1000 * 60 * 60))
-        const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60))
-        const seconds = Math.floor((diffTime % (1000 * 60)) / 1000)
-
-        // 格式化为 HH:mm:ss
-        return [
-          hours.toString().padStart(2, '0'),
-          minutes.toString().padStart(2, '0'),
-          seconds.toString().padStart(2, '0')
-        ].join(':')
       },
       loadLocalDoodleWork: async task => {
         const data = await doodlework.getWorkTask(
@@ -251,12 +233,12 @@ export const updateTaskFilesStore = defineStore(
           state.value.localHttpPath
         )
         if (data.status === 'running') {
-          await actions.formatTask(task, data)
+          await doodleWork.actions.formatTask(task, data)
           const currentTime = new Date()
           const date = new Date(data.run_time)
           task.computed_time =
             currentTime > date
-              ? actions.formatDiffTime(currentTime - date)
+              ? doodleWork.actions.formatDiffTime(currentTime - date)
               : '00:00:00'
         }
         if (data.status !== task.status) {
@@ -264,13 +246,13 @@ export const updateTaskFilesStore = defineStore(
             // const logs_str = await doodleWork.actions.getWorkTaskLog(task.id,'mini')
             // const logs = logs_str.match(/^\[.*?] \[.*?] \[error].*$/gm)
             // task.last_line_log = logs ? logs[logs?.length - 1] : ''
-            await actions.formatTask(task, data)
+            await doodleWork.actions.formatTask(task, data)
           } else if (data.status === 'completed') {
-            await actions.formatTask(task, data)
+            await doodleWork.actions.formatTask(task, data)
             task.status = 'updating'
             state.value.updateTaskQueue.enqueue(task)
           } else if (data.status === 'running') {
-            await actions.formatTask(task, data)
+            await doodleWork.actions.formatTask(task, data)
             //   const currentTime = new Date()
             //   const date = new Date(data.run_time)
             //   task.run_time =
@@ -279,7 +261,7 @@ export const updateTaskFilesStore = defineStore(
             //       : '00:00:00'
             // }
           } else {
-            await actions.formatTask(task, data)
+            await doodleWork.actions.formatTask(task, data)
           }
         }
       }

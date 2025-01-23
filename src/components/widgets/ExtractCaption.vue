@@ -194,29 +194,16 @@ const disPlayTaskDataFiled = computed(() => {
   }
   return []
 })
-const handleDragOver = event => {
-  event.preventDefault()
-  if (!isDragOver.value) {
-    isDragOver.value = true
-    if (props.isDrop) {
-      event.dataTransfer.dropEffect = 'none'
-    } else {
-      event.dataTransfer.dropEffect = 'copy'
-    }
-  }
-}
-const onDrop = event => {
-  event.preventDefault()
+const onAddFiles = files => {
   doodleWork.state.isActiveModal = true
   isDragOver.value = false
-  const files = event.dataTransfer.files
   doodleWork.currentDoodleWorkState.addFilesData(files)
 }
 watchEffect(() => {})
 </script>
 
 <template>
-  <div class="datatable-main" @drop="onDrop" @dragover="handleDragOver">
+  <div class="datatable-main">
     <div class="interval">
       <div
         class="project-list"
@@ -263,10 +250,10 @@ watchEffect(() => {})
       :table-header-filed="doodleWork.currentDoodleWorkState.tableHeaderFiled"
       :body-list="doodleWork.currentDoodleWorkState.workList"
       name="导出"
-      :is-drop="false"
+      :is-drop="true"
       :is-show-view-log="false"
       :is-show-submit="true"
-      @add-data="doodleWork.currentDoodleWorkState.addFilesData"
+      @add-data="onAddFiles"
       @handle-action="onAction"
       @submit="onSubmit"
     ></table-list>

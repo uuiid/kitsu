@@ -15,6 +15,7 @@ export class DoodleWorkBase {
     this.workList = new Map()
     this.uncommittedWorkList = new Map()
     this.task_data_filed = new Map()
+    this.historyWorkList = new Map()
     this.isReload = false
     this.productions = productions.state.openProductions
     this.tableHeaderFiled = {
@@ -398,6 +399,7 @@ function initState() {
     isActiveModal: false,
     isActiveLogModal: false,
     isActiveSettingModal: false,
+    isActiveHistoryModal: false,
     isReload: true,
     isVisitor: false,
     isPullProcessed: false,
@@ -516,6 +518,13 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         await actions.getWorkSetting()
       }
     },
+    formatTask: async (task, data) => {
+      task.status = data.status
+      task.run_time = data.run_time
+      task.end_time = data.end_time
+      task.submit_time = data.submit_time
+      task.last_line_log = data.last_line_log
+    },
 
     submitLocalDoodleWork: async () => {
       const port = window.api.DoodleExePort()
@@ -523,22 +532,33 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       // await fetch(state.value.localHttpPath + `/api/doodle/local_setting`, {
       //   mode: 'no-cors'
       // })
-      const results = []
+      //const results = []
       for (const item of [
         ...currentDoodleWorkState.value.uncommittedWorkList.values()
       ]) {
         currentDoodleWorkState.value.formatDataState(item)
-        results.push(
-          await doodlework.submitWorkTask(item, state.value.localHttpPath)
+
+        const result = await doodlework.submitWorkTask(
+          item,
+          state.value.localHttpPath
         )
+        const task = Object.assign(
+          {},
+          currentDoodleWorkState.value.uncommittedWorkList.get(item.id)
+        )
+        task.id = result.id
+        await actions.formatTask(task, result)
+        currentDoodleWorkState.value.workList.set(task.id, task)
       }
       currentDoodleWorkState.value.uncommittedWorkList = new Map()
-      results.forEach(result => {
-        currentDoodleWorkState.value.workList.set(result.id, result)
-      })
+      currentDoodleWorkState.value.isReload = true
+      // results.forEach(result => {
+      //   currentDoodleWorkState.value.workList.set(result.id, result)
+      // })
     },
     resubmitLocalDoodleWork: async task => {
       await doodlework.resubmitWorkTask(task, state.value.localHttpPath)
+      task.status = 'submitted'
       currentDoodleWorkState.value.isReload = true
     },
     submitExtractCaptionTask: () => {
@@ -596,29 +616,55 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         }
       }
     },
+    formatDiffTime: diffTime => {
+      const hours = Math.floor(diffTime / (1000 * 60 * 60))
+      const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60))
+      const seconds = Math.floor((diffTime % (1000 * 60)) / 1000)
 
-    loadLocalDoodleWork: async () => {
+      // 格式化为 HH:mm:ss
+      return [
+        hours.toString().padStart(2, '0'),
+        minutes.toString().padStart(2, '0'),
+        seconds.toString().padStart(2, '0')
+      ].join(':')
+    },
+    listWorkTasks: async () => {
       const options = `user_id=${currentUser.value.id}&type=${currentDoodleWorkState.value.name}`
-      const data = await doodlework.listWorkTask(
+      const workTasks = await doodlework.listWorkTask(
         state.value.localHttpPath,
         options
       )
-
-      for (const item of data) {
-        // if (
-        //   (currentDoodleWorkState.value.workList.get(item.id) === undefined &&
-        //     item.status === 'failed') ||
-        //   (item.status === 'failed' &&
-        //     currentDoodleWorkState.value.workList.get(item.id).end_log ===
-        //       undefined)
-        // ) {
-        //   const logs_str = await actions.getWorkTaskLog(item.id)
-        //   const logs = logs_str.match(/^\[.*?] \[.*?] \[error].*$/gm)
-        //   item.end_log = logs ? logs[logs?.length - 1] : ''
-        //   currentDoodleWorkState.value.workList.set(item.id, item)
-        // } else if (item.status !== 'failed') {
-        currentDoodleWorkState.value.workList.set(item.id, item)
-        //}
+      await workTasks.sort((a, b) => {
+        return b.submit_time.localeCompare(a.submit_time)
+      })
+      for (const workTask of workTasks) {
+        if (!currentDoodleWorkState.value.workList.has(workTask.id))
+          currentDoodleWorkState.value.historyWorkList.set(
+            workTask.id,
+            workTask
+          )
+      }
+    },
+    loadLocalDoodleWork: async () => {
+      for (const task of [...currentDoodleWorkState.value.workList.values()]) {
+        if (['submitted', 'assigned', 'running'].includes(task.status)) {
+          const data = await doodlework.getWorkTask(
+            task.id,
+            state.value.localHttpPath
+          )
+          if (data.status === 'running') {
+            await actions.formatTask(task, data)
+            const currentTime = new Date()
+            const date = new Date(data.run_time)
+            task.computed_time =
+              currentTime > date
+                ? actions.formatDiffTime(currentTime - date)
+                : '00:00:00'
+          }
+          if (data.status !== task.status && data.status !== 'running') {
+            await actions.formatTask(task, data)
+          }
+        }
       }
     },
 
@@ -646,7 +692,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
 
     deleteDoodleWorkTask: async workTaskId => {
       await doodlework.deleteWorkTask(workTaskId, state.value.localHttpPath)
-      currentDoodleWorkState.value.workList.delete(workTaskId)
     },
     getWorkTaskLog: async (task_id, type = null) => {
       let res = null

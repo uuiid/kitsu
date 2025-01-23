@@ -15,7 +15,8 @@ const props = defineProps({
   },
   bodyList: { type: Map, default: () => Map() },
   isShowViewLog: { type: Boolean, default: false },
-  isShowProgress: { type: Boolean, default: false }
+  isShowProgress: { type: Boolean, default: false },
+  isSelectable: { type: Boolean, default: false }
 })
 const colors = [
   { color: '#fa1b1b', percentage: 0 },
@@ -25,7 +26,7 @@ const colors = [
   { color: '#1989fa', percentage: 80 },
   { color: '#5cb87a', percentage: 100 }
 ]
-const emit = defineEmits(['submit', 'add-data', 'handle-action'])
+const emit = defineEmits(['submit', 'add-data', 'handle-action', 'selected'])
 const isDragOver = ref(false)
 const displayWorkList = computed(() => {
   return [...props.bodyList.values()]
@@ -106,6 +107,15 @@ const onDrop = event => {
   }
 }
 
+const onClickBody = (work, key) => {
+  if (props.isSelectable) {
+    emit('selected', work)
+  }
+  if (key === 'last_line_log') {
+    handleAction('view-log', work)
+  }
+}
+
 const onClipboard = event => {
   event.preventDefault()
   if (props.isDrop) {
@@ -128,13 +138,18 @@ const handleAction = (action_name, task_id) => {
     @dragover="handleDragOver"
     @paste="onClipboard"
   >
-    <div v-if="isShowPrompt">
+    <div v-if="isShowPrompt && isDrop">
       {{ $t('video_library.placeholder') }}
     </div>
     <div class="datatable-wrapper" v-if="!isShowPrompt">
       <table class="datatable">
         <thead class="datatable-head">
           <tr class="datatable-row datatable-row-head">
+            <th
+              scope="col"
+              class="name datatable-row-header"
+              v-if="isSelectable"
+            ></th>
             <th
               class="normal"
               :key="key"
@@ -148,18 +163,27 @@ const handleAction = (action_name, task_id) => {
         <tbody>
           <tr
             class="datatable-row"
+            :class="{
+              selected: work.selected
+            }"
             :key="work.id"
             v-for="work in displayWorkList"
           >
+            <td class="datatable-row-header" v-if="isSelectable">
+              <input
+                class="input-checkbox"
+                type="checkbox"
+                v-model="work.selected"
+                @click="work.selected = !work.selected"
+              />
+            </td>
             <td
               :key="key"
               :class="{
                 pointer: key === 'last_line_log'
               }"
               v-for="(value, key) in tableHeaderFiled"
-              @click="
-                key === 'last_line_log' ? handleAction('view-log', work) : 0
-              "
+              @click="onClickBody(work, key)"
             >
               <span
                 :title="

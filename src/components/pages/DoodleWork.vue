@@ -12,6 +12,7 @@ import DoodleWorkSettingModal from '@/components/modals/DoodleWorkSettingModal.v
 import { ElMessage, ElNotification } from 'element-plus'
 import PluginsCentral from '@/components/widgets/PluginsCentral.vue'
 import ExtractCaption from '@/components/widgets/ExtractCaption.vue'
+import DoodleWorkHistoryTaskModal from '@/components/modals/DoodleWorkHistoryTaskModal.vue'
 //import router from '@/router/index.js'
 useHead({
   title: i18n.global.t('doodle_work.doodle_work')
@@ -272,12 +273,16 @@ const onSetOutPath = () => {
         <extract-caption
           class="datatable-wrapper"
           :name="currentPage.name"
+          :is-drop="true"
           v-if="currentPage.name === 'extract_caption'"
         />
         <plugins-central v-if="currentPage.name === 'plugin_center'" />
       </div>
       <add-doodle-work />
       <doodle-work-log-modal v-if="doodleWork.state.isActiveLogModal" />
+      <doodle-work-history-task-modal
+        v-if="doodleWork.state.isActiveHistoryModal"
+      />
       <doodle-work-setting-modal />
     </div>
   </div>

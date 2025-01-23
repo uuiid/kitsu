@@ -34,11 +34,12 @@ const intervalId = setInterval(() => {
         updateTaskFiles.actions.loadLocalDoodleWork(task)
       } else if (task.status === 'updating') {
         const currentTime = new Date()
-        console.log(task.progress)
         const date = new Date(task.run_time)
         task.computed_time =
           currentTime > date
-            ? updateTaskFiles.actions.formatDiffTime(currentTime - date)
+            ? updateTaskFiles.doodleWork.actions.formatDiffTime(
+                currentTime - date
+              )
             : '00:00:00'
       }
     })

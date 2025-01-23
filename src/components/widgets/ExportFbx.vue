@@ -29,7 +29,6 @@ onMounted(() => {
 //   }
 // }
 const reload = async () => {
-  doodleWork.currentDoodleWorkState.workList = new Map()
   try {
     await doodleWork.actions.loadLocalDoodleWork()
     doodleWork.actions.isReloadDoodleWork()
@@ -100,6 +99,7 @@ const reExecute = async () => {
 const onAction = async (action_name, task) => {
   if (action_name === 'remove-task') {
     doodleWork.actions.deleteDoodleWorkTask(task.id)
+    doodleWork.currentDoodleWorkState.value.workList.delete(task.id)
   } else if (action_name === 'view-log') {
     onViewLog(task)
   } else if (action_name === 'cancel-task') {
@@ -137,27 +137,37 @@ onUnmounted(() => {
       @view-log="onViewLog"
       @handle-action="onAction"
     ></table-list>
-    <div
-      class="has-text-right"
-      v-show="doodleWork.currentDoodleWorkState.workList.size > 0"
-    >
+    <div class="has-text-right">
       <div class="buttons">
         <a
           :class="{
             button: true
           }"
-          @click="reload"
+          @click="doodleWork.state.isActiveHistoryModal = true"
         >
-          {{ `刷新` }}
+          {{ `历史` }}
         </a>
-        <a
-          :class="{
-            button: true
-          }"
-          @click="reExecute"
+        <div
+          class="buttons"
+          v-show="doodleWork.currentDoodleWorkState.workList.size > 0"
         >
-          {{ `重新执行错误任务` }}
-        </a>
+          <a
+            :class="{
+              button: true
+            }"
+            @click="reload"
+          >
+            {{ `刷新` }}
+          </a>
+          <a
+            :class="{
+              button: true
+            }"
+            @click="reExecute"
+          >
+            {{ `重新执行错误任务` }}
+          </a>
+        </div>
       </div>
     </div>
   </div>
