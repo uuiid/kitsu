@@ -223,7 +223,7 @@ const onSubmit = async () => {
           "
           :is-drop="true"
           :is-show-submit="true"
-          :is-show-view-log="updateTaskFiles.state.currentUpdateType === 0"
+          :is-show-view-log="false"
           :is-show-progress="true"
           :body-list="displayAllFiles"
           running-label="checking"

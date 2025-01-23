@@ -1688,6 +1688,7 @@
       "doodle_work": "自动工作台",
       "add_doodle_work": "添加任务",
       "view_log": "查看日志",
+      "restart" : "重新提交",
       "log": "日志",
       "visitor": "访客",
       "logout": "退出访客",

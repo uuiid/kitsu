@@ -151,7 +151,16 @@ const handleAction = (action_name, task_id) => {
             :key="work.id"
             v-for="work in displayWorkList"
           >
-            <td :key="key" v-for="(value, key) in tableHeaderFiled">
+            <td
+              :key="key"
+              :class="{
+                pointer: key === 'last_line_log'
+              }"
+              v-for="(value, key) in tableHeaderFiled"
+              @click="
+                key === 'last_line_log' ? handleAction('view-log', work) : 0
+              "
+            >
               <span
                 :title="
                   key === 'last_line_log' ? formatTableBodyData(work, key) : ''
@@ -208,9 +217,9 @@ const handleAction = (action_name, task_id) => {
                 :class="{
                   button: true
                 }"
-                @click="handleAction('view-log', work)"
+                @click="handleAction('restart', work)"
                 v-if="isShowViewLog"
-                >{{ $t('doodle_work.view_log') }}</a
+                >{{ $t('doodle_work.restart') }}</a
               >
             </td>
           </tr>

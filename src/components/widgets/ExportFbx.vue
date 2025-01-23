@@ -112,6 +112,8 @@ const onAction = async (action_name, task) => {
     } catch (e) {
       ElMessage.error('移除失败')
     }
+  } else if (action_name === 'restart') {
+    doodleWork.actions.resubmitLocalDoodleWork(task)
   }
 }
 

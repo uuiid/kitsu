@@ -539,6 +539,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     resubmitLocalDoodleWork: async task => {
       await doodlework.resubmitWorkTask(task, state.value.localHttpPath)
+      currentDoodleWorkState.value.isReload = true
     },
     submitExtractCaptionTask: () => {
       for (const item of [
