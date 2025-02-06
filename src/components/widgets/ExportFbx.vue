@@ -69,7 +69,6 @@ const onClipboard = event => {
   event.preventDefault()
   const clipboardData = event.clipboardData || window.clipboardData
   const files = clipboardData.files
-  console.log(doodleWork.state.isActiveModal)
   if (!doodleWork.state.isActiveModal) onAddData(files)
 }
 

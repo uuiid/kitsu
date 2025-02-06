@@ -121,7 +121,7 @@ const pagedAssets = ref([
     disabled: true,
     description: '',
     color: '#d775ec',
-    isVisible: false,
+    isVisible: true,
     isBaseTemplate: true
   },
   {
@@ -180,7 +180,6 @@ const pagedAssets = ref([
   }
 ])
 const onSetOutPath = () => {
-  console.log('setOutPath')
   const fs = require('fs')
   if (
     doodleWork.state.outPath &&
