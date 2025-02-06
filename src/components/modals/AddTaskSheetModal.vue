@@ -145,7 +145,10 @@ export default {
     ]),
 
     notPendingTasks() {
-      return this.tasks
+      return this.tasks.filter(task => {
+        const month = new Date(task.start_date).getMonth() + 1
+        return this.monthString === month.toString()
+      })
     },
 
     yearOptions() {
@@ -197,29 +200,21 @@ export default {
     },
 
     unselectAllMonthClick() {
-      const year = this.yearString
-      const month = this.monthString.padStart(2, '0')
-      const year_month = `${year}-${month}`
+      //const year = this.yearString
+      //const month = this.monthString.padStart(2, '0')
+      //const year_month = `${year}-${month}`
       this.$refs['todo-list'].displayedTasks.forEach(t => {
-        if (
-          t.created_at.startsWith(year_month) ||
-          t.updated_at.startsWith(year_month)
-        )
-          t.checked = false
+        t.checked = false
       })
       this.$refs['todo-list'].$forceUpdate()
     },
 
     allMonthClick() {
-      const year = this.yearString
-      const month = this.monthString.padStart(2, '0')
-      const year_month = `${year}-${month}`
+      //const year = this.yearString
+      //const month = this.monthString.padStart(2, '0')
+      //const year_month = `${year}-${month}`
       this.$refs['todo-list'].tasks.forEach(t => {
-        if (
-          t.created_at.startsWith(year_month) ||
-          t.updated_at.startsWith(year_month)
-        )
-          t.checked = true
+        t.checked = true
       })
       this.$refs['todo-list'].$forceUpdate()
     },

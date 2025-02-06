@@ -91,7 +91,7 @@
                   :entity="{ preview_file_id: entry.entity_preview_file_id }"
                 />
                 <router-link class="entity-name" :to="entityPath(entry)">
-                  {{ entry.full_entity_name }}
+                  {{ entry.entity_name }}
                 </router-link>
               </div>
             </td>
