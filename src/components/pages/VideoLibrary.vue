@@ -399,7 +399,7 @@ export default {
             this.currentVideoType.id === 'all'
           )
         })
-        .sort((a, b) => a.label.localeCompare(b.label))
+        .sort(this.naturalCompare)
     },
     searchAssetsData() {
       return this.sortedAssetsByType.filter(v => {
@@ -491,6 +491,34 @@ export default {
         this.displayAllAssets.length,
         this.currentPage * this.maxNum
       )
+    },
+    naturalCompare(a, b) {
+      const ax = [] // 存储 a 的字符和数字部分
+      const bx = [] // 存储 b 的字符和数字部分
+      // 将字符串拆分为字符和数字部分
+      a.label.replace(/(\d+)|(\D+)/g, (_, $1, $2) =>
+        ax.push($1 ? Number($1) : $2)
+      )
+      b.label.replace(/(\d+)|(\D+)/g, (_, $1, $2) =>
+        bx.push($1 ? Number($1) : $2)
+      )
+
+      // 逐个比较字符和数字部分
+      while (ax.length && bx.length) {
+        const aa = ax.shift()
+        const bb = bx.shift()
+
+        if (typeof aa === 'number' && typeof bb === 'number') {
+          if (aa !== bb) return aa - bb
+        } else if (aa < bb) {
+          return -1
+        } else if (aa > bb) {
+          return 1
+        }
+      }
+
+      // 如果前面的部分都相同，比较长度
+      return ax.length - bx.length
     },
     countMaxPage() {
       return Math.min(
