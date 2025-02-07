@@ -170,11 +170,11 @@ export default {
           const blob = await response.blob()
 
           // 使用 Clipboard API 将图片写入剪切板
-          await navigator.clipboard.write([
-            new ClipboardItem({
-              'image/png': blob
-            })
-          ])
+          const { clipboard, nativeImage } = require('electron')
+          const arrayBuffer = await blob.arrayBuffer()
+          const buffer = await Buffer.from(arrayBuffer)
+          const image = await nativeImage.createFromBuffer(buffer)
+          clipboard.writeImage(image)
           ElMessage({
             message: '已复制',
             type: 'success',
@@ -182,7 +182,7 @@ export default {
             offset: 100
           })
         } catch (error) {
-          ElMessage.error('复制失败')
+          ElMessage.error('复制失败(浏览器不支持)')
         }
       } else if (event.key === 'Escape') {
         this.initImagePreview()
