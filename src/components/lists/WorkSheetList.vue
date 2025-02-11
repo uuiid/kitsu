@@ -105,10 +105,18 @@
             </td>
             <task-type-cell
               class="type datatable-row-header datatable-row-header--nobd"
-              :production-id="task.project.id"
+              :production-id="task.project?.id"
               :task-type="task.task_type"
               :style="{ left: colTypePosX }"
+              v-if="task.task_type"
             />
+            <td
+              class="type datatable-row-header datatable-row-header--nobd"
+              :style="{ left: colTypePosX }"
+              v-else
+            >
+              自定义
+            </td>
             <td
               class="name datatable-row-header"
               :style="{ left: colNamePosX }"
@@ -117,8 +125,9 @@
                 <entity-thumbnail
                   :empty-width="60"
                   :empty-height="40"
-                  :entity="{ preview_file_id: task.entity.preview_file_id }"
+                  :entity="{ preview_file_id: task.entity?.preview_file_id }"
                 />
+                <span>{{ task.computing_time.name || task.entity.name }}</span>
                 <!--router-link class="entity-name" :to="entityPath(task.entity)">
 {{ task.entity.entity_name }}
 </router-link-->
@@ -127,14 +136,14 @@
 
             <td class="episode">
               <div class="flexrow" :title="''">
-                {{ getEpisodes(task) }}
+                {{ task.computing_time.episode || getEpisodes(task) }}
               </div>
             </td>
 
             <description-cell
               class="description"
-              :title="task.entity.entity_description"
-              :entry="{ description: task.entity.entity_description }"
+              :title="task.entity?.entity_description"
+              :entry="{ description: task.entity?.entity_description }"
               v-if="isDescriptionPresent && !isToCheck"
             />
             <td class="assignees" v-if="isToCheck">
@@ -177,23 +186,18 @@
                 @focusout="event => setUserRemark(event, task.computing_time)"
               />
             </td>
-            <td class="user-remark"></td>
-            <td class="user-remark">
-              {{ task.entity.data.pin_yin_ming_cheng }}
+            <td
+              :key="field_name + `${index}`"
+              class="normal"
+              v-for="(field_name, index) in Object.keys(metadataDescriptorsMap)"
+            >
+              {{
+                dataFieldMapping[field_name]
+                  ? task.computing_time[dataFieldMapping[field_name]]
+                  : task.entity?.data[field_name]
+              }}
             </td>
-            <td class="normal">
-              {{ task.entity.data.ban_ben }}
-            </td>
-            <td class="normal">
-              {{ task.entity.data.ji_shu }}
-            </td>
-            <td class="normal">
-              {{ task.entity.data.ji_shu_lie }}
-            </td>
-            <td class="normal">
-              {{ task.entity.data.deng_ji }}
-            </td>
-            <td class="normal"></td>
+
             <td class="actions has-text-centered">
               <button
                 class="button"
@@ -231,7 +235,6 @@ import { descriptorMixin } from '@/components/mixins/descriptors'
 
 import { sortPeople } from '@/lib/sorting'
 import { formatSimpleDate } from '@/lib/time'
-
 import EntityThumbnail from '@/components/widgets/EntityThumbnail'
 import DescriptionCell from '@/components/cells/DescriptionCell'
 import ProductionNameCell from '@/components/cells/ProductionNameCell'
@@ -311,7 +314,12 @@ export default {
       colNamePosX: '',
       isShiftSelected: false,
       isCtrlSelected: false,
-      startSelection: null
+      startSelection: null,
+      dataFieldMapping: {
+        ji_shu: 'season',
+        ji_shu_lie: 'episode',
+        deng_ji: 'grade'
+      }
     }
   },
 
@@ -384,6 +392,7 @@ export default {
           })
         })
       }
+      console.log('metadataDescriptorsMap', metadataDescriptorsMap)
       return metadataDescriptorsMap
     },
 
@@ -405,7 +414,7 @@ export default {
         this.$refs.body.scrollTop = scrollPosition
       }
     },
-
+    addCustomEntry() {},
     formatDate(date) {
       return date ? formatSimpleDate(date) : ''
     },
@@ -544,7 +553,8 @@ export default {
         alert(this.$t('doodle.calculate_tip'))
         return
       }
-      let res = {}
+      let checked_num = 0
+      let num = 0
       for (const entry of this.tasks) {
         if (entry.checked) {
           const time_task_id = entry.computing_time.id
@@ -552,9 +562,16 @@ export default {
           const l_params = {
             time_task_id
           }
-          res = await this.$store.dispatch(action, l_params)
+          num++
+          const res = await this.$store.dispatch(action, l_params)
+          if (num === this.tasks.length) {
+            this.$emit('remove-sort-task', res)
+          }
+          checked_num++
         }
-        this.$emit('remove-sort-task', res)
+      }
+      if (checked_num === 0) {
+        ElMessage.error('请先至少勾选一个任务')
       }
     },
     setUserRemark(event, entry) {
@@ -678,9 +695,20 @@ export default {
 }
 
 .production {
+  display: flex;
+  gap: 5px;
   width: 150px;
   min-width: 150px;
   max-width: 150px;
+}
+
+.custom-plus {
+  color: #1ea7fd;
+  cursor: pointer;
+
+  &:hover {
+    color: $green !important;
+  }
 }
 
 .type {

@@ -64,7 +64,23 @@ export default {
       commentData
     )
   },
+  countOneTaskTime(data) {
+    const month = data.month.padStart(2, '0')
+    const year_month = `${data.year}-${month}`
+    return client.ppost(
+      `/api/doodle/computing_time/${data.user_id}/${year_month}/add`,
+      data.task
+    )
+  },
+  countCustomTaskTime(data) {
+    const month = data.month.padStart(2, '0')
+    const year_month = `${data.year}-${month}`
 
+    return client.ppost(
+      `/api/doodle/computing_time/${data.user_id}/${year_month}/custom`,
+      data.custom_task
+    )
+  },
   async getTaskTime(data) {
     const month = data.month.padStart(2, '0')
     const year_month = `${data.year}-${month}`

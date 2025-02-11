@@ -6,7 +6,7 @@
           <h1 class="title">请先前往简介设置电话和公司</h1>
         </div>
         <div class="flexrow" v-else>
-          <span class="flexrow-select-company" v-if="companyString != null">
+          <div class="flexrow-select-company" v-if="companyString != null">
             <div class="flexrow-item-selector" v-if="showAllUser()">
               <label class="label">
                 {{ $t('main.person') }}
@@ -45,7 +45,7 @@
               v-model="dayString"
               v-if="isActiveTab('duty')"
             />
-          </span>
+          </div>
 
           <span class="filler"></span>
 
@@ -56,7 +56,7 @@
             <label class="label">
               {{ $t('doodle.action') }}
             </label>
-            <span v-if="isActiveTab('workSheet')">
+            <div v-if="isActiveTab('workSheet')">
               <button-simple
                 class="flexrow-item"
                 icon="export"
@@ -77,7 +77,17 @@
               >
                 {{ $t('doodle.add_task') }}
               </button>
-            </span>
+              <button
+                class="button"
+                :class="{
+                  'is-loading': isLoading
+                }"
+                :text="$t('doodle.add_task')"
+                @click="modals.add = true"
+              >
+                {{ $t('doodle.add_custom_entry') }}
+              </button>
+            </div>
             <button
               v-if="isActiveTab('duty')"
               class="button"
@@ -209,6 +219,11 @@
       @switch-page="pageLoadOpenTasks"
       @on-time-changed="timeLoadOpenTasks"
     />
+    <add-sheet-custom-entry
+      :active="modals.add"
+      @cancel="modals.add = false"
+      @on-confirm="onAddCustomEntry"
+    />
   </div>
 </template>
 
@@ -235,11 +250,13 @@ import PeopleName from '@/components/widgets/PeopleName'
 import ButtonSimple from '@/components/widgets/ButtonSimple'
 import ComboboxDepartment from '@/components/widgets/ComboboxDepartment'
 import { PAGE_SIZE } from '@/lib/pagination.js'
+import AddSheetCustomEntry from '@/components/modals/AddSheetCustomEntry.vue'
 
 export default {
   name: 'work-sheet',
 
   components: {
+    AddSheetCustomEntry,
     Combobox,
     RouteSectionTabs,
     WorkSheetList,
@@ -268,7 +285,8 @@ export default {
       dayString: `${moment().date()}`,
       modals: {
         del: false,
-        edit: false
+        edit: false,
+        add: false
       },
       person: null,
       tasks: [],
@@ -509,7 +527,9 @@ export default {
       'setDayOff',
       'setTodoListScrollPosition',
       'loadOpenTasks',
-      'loadTask'
+      'loadTask',
+      'countOneTaskTime',
+      'countCustomTaskTime'
     ]),
 
     isActiveTab(tab) {
@@ -524,7 +544,9 @@ export default {
         : 'workSheet'
       this.clearSelectedTasks()
     },
-
+    onAddCustomEntry(task) {
+      this.onCountCustomTaskTime(task)
+    },
     onNewClicked() {
       this.isLoading = true
       if (!this.person) {
@@ -580,8 +602,7 @@ export default {
       } else {
         episodes = t.entity.data.ji_shu_lie
       }
-      const season = t.entity.data.ji_shu
-      line.push(`《${t.project.name}》第${season}季`)
+      line.push(`《${t.project.name}》第${Math.ceil(Number(episodes) / 20)}季`)
       line.push(`EP${episodes}`)
       line.push(formatFullDate(t.computing_time.start_time))
       line.push(formatFullDate(t.computing_time.end_time))
@@ -718,47 +739,74 @@ export default {
         })
     },
 
-    countTaskTime(user_id) {
+    async countTaskTime(user_id) {
       const data_list = []
-      this.prepareCalculateTasks = [
-        ...this.prepareCalculateTasks,
-        ...this.calculatedTasks.values()
-      ]
+      this.prepareCalculateTasks = [...this.prepareCalculateTasks]
       this.prepareCalculateTasks.forEach(task => {
         const data = {}
-        data.start_date = task.start_date || task.created_at
-        data.end_date = task.end_date || task.updated_at
-        data.task_id = task.id
-        data_list.push(data)
+        if (task.assignees) {
+          data.start_time = task.computing_time?.start_time || task.created_at
+          data.end_time = task.computing_time?.end_time || task.updated_at
+          data.task_id = task.computing_time?.id || task.id
+          data_list.push(data)
+        }
       })
       const year = this.yearString
       const month = this.monthString
       const l_params = {
         user_id,
         year,
-        month,
-        data_list
+        month
       }
       const action = 'countTaskTime'
-      this.$store
-        .dispatch(action, l_params)
-        .then(res => {
-          console.log('countTaskTime Done')
-          if (res.data) {
+      if (this.calculatedTasks.size > 0) {
+        let num = 0
+        for (const task of data_list) {
+          l_params.task = task
+          num++
+          const res = await this.countOneTaskTime(l_params)
+          if (num === data_list.length) {
             this.setSortTask(res.data)
           }
-        })
-        .catch(err => {
-          console.log('countTaskTime Error')
-          console.error(err)
-          if (err.response) {
-            alert(err.response.text)
-          } else {
-            alert(err.message)
-          }
-        })
+        }
+      } else {
+        l_params.data_list = data_list
+        this.$store
+          .dispatch(action, l_params)
+          .then(res => {
+            console.log('countTaskTime Done')
+            if (res.data) {
+              this.setSortTask(res.data)
+            }
+          })
+          .catch(err => {
+            console.log('countTaskTime Error')
+            console.error(err)
+            if (err.response) {
+              alert(err.response.text)
+            } else {
+              alert(err.message)
+            }
+          })
+      }
     },
-
+    async onCountCustomTaskTime(custom_task) {
+      const year = this.yearString
+      const month = this.monthString
+      const user_id = this.person.id
+      const l_params = {
+        user_id,
+        year,
+        month,
+        custom_task
+      }
+      console.log(custom_task)
+      const res = await this.countCustomTaskTime(l_params)
+      if (res.data) {
+        this.setSortTask(res.data)
+        console.log(res.data)
+      }
+    },
     getTimeClick() {
       if (this.person?.phone) {
         this.getUserInfo(this.person.id)
@@ -851,7 +899,7 @@ export default {
     },
     resetTask(data) {
       data.forEach(item => {
-        if (this.calculatedTasks.has(item.kitsu_task_ref_id)) {
+        if (this.calculatedTasks.has(item.kitsu_task_ref_id || item.id)) {
           this.calculatedTasks.get(item.kitsu_task_ref_id).computing_time = item
         }
       })
@@ -859,7 +907,13 @@ export default {
     setSortTask(data) {
       this.calculatedTasks = new Map()
       data.forEach(item => {
-        this.calculatedTasks.set(item.computing_time.kitsu_task_ref_id, item)
+        if (item.computing_time.kitsu_task_ref_id) {
+          item.computing_time.name = item.entity.name
+          this.calculatedTasks.set(item.computing_time.kitsu_task_ref_id, item)
+        } else {
+          item.project = this.productionMap.get(item.computing_time.project_id)
+          this.calculatedTasks.set(item.computing_time.id, item)
+        }
       })
       this.person.tasks = [...this.calculatedTasks.values()]
     },
@@ -888,8 +942,11 @@ export default {
     },
     removeSortTask(ent) {
       const temp = new Map(
-        ent.data.map(value => [value.kitsu_task_ref_id, value])
+        ent.data.map(value => [value.kitsu_task_ref_id || value.id, value])
       )
+      if (ent) {
+        temp.set(temp)
+      }
       Array.from(this.calculatedTasks.keys()).forEach(item => {
         if (temp.has(item)) {
           this.calculatedTasks.get(item).computing_time = temp.get(item)

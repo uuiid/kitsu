@@ -508,7 +508,33 @@ const actions = {
         return Promise.resolve(comment)
       })
   },
-
+  countOneTaskTime({ commit, state }, { user_id, year, month, task }) {
+    return tasksApi
+      .countOneTaskTime({
+        user_id,
+        year,
+        month,
+        task
+      })
+      .then(comment => {
+        return Promise.resolve(comment)
+      })
+  },
+  countCustomTaskTime(
+    { commit, state },
+    { user_id, year, month, custom_task }
+  ) {
+    return tasksApi
+      .countCustomTaskTime({
+        user_id,
+        year,
+        month,
+        custom_task
+      })
+      .then(comment => {
+        return Promise.resolve(comment)
+      })
+  },
   getTaskTime({ commit, state }, { user_id, year, month }) {
     return tasksApi
       .getTaskTime({
