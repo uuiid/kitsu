@@ -176,7 +176,7 @@ const pagedAssets = ref([
     disabled: true,
     description: '',
     color: '#75adec',
-    isVisible: false
+    isVisible: true
   }
 ])
 const onSetOutPath = () => {

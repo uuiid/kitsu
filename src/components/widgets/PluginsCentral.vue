@@ -121,6 +121,7 @@ watchEffect(() => {
         class="item flexcolumn"
         :key="entity.id"
         v-for="entity in pagedAssets"
+        v-show="doodleWork.state.isVisitor ? entity.isVisible : true"
       >
         <div class="card">
           <span
