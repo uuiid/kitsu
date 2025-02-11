@@ -580,7 +580,8 @@ export default {
       } else {
         episodes = t.entity.data.ji_shu_lie
       }
-      line.push(`《${t.project.name}》第${Math.ceil(Number(episodes) / 20)}季`)
+      const season = t.entity.data.ji_shu
+      line.push(`《${t.project.name}》第${season}季`)
       line.push(`EP${episodes}`)
       line.push(formatFullDate(t.computing_time.start_time))
       line.push(formatFullDate(t.computing_time.end_time))
