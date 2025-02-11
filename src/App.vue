@@ -1,5 +1,4 @@
 <template>
-  <deng-long />
   <div :class="{ theme: true, dark: isDarkTheme }">
     <div
       class="has-text-centered mt2 loading-info xyz-in"
@@ -25,7 +24,6 @@ import { mapGetters, mapActions } from 'vuex'
 
 import PreviewModal from '@/components/modals/PreviewModal.vue'
 import Spinner from '@/components/widgets/Spinner.vue'
-import DengLong from '@/components/widgets/DengLong.vue'
 import crisp from '@/lib/crisp'
 import localPreferences from '@/lib/preferences'
 import sentry from '@/lib/sentry'
@@ -39,7 +37,6 @@ export default {
   },
 
   components: {
-    DengLong,
     PreviewModal,
     Spinner
   },
