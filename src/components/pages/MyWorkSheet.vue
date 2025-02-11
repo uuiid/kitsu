@@ -198,7 +198,7 @@
           <people-name
             class="flexrow-item"
             :style="{
-              color: person.name_color ? person.name_color : '#4a4a4a'
+              color: person.name_color || isDarkTheme ? '#f1f1f1' : '#404040'
             }"
             :person="person"
             :with-link="false"
@@ -399,7 +399,8 @@ export default {
       'departments',
       'dingDingCompany',
       'isCurrentUserManager',
-      'people'
+      'people',
+      'isDarkTheme'
     ]),
 
     notPendingTasks() {
