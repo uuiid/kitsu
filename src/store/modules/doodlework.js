@@ -691,10 +691,18 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
 
     deleteDoodleWorkTask: async workTaskId => {
+      if (state.value.localHttpPath === '') {
+        const port = window.api.DoodleExePort()
+        state.value.localHttpPath = `http://127.0.0.1:${port}`
+      }
       await doodlework.deleteWorkTask(workTaskId, state.value.localHttpPath)
     },
     getWorkTaskLog: async (task_id, type = null) => {
       let res = null
+      if (state.value.localHttpPath === '') {
+        const port = window.api.DoodleExePort()
+        state.value.localHttpPath = `http://127.0.0.1:${port}`
+      }
       if (type === null) {
         res = await doodlework.getWorkLog(task_id, state.value.localHttpPath)
       } else if (type === 'mini') {
