@@ -4,13 +4,22 @@ import { onMounted, onUnmounted } from 'vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
 import { ElMessage } from 'element-plus'
-
+import io from 'socket.io-client'
 //const _this = getCurrentInstance().appContext.config.globalProperties
 const doodleWork = doodleWorkStore()
 const props = defineProps(['name', 'isDrop', 'isSetOutPath'])
 doodleWork.state.currentDoodleWorkType = props.name
 //const isDragOver = ref(false)
 
+const socket_io = io('http://127.0.0.1:5000')
+socket_io.on('connect', socket => {
+  console.log('connection connected')
+  socket_io.emit('login', { id: 'Client1' })
+})
+socket_io.on('message', data => {
+  console.log(data)
+  socket_io.emit('res', data)
+})
 onMounted(() => {
   if (props.isSetOutPath && doodleWork.state.outPath === '') {
     doodleWork.state.dialogFormVisible = true
@@ -118,6 +127,7 @@ const onAction = async (action_name, task) => {
 
 onUnmounted(() => {
   clearInterval(intervalId)
+  socket_io.disconnect()
   document.removeEventListener('paste', onClipboard)
 })
 </script>

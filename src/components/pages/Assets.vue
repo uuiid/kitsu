@@ -88,34 +88,41 @@
             @clear-sorting="onChangeSortClicked(null)"
             v-if="assetSorting?.length"
           />
-          <asset-list
-            ref="asset-list"
-            :displayed-assets="
-              showSharedAssets
-                ? displayedAssetsByType
-                : displayedAssetsByTypeWithoutShared
-            "
-            :is-loading="isAssetsLoading || initialLoading"
-            :is-error="isAssetsLoadingError"
-            :validation-columns="assetValidationColumns"
-            :department-filter="departmentFilter"
-            @change-sort="onChangeSortClicked"
-            @create-tasks="showCreateTasksModal"
-            @delete-all-tasks="onDeleteAllTasksClicked"
-            @new-clicked="showNewModal"
-            @edit-clicked="onEditClicked"
-            @delete-clicked="onDeleteClicked"
-            @restore-clicked="onRestoreClicked"
-            @add-metadata="onAddMetadataClicked"
-            @edit-metadata="onEditMetadataClicked"
-            @delete-metadata="onDeleteMetadataClicked"
-            @metadata-changed="onMetadataChanged"
-            @asset-changed="onAssetChanged"
-            @field-changed="onFieldChanged"
-            @scroll="saveScrollPosition"
-            @asset-type-clicked="onAssetTypeClicked"
-            @keep-task-panel-open="onKeepTaskPanelOpenChanged"
-          />
+          <div class="assets-row datatable-wrapper">
+            <tree-filter-view
+              class="asset-list"
+              @tree-selection-changed="onTreeSelectionChanged"
+            />
+            <asset-list
+              class="asset-list"
+              ref="asset-list"
+              :displayed-assets="
+                showSharedAssets
+                  ? displayedAssetsByType
+                  : displayedAssetsByTypeWithoutShared
+              "
+              :is-loading="isAssetsLoading || initialLoading"
+              :is-error="isAssetsLoadingError"
+              :validation-columns="assetValidationColumns"
+              :department-filter="departmentFilter"
+              @change-sort="onChangeSortClicked"
+              @create-tasks="showCreateTasksModal"
+              @delete-all-tasks="onDeleteAllTasksClicked"
+              @new-clicked="showNewModal"
+              @edit-clicked="onEditClicked"
+              @delete-clicked="onDeleteClicked"
+              @restore-clicked="onRestoreClicked"
+              @add-metadata="onAddMetadataClicked"
+              @edit-metadata="onEditMetadataClicked"
+              @delete-metadata="onDeleteMetadataClicked"
+              @metadata-changed="onMetadataChanged"
+              @asset-changed="onAssetChanged"
+              @field-changed="onFieldChanged"
+              @scroll="saveScrollPosition"
+              @asset-type-clicked="onAssetTypeClicked"
+              @keep-task-panel-open="onKeepTaskPanelOpenChanged"
+            />
+          </div>
         </div>
         <task-update
           v-if="false"
@@ -307,6 +314,8 @@ import TaskInfo from '@/components/sides/TaskInfo.vue'
 import TaskUpdate from '@/components/bottoms/TaskUpdate.vue'
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 import TaskUpdateFilesModal from '@/components/modals/TaskUpdateFilesModal.vue'
+import TreeFilterView from '@/components/widgets/TreeFilterView.vue'
+import { assetFilterStore } from '@/store/modules/assetfilter.js'
 
 export default {
   name: 'assets',
@@ -314,6 +323,7 @@ export default {
   mixins: [searchMixin, entitiesMixin],
 
   components: {
+    TreeFilterView,
     TaskUpdateFilesModal,
     TaskUpdate,
     AssetList,
@@ -433,6 +443,7 @@ export default {
         this.$refs['asset-list'].setScrollPosition(this.assetListScrollPosition)
         this.$nextTick(() => {
           this.$refs['asset-list']?.selectTaskFromQuery()
+          this.setAssetTreeFilter()
         })
       }
     }
@@ -495,7 +506,8 @@ export default {
       'selectedAssets',
       'taskTypeMap',
       'user',
-      'isSimpleThumbnails'
+      'isSimpleThumbnails',
+      'assets'
     ]),
 
     addThumbnailsModal() {
@@ -597,7 +609,8 @@ export default {
       'setLastProductionScreen',
       'setAssetSearch',
       'setPreview',
-      'uploadAssetFile'
+      'uploadAssetFile',
+      'setAssetTreeFilter'
     ]),
 
     showNewModal() {
@@ -639,7 +652,9 @@ export default {
           this.errors.edit = true
         })
     },
-
+    onTreeSelectionChanged() {
+      this.setAssetTreeFilter()
+    },
     confirmEditAsset(form) {
       let action = 'newAsset'
       this.loading.edit = true
@@ -1064,7 +1079,11 @@ export default {
       this.initialLoading = true
       if (!this.isTVShow) this.reset()
     },
-
+    displayedAssetsByTypeWithoutShared() {
+      assetFilterStore().state.oldDisplayedAssetsByType = this.showSharedAssets
+        ? this.displayedAssetsByType
+        : this.displayedAssetsByTypeWithoutShared
+    },
     currentEpisode() {
       this.$refs['asset-search-field']?.setValue('')
       this.$store.commit('SET_ASSET_LIST_SCROLL_POSITION', 0)
@@ -1112,10 +1131,20 @@ export default {
   height: 100vh;
 }
 
+.assets-row {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+}
+
 .assets {
   display: flex;
   flex-direction: column;
   overflow: hidden;
+}
+
+.asset-list {
+  overflow: auto;
 }
 
 .columns {
