@@ -628,9 +628,13 @@ export default {
         : ''
       let episodeName = ''
       if (this.currentEpisode) {
-        episodeName = this.currentEpisode.name
-        if (this.currentEpisode.id === 'all') episodeName = this.$t('main.all')
-        if (this.currentEpisode.id === 'main') episodeName = 'Main Pack'
+        if (this.currentEpisode.id === 'all') {
+          episodeName = this.$t('main.all')
+        } else if (this.currentEpisode.id === 'main') {
+          episodeName = this.$t('main.main_pack')
+        } else {
+          episodeName = this.currentEpisode.name
+        }
       }
       return (
         `${productionName} - ${episodeName}` +
@@ -1387,8 +1391,6 @@ export default {
   socket: {
     events: {
       'playlist:new'(eventData) {
-        console.log('playlist:new', eventData)
-        console.log('playlist:new', this.playlistMap.get(eventData.playlist_id))
         if (!this.playlistMap.get(eventData.playlist_id)) {
           this.refreshPlaylist(eventData.playlist_id)
         }

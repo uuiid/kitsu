@@ -225,7 +225,7 @@ const helpers = {
       assetTypes: [],
       taskTypes,
       taskStatuses,
-      descriptors: production.descriptors,
+      descriptors: production?.descriptors || [],
       persons,
       query
     })
@@ -1186,7 +1186,10 @@ const mutations = {
   },
 
   [CLEAR_SELECTED_TASKS](state, validationInfo) {
-    if (tasksStore.state.nbSelectedTasks > 0) {
+    if (
+      tasksStore.state.nbSelectedValidations > 0 ||
+      tasksStore.state.nbSelectedTasks > 0
+    ) {
       const tmpGrid = JSON.parse(JSON.stringify(state.shotSelectionGrid))
       state.shotSelectionGrid = clearSelectionGrid(tmpGrid)
     }

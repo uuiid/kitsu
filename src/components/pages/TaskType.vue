@@ -173,7 +173,6 @@
           <search-query-list
             :queries="searchQueries"
             type="taskType"
-            @change-search="changeSearch"
             @remove-search="removeSearchQuery"
             v-if="!loading.entities"
           />
@@ -500,7 +499,7 @@ export default {
         taskTypeStartDate: null,
         zoomLevel: 1,
         zoomOptions: [
-          { label: 'Week', value: 0 },
+          { label: this.$t('main.week'), value: 0 },
           { label: '1', value: 1 },
           { label: '2', value: 2 },
           { label: '3', value: 3 }
@@ -517,7 +516,7 @@ export default {
       },
       parsedCSV: [],
       importCsvFormData: {},
-      optionalColumns: ['Estimation', 'Start date', 'Due date'],
+      optionalColumns: ['Estimation', 'Start date', 'Due date', 'Difficulty'],
       dataMatchers: ['Parent', 'Entity']
     }
   },

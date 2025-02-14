@@ -340,7 +340,7 @@ export default {
             name: '',
             episodeList: [
               { label: this.$t('main.all_assets'), value: 'all' },
-              { label: 'Main Pack', value: 'main' }
+              { label: this.$t('main.main_pack'), value: 'main' }
             ]
           }
         ].concat(this.episodeOptionGroups)
@@ -350,7 +350,7 @@ export default {
             name: '',
             episodeList: [
               { label: this.$t('main.all_assets'), value: 'all' },
-              { label: 'Main Pack', value: 'main' }
+              { label: this.$t('main.main_pack'), value: 'main' }
             ]
           }
         ].concat(this.episodeOptionGroups)
@@ -367,7 +367,7 @@ export default {
             name: '',
             episodeList: [
               { label: this.$t('shots.episodes'), value: 'all' },
-              { label: 'Main Pack', value: 'main' }
+              { label: this.$t('main.main_pack'), value: 'main' }
             ]
           }
         ].concat(this.episodeOptionGroups)
@@ -391,7 +391,7 @@ export default {
       return (
         this.isTVShow &&
         this.hasEpisodeId &&
-        this.currentSectionOption !== 'episodes' &&
+        !['episodes', 'episode-stats'].includes(this.currentSectionOption) &&
         // Do not display combobox if there is no episode
         this.episodes.length > 0
       )

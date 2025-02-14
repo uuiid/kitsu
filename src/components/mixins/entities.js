@@ -266,25 +266,10 @@ export const entitiesMixin = {
       this.$store.commit('SET_EDIT_LIST_SCROLL_POSITION', scrollPosition)
     },
 
-    onSearchChange(clearSelection = true) {
-      if (!this.searchField) return
-      const searchQuery = this.searchField.getValue() || ''
-      this.applySearch(searchQuery)
-      if (clearSelection) {
-        this.clearSelection()
-      }
-    },
-
     onChangeSortClicked(sortInfo) {
       this[`change${this.type[0].toUpperCase()}${this.type.slice(1)}Sort`](
         sortInfo
       )
-    },
-
-    confirmBuildFilter(query) {
-      this.modals.isBuildFilterDisplayed = false
-      this.searchField.setValue(query)
-      this.applySearch(query)
     },
 
     onKeepTaskPanelOpenChanged(keepOpen) {

@@ -440,7 +440,7 @@
             @next-clicked="onNextClicked"
             @previous-clicked="onPreviousClicked"
             @remove-preview-clicked="onRemovePreviewClicked"
-            @current-index-clicked="isOrdering = !isOrdering"
+            @current-index-clicked="toggleIsOrdering"
             v-if="currentPreview && !isConcept"
           />
 
@@ -685,7 +685,7 @@ export default {
       isLoading: false,
       isMuted: false,
       isPlaying: false,
-      isOrdering: false,
+      isOrdering: true,
       isRepeating: false,
       isTyping: false,
       isWireframe: false,
@@ -1089,11 +1089,17 @@ export default {
     },
 
     initPreferences() {
-      const isRepeating = localPreferences.getBoolPreference('player:repeating')
-      const isMuted = localPreferences.getBoolPreference('player:muted')
-      this.isRepeating = isRepeating
-      this.isMuted = isMuted
+      this.isRepeating = localPreferences.getBoolPreference('player:repeating')
+      this.isMuted = localPreferences.getBoolPreference('player:muted')
       this.isHd = Boolean(this.organisation.hd_by_default)
+      this.isOrdering =
+        this.previews.length > 1 &&
+        localPreferences.getPreference('player:ordering') !== 'false'
+    },
+
+    toggleIsOrdering() {
+      this.isOrdering = !this.isOrdering
+      localPreferences.setPreference('player:ordering', this.isOrdering)
     },
 
     focus() {
@@ -2122,6 +2128,9 @@ export default {
         }
       })
       this.setDefaultComparisonTaskType()
+      this.isOrdering =
+        this.previews.length > 1 &&
+        localPreferences.getPreference('player:ordering') !== 'false'
     },
 
     'currentPreview.revision'() {

@@ -8,7 +8,7 @@
               ref="shot-search-field"
               :can-save="true"
               @change="onSearchChange"
-              @enter="applySearch(searchField.getValue())"
+              @enter="onSearchChange"
               @save="saveSearchQuery"
               placeholder="ex: e01 s01 anim=wip"
             />
@@ -84,7 +84,6 @@
               :is-group-enabled="true"
               :queries="shotSearchQueries"
               type="shot"
-              @change-search="changeSearch"
               @remove-search="removeSearchQuery"
               v-if="!isShotsLoading && !initialLoading"
             />
@@ -443,22 +442,17 @@ export default {
   },
 
   mounted() {
-    let searchQuery = ''
-    if (this.$route.query.search && this.$route.query.search.length > 0) {
-      searchQuery = `${this.$route.query.search}`
-    }
-    this.$refs['shot-search-field']?.setValue(searchQuery)
     const finalize = () => {
       this.$nextTick(() => {
         // Needed to be sure the current production is set
         this.loadShots(() => {
-          this.$nextTick(() => {
-            // Needed to be sure the shots are loaded
-            this.onSearchChange()
+          // Needed to be sure the shots are fully loaded
+          setTimeout(() => {
+            this.applySearchFromUrl()
             this.$nextTick(() => {
               this.$refs['shot-list']?.selectTaskFromQuery()
             })
-          })
+          }, 200)
         })
       })
     }
@@ -486,6 +480,8 @@ export default {
       this.$refs['shot-list'].setScrollPosition(this.shotListScrollPosition)
       this.$nextTick(() => {
         this.$refs['shot-list']?.selectTaskFromQuery()
+        this.applySearchFromUrl()
+        this.onSearchChange()
       })
       this.reloadEpisodeShotsIfNeeded()
     }
@@ -626,8 +622,7 @@ export default {
         this.initialLoading = true
         this.loadShots(() => {
           this.initialLoading = false
-          this.setSearchFromUrl()
-          this.onSearchChange()
+          this.applySearchFromUrl()
         })
       }
     },
@@ -724,7 +719,7 @@ export default {
         .then(() => {
           this.loading.edit = false
           this.modals.isNewDisplayed = false
-          this.onSearchChange(false)
+          this.applySearchFromUrl(false)
         })
         .catch(err => {
           console.error(err)
@@ -954,30 +949,6 @@ export default {
       this.onSearchChange()
     },
 
-    onSearchChange(clearSelection = true) {
-      if (!this.searchField) return
-      const searchQuery = this.searchField.getValue() || ''
-      if (searchQuery.length !== 1 && !this.isLongShotList) {
-        this.applySearch(searchQuery)
-      } else if (searchQuery.length === 0 && this.isLongShotList) {
-        this.applySearch('')
-      } else {
-        this.setSearchInUrl()
-      }
-      if (clearSelection) {
-        this.clearSelection()
-      }
-    },
-
-    saveScrollPosition(scrollPosition) {
-      this.$store.commit('SET_SHOT_LIST_SCROLL_POSITION', scrollPosition)
-    },
-
-    applySearch(searchQuery) {
-      this.setShotSearch(searchQuery)
-      this.setSearchInUrl()
-    },
-
     saveSearchQuery(searchQuery) {
       if (this.loading.savingSearch) {
         return
@@ -992,6 +963,10 @@ export default {
 
     removeSearchQuery(searchQuery) {
       this.removeShotSearch(searchQuery).catch(console.error)
+    },
+
+    saveScrollPosition(scrollPosition) {
+      this.$store.commit('SET_SHOT_LIST_SCROLL_POSITION', scrollPosition)
     },
 
     getPath(section) {
@@ -1086,12 +1061,6 @@ export default {
       this.changeShotSort(sortInfo)
     },
 
-    confirmBuildFilter(query) {
-      this.modals.isBuildFilterDisplayed = false
-      this.$refs['shot-search-field'].setValue(query)
-      this.applySearch(query)
-    },
-
     async onFieldChanged({ entry, fieldName, value }) {
       const data = {
         id: entry.id,
@@ -1126,7 +1095,7 @@ export default {
         data.nb_frames = parseInt(value) - parseInt(shot.data.frame_in) + 1
       }
       await this.editShot(data)
-      this.onSearchChange(false)
+      this.applySearchFromUrl()
     },
 
     showEDLImportModal() {
@@ -1177,16 +1146,6 @@ export default {
   },
 
   watch: {
-    $route(newRoute, previousRoute) {
-      if (!this.$route.query) return
-      const search = this.$route.query.search
-      const actualSearch = this.$refs['shot-search-field']?.getValue()
-      if (search !== actualSearch && !previousRoute.query.task_id) {
-        this.searchField.setValue(search)
-        this.applySearch(search)
-      }
-    },
-
     currentSection() {
       this.reloadEpisodeShotsIfNeeded()
     },
@@ -1199,8 +1158,6 @@ export default {
       if (!this.isTVShow) {
         this.loadShots(() => {
           this.initialLoading = false
-          this.setSearchFromUrl()
-          this.onSearchChange()
         })
       }
     },
@@ -1209,8 +1166,6 @@ export default {
       const finalize = () => {
         this.initialLoading = true
         this.loadShots(() => {
-          this.setSearchFromUrl()
-          this.onSearchChange()
           this.initialLoading = false
         })
       }
@@ -1231,15 +1186,7 @@ export default {
 
     isShotsLoading() {
       if (!this.isShotsLoading) {
-        let searchQuery = ''
-        if (this.$route.query.search && this.$route.query.search.length > 0) {
-          searchQuery = `${this.$route.query.search}`
-        }
         this.initialLoading = false
-        this.$refs['shot-search-field'].setValue(searchQuery)
-        this.$nextTick(() => {
-          this.applySearch(searchQuery)
-        })
         if (this.$refs['shot-list']) {
           this.$refs['shot-list'].setScrollPosition(this.shotListScrollPosition)
         }
