@@ -1,5 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
+import i18n from '@/lib/i18n.js'
 
 function initState() {
   return {
@@ -13,9 +14,14 @@ function initState() {
 
 export const assetFilterStore = defineStore('assetFilterStore', () => {
   const state = ref(initState())
+  state.value.assetFilters.set('asset_type_name', {
+    id: 'asset_type_name',
+    values: ['道具']
+  })
+
   state.value.assetFilters.set('ji_shu', {
     id: 'ji_shu',
-    values: [22, 0, undefined],
+    values: [22, 0],
     parent: 'data'
   })
   state.value.assetFilters.set('ji_shu_lie', {
@@ -64,15 +70,20 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
           if (i === 0) {
             filter_value = true
           } else {
-            const last_item = state.value.assetFilters.get(keys[i - 1])
-            const last_key = keys[i - 1]
-            let asset_value = asset[last_key]
-            if (last_item.parent) {
-              asset_value = asset[last_item.parent][last_key]
-              if (asset[key] === '') asset_value = undefined
-            }
-            if (last_item.values.includes(asset_value)) {
-              filter_value = true
+            for (let j = 0; j < i; j++) {
+              const last_item = state.value.assetFilters.get(keys[j])
+              const last_key = keys[j]
+              let asset_value = asset[last_key]
+              if (last_item.parent) {
+                asset_value = asset[last_item.parent][last_key]
+                if (asset[key] === '') asset_value = undefined
+              }
+              if (last_item.values.includes(asset_value)) {
+                filter_value = true
+              } else {
+                filter_value = false
+                break
+              }
             }
           }
           if (i === state.value.assetFilters.size - 1 && filter_value) {
@@ -95,7 +106,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
             } else {
               temp.set(item.id, {
                 id: item.id,
-                label: item.id,
+                label: i18n.global.t('doodle_asset_tree.fields.' + item.id),
                 num: 1,
                 value: item.id,
                 children: [ch]
@@ -118,7 +129,6 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
         if (value.values.length > 0) {
           value.values.forEach(item => {
             temp_filters.push(`${key}:${item}`)
-            console.log(`${key}:${item}`)
           })
         }
       })

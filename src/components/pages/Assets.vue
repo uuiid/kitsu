@@ -1058,6 +1058,7 @@ export default {
         this.initialLoading = false
         this.setSearchFromUrl()
         this.onSearchChange()
+        this.setAssetTreeFilter()
       })
     }
   },

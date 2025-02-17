@@ -1784,13 +1784,24 @@
       "date": "日期",
       "start_time": "开始时间",
       "end_time": "结束时间"
-
     },
     "doodle_productions": {
       "fields": {
         "en_str": "拼音全称",
         "path": "项目路径",
         "auto_upload_path": "自动上传路径"
+      }
+    },
+    "doodle_asset_tree": {
+      "fields": {
+        "asset_type_name": "资产类型名称",
+        "ji_shu": "季数",
+        "ji_shu_lie": "集数",
+        "name": "名称",
+        "description": "描述",
+        "deng_ji": "等级",
+        "gui_dang": "归档",
+        "kai_shi_ji_shu": "开始集数"
       }
     }
   }
