@@ -304,7 +304,7 @@ class DoodleWorkMergeVideo extends DoodleWorkAutoLight {
   }
 
   validateString(input) {
-    const regex = /^[A-Z]+_EP\d{3}_SC\d{3}[A-Z]?\.png$/
+    const regex = /^[A-Z]+_EP\d{3}_SC\d{3}[A-Z]?$/
     return regex.test(input)
   }
 
