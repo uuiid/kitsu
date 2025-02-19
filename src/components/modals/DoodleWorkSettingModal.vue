@@ -81,6 +81,15 @@ const onConfirm = async () => {
           v-show="key !== 'authorize' && value !== 'true'"
           @change="val => onTextChange(val, key)"
         />
+        <text-field
+          label="视频导出路径"
+          v-model="doodleWork.state.outPath"
+          v-show="
+            ['merge_video', 'connect_video'].includes(
+              doodleWork.currentDoodleWorkState.name
+            )
+          "
+        ></text-field>
         <div class="has-text-right">
           <a
             :class="{

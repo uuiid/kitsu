@@ -157,7 +157,7 @@ class DoodleWorkAbc extends DoodleWorkBase {
   }
 
   formatDataState(data) {
-    data.task_data.reate_play_blast =
+    data.task_data.create_play_blast =
       this.task_data_filed.get('create_play_blast').checked
     data.task_data.replace_ref_file =
       this.task_data_filed.get('replace_ref_file').checked
