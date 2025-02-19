@@ -14,8 +14,9 @@ doodleWork.state.currentDoodleWorkType = props.name
 onMounted(() => {
   if (props.isSetOutPath && doodleWork.state.outPath === '') {
     doodleWork.state.dialogFormVisible = true
+    document.addEventListener('paste', onClipboard)
   }
-  document.addEventListener('paste', onClipboard)
+  //document.addEventListener('paste', onClipboard)
 })
 // const handleDragOver = event => {
 //   event.preventDefault()
@@ -66,10 +67,12 @@ const onAddData = files => {
 }
 
 const onClipboard = event => {
-  event.preventDefault()
-  const clipboardData = event.clipboardData || window.clipboardData
-  const files = clipboardData.files
-  if (!doodleWork.state.isActiveModal) onAddData(files)
+  if (doodleWork.state.outPath) {
+    event.preventDefault()
+    const clipboardData = event.clipboardData || window.clipboardData
+    const files = clipboardData.files
+    if (!doodleWork.state.isActiveModal) onAddData(files)
+  }
 }
 
 // const onQuantityChange = event => {
