@@ -31,11 +31,11 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
     values: [0],
     parent: 'data'
   })
-  state.value.assetFilters.set('assignees', {
-    id: 'assignees',
-    values: [],
-    parent: 'task'
-  })
+  // state.value.assetFilters.set('assignees', {
+  //   id: 'assignees',
+  //   values: [],
+  //   parent: 'task'
+  // })
   const getters = {}
   const actions = {
     filteringAsset: (asset, temp, keys) => {
@@ -151,7 +151,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
         temp.get(item.id).num += 1
         let children = null
         temp.get(item.id).children.forEach(child => {
-          if (child.label === ch.label) {
+          if (child.id === ch.id) {
             children = child
           }
         })
@@ -180,6 +180,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
         return actions.filteringAsset(asset, temp, keys)
       })
       state.value.treeFilterData = [...temp.values()]
+      console.log(state.value.treeFilterData)
       const temp_filters = []
       state.value.assetFilters.forEach((value, key) => {
         if (value.values.length > 0) {

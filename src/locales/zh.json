@@ -1801,7 +1801,8 @@
         "description": "描述",
         "deng_ji": "等级",
         "gui_dang": "归档",
-        "kai_shi_ji_shu": "开始集数"
+        "kai_shi_ji_shu": "开始集数",
+        "assignees": "制作者"
       }
     }
   }
