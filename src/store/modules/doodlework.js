@@ -283,7 +283,8 @@ class DoodleWorkExtractCaption extends DoodleWorkBase {
 
   validateString(input) {
     const regex = /\.docx?$/i
-    return regex.test(input)
+    const regex1 = /\.srt?$/i
+    return regex.test(input) || regex1.test(input)
   }
 
   formatData(file) {

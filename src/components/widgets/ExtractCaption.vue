@@ -58,7 +58,9 @@ const getDateFromFile = file => {
     reader.onload = () => {
       data = reader.result
     }
-    reader.readAsArrayBuffer(file)
+    if (file.path.endsWith('.srt')) {
+      reader.readAsText(file, 'UTF-8')
+    } else reader.readAsArrayBuffer(file)
     reader.onloadend = () => {
       resolve(data)
     }
@@ -66,20 +68,34 @@ const getDateFromFile = file => {
 }
 
 const extractCaption = async task => {
-  const data = await getDateFromFile(task.file)
-  const result = await mammoth.extractRawText({ arrayBuffer: data })
-  const regex = /(.+?[:|：].+?)$/gm
-  const regexRemove = /^(第\d+集：|人物：).*?\n/gm
-  const cleanedText = result.value.replace(regexRemove, '')
-  const extract_captions = cleanedText.match(regex)
-  task.extract_captions = extract_captions
-  const final_extract_captions = []
-  for (let extract_caption of extract_captions) {
-    extract_caption = removeAllPunctuationMarks(extract_caption)
-    extract_caption = removeBracketedContent(extract_caption)
-    extract_caption = removeBeforeColonContent(extract_caption)
-    const sub_extract_captions = cutContent(extract_caption)
-    final_extract_captions.push(...sub_extract_captions)
+  if (task.file.path.endsWith('srt')) {
+    const data = await getDateFromFile(task.file)
+    const regex = /\n\s*\n/gm
+    const subtitle_blocks = data.split(regex)
+    const subtitles = []
+    for (const block of subtitle_blocks) {
+      const lines = block.split(/\n/gm)
+      if (lines.length >= 3) {
+        subtitles.push(lines[2])
+      }
+    }
+    task.extract_captions = subtitles
+  } else {
+    const data = await getDateFromFile(task.file)
+    const result = await mammoth.extractRawText({ arrayBuffer: data })
+    const regex = /(.+?[:|：].+?)$/gm
+    const regexRemove = /^(第\d+集：|人物：).*?\n/gm
+    const cleanedText = result.value.replace(regexRemove, '')
+    //const extract_captions = cleanedText.match(regex)
+    task.extract_captions = cleanedText.match(regex)
+    // const final_extract_captions = []
+    // for (let extract_caption of extract_captions) {
+    //   extract_caption = removeAllPunctuationMarks(extract_caption)
+    //   extract_caption = removeBracketedContent(extract_caption)
+    //   extract_caption = removeBeforeColonContent(extract_caption)
+    //   const sub_extract_captions = cutContent(extract_caption)
+    //   final_extract_captions.push(...sub_extract_captions)
+    // }
   }
 }
 
