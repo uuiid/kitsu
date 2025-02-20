@@ -18,7 +18,7 @@ const inputs = reactive({
   season: { value: null, type: 'number', placeholder: '', required: true },
   episode: { value: null, type: 'number', placeholder: '', required: true },
   name: { value: '', type: '', placeholder: '', required: true },
-  grade: { value: '', type: '', placeholder: '', required: true },
+  grade: { value: '', type: '', placeholder: '选填', required: false },
   user_remark: { value: '', type: '', required: false, placeholder: '选填' },
   start_time: { value: '', type: 'date', required: true },
   end_time: { value: '', type: 'date', required: true }

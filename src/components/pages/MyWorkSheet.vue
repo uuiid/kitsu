@@ -594,16 +594,31 @@ export default {
     exportLine(person, t) {
       const line = []
       //const theTaskType = this.taskTypeMap.get(t.task_type_id)
-      const department = this.departmentMap.get(t.task_type.department_id).name
+      let department
+      if (t.task_type)
+        department = this.departmentMap.get(t.task_type.department_id).name
+      else if (person.departments.length > 0) {
+        department = this.departmentMap.get(person.departments[0]).name
+      }
       line.push(department)
       line.push(person.first_name)
       let episodes = ''
-      if (t.task_type.for_entity.includes('Shot')) {
-        episodes = t.entity.sequence_name.replaceAll('EP', '') ?? ''
-      } else {
-        episodes = t.entity.data.ji_shu_lie
+      if (t.computing_time.episode) episodes = t.computing_time.episode
+      else {
+        if (t.task_type.for_entity.includes('Shot')) {
+          episodes = t.entity.sequence_name.replaceAll('EP', '') ?? ''
+        } else {
+          episodes = t.entity.data.ji_shu_lie
+        }
       }
-      line.push(`《${t.project.name}》第${Math.ceil(Number(episodes) / 20)}季`)
+      console.log(t.computing_time.season)
+      let season = t.computing_time.season
+      if (!season) {
+        season = t.entity.data.ji_shu
+          ? t.entity.data.ji_shu
+          : Math.ceil(Number(episodes) / 20)
+      }
+      line.push(`《${t.project.name}》第${season}季`)
       line.push(`EP${episodes}`)
       line.push(formatFullDate(t.computing_time.start_time))
       line.push(formatFullDate(t.computing_time.end_time))
@@ -613,9 +628,11 @@ export default {
       line.push(duration)
       line.push(t.computing_time.remark)
       if (t.computing_time.user_remark)
-        line.push(`${t.entity.name}(${t.computing_time.user_remark})`)
-      else line.push(t.entity.name)
-      const level = t.entity.data.deng_ji
+        line.push(
+          `${t.computing_time.name || t.entity.name}(${t.computing_time.user_remark})`
+        )
+      else line.push(t.computing_time.name || t.entity.name)
+      const level = t.computing_time.grade || t.entity.data.deng_ji
       line.push(level)
       return line
     },
