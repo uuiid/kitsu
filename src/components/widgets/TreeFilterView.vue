@@ -42,28 +42,55 @@ onMounted(() => {
   })
 })
 
-const onCheckChange = (o, n, s) => {
-  const id_split = o.id.split(':')
-  if (o.parent) {
-    if (
-      !assetFilter.state.assetFilters.get(id_split[0]).values.includes(o.value)
-    ) {
-      assetFilter.state.assetFilters.get(id_split[0]).values.push(o.value)
+const onCheckChange = event => {
+  //console.log('onCheckChange', event)
+}
+const onCheck = (o, n) => {
+  console.log(o.label)
+  assetFilter.state.assetFilters.forEach(value => {
+    value.values = []
+  })
+  const root_nodes = []
+  for (const node of n.checkedNodes) {
+    if (node.parent) {
+      const assetFilterItem = assetFilter.state.assetFilters.get(node.parent)
+      assetFilterItem.values.push(node.value)
     } else {
-      assetFilter.state.assetFilters.get(id_split[0]).values =
-        assetFilter.state.assetFilters.get(id_split[0]).values.filter(item => {
-          return item !== o.value
-        })
-    }
-  } else {
-    if (n.checkedKeys.includes(o.id)) {
-      o.children.forEach(child => {
-        assetFilter.state.assetFilters.get(id_split[0]).values.push(child.value)
-      })
-    } else {
-      assetFilter.state.assetFilters.get(id_split[0]).values.length = 0
+      root_nodes.push(node)
     }
   }
+
+  assetFilter.state.assetFilters.forEach(value => {
+    value.isChecked = root_nodes.includes(value.id)
+  })
+  // if (o.parent) {
+  //   if (assetFilter.state.assetFilters.has(o.parent)) {
+  //     const assetFilterItem = assetFilter.state.assetFilters.get(o.parent)
+  //     if (assetFilterItem.isChecked)
+  //     {
+  //
+  //     }
+  //     assetFilterItem.isChecked = !n.halfCheckedKeys.includes(o.parent)
+  //   }
+  //   if (
+  //     !assetFilter.state.assetFilters.get(id_split[0]).values.includes(o.value)
+  //   ) {
+  //     assetFilter.state.assetFilters.get(id_split[0]).values.push(o.value)
+  //   } else {
+  //     assetFilter.state.assetFilters.get(id_split[0]).values =
+  //       assetFilter.state.assetFilters.get(id_split[0]).values.filter(item => {
+  //         return item !== o.value
+  //       })
+  //   }
+  // } else {
+  //   if (n.checkedKeys.includes(o.id)) {
+  //     o.children.forEach(child => {
+  //       assetFilter.state.assetFilters.get(id_split[0]).values.push(child.value)
+  //     })
+  //   } else {
+  //     assetFilter.state.assetFilters.get(id_split[0]).values.length = 0
+  //   }
+  // }
   emit('tree-selection-changed')
 }
 const addEvents = () => {
@@ -108,9 +135,17 @@ watch(
         :show-checkbox="true"
         :check-on-click-node="true"
         :expand-on-click-node="false"
-        @check="onCheckChange"
+        @check="onCheck"
+        @check-change="onCheckChange"
         node-key="id"
-        default-expand-all
+        :default-expanded-keys="[...assetFilter.state.expanded_keys.values()]"
+        @node-expand="data => assetFilter.state.expanded_keys.add(data.id)"
+        @node-collapse="
+          data => {
+            if (assetFilter.state.expanded_keys.has(data.id))
+              assetFilter.state.expanded_keys.delete(data.id)
+          }
+        "
       >
         <template #default="{ node }">
           <span class="custom-tree-node">

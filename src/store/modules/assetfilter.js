@@ -10,7 +10,8 @@ function initState() {
     filteredAssets: [],
     oldDisplayedAssetsByType: null,
     treeFilterData: [],
-    filters: []
+    filters: [],
+    expanded_keys: new Set()
   }
 }
 
@@ -18,24 +19,27 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
   const state = ref(initState())
   state.value.assetFilters.set('asset_type_name', {
     id: 'asset_type_name',
-    values: ['道具']
+    values: [],
+    isChecked: true
   })
-
   state.value.assetFilters.set('ji_shu', {
     id: 'ji_shu',
-    values: [22, 0],
-    parent: 'data'
+    values: [],
+    parent: 'data',
+    isChecked: true
   })
   state.value.assetFilters.set('ji_shu_lie', {
     id: 'ji_shu_lie',
-    values: [0],
-    parent: 'data'
+    values: [],
+    parent: 'data',
+    isChecked: true
   })
-  // state.value.assetFilters.set('assignees', {
-  //   id: 'assignees',
-  //   values: [],
-  //   parent: 'task'
-  // })
+  state.value.assetFilters.set('assignees', {
+    id: 'assignees',
+    values: [],
+    parent: 'task',
+    isChecked: true
+  })
   const getters = {}
   const actions = {
     filteringAsset: (asset, temp, keys) => {
@@ -86,17 +90,23 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
                   asset_value = asset[last_item.parent][last_key]
                   if (asset[key] === '') asset_value = undefined
                 }
-                if (last_item.values.includes(asset_value)) {
-                  filter_value = true
-                } else {
-                  filter_value = false
-                  break
+                if (last_item.isChecked) filter_value = true
+                else {
+                  if (last_item.values.includes(asset_value)) {
+                    filter_value = true
+                  } else {
+                    filter_value = false
+                    break
+                  }
                 }
               }
             }
+
             if (i === state.value.assetFilters.size - 1 && filter_value) {
-              value = item.values.includes(ch.value)
+              if (item.isChecked) value = true
+              else value = item.values.includes(ch.value)
             }
+
             if (filter_value) {
               actions.addTreeFilterItem(temp, ch, item)
             }
@@ -126,16 +136,24 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
                       asset_value = asset[last_item.parent][last_key]
                       if (asset[key] === '') asset_value = undefined
                     }
-                    if (last_item.values.includes(asset_value)) {
-                      filter_value = true
-                    } else {
-                      filter_value = false
-                      break
+                    if (last_item.isChecked) filter_value = true
+                    else {
+                      if (last_item.values.includes(asset_value)) {
+                        filter_value = true
+                      } else {
+                        filter_value = false
+                        break
+                      }
                     }
                   }
                   if (filter_value) actions.addTreeFilterItem(temp, ch, item)
-                  if (filter_value && !has) {
-                    if (item.values.includes(ch.value)) has = true
+                  if (
+                    i === state.value.assetFilters.size - 1 &&
+                    filter_value &&
+                    !has
+                  ) {
+                    if (item.isChecked) has = true
+                    else if (item.values.includes(ch.value)) has = true
                   }
                 }
               }
@@ -144,6 +162,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
           }
         }
       }
+      console.log(value)
       return value
     },
     addTreeFilterItem: (temp, ch, item) => {
@@ -180,9 +199,9 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
         return actions.filteringAsset(asset, temp, keys)
       })
       state.value.treeFilterData = [...temp.values()]
-      console.log(state.value.treeFilterData)
       const temp_filters = []
       state.value.assetFilters.forEach((value, key) => {
+        if (value.isChecked) temp_filters.push(value.id)
         if (value.values.length > 0) {
           value.values.forEach(item => {
             temp_filters.push(`${key}:${item}`)
