@@ -162,7 +162,6 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
           }
         }
       }
-      console.log(value)
       return value
     },
     addTreeFilterItem: (temp, ch, item) => {

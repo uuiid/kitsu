@@ -46,51 +46,21 @@ const onCheckChange = event => {
   //console.log('onCheckChange', event)
 }
 const onCheck = (o, n) => {
-  console.log(o.label)
-  assetFilter.state.assetFilters.forEach(value => {
-    value.values = []
-  })
-  const root_nodes = []
-  for (const node of n.checkedNodes) {
-    if (node.parent) {
-      const assetFilterItem = assetFilter.state.assetFilters.get(node.parent)
-      assetFilterItem.values.push(node.value)
-    } else {
-      root_nodes.push(node)
+  let id = ''
+  if (o.parent) {
+    if (assetFilter.state.assetFilters.has(o.parent)) {
+      id = o.parent
     }
-  }
-
-  assetFilter.state.assetFilters.forEach(value => {
-    value.isChecked = root_nodes.includes(value.id)
+  } else id = o.id
+  const assetFilterItem = assetFilter.state.assetFilters.get(id)
+  assetFilterItem.isChecked =
+    n.checkedNodes.filter(node => node.id === id).length > 0
+  assetFilterItem.values = []
+  n.checkedNodes.forEach(node => {
+    if (node.parent === id) {
+      assetFilterItem.values.push(node.value)
+    }
   })
-  // if (o.parent) {
-  //   if (assetFilter.state.assetFilters.has(o.parent)) {
-  //     const assetFilterItem = assetFilter.state.assetFilters.get(o.parent)
-  //     if (assetFilterItem.isChecked)
-  //     {
-  //
-  //     }
-  //     assetFilterItem.isChecked = !n.halfCheckedKeys.includes(o.parent)
-  //   }
-  //   if (
-  //     !assetFilter.state.assetFilters.get(id_split[0]).values.includes(o.value)
-  //   ) {
-  //     assetFilter.state.assetFilters.get(id_split[0]).values.push(o.value)
-  //   } else {
-  //     assetFilter.state.assetFilters.get(id_split[0]).values =
-  //       assetFilter.state.assetFilters.get(id_split[0]).values.filter(item => {
-  //         return item !== o.value
-  //       })
-  //   }
-  // } else {
-  //   if (n.checkedKeys.includes(o.id)) {
-  //     o.children.forEach(child => {
-  //       assetFilter.state.assetFilters.get(id_split[0]).values.push(child.value)
-  //     })
-  //   } else {
-  //     assetFilter.state.assetFilters.get(id_split[0]).values.length = 0
-  //   }
-  // }
   emit('tree-selection-changed')
 }
 const addEvents = () => {
