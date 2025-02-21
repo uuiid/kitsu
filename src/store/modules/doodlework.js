@@ -407,7 +407,7 @@ function initState() {
     visitorContext: null,
     doodleWorkExeLocalRootPath: '',
     doodleWorkExeDownloadPath: '',
-    doodleWorkZipFileVision: { label: '' },
+    doodleWorkZipFileVision: '',
     doodleWorkSetting: {},
     currentDoodleWorkType: '',
     currentUser: {},
@@ -458,13 +458,13 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     return result || doodleWorkBase
   })
   const doodleWorkZipFileName = computed(() => {
-    return `Doodle-${state.value.doodleWorkZipFileVision.label}-win64.zip`
+    return `Doodle-${state.value.doodleWorkZipFileVision}-win64.zip`
   })
   // const doodleWorkZipFilePath = computed(() => {
   //   return `${state.value.doodleWorkExeLocalRootPath}/${doodleWorkZipFileName.value}`
   // })
   const doodleWorkFilePath = computed(() => {
-    return `${state.value.doodleWorkExeLocalRootPath}/Doodle-${state.value.doodleWorkZipFileVision.label}-win64`
+    return `${state.value.doodleWorkExeLocalRootPath}/Doodle-${state.value.doodleWorkZipFileVision}-win64`
   })
   const doodleWorkExePath = computed(() => {
     return `${doodleWorkFilePath.value}/bin/doodle_kitsu_supplement.exe`
@@ -488,30 +488,28 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     pullProcess: async () => {
       const fs = require('fs')
       const os = require('os')
-      if (!state.value.doodleWorkZipFileVision.label)
-        state.value.doodleWorkZipFileVision.label =
-          await doodlework.getToolVersion()[0]
+      state.value.isPullProcessed = false
+
       state.value.doodleWorkExeLocalRootPath = `${os.homedir()}/.doodle`
-      if (window.api.DoodleExePort() === 0) {
-        if (!fs.existsSync(doodleWorkExePath.value)) {
-          if (!fs.existsSync(state.value.doodleWorkExeLocalRootPath)) {
-            fs.mkdirSync(state.value.doodleWorkExeLocalRootPath)
-          }
-          if (!fs.existsSync(doodleWorkExePath.value)) {
-            await actions.downloadDoodleWorkExe(
-              `/${doodleWorkZipFileName.value}`
-            )
-          }
-          await window.api.doodleExeRun(doodleWorkExePath.value, ['--local'])
-        }
+      if (window.api.DoodleExePort() !== 0) {
+        window.api.doodleExeClose()
       }
-      state.value.isPullProcessed = true
+      if (!fs.existsSync(doodleWorkExePath.value)) {
+        if (!fs.existsSync(state.value.doodleWorkExeLocalRootPath)) {
+          fs.mkdirSync(state.value.doodleWorkExeLocalRootPath)
+        }
+        if (!fs.existsSync(doodleWorkExePath.value)) {
+          await actions.downloadDoodleWorkExe(`/${doodleWorkZipFileName.value}`)
+        }
+        await window.api.doodleExeRun(doodleWorkExePath.value, ['--local'])
+      }
+      if (window.api.DoodleExePort() !== 0) state.value.isPullProcessed = true
       const port = window.api.DoodleExePort()
-      if (port) state.value.localHttpPath = `http://127.0.0.1:${port}`
+      if (port !== 0) state.value.localHttpPath = `http://127.0.0.1:${port}`
     },
     setLocalHttpPath: async () => {
       const port = window.api.DoodleExePort()
-      if (port) {
+      if (port !== 0) {
         state.value.localHttpPath = `http://127.0.0.1:${port}`
         state.value.isPullProcessed = true
         await actions.getWorkSetting()
@@ -526,6 +524,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     getToolVersions: async () => {
       state.value.versions = await doodlework.getToolVersion()
+      if (state.value.versions.length > 0)
+        state.value.doodleWorkZipFileVision = state.value.versions[0]
     },
     submitLocalDoodleWork: async () => {
       const port = window.api.DoodleExePort()
@@ -729,6 +729,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       })
     },
     getWorkSetting: async () => {
+      await actions.getToolVersions()
       state.value.doodleWorkSetting = await doodlework.getLocalSetting(
         state.value.localHttpPath
       )
@@ -763,7 +764,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       }
     }
   }
-  actions.pullProcess()
+  actions.getToolVersions()
   return {
     state,
     actions,

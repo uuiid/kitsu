@@ -1,7 +1,7 @@
 <script setup>
 import PageTitle from '@/components/widgets/PageTitle.vue'
 import ExportFbx from '@/components/widgets/ExportFbx.vue'
-import { computed, onMounted, onUnmounted, ref, watchEffect } from 'vue'
+import { computed, onMounted, onUnmounted, ref, watchEffect, watch } from 'vue'
 import AddDoodleWork from '@/components/modals/AddDoodleWork.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
@@ -18,7 +18,6 @@ useHead({
   title: i18n.global.t('doodle_work.doodle_work')
 })
 const doodleWork = doodleWorkStore()
-if (navigator.userAgent.includes('Electron')) doodleWork.actions.pullProcess()
 onMounted(() => {
   //document.addEventListener('keydown', onKeyupEvent)
   doodleWork.actions.getVisitorContext()
@@ -27,6 +26,9 @@ onMounted(() => {
 doodleWork.actions.checkIsVisitor()
 const currentPage = ref('')
 const isShowSettingButton = ref(false)
+const version = computed(() => {
+  return doodleWork.state.doodleWorkZipFileVision
+})
 const switchPage = pageName => {
   if (doodleWork.state.isPullProcessed) currentPage.value = pageName
   else
@@ -90,17 +92,21 @@ onUnmounted(() => {
   doodleWork.state.isVisitor = false
   message.close()
 })
-const message = ElMessage({
-  message: messageContent.value,
-  type: 'warning',
-  duration: 0
-})
+let message = null
 watchEffect(() => {
-  if (doodleWork.state.isPullProcessed) {
+  if (doodleWork.state.isPullProcessed === true) {
     message.close()
+  } else {
+    message = ElMessage({
+      message: messageContent.value,
+      type: 'warning',
+      duration: 0
+    })
   }
 })
-
+watch(version, () => {
+  doodleWork.actions.pullProcess()
+})
 const pagedAssets = ref([
   {
     id: 0,

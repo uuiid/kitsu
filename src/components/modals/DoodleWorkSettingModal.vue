@@ -17,9 +17,8 @@ const displayFields = computed(() => {
 const versions = computed(() => {
   const values = []
   doodleWork.state.versions.forEach(version => {
-    values.push({ label: version })
+    values.push({ label: version, value: version })
   })
-  console.log(values)
   return values
 })
 
@@ -34,7 +33,6 @@ const readUEVersion = path => {
   }
   return ''
 }
-
 const onTextChange = (val, key) => {
   if (key === 'UE_path') {
     doodleWork.state.doodleWorkSetting['UE_version'] = readUEVersion(
@@ -83,10 +81,9 @@ const onConfirm = async () => {
         <combobox
           class="flexrow-item"
           label="版本"
-          model-value="1"
           :options="versions"
           v-model="doodleWork.state.doodleWorkZipFileVision"
-          @change="doodleWork.actions.pullProcess"
+          @change="onVersionChange"
         />
         <text-field
           ref="nameField"
