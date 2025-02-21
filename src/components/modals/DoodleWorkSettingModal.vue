@@ -4,14 +4,25 @@ import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import { computed } from 'vue'
 import { ElMessage } from 'element-plus'
 import i18n from '@/lib/i18n.js'
+import Combobox from '@/components/widgets/Combobox.vue'
 
 const doodleWork = doodleWorkStore()
-
+doodleWork.actions.getToolVersions()
 const readonlyFields = ['UE_version']
 
 const displayFields = computed(() => {
   return doodleWork.state.doodleWorkSetting
 })
+
+const versions = computed(() => {
+  const values = []
+  doodleWork.state.versions.forEach(version => {
+    values.push({ label: version })
+  })
+  console.log(values)
+  return values
+})
+
 if (doodleWork.state.localHttpPath) doodleWork.actions.getWorkSetting()
 const readUEVersion = path => {
   const fs = require('fs')
@@ -69,6 +80,14 @@ const onConfirm = async () => {
         <h1 class="title">
           {{ $t('settings.title') }}
         </h1>
+        <combobox
+          class="flexrow-item"
+          label="版本"
+          model-value="1"
+          :options="versions"
+          v-model="doodleWork.state.doodleWorkZipFileVision"
+          @change="doodleWork.actions.pullProcess"
+        />
         <text-field
           ref="nameField"
           :placeholder="textPlaceholder(value, key)"

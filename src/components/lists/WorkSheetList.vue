@@ -164,6 +164,7 @@
                 min="0"
                 :value="getDurationValue(task.computing_time.duration)"
                 @focusout="event => durationDate(event, task.computing_time)"
+                @click="onLineClicked(task, 'duration')"
               />
             </td>
             <td class="start-date" v-if="!isToCheck">
@@ -432,11 +433,12 @@ export default {
       }
     },
 
-    onLineClicked(entry, event) {
+    onLineClicked(task, event) {
+      console.log(event)
       if (this.isShiftSelected) {
         if (this.startSelection) {
           const start = this.tasks.indexOf(this.startSelection)
-          const end = this.tasks.indexOf(entry)
+          const end = this.tasks.indexOf(task)
           let entries = []
           if (start < end) {
             entries = this.tasks.slice(start, end + 1)
@@ -447,8 +449,8 @@ export default {
             entry.checked = !entry.checked
           })
         }
-      } else if (this.isCtrlSelected) entry.checked = !entry.checked
-      this.startSelection = entry
+      } else if (this.isCtrlSelected) task.checked = !task.checked
+      this.startSelection = task
     },
 
     handleKeyup(event) {

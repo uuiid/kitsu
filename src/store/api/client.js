@@ -63,7 +63,10 @@ const client = {
       superagent
         .post(path)
         .set('Content-Type', file.filetype)
-        .set('Content-Disposition', file.disposition || '')
+        .set(
+          'Content-Disposition',
+          Buffer.from(file.disposition).toString('base64') || ''
+        )
         .send(file.data)
         .on('progress', event => {
           if (onProgress && event.direction === 'upload') {
