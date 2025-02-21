@@ -489,7 +489,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       const fs = require('fs')
       const os = require('os')
       state.value.isPullProcessed = false
-
       state.value.doodleWorkExeLocalRootPath = `${os.homedir()}/.doodle`
       if (window.api.DoodleExePort() !== 0) {
         window.api.doodleExeClose()
@@ -501,8 +500,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         if (!fs.existsSync(doodleWorkExePath.value)) {
           await actions.downloadDoodleWorkExe(`/${doodleWorkZipFileName.value}`)
         }
-        await window.api.doodleExeRun(doodleWorkExePath.value, ['--local'])
       }
+      await window.api.doodleExeRun(doodleWorkExePath.value, ['--local'])
       if (window.api.DoodleExePort() !== 0) state.value.isPullProcessed = true
       const port = window.api.DoodleExePort()
       if (port !== 0) state.value.localHttpPath = `http://127.0.0.1:${port}`
