@@ -67,6 +67,8 @@
                 :item="item"
                 @on-selected-change="setSelected"
                 @on-add-type="showNewTypeModal"
+                @dragover="onDragOver"
+                @on-drag-end="onDragEnd"
               ></tree-view>
             </div>
           </div>
@@ -112,7 +114,11 @@
                       :key="entity.id"
                       v-for="entity in pagedAssets"
                     >
-                      <div class="card">
+                      <div
+                        class="card"
+                        :draggable="true"
+                        @dragstart="onDragStart(entity)"
+                      >
                         <video-preview
                           :ref="entity.id"
                           :empty-height="100"
@@ -298,6 +304,7 @@ export default {
           children: []
         }
       ],
+      dropEntry: null,
       modals: {
         isAddMetadataDisplayed: false,
         isAddThumbnailsDisplayed: false,
@@ -454,6 +461,18 @@ export default {
         this.isShiftSelected = true
       }
     },
+    onDragStart(entry) {
+      this.dropEntry = entry
+    },
+    onDragOver(event) {
+      event.preventDefault()
+      event.dataTransfer.dropEffect = 'move'
+    },
+    onDragEnd(item) {
+      if (item.id !== 'all') this.dropEntry.parent_id = item.id
+      else this.dropEntry.parent_id = ''
+      this.confirmEditVideo(this.dropEntry)
+    },
     onClickPageNumber(pageNumber) {
       this.currentPage = pageNumber - 1
       if (
@@ -548,7 +567,7 @@ export default {
     async confirmEditVideo(video) {
       await this.modifyVideo(video)
       await this.refresh()
-      this.$refs[video.id][0].refreshKey += 1
+      if (this.$refs[video.id][0]) this.$refs[video.id][0].refreshKey += 1
     },
     checkElectron() {
       this.setIsElectron(navigator.userAgent.includes('Electron'))

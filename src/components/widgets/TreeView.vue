@@ -2,8 +2,11 @@
   <div class="treeView">
     <span
       class="treeViewItem"
-      :class="{ selectedItem: isSelected(item) }"
+      :class="{ selectedItem: isSelected(item), 'drop-item': item.isDragging }"
       @click="selectItem(item)"
+      @drop="onDragEnd(item)"
+      @dragenter="onDragEnter(item)"
+      @dragleave="onDragLeave(item)"
     >
       <span
         v-if="item.children && item.children.length"
@@ -40,6 +43,7 @@
         :item="child"
         :all="allOptions"
         @on-add-type="addType"
+        @on-drag-end="onDragEnd"
       />
     </ul>
     <message-box
@@ -89,7 +93,7 @@ export default {
       default: () => {}
     }
   },
-  emits: ['on-selected-change', 'on-add-type'],
+  emits: ['on-selected-change', 'on-add-type', 'on-drag-end'],
   data() {
     return {
       Options: this.options,
@@ -152,6 +156,16 @@ export default {
       } else {
         return false
       }
+    },
+    onDragEnter(item) {
+      item.isDragging = true
+    },
+    onDragLeave(item) {
+      item.isDragging = false
+    },
+    onDragEnd(event) {
+      event.isDragging = false
+      this.$emit('on-drag-end', event)
     },
     isOpened(item) {
       return this.openedVideoTypes.has(item.id)
@@ -217,10 +231,17 @@ export default {
   width: auto;
   user-select: none;
   white-space: nowrap;
+  border: 2px dashed transparent;
+  border-radius: 5px;
+  transition: border-color 0.2s ease-in-out;
 
   &:hover {
     background-color: var(--background-selectable);
     cursor: pointer;
+  }
+
+  &.drop-item {
+    border-color: var(--background-selected);
   }
 }
 
