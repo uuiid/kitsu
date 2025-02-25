@@ -526,7 +526,7 @@
               <td class="actions" v-else></td>
             </tr>
 
-            <!--div class="container-gird" v-show="isSimpleThumbnails">
+            <div class="container-gird" v-show="isSimpleThumbnails">
               <div class="grid" :key="'row' + asset.id" v-for="asset in group">
                 <div class="gird-box">
                   <entity-thumbnail
@@ -547,7 +547,7 @@
                   </router-link>
                 </div>
               </div>
-            </div-->
+            </div>
           </tbody>
         </template>
       </table>
@@ -747,7 +747,8 @@ export default {
       'selectedAssets',
       'selectedTasks',
       'taskMap',
-      'user'
+      'user',
+      'isSimpleThumbnails'
     ]),
 
     assetTypeMap() {
