@@ -75,40 +75,77 @@
               <thead class="datatable-head">
                 <tr class="">
                   <th
-                    class="normal"
-                    :key="key"
-                    v-for="(filed, key) in tableHeadFiled"
+                    class="normal number_f"
+                    :class="{
+                      name: filed.type === 'string',
+                      number_f: filed.type === 'number'
+                    }"
+                    style="width: 150px"
+                    :key="filed.id"
+                    v-for="filed in tableHeadFiled"
                   >
-                    {{ filed }}
+                    {{ filed.name }}
                   </th>
                 </tr>
               </thead>
-              <tbody>
+
+              <tbody
+                :key="value.key"
+                v-for="value in [...displaySoftGroupAsset.values()]"
+              >
+                <tr class="datatable-type-header datatable-tbody-head">
+                  <th
+                    :class="{
+                      'datatable-row-header': true,
+                      name: filed_key.type === 'string',
+                      number_f: filed_key.type === 'number'
+                    }"
+                    :key="filed_key.id"
+                    v-for="(filed_key, index) in tableHeadFiled"
+                  >
+                    <div
+                      class="datatable-row-header-"
+                      v-if="index === 0"
+                      @click="value.isOpen = !value.isOpen"
+                    >
+                      <chevron-right v-show="!value.isOpen"></chevron-right>
+                      <chevron-down v-show="value.isOpen"></chevron-down>
+                      <span class="datatable-row-header" v-if="index === 0">
+                        {{ value.key }}
+                      </span>
+                    </div>
+
+                    <span class="datatable-row-header" v-else></span>
+                  </th>
+                </tr>
+
                 <tr
                   class="datatable-row"
                   :key="asset.id"
-                  v-for="asset in displaySoftAsset"
+                  v-for="asset in value.values"
+                  v-show="value.isOpen"
                 >
                   <td
                     class=""
                     :class="{
-                      'error-text': asset[key].length < 1,
-                      'table-body-selectable': isTableBodySelectable(key)
+                      name: filed.type === 'string',
+                      number_f: filed.type === 'number',
+                      path: filed.type === 'path'
                     }"
-                    :key="asset.id + key"
-                    :title="formatTbodyData(asset, key)"
-                    v-for="([], key) in tableHeadFiled"
-                    @click="onClickTbody(asset, key)"
-                    @copy="onCopyTBody(asset, key)"
+                    :key="asset.id + filed.id"
+                    :title="formatTbodyData(asset, filed.id)"
+                    v-for="filed in tableHeadFiled"
+                    @click="onClickTbody(asset, filed.id)"
+                    @copy="onCopyTBody(asset, filed.id)"
                   >
-                    {{ formatTbodyData(asset, key) }}
+                    {{ formatTbodyData(asset, filed.id) }}
                   </td>
                 </tr>
               </tbody>
             </table>
           </div>
         </div>
-        <div class="has-text-right">共:{{ assetData.length }}</div>
+        <div class="has-text-right">共:{{ displaySoftAsset.length }}</div>
       </div>
 
       <div
@@ -129,6 +166,7 @@
 import { mapGetters, mapActions } from 'vuex'
 import PageTitle from '@/components/widgets/PageTitle.vue'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
+import { ChevronDown, ChevronRight } from 'lucide-vue-next'
 import { SearchIcon } from 'lucide-vue-next'
 
 export default {
@@ -136,7 +174,9 @@ export default {
   components: {
     SearchIcon,
     ButtonSimple,
-    PageTitle
+    PageTitle,
+    ChevronDown,
+    ChevronRight
   },
 
   data() {
@@ -145,21 +185,59 @@ export default {
       selectedProduct: new Map(),
       selectedAssetType: new Map(),
       assetData: [],
-      tableHeadFiled: {
-        number: '编号',
-        name: '名称',
-        version_name: '版本名称',
-        assets_type: '资产类型',
-        season: '季数',
-        base_path: '基本路径',
-        ue_file: 'ue路径',
-        maya_file: 'maya rig路径',
-        solve_file_: '解算路径'
-      },
+      assetSize: 0,
+      tableHeadFiled: [
+        {
+          id: 'number',
+          name: '编号',
+          type: 'number'
+        },
+        {
+          id: 'name',
+          name: '名称',
+          type: 'string'
+        },
+        {
+          id: 'version_name',
+          name: '版本名称',
+          type: 'string'
+        },
+        {
+          id: 'assets_type',
+          name: '资产类型',
+          type: 'string'
+        },
+        {
+          id: 'season',
+          name: '季数',
+          type: 'number'
+        },
+        {
+          id: 'base_path',
+          name: '基本路径',
+          type: 'path'
+        },
+        {
+          id: 'ue_file',
+          name: 'ue路径',
+          type: 'path'
+        },
+        {
+          id: 'maya_file',
+          name: 'maya rig路径',
+          type: 'path'
+        },
+        {
+          id: 'solve_file',
+          name: '解算路径',
+          type: 'path'
+        }
+      ],
       searchQuery: '',
       prompt: '',
       text: 'CESHI',
       isShowText: false,
+      groupDataMap: new Map(),
       sty: {
         top: '',
         left: ''
@@ -186,6 +264,10 @@ export default {
             .indexOf(this.searchQuery.toLocaleLowerCase()) !== -1
         )
       })
+    },
+    displaySoftGroupAsset() {
+      this.groupData(this.displaySoftAsset)
+      return this.groupDataMap
     }
   },
 
@@ -203,12 +285,7 @@ export default {
       this.getScanProject(fieldStr.slice(0, -1))
         .then(res => {
           this.isLoading = false
-          res.sort((a, b) =>
-            `${a.number}${a.name}${a.version_name}`.localeCompare(
-              `${b.number}${b.name}${b.version_name}`
-            )
-          )
-          this.assetData = res
+          this.assetData = res || []
         })
 
         .catch(error => {
@@ -216,7 +293,20 @@ export default {
           console.log(error)
         })
     },
-
+    groupData(data) {
+      const group = new Map()
+      data.forEach(item => {
+        if (group.has(item.season)) {
+          group.get(item.season).values.push(item)
+        } else
+          group.set(item.season, {
+            key: item.season,
+            isOpen: true,
+            values: [item]
+          })
+      })
+      this.groupDataMap = group
+    },
     selectProduct(product) {
       product.checked = !product.checked
       if (this.selectedProduct.has(product.id)) {
@@ -341,6 +431,7 @@ export default {
 .project-list-item {
   display: flex;
   max-width: 200px;
+  min-width: 200px;
   //border: thick dotted #ff0000;
 }
 
@@ -355,14 +446,42 @@ export default {
   justify-content: space-between;
 }
 
+.datatable-row-header- {
+  display: flex;
+  cursor: pointer;
+  align-items: center;
+
+  &:hover {
+    color: $blue;
+  }
+}
+
 .flexrow-item {
   max-width: 200px;
+  min-width: 200px;
 }
 
 .datatable-head {
   th {
     font-size: 1rem;
     border-bottom: 0 solid var(--border);
+  }
+}
+
+.datatable-tbody-head {
+  background-color: var(--background-rgb);
+  position: sticky; /* 粘性定位 */
+  width: 100%;
+  top: 35px; /* 粘在顶部 */
+  z-index: 1; /* 确保表头在内容上方 */
+}
+
+.datatable-type-header {
+  background-color: var(--background-alt-3);
+  width: 100%;
+
+  th {
+    padding: 0;
   }
 }
 
@@ -395,7 +514,23 @@ export default {
   //user-select: text;
 
   td {
-    max-width: 350px;
+    max-height: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .name {
+    max-height: 200px;
+    min-width: 200px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+
+  .number_f {
+    max-height: 100px;
+    min-width: 100px;
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
