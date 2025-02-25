@@ -95,7 +95,7 @@ onUnmounted(() => {
 let message = null
 watchEffect(() => {
   if (doodleWork.state.isPullProcessed === true) {
-    message.close()
+    if (message) message.close()
   } else {
     message = ElMessage({
       message: messageContent.value,

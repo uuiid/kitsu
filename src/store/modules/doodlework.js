@@ -305,7 +305,7 @@ class DoodleWorkMergeVideo extends DoodleWorkAutoLight {
   }
 
   validateString(input) {
-    const regex = /^[A-Z]+_EP\d{3}_SC\d{3}[A-Z]?$/
+    const regex = /^[A-Z]+_EP\d+_SC\d+[A-Z]?$/
     return regex.test(input)
   }
 
@@ -348,7 +348,7 @@ class DoodleWorkConnectVideo extends DoodleWorkMergeVideo {
   }
 
   validateString(input) {
-    const regex = /^[A-Z]+_EP\d{3}_SC\d{3}[A-Z]?\.mp4$/
+    const regex = /^[A-Z]+_EP\d+_SC\d+[A-Z]?\.mp4$/
     return regex.test(input)
   }
 
@@ -370,7 +370,6 @@ class DoodleWorkConnectVideo extends DoodleWorkMergeVideo {
     if (file_paths.length > 0) {
       const data = this.formatData(files[0])
       file_paths.sort()
-      console.log(file_paths)
       data.name = `${path.basename(file_paths[0])}-${path.basename(file_paths[file_paths.length - 1])}`
       data.task_data.paths = file_paths
       data.task_data.out_path = path.join(
@@ -457,9 +456,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     )
     return result || doodleWorkBase
   })
-  const doodleWorkZipFileName = computed(() => {
-    return `Doodle-${state.value.doodleWorkZipFileVision}-win64.zip`
-  })
   // const doodleWorkZipFilePath = computed(() => {
   //   return `${state.value.doodleWorkExeLocalRootPath}/${doodleWorkZipFileName.value}`
   // })
@@ -489,6 +485,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       const fs = require('fs')
       const os = require('os')
       state.value.isPullProcessed = false
+      if (!state.value.doodleWorkZipFileVision)
+        state.value.doodleWorkZipFileVision = state.value.versions[0]
       state.value.doodleWorkExeLocalRootPath = `${os.homedir()}/.doodle`
       if (window.api.DoodleExePort() !== 0) {
         window.api.doodleExeClose()
@@ -498,18 +496,20 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           fs.mkdirSync(state.value.doodleWorkExeLocalRootPath)
         }
         if (!fs.existsSync(doodleWorkExePath.value)) {
-          await actions.downloadDoodleWorkExe(`/${doodleWorkZipFileName.value}`)
+          const zipName = `Doodle-${state.value.doodleWorkZipFileVision}-win64.zip`
+          await actions.downloadDoodleWorkExe(`/${zipName}`)
         }
       }
       await window.api.doodleExeRun(doodleWorkExePath.value, ['--local'])
-      if (window.api.DoodleExePort() !== 0) state.value.isPullProcessed = true
+      if (window.api.DoodleExePort() !== state.value.localHttpPath)
+        state.value.isPullProcessed = true
       const port = window.api.DoodleExePort()
-      if (port !== 0) state.value.localHttpPath = `http://127.0.0.1:${port}`
+      state.value.localHttpPath = `http://127.0.0.1:${port}`
     },
     setLocalHttpPath: async () => {
       const port = window.api.DoodleExePort()
+      state.value.localHttpPath = `http://127.0.0.1:${port}`
       if (port !== 0) {
-        state.value.localHttpPath = `http://127.0.0.1:${port}`
         state.value.isPullProcessed = true
         await actions.getWorkSetting()
       }
@@ -523,12 +523,12 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     getToolVersions: async () => {
       state.value.versions = await doodlework.getToolVersion()
-      if (state.value.versions.length > 0)
+      if (state.value.versions.length > 0) {
         state.value.doodleWorkZipFileVision = state.value.versions[0]
+      }
     },
     submitLocalDoodleWork: async () => {
-      const port = window.api.DoodleExePort()
-      if (port) state.value.localHttpPath = `http://127.0.0.1:${port}`
+      await actions.getLocalHttpPath()
       // await fetch(state.value.localHttpPath + `/api/doodle/local_setting`, {
       //   mode: 'no-cors'
       // })
@@ -557,6 +557,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       // })
     },
     resubmitLocalDoodleWork: async task => {
+      await actions.getLocalHttpPath()
       await doodlework.resubmitWorkTask(task, state.value.localHttpPath)
       task.status = 'submitted'
       currentDoodleWorkState.value.isReload = true
@@ -629,6 +630,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       ].join(':')
     },
     listWorkTasks: async () => {
+      await actions.getLocalHttpPath()
       const options = `user_id=${currentUser.value.id}&type=${currentDoodleWorkState.value.name}`
       const workTasks = await doodlework.listWorkTask(
         state.value.localHttpPath,
@@ -646,6 +648,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       }
     },
     loadLocalDoodleWork: async () => {
+      await actions.getLocalHttpPath()
       for (const task of [...currentDoodleWorkState.value.workList.values()]) {
         if (['submitted', 'assigned', 'running'].includes(task.status)) {
           const data = await doodlework.getWorkTask(
@@ -678,6 +681,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
 
     cancelDoodleWorkTask: async task => {
+      await actions.getLocalHttpPath()
       const data = {
         status: 'canceled',
         name: task.name,
@@ -691,18 +695,12 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
 
     deleteDoodleWorkTask: async workTaskId => {
-      if (state.value.localHttpPath === '') {
-        const port = window.api.DoodleExePort()
-        state.value.localHttpPath = `http://127.0.0.1:${port}`
-      }
+      await actions.getLocalHttpPath()
       await doodlework.deleteWorkTask(workTaskId, state.value.localHttpPath)
     },
     getWorkTaskLog: async (task_id, type = null) => {
       let res = null
-      if (state.value.localHttpPath === '') {
-        const port = window.api.DoodleExePort()
-        state.value.localHttpPath = `http://127.0.0.1:${port}`
-      }
+      await actions.getLocalHttpPath()
       if (type === null) {
         res = await doodlework.getWorkLog(task_id, state.value.localHttpPath)
       } else if (type === 'mini') {
@@ -727,14 +725,20 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         resolve(logs_str)
       })
     },
+    getLocalHttpPath: () => {
+      const port = window.api.DoodleExePort()
+      state.value.localHttpPath = `http://127.0.0.1:${port}`
+    },
     getWorkSetting: async () => {
       await actions.getToolVersions()
+      await actions.getLocalHttpPath()
       state.value.doodleWorkSetting = await doodlework.getLocalSetting(
         state.value.localHttpPath
       )
     },
 
     setWorkSetting: async () => {
+      await actions.getLocalHttpPath()
       state.value.doodleWorkSetting = await doodlework.setLocalSetting(
         state.value.doodleWorkSetting,
         state.value.localHttpPath
