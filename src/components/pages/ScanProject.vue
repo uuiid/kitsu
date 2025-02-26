@@ -454,6 +454,7 @@ export default {
 .icon {
   cursor: pointer;
   margin-top: 2px;
+  z-index: 1;
   &:hover {
     color: $blue;
   }

@@ -127,8 +127,9 @@ class DoodleWorkFbx extends DoodleWorkBase {
 }
 
 class DoodleWorkAbc extends DoodleWorkBase {
-  constructor() {
+  constructor(productions) {
     super()
+    this.productions = productions
     this.name = 'export_sim'
     this.task_data_filed.set('replace_ref_file', {
       id: 'replace_ref_file',
@@ -434,7 +435,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
   // })
   const doodleWorkBase = new DoodleWorkBase()
   const doodleWorkFbx = new DoodleWorkFbx(allProductions)
-  const doodleWorkAbc = new DoodleWorkAbc()
+  const doodleWorkAbc = new DoodleWorkAbc(allProductions)
   const doodleWorkAutoLight = new DoodleWorkAutoLight()
   const doodleWorkExtractCaption = new DoodleWorkExtractCaption()
   const doodleWorkMergeVideo = new DoodleWorkMergeVideo()
