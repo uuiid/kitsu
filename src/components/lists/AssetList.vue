@@ -525,29 +525,36 @@
               />
               <td class="actions" v-else></td>
             </tr>
-
-            <div class="container-gird" v-show="isSimpleThumbnails">
-              <div class="grid" :key="'row' + asset.id" v-for="asset in group">
-                <div class="gird-box">
-                  <entity-thumbnail
-                    class="entity-thumbnail flexrow-item"
-                    :entity="asset"
-                    :width="150"
-                    :height="100"
-                    :empty-width="150"
-                    :empty-height="100"
-                  />
-                  <router-link
-                    tabindex="-1"
-                    class="asset-link asset-name flexrow-item text-item"
-                    :to="assetPath(asset.id)"
-                    :title="asset.full_name"
+            <tr>
+              <template v-if="isSimpleThumbnails">
+                <div class="container-gird">
+                  <div
+                    class="grid"
+                    :key="'row' + asset.id"
+                    v-for="asset in group"
                   >
-                    {{ asset.name }}
-                  </router-link>
+                    <div class="gird-box">
+                      <entity-thumbnail
+                        class="entity-thumbnail flexrow-item"
+                        :entity="asset"
+                        :width="150"
+                        :height="100"
+                        :empty-width="150"
+                        :empty-height="100"
+                      />
+                      <router-link
+                        tabindex="-1"
+                        class="asset-link asset-name flexrow-item text-item"
+                        :to="assetPath(asset.id)"
+                        :title="asset.full_name"
+                      >
+                        {{ asset.name }}
+                      </router-link>
+                    </div>
+                  </div>
                 </div>
-              </div>
-            </div>
+              </template>
+            </tr>
           </tbody>
         </template>
       </table>

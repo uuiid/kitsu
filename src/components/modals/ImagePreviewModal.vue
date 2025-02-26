@@ -37,6 +37,8 @@
         @mousedown.prevent
         @dragstart.prevent
         @contextmenu.prevent
+        @load="onLoadImage"
+        v-show="isShowImage"
         v-focus
       />
     </div>
@@ -91,7 +93,8 @@ export default {
       translate: {
         x: 0,
         y: 0
-      }
+      },
+      isShowImage: true
     }
   },
   mounted() {
@@ -148,11 +151,17 @@ export default {
         this.translate.y = event.clientY - this.dragStart.y
       }
     },
-
+    onLoadImage() {
+      setTimeout(() => {
+        this.imageScale = 1
+        this.isShowImage = true
+      }, 20)
+    },
     endDrag() {
       this.isDragging = false
     },
     onSwitchImage(isNext) {
+      this.isShowImage = false
       if (isNext) {
         this.$emit('switch-image', true)
       } else {

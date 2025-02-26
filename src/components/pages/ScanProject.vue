@@ -102,15 +102,18 @@
                     }"
                     :key="filed_key.id"
                     v-for="(filed_key, index) in tableHeadFiled"
+                    @click="value.isOpen = !value.isOpen"
                   >
-                    <div
-                      class="datatable-row-header-"
-                      v-if="index === 0"
-                      @click="value.isOpen = !value.isOpen"
-                    >
-                      <chevron-right v-show="!value.isOpen"></chevron-right>
-                      <chevron-down v-show="value.isOpen"></chevron-down>
-                      <span class="datatable-row-header" v-if="index === 0">
+                    <div v-if="index === 0">
+                      <chevron-right
+                        class="icon"
+                        v-show="!value.isOpen"
+                      ></chevron-right>
+                      <chevron-down
+                        class="icon"
+                        v-show="value.isOpen"
+                      ></chevron-down>
+                      <span v-if="index === 0">
                         {{ value.key }}
                       </span>
                     </div>
@@ -130,7 +133,9 @@
                     :class="{
                       name: filed.type === 'string',
                       number_f: filed.type === 'number',
-                      path: filed.type === 'path'
+                      path: filed.type === 'path',
+                      'error-text': asset[filed.id]?.length < 1,
+                      'table-body-selectable': isTableBodySelectable(filed.id)
                     }"
                     :key="asset.id + filed.id"
                     :title="formatTbodyData(asset, filed.id)"
@@ -446,11 +451,9 @@ export default {
   justify-content: space-between;
 }
 
-.datatable-row-header- {
-  display: flex;
+.icon {
   cursor: pointer;
-  align-items: center;
-
+  margin-top: 2px;
   &:hover {
     color: $blue;
   }
@@ -474,6 +477,11 @@ export default {
   width: 100%;
   top: 35px; /* 粘在顶部 */
   z-index: 1; /* 确保表头在内容上方 */
+  cursor: pointer;
+
+  &:hover {
+    color: $blue;
+  }
 }
 
 .datatable-type-header {

@@ -65,7 +65,7 @@ const client = {
         .set('Content-Type', file.filetype)
         .set(
           'Content-Disposition',
-          Buffer.from(file.disposition).toString('base64') || ''
+          Buffer.from(file.disposition || '').toString('base64') || ''
         )
         .send(file.data)
         .on('progress', event => {
