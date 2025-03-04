@@ -632,7 +632,7 @@ export default {
           `${t.computing_time.name || t.entity.name}(${t.computing_time.user_remark})`
         )
       else line.push(t.computing_time.name || t.entity.name)
-      const level = t.computing_time.grade || t.entity.data.deng_ji
+      const level = t.computing_time.grade || t.entity?.data.deng_ji
       line.push(level)
       return line
     },
