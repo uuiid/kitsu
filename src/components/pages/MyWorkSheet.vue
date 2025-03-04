@@ -611,7 +611,6 @@ export default {
           episodes = t.entity.data.ji_shu_lie
         }
       }
-      console.log(t.computing_time.season)
       let season = t.computing_time.season
       if (!season) {
         season = t.entity.data.ji_shu
@@ -918,7 +917,9 @@ export default {
     resetTask(data) {
       data.forEach(item => {
         if (this.calculatedTasks.has(item.kitsu_task_ref_id || item.id)) {
-          this.calculatedTasks.get(item.kitsu_task_ref_id).computing_time = item
+          this.calculatedTasks.get(
+            item.kitsu_task_ref_id || item.id
+          ).computing_time = item
         }
       })
     },
