@@ -556,7 +556,7 @@ export default {
         return
       }
       let checked_num = 0
-      let num = 0
+      let res = null
       for (const entry of this.tasks) {
         if (entry.checked) {
           const time_task_id = entry.computing_time.id
@@ -564,16 +564,14 @@ export default {
           const l_params = {
             time_task_id
           }
-          num++
-          const res = await this.$store.dispatch(action, l_params)
-          if (num === this.tasks.length) {
-            this.$emit('remove-sort-task', res)
-          }
+          res = await this.$store.dispatch(action, l_params)
           checked_num++
         }
       }
       if (checked_num === 0) {
         ElMessage.error('请先至少勾选一个任务')
+      } else {
+        if (res) this.$emit('remove-sort-task', res)
       }
     },
     setUserRemark(event, entry) {
