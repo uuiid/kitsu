@@ -179,7 +179,13 @@ export const updateTaskFilesStore = defineStore(
               task.progress = loaded / total
             }
           )
-        else await doodlework.updateFile(task, file_data, type, () => {})
+        else {
+          file_data.disposition = file_path.replace(
+            path.dirname(task.task_data.path) + `\\`,
+            ''
+          )
+          await doodlework.updateFile(task, file_data, type, () => {})
+        }
       },
       isReloadDoodleWork() {
         const temp = [...state.value.allFiles.values()].filter(item => {

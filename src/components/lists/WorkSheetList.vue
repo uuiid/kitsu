@@ -648,11 +648,13 @@ export default {
     },
     getEpisodes(task) {
       let episodes = ''
-      //const theTaskType = this.taskTypeMap.get(entry.entity_type_id)
-      if (task.task_type.for_entity.includes('Shot')) {
-        episodes = task.entity.sequence_name.replaceAll('EP', '') ?? ''
-      } else {
-        episodes = task.entity.data.ji_shu_lie
+      if (task.entity) {
+        //const theTaskType = this.taskTypeMap.get(entry.entity_type_id)
+        if (task.task_type?.for_entity.includes('Shot')) {
+          episodes = task.entity?.sequence_name.replaceAll('EP', '') ?? ''
+        } else {
+          episodes = task.entity?.data.ji_shu_lie
+        }
       }
       return episodes
     }
