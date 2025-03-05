@@ -91,7 +91,6 @@ export default {
   sortTaskTime(data) {
     const month = data.month.padStart(2, '0')
     const year_month = `${data.year}-${month}`
-    console.log(data.data)
     return client.ppost(
       `/api/doodle/computing_time/${data.user_id}/${year_month}/sort`,
       data.task_ids

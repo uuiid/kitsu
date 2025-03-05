@@ -120,6 +120,7 @@
           @set-sort-task="onWorkSheetEvent"
           @remove-sort-task="removeSortTask"
           @set-user-remark="setUserRemark"
+          @soft-task="onSoftTask"
           v-if="isActiveTab('workSheet')"
         />
 
@@ -345,14 +346,12 @@ export default {
     this.companyOptionList = res
     if (this.isShow) {
       this.person = this.user
-      console.log(this.$refs['person-field'])
       if (this.$refs['person-field'])
         this.$refs['person-field'].item = this.user
     }
     this.$nextTick(() => {
       if (this.isShow) {
         this.person = this.user
-        console.log(this.$refs['person-field'])
         if (this.$refs['person-field'])
           this.$refs['person-field'].item = this.user
       }
@@ -530,7 +529,8 @@ export default {
       'loadOpenTasks',
       'loadTask',
       'countOneTaskTime',
-      'countCustomTaskTime'
+      'countCustomTaskTime',
+      'sortTaskTime'
     ]),
 
     isActiveTab(tab) {
@@ -547,6 +547,22 @@ export default {
     },
     onAddCustomEntry(task) {
       this.onCountCustomTaskTime(task)
+    },
+    onSoftTask(task_ids) {
+      const year = this.yearString
+      const month = this.monthString
+      const user_id = this.person.id
+      const l_params = {
+        user_id,
+        year,
+        month,
+        task_ids
+      }
+      this.sortTaskTime(l_params).then(res => {
+        if (res) {
+          this.resetTask(res.data)
+        }
+      })
     },
     onNewClicked() {
       this.isLoading = true
@@ -618,7 +634,11 @@ export default {
           ? t.entity.data.ji_shu
           : Math.ceil(Number(episodes) / 20)
       }
-      line.push(`《${t.name || t.project?.name}》第${season}季`)
+      let project_name = t.project?.name
+      if (project_name === undefined) {
+        project_name = this.productionMap.get(t.computing_time.project_id).name
+      }
+      line.push(`《${project_name}》第${season}季`)
       line.push(`EP${episodes}`)
       line.push(formatFullDate(t.computing_time.start_time))
       line.push(formatFullDate(t.computing_time.end_time))

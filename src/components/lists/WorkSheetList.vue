@@ -110,12 +110,6 @@
                   :entry="task.project"
                 />
               </div>
-              <div
-                :class="{
-                  'line-top': task.drogPosition === 'top',
-                  'line-bottom': task.drogPosition === 'bottom'
-                }"
-              ></div>
             </td>
 
             <task-type-cell
@@ -132,12 +126,6 @@
               v-else
             >
               自定义
-              <div
-                :class="{
-                  'line-top': task.drogPosition === 'top',
-                  'line-bottom': task.drogPosition === 'bottom'
-                }"
-              ></div>
             </td>
             <td
               class="name datatable-row-header"
@@ -154,12 +142,6 @@
 {{ task.entity.entity_name }}
 </router-link-->
               </div>
-              <div
-                :class="{
-                  'line-top': task.drogPosition === 'top',
-                  'line-bottom': task.drogPosition === 'bottom'
-                }"
-              ></div>
             </td>
 
             <td class="episode">
@@ -238,9 +220,6 @@
               </button>
             </td>
           </tr>
-          <tr class="line-row">
-            <td colspan="10"></td>
-          </tr>
         </tbody>
       </table>
     </div>
@@ -259,7 +238,7 @@
 </template>
 
 <script>
-import { mapGetters, mapActions } from 'vuex'
+import { mapGetters } from 'vuex'
 import { TrashIcon } from 'lucide-vue-next'
 import { selectionListMixin } from '@/components/mixins/selection'
 import { formatListMixin } from '@/components/mixins/format'
@@ -336,7 +315,13 @@ export default {
       default: ''
     }
   },
-  emits: ['set-sort-task', 'remove-sort-task', 'scroll', 'set-user-remark'],
+  emits: [
+    'set-sort-task',
+    'remove-sort-task',
+    'scroll',
+    'set-user-remark',
+    'soft-task'
+  ],
 
   data() {
     return {
@@ -438,7 +423,6 @@ export default {
   },
 
   methods: {
-    ...mapActions(['sortTaskTime']),
     getSortedPeople(personIds) {
       const people = personIds.map(id => this.personMap.get(id))
       return sortPeople(people)
@@ -475,17 +459,18 @@ export default {
       this.displayedTasks.forEach(task => {
         task_ids.push(task.computing_time.id)
       })
-      const year = this.yearString
-      const month = this.monthString
-      const user_id = this.userId
-      const l_params = {
-        user_id,
-        year,
-        month,
-        task_ids
-      }
-      console.log(l_params)
-      this.sortTaskTime(l_params)
+      this.$emit('soft-task', task_ids)
+      // const year = this.yearString
+      // const month = this.monthString
+      // const user_id = this.userId
+      // const l_params = {
+      //   user_id,
+      //   year,
+      //   month,
+      //   task_ids
+      // }
+      // console.log(l_params)
+      // this.sortTaskTime(l_params)
     },
     moveElement(arr, index1, index2) {
       ;[arr[index1], arr[index2]] = [arr[index2], arr[index1]]
@@ -501,7 +486,6 @@ export default {
       }
     },
     onLineClicked(task, event) {
-      console.log(event)
       if (this.isShiftSelected) {
         if (this.startSelection) {
           const start = this.tasks.indexOf(this.startSelection)
@@ -883,31 +867,6 @@ td.end-date {
   height: 100%;
   width: 100%;
   background: transparent;
-}
-
-.line-top {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: #4ecd76;
-  top: -1px;
-  z-index: 1;
-}
-
-.line-bottom {
-  position: absolute;
-  left: 0;
-  width: 100%;
-  height: 2px;
-  background-color: #4ecd76;
-  bottom: 0;
-  z-index: 1;
-}
-
-.line-row td {
-  border-top: 1px solid #1fac27; /* 设置上边框为2px的黑色实线 */
-  padding: 0; /* 去除内边距 */
 }
 
 .actions {
