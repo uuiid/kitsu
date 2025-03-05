@@ -1,7 +1,7 @@
 <template>
   <div class="data-list task-list">
-    <div class="datatable-wrapper" ref="body" v-scroll="onBodyScroll">
-      <table class="datatable">
+    <div class="datatable-wrapper" ref="body">
+      <table class="datatable" ref="myTable">
         <thead class="datatable-head">
           <tr>
             <th
@@ -77,9 +77,13 @@
             <th class="actions" v-else></th>
           </tr>
         </thead>
-        <tbody class="datatable-body" v-if="tasks.length > 0">
+        <tbody
+          class="datatable-body"
+          v-if="tasks.length > 0"
+          @dragover="onDragOver"
+        >
           <tr
-            v-for="task in displayedTasks"
+            v-for="(task, index) in displayedTasks"
             :key="task.computing_time.id"
             :class="{
               'datatable-row': true,
@@ -87,6 +91,10 @@
               selected: task.checked || false
             }"
             @click="onLineClicked(task, $event)"
+            :draggable="true"
+            @dragenter="onDragEnter(task, index)"
+            @dragstart="onDragStart(task, index)"
+            @dragend="onDragEnd"
           >
             <td class="datatable-row-header datatable-row-header--nobd">
               <div class="flexrow">
@@ -102,7 +110,14 @@
                   :entry="task.project"
                 />
               </div>
+              <div
+                :class="{
+                  'line-top': task.drogPosition === 'top',
+                  'line-bottom': task.drogPosition === 'bottom'
+                }"
+              ></div>
             </td>
+
             <task-type-cell
               class="type datatable-row-header datatable-row-header--nobd"
               :production-id="task.project?.id"
@@ -110,12 +125,19 @@
               :style="{ left: colTypePosX }"
               v-if="task.task_type"
             />
+
             <td
               class="type datatable-row-header datatable-row-header--nobd"
               :style="{ left: colTypePosX }"
               v-else
             >
               自定义
+              <div
+                :class="{
+                  'line-top': task.drogPosition === 'top',
+                  'line-bottom': task.drogPosition === 'bottom'
+                }"
+              ></div>
             </td>
             <td
               class="name datatable-row-header"
@@ -132,6 +154,12 @@
 {{ task.entity.entity_name }}
 </router-link-->
               </div>
+              <div
+                :class="{
+                  'line-top': task.drogPosition === 'top',
+                  'line-bottom': task.drogPosition === 'bottom'
+                }"
+              ></div>
             </td>
 
             <td class="episode">
@@ -210,6 +238,9 @@
               </button>
             </td>
           </tr>
+          <tr class="line-row">
+            <td colspan="10"></td>
+          </tr>
         </tbody>
       </table>
     </div>
@@ -228,12 +259,11 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 import { TrashIcon } from 'lucide-vue-next'
 import { selectionListMixin } from '@/components/mixins/selection'
 import { formatListMixin } from '@/components/mixins/format'
 import { descriptorMixin } from '@/components/mixins/descriptors'
-
 import { sortPeople } from '@/lib/sorting'
 import { formatSimpleDate } from '@/lib/time'
 import EntityThumbnail from '@/components/widgets/EntityThumbnail'
@@ -320,7 +350,10 @@ export default {
         ji_shu: 'season',
         ji_shu_lie: 'episode',
         deng_ji: 'grade'
-      }
+      },
+      currentTask: null,
+      dragStartIndex: 0,
+      dragIndex: 0
     }
   },
 
@@ -405,6 +438,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(['sortTaskTime']),
     getSortedPeople(personIds) {
       const people = personIds.map(id => this.personMap.get(id))
       return sortPeople(people)
@@ -423,7 +457,41 @@ export default {
     getDurationValue(duration) {
       return Number(duration / (1000 * 1000 * 60 * 60)).toFixed(1)
     },
-
+    onDragEnter(task, index) {
+      this.dragIndex = index
+      this.currentTask.checked = true
+    },
+    onDragOver(event) {
+      event.preventDefault()
+      event.dataTransfer.dropEffect = 'move'
+    },
+    onDragStart(task, index) {
+      this.dragStartIndex = index
+      this.currentTask = task
+    },
+    onDragEnd() {
+      this.currentTask.checked = false
+      const task_ids = []
+      this.displayedTasks.forEach(task => {
+        task_ids.push(task.computing_time.id)
+      })
+      const year = this.yearString
+      const month = this.monthString
+      const user_id = this.userId
+      const l_params = {
+        user_id,
+        year,
+        month,
+        task_ids
+      }
+      console.log(l_params)
+      this.sortTaskTime(l_params)
+    },
+    moveElement(arr, index1, index2) {
+      ;[arr[index1], arr[index2]] = [arr[index2], arr[index1]]
+      this.$forceUpdate()
+      this.dragStartIndex = index2
+    },
     onBodyScroll(event, position) {
       this.$emit('scroll', position.scrollTop)
       const maxHeight =
@@ -432,7 +500,6 @@ export default {
         this.page++
       }
     },
-
     onLineClicked(task, event) {
       console.log(event)
       if (this.isShiftSelected) {
@@ -452,7 +519,6 @@ export default {
       } else if (this.isCtrlSelected) task.checked = !task.checked
       this.startSelection = task
     },
-
     handleKeyup(event) {
       if (event.key === 'Shift') {
         this.isShiftSelected = false
@@ -658,6 +724,11 @@ export default {
       }
       return episodes
     }
+  },
+  watch: {
+    dragIndex(new_v) {
+      this.moveElement(this.displayedTasks, this.dragStartIndex, new_v)
+    }
   }
 }
 </script>
@@ -812,6 +883,31 @@ td.end-date {
   height: 100%;
   width: 100%;
   background: transparent;
+}
+
+.line-top {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #4ecd76;
+  top: -1px;
+  z-index: 1;
+}
+
+.line-bottom {
+  position: absolute;
+  left: 0;
+  width: 100%;
+  height: 2px;
+  background-color: #4ecd76;
+  bottom: 0;
+  z-index: 1;
+}
+
+.line-row td {
+  border-top: 1px solid #1fac27; /* 设置上边框为2px的黑色实线 */
+  padding: 0; /* 去除内边距 */
 }
 
 .actions {

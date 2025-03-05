@@ -199,12 +199,9 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
   }
 
   formatShotName(file_name) {
-    console.log(file_name.lastIndexOf('.'))
     const shot_name = file_name.substring(
       0,
-      file_name.includes('.')
-        ? file_name.lastIndexOf('.')
-        : file_name.length - 1
+      file_name.includes('.') ? file_name.lastIndexOf('.') : file_name.length
     )
     const shot_split = shot_name.split('_')
     let shot_num = shot_split[2]
@@ -212,9 +209,11 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
     let episodes = shot_split[1]
     let shot_enum = ''
     episodes = episodes.substring(2, episodes.length)
-    if (shot_num.length > 3) {
-      shot_enum = shot_num.substring(3, shot_name.length)
-      shot_num = shot_num.substring(0, 3)
+    const regex = /[A-Z]?$/
+    console.log(regex.test(shot_num))
+    if (regex.test(shot_num)) {
+      shot_enum = shot_num.substring(shot_num.length - 1, shot_num.length)
+      shot_num = shot_num.substring(0, shot_num.length - 1)
     }
     return {
       shot_name: shot_name,

@@ -546,7 +546,18 @@ const actions = {
         return Promise.resolve(comment)
       })
   },
-
+  sortTaskTime({ commit, state }, { user_id, year, month, task_ids }) {
+    return tasksApi
+      .sortTaskTime({
+        user_id,
+        year,
+        month,
+        task_ids
+      })
+      .then(comment => {
+        return Promise.resolve(comment)
+      })
+  },
   removeTaskTime({ commit, state }, { time_task_id }) {
     return tasksApi
       .removeTaskTime({
