@@ -603,7 +603,8 @@ export default {
       line.push(department)
       line.push(person.first_name)
       let episodes = ''
-      if (t.computing_time.episode) episodes = t.computing_time.episode
+      if (t.computing_time.episode || t.computing_time.episode === 0)
+        episodes = t.computing_time.episode
       else {
         if (t.task_type.for_entity.includes('Shot')) {
           episodes = t.entity.sequence_name.replaceAll('EP', '') ?? ''
@@ -612,7 +613,7 @@ export default {
         }
       }
       let season = t.computing_time.season
-      if (!season) {
+      if (season === undefined) {
         season = t.entity.data.ji_shu
           ? t.entity.data.ji_shu
           : Math.ceil(Number(episodes) / 20)
