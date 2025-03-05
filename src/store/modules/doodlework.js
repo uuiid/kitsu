@@ -209,8 +209,7 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
     let episodes = shot_split[1]
     let shot_enum = ''
     episodes = episodes.substring(2, episodes.length)
-    const regex = /[A-Z]?$/
-    console.log(regex.test(shot_num))
+    const regex = /[A-Z]$/
     if (regex.test(shot_num)) {
       shot_enum = shot_num.substring(shot_num.length - 1, shot_num.length)
       shot_num = shot_num.substring(0, shot_num.length - 1)
