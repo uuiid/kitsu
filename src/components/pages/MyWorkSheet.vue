@@ -617,7 +617,7 @@ export default {
           ? t.entity.data.ji_shu
           : Math.ceil(Number(episodes) / 20)
       }
-      line.push(`《${t.project.name}》第${season}季`)
+      line.push(`《${t.name || t.project?.name}》第${season}季`)
       line.push(`EP${episodes}`)
       line.push(formatFullDate(t.computing_time.start_time))
       line.push(formatFullDate(t.computing_time.end_time))
