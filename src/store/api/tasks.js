@@ -125,7 +125,18 @@ export default {
       commentData
     )
   },
-
+  createCustomDuty(data) {
+    return client.ppost(
+      `/api/doodle/attendance/${data.user_id}/custom`,
+      data.task
+    )
+  },
+  deleteCustomDuty(task) {
+    return client.pdel(`/api/doodle/attendance/custom/${task.id}`)
+  },
+  changeCustomDuty(task) {
+    return client.pput(`/api/doodle/attendance/custom/${task.id}`, task)
+  },
   getDutyList(data) {
     const month = data.month.padStart(2, '0')
     const year_month = `${data.year}-${month}`

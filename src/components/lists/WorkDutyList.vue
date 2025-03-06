@@ -27,60 +27,136 @@
             <th scope="col" class="remark">
               {{ $t('doodle.user_remark') }}
             </th>
+            <th scope="col" class="last-comment">
+              {{ $t('doodle.action') }}
+            </th>
           </tr>
         </thead>
         <tbody class="datatable-body" v-if="tasks.length > 0">
-          <tr
-            v-for="(entry, i) in displayedTasks"
-            :key="entry + '-' + i"
-            :class="{
-              'datatable-row': true,
-              'datatable-row--selectable': true,
-              selected:
-                selectionGrid && selectionGrid[i] ? selectionGrid[i][0] : false
-            }"
-            @click="onLineClicked(i)"
-          >
-            <td
-              class="name datatable-row-header"
-              :style="{ left: colNamePosX }"
+          <el-config-provider :locale="zhCn">
+            <tr
+              v-for="(entry, i) in displayedTasks"
+              :key="entry + '-' + i"
+              :class="{
+                'datatable-row': true,
+                'datatable-row--selectable': true,
+                selected:
+                  selectionGrid && selectionGrid[i]
+                    ? selectionGrid[i][0]
+                    : false
+              }"
             >
-              <div class="flexrow">
-                <people-avatar
-                  class="flexrow-item"
-                  :font-size="14"
-                  :key="person.id"
-                  :person="person"
-                  :size="30"
-                  :with-link="false"
+              <td
+                class="name datatable-row-header"
+                :style="{ left: colNamePosX }"
+              >
+                <div class="flexrow">
+                  <people-avatar
+                    class="flexrow-item"
+                    :font-size="14"
+                    :key="person.id"
+                    :person="person"
+                    :size="30"
+                    :with-link="false"
+                  />
+                  <span class="entity-name">
+                    {{ person.full_name }}
+                  </span>
+                </div>
+              </td>
+
+              <td class="">
+                <div
+                  class="flexrow"
+                  :title="getDutyType(entry)"
+                  v-if="!entry.is_custom"
+                >
+                  {{ getDutyType(entry) }}
+                </div>
+                <div v-else v-focus>
+                  <span class="select">
+                    <select
+                      v-model="entry.type"
+                      @change="onEntryChange(entry, 'type')"
+                      @blur="entry.is_show = false"
+                    >
+                      <option
+                        :key="entry_option.type"
+                        :value="entry_option.type"
+                        v-for="entry_option in [
+                          { type: 'overtime' },
+                          { type: 'leave' }
+                        ]"
+                      >
+                        {{ getDutyType(entry_option) }}
+                      </option>
+                    </select>
+                  </span>
+                </div>
+              </td>
+
+              <description-cell
+                class="description"
+                :entry="{ description: entry.entity_description }"
+                v-if="isDescriptionPresent"
+              />
+              <td class="start-date">
+                <div v-if="!entry.is_custom">
+                  {{ formatDate(entry.start_time) }}
+                </div>
+                <el-date-picker
+                  class="custom-input"
+                  v-else
+                  v-model="entry.start_time"
+                  :prefix-icon="1"
+                  value-format="YYYY-MM-DD HH:mm:ss"
+                  type="datetime"
+                  placeholder="Select date and time"
+                  :default-value="entry.start_time"
+                  @change="onEntryChange(entry, 'start_time')"
                 />
-                <span class="entity-name">
-                  {{ person.full_name }}
+              </td>
+              <td class="due-date">
+                <div v-if="!entry.is_custom">
+                  {{ formatDate(entry.end_time) }}
+                </div>
+                <el-date-picker
+                  class="custom-input"
+                  v-else
+                  @change="onEntryChange(entry, 'end_time')"
+                  v-model="entry.end_time"
+                  :prefix-icon="1"
+                  type="datetime"
+                  value-format="YYYY-MM-DD HH:mm:ss"
+                  placeholder="Select date and time"
+                  :default-value="entry.end_time"
+                />
+              </td>
+              <td class="remark">
+                <span v-if="!entry.is_custom">
+                  {{ entry.remark }}
                 </span>
-              </div>
-            </td>
-
-            <td class="episode">
-              <div class="flexrow" :title="'111'">
-                {{ getDutyType(entry) }}
-              </div>
-            </td>
-
-            <description-cell
-              class="description"
-              :entry="{ description: entry.entity_description }"
-              v-if="isDescriptionPresent"
-            />
-            <td class="start-date">
-              {{ formatDate(entry.start_time) }}
-            </td>
-            <td class="due-date">
-              {{ formatDate(entry.end_time) }}
-            </td>
-            <td class="remark">
-              {{ entry.remark }}
-            </td>
-          </tr>
+                <input
+                  @keyup.enter="onEntryChange(entry, 'remark', $event)"
+                  @blur="onEntryChange(entry, 'remark', $event)"
+                  class="duty-editor"
+                  :value="entry.remark"
+                  v-else
+                />
+              </td>
+              <td class="actions has-text-centered">
+                <button
+                  class="button"
+                  data-test="button-delete"
+                  tabindex="-1"
+                  @click="onRemove(entry)"
+                  v-if="entry.is_custom"
+                >
+                  <trash-icon class="icon is-small only-icon" />
+                </button>
+              </td>
+            </tr>
+          </el-config-provider>
         </tbody>
       </table>
     </div>
@@ -102,7 +178,7 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapGetters, mapActions } from 'vuex'
 
 import { selectionListMixin } from '@/components/mixins/selection'
 import { formatListMixin } from '@/components/mixins/format'
@@ -114,12 +190,16 @@ import { formatFullDate } from '@/lib/time'
 import DescriptionCell from '@/components/cells/DescriptionCell'
 import TableInfo from '@/components/widgets/TableInfo'
 import PeopleAvatar from '@/components/widgets/PeopleAvatar.vue'
+import { zhCn } from 'element-plus/es/locale/index'
+import { TrashIcon } from 'lucide-vue-next'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'work-duty-list',
   mixins: [formatListMixin, selectionListMixin, descriptorMixin],
 
   components: {
+    TrashIcon,
     PeopleAvatar,
     DescriptionCell,
     TableInfo
@@ -159,7 +239,7 @@ export default {
       default: () => {}
     }
   },
-  emits: ['scroll'],
+  emits: ['scroll', 'delete-entry'],
 
   data() {
     return {
@@ -175,6 +255,9 @@ export default {
   },
 
   computed: {
+    zhCn() {
+      return zhCn
+    },
     ...mapGetters([
       'nbSelectedTasks',
       'openProductions',
@@ -201,10 +284,9 @@ export default {
   },
 
   methods: {
+    ...mapActions(['changeCustomDuty', 'deleteCustomDuty']),
     getDutyType(entry) {
-      if (entry.type === 0) return this.$t('doodle.overtime')
-      if (entry.type === 1) return this.$t('doodle.leave')
-      return ''
+      return this.$t(`doodle.${entry.type}`)
     },
 
     setScrollPosition(scrollPosition) {
@@ -216,7 +298,9 @@ export default {
     formatDate(date) {
       return date ? formatFullDate(date) : ''
     },
-
+    onClick(entry) {
+      entry.is_show = true
+    },
     onBodyScroll(event, position) {
       this.$emit('scroll', position.scrollTop)
       const maxHeight =
@@ -262,7 +346,35 @@ export default {
 
       return route
     },
-
+    onEntryChange(entry, type, event = null) {
+      let isTo = true
+      if (event) {
+        if (entry[type] === event.target.value) isTo = false
+      }
+      if (isTo) {
+        this.changeCustomDuty(entry).then(res => {
+          if (res) {
+            ElMessage({
+              message: `${this.$t(`doodle.${type}`)}: ${this.$t('doodle.modified_successfully')}`,
+              type: 'success',
+              plain: true
+            })
+          } else {
+            ElMessage({
+              message: `${this.$t(`doodle.${type}`)}: ${this.$t('doodle.modified_failed')}`,
+              type: 'error',
+              plain: true
+            })
+          }
+        })
+      }
+    },
+    onRemove(entry) {
+      this.deleteCustomDuty(entry).then(res => {
+        console.log(res)
+        this.$emit('delete-entry', entry)
+      })
+    },
     resizeHeaders() {
       const tableBody = this.$refs['body-tbody']
       const isTableBodyContainLines = tableBody && tableBody.children
@@ -277,6 +389,11 @@ export default {
           this.$refs['th-' + desc.name].style['min-width'] = `${width}px`
         })
       }
+    }
+  },
+  watch: {
+    displayedTasks(newValue, oldValue) {
+      console.log(newValue, oldValue)
     }
   }
 }
@@ -333,10 +450,6 @@ export default {
   width: 180px;
 }
 
-td.due-date {
-  border-right: 1px solid var(--border);
-}
-
 td.end-date {
   width: 100%;
   min-width: 150px;
@@ -372,7 +485,49 @@ td.end-date {
   background: transparent;
 }
 
+.duty-editor {
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text);
+  height: 100%;
+  padding: 0.5rem;
+  width: 100%;
+  z-index: 100;
+
+  &:focus {
+    border: 1px solid $green;
+    background: var(--background);
+  }
+}
+
+.select {
+  padding: 0;
+}
+
+td.remark {
+  border-right: 1px solid var(--border);
+}
+
 .remark {
   min-width: 200px;
+}
+
+::v-deep .el-input__wrapper {
+  box-shadow: none !important; /* 取消默认边框 */
+  padding: 0;
+}
+
+::v-deep .el-input__inner {
+  color: var(--text) !important;
+}
+
+::v-deep .el-input__prefix {
+  width: 0 !important;
+}
+
+.actions {
+  min-width: 80px;
+  padding: 0.4em;
 }
 </style>

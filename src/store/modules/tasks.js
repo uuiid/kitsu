@@ -602,7 +602,26 @@ const actions = {
   getCompanyList({ commit }) {
     return tasksApi.getCompanyList()
   },
-
+  createCustomDuty({ commit, state }, { user_id, task }) {
+    return tasksApi
+      .createCustomDuty({
+        user_id,
+        task
+      })
+      .then(comment => {
+        return Promise.resolve(comment)
+      })
+  },
+  deleteCustomDuty({ commit, state }, task) {
+    return tasksApi.deleteCustomDuty(task).then(comment => {
+      return Promise.resolve(comment)
+    })
+  },
+  changeCustomDuty({ commit, state }, task) {
+    return tasksApi.changeCustomDuty(task).then(comment => {
+      return Promise.resolve(comment)
+    })
+  },
   getDutyList({ commit, state }, { user_id, year, month }) {
     return tasksApi
       .getDutyList({

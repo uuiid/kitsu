@@ -96,6 +96,14 @@
             >
               {{ $t('doodle.get_duty') }}
             </button>
+            <button
+              v-if="isActiveTab('duty')"
+              class="button"
+              :text="$t('doodle.add_custom_duty')"
+              @click="addCustomDutyClick"
+            >
+              {{ $t('doodle.add_custom_duty') }}
+            </button>
           </div>
         </div>
 
@@ -135,6 +143,7 @@
           :done="true"
           :person="person"
           v-if="isActiveTab('duty')"
+          @delete-entry="onDeleteDuty"
         />
       </div>
     </div>
@@ -225,6 +234,11 @@
       @cancel="modals.add = false"
       @on-confirm="onAddCustomEntry"
     />
+    <add-custom-duty-modal
+      :active="modals.addDuty"
+      @cancel="modals.addDuty = false"
+      @on-confirm="onAddCustomDuty"
+    />
   </div>
 </template>
 
@@ -252,11 +266,13 @@ import ButtonSimple from '@/components/widgets/ButtonSimple'
 import ComboboxDepartment from '@/components/widgets/ComboboxDepartment'
 import { PAGE_SIZE } from '@/lib/pagination.js'
 import AddSheetCustomEntry from '@/components/modals/AddSheetCustomEntry.vue'
+import AddCustomDutyModal from '@/components/modals/AddCustomDutyModal.vue'
 
 export default {
   name: 'work-sheet',
 
   components: {
+    AddCustomDutyModal,
     AddSheetCustomEntry,
     Combobox,
     RouteSectionTabs,
@@ -287,7 +303,8 @@ export default {
       modals: {
         del: false,
         edit: false,
-        add: false
+        add: false,
+        addDuty: false
       },
       person: null,
       tasks: [],
@@ -530,7 +547,8 @@ export default {
       'loadTask',
       'countOneTaskTime',
       'countCustomTaskTime',
-      'sortTaskTime'
+      'sortTaskTime',
+      'createCustomDuty'
     ]),
 
     isActiveTab(tab) {
@@ -548,6 +566,11 @@ export default {
     onAddCustomEntry(task) {
       this.onCountCustomTaskTime(task)
     },
+    onAddCustomDuty(task) {
+      this.createCustomDuty({ user_id: this.getUserId, task: task }).then(res =>
+        this.dutys.push(res)
+      )
+    },
     onSoftTask(task_ids) {
       const year = this.yearString
       const month = this.monthString
@@ -563,6 +586,9 @@ export default {
           this.resetTask(res.data)
         }
       })
+    },
+    onDeleteDuty(task) {
+      this.dutys = this.dutys.filter(duty => duty.id !== task.id)
     },
     onNewClicked() {
       this.isLoading = true
@@ -927,6 +953,9 @@ export default {
         return
       }
       this.getDutyDingDing(this.person.id)
+    },
+    addCustomDutyClick() {
+      this.modals.addDuty = true
     },
     onWorkSheetEvent(data) {
       if (data[0] === 'error') {

@@ -1750,6 +1750,7 @@
       "add_select_task": "添加选中任务",
       "get_time": "计算时长",
       "get_duty": "获取假勤",
+      "add_custom_duty": "添加自定义假勤",
       "action": "操作",
       "company": "公司",
       "day": "日",
@@ -1784,8 +1785,10 @@
       "grade": "等级",
       "date": "日期",
       "start_time": "开始时间",
-      "end_time": "结束时间"
-
+      "end_time": "结束时间",
+      "select_type": "选择类型",
+      "modified_successfully": "修改成功",
+      "modified_failed": "修改成功"
     },
     "doodle_productions": {
       "fields": {
