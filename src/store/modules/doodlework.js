@@ -224,6 +224,7 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
   formatDataState(data) {
     data.task_data.is_sim = this.task_data_filed.get('is_sim').checked
     data.task_data.layering = this.task_data_filed.get('layering').checked
+    data.task_data.bind_skin = this.task_data_filed.get('bind_skin').checked
   }
 
   formatShotName(file_name) {
