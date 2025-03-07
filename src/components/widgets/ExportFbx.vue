@@ -58,11 +58,6 @@ const onAddData = files => {
   doodleWork.currentDoodleWorkState.addFilesData(files)
   if (doodleWork.currentDoodleWorkState.uncommittedWorkList.size > 0) {
     doodleWork.state.isActiveModal = true
-  } else {
-    ElMessage({
-      message: '添加失败，请检查文件名称',
-      type: 'error'
-    })
   }
 }
 

@@ -6,6 +6,7 @@ import JSZip from 'jszip'
 import user from '@/store/modules/user.js'
 import productions from '@/store/modules/productions.js'
 import { v4 as uuid } from 'uuid'
+import { ElMessage } from 'element-plus'
 
 //import uuid from 'uuid'
 export class DoodleWorkBase {
@@ -17,6 +18,8 @@ export class DoodleWorkBase {
     this.task_data_filed = new Map()
     this.historyWorkList = new Map()
     this.isReload = false
+    //this.executeField = ['execute', 'execute_clear']
+    this.currentExecuteField = 'execute'
     this.productions = productions.state.openProductions
     this.tableHeaderFiled = {
       name: { name: '文件名', type: 'string' },
@@ -51,7 +54,7 @@ export class DoodleWorkBase {
   formatDataState(data) {}
 
   validateString(input) {
-    const regex = /^[A-Z]+_EP\d{3}_SC\d{3}[A-Z]?\.ma$/
+    const regex = /^[A-Z]+_EP\d+_SC\d+[A-Z]?\.ma$/
     return regex.test(input)
   }
 
@@ -97,6 +100,11 @@ export class DoodleWorkBase {
       ) {
         const data = this.formatData(file)
         this.uncommittedWorkList.set(data.id, data)
+      } else {
+        ElMessage({
+          message: `${file.path} 请检查文件名称`,
+          type: 'error'
+        })
       }
     })
     //this.uncommittedWorkList = [...this.uncommittedWorkList, ...data]
@@ -123,6 +131,20 @@ class DoodleWorkFbx extends DoodleWorkBase {
 
   formatData(file) {
     return super.formatData(file)
+  }
+}
+
+class DoodleWorkReplaceMaya extends DoodleWorkBase {
+  constructor(productions) {
+    super()
+    this.productions = productions
+    this.name = 'replace_maya_ref'
+    this.task_data_filed = new Map()
+    this.replaceFiles = new Map()
+  }
+
+  formatDataState(data) {
+    data.task_data.file_list = [...this.replaceFiles.values()]
   }
 }
 
@@ -188,6 +210,12 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
     this.task_data_filed.set('layering', {
       id: 'layering',
       name: '是否分层输出',
+      checked: false,
+      type: Boolean
+    })
+    this.task_data_filed.set('bind_skin', {
+      id: 'bind_skin',
+      name: '挂载骨架网格',
       checked: false,
       type: Boolean
     })
@@ -281,8 +309,8 @@ class DoodleWorkExtractCaption extends DoodleWorkBase {
   }
 
   validateString(input) {
-    const regex = /\.docx?$/i
-    const regex1 = /\.srt?$/i
+    const regex = /\.docx$/i
+    const regex1 = /\.srt$/i
     return regex.test(input) || regex1.test(input)
   }
 
@@ -334,6 +362,11 @@ class DoodleWorkMergeVideo extends DoodleWorkAutoLight {
       ) {
         const data = this.formatData(file)
         this.uncommittedWorkList.set(data.id, data)
+      } else {
+        ElMessage({
+          message: `${file.path} 请检查文件名称`,
+          type: 'error'
+        })
       }
     })
     //this.uncommittedWorkList = [...this.uncommittedWorkList, ...data]
@@ -364,6 +397,11 @@ class DoodleWorkConnectVideo extends DoodleWorkMergeVideo {
         this.validateString(file.name)
       ) {
         file_paths.push(file.path)
+      } else {
+        ElMessage({
+          message: `${file.path} 请检查文件名称`,
+          type: 'error'
+        })
       }
     })
     if (file_paths.length > 0) {
@@ -433,6 +471,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
   // })
   const doodleWorkBase = new DoodleWorkBase()
   const doodleWorkFbx = new DoodleWorkFbx(allProductions)
+  const doodleWorkReplaceMaya = new DoodleWorkReplaceMaya(allProductions)
   const doodleWorkAbc = new DoodleWorkAbc(allProductions)
   const doodleWorkAutoLight = new DoodleWorkAutoLight()
   const doodleWorkExtractCaption = new DoodleWorkExtractCaption()
@@ -442,6 +481,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     new Map([
       ['export_fbx', doodleWorkFbx],
       ['export_abc', doodleWorkAbc],
+      [doodleWorkReplaceMaya.name, doodleWorkReplaceMaya],
       ['auto_light', doodleWorkAutoLight],
       ['extract_caption', doodleWorkExtractCaption],
       ['merge_video', doodleWorkMergeVideo],
@@ -550,6 +590,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         currentDoodleWorkState.value.workList.set(task.id, task)
       }
       currentDoodleWorkState.value.uncommittedWorkList = new Map()
+      currentDoodleWorkState.value.replaceFiles = new Map()
       currentDoodleWorkState.value.isReload = true
       // results.forEach(result => {
       //   currentDoodleWorkState.value.workList.set(result.id, result)

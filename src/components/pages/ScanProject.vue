@@ -405,6 +405,10 @@ export default {
   gap: 20px;
 }
 
+.datatable-row-header {
+  z-index: 1;
+}
+
 .list-item-text {
   margin-left: 10px;
 
@@ -455,6 +459,7 @@ export default {
   cursor: pointer;
   margin-top: 2px;
   z-index: 1;
+
   &:hover {
     color: $blue;
   }
@@ -473,11 +478,10 @@ export default {
 }
 
 .datatable-tbody-head {
-  background-color: var(--background-rgb);
   position: sticky; /* 粘性定位 */
   width: 100%;
   top: 35px; /* 粘在顶部 */
-  z-index: 1; /* 确保表头在内容上方 */
+  z-index: 2; /* 确保表头在内容上方 */
   cursor: pointer;
 
   &:hover {

@@ -2,6 +2,10 @@
 import TableList from '@/components/lists/TableList.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import { computed } from 'vue'
+import ReplaceList from '@/components/lists/ReplaceList.vue'
+import { generateUUID } from 'three/src/math/MathUtils.js'
+import { ElMessage } from 'element-plus'
+import i18n from '@/lib/i18n.js'
 
 const doodleWork = doodleWorkStore()
 
@@ -15,7 +19,21 @@ const disPlayTaskDataFiled = computed(() => {
 })
 
 const onAddData = files => {
-  doodleWork.currentDoodleWorkState.addFilesData(files)
+  const files_temp = []
+  if (doodleWork.currentDoodleWorkState.uncommittedWorkList.size > 0) {
+    for (const file of files) {
+      let isAdd = true
+      for (const work of doodleWork.currentDoodleWorkState.uncommittedWorkList)
+        if (file.path === work[1].task_data.path) {
+          isAdd = false
+          ElMessage.error(
+            `${file.path} ${i18n.global.t('doodle.already_exists')}`
+          )
+        }
+      if (isAdd) files_temp.push(file)
+    }
+  } else files_temp.push([...files])
+  doodleWork.currentDoodleWorkState.addFilesData(files_temp)
 }
 
 const onAction = (action_name, task) => {
@@ -30,6 +48,27 @@ const onSubmit = () => {
   } else {
     doodleWork.actions.submitLocalDoodleWork()
   }
+}
+const onAddReplaceData = files => {
+  files.forEach(file => {
+    let isAdd = true
+    doodleWork.currentDoodleWorkState.replaceFiles.forEach(file_list => {
+      if (file_list[0] === file.path) {
+        isAdd = false
+      }
+    })
+    if (isAdd) {
+      doodleWork.currentDoodleWorkState.replaceFiles.set(generateUUID(), [
+        file.path,
+        ''
+      ])
+    } else {
+      ElMessage.error(`${file.path} ${i18n.global.t('doodle.already_exists')}`)
+    }
+  })
+}
+const onDeleteReplaceData = key => {
+  doodleWork.currentDoodleWorkState.replaceFiles.delete(key)
 }
 </script>
 
@@ -92,17 +131,37 @@ const onSubmit = () => {
         </div>
         <table-list
           class="table-list"
+          :class="{
+            'table-list-':
+              doodleWork.currentDoodleWorkState.name === 'replace_maya_ref'
+          }"
           name="执行"
           :table-header-filed="
             doodleWork.currentDoodleWorkState.tableHeaderFiled
           "
           :body-list="doodleWork.currentDoodleWorkState.uncommittedWorkList"
           :is-drop="true"
-          :is-show-submit="true"
+          :is-show-submit="
+            doodleWork.currentDoodleWorkState.name !== 'replace_maya_ref'
+          "
           @submit="onSubmit"
           @add-data="onAddData"
           @handle-action="onAction"
         ></table-list>
+        <div
+          class="buttons"
+          v-if="doodleWork.currentDoodleWorkState.name === 'replace_maya_ref'"
+        >
+          替换文件
+        </div>
+        <replace-list
+          class="buttons"
+          :body-list="doodleWork.currentDoodleWorkState.replaceFiles"
+          v-if="doodleWork.currentDoodleWorkState.name === 'replace_maya_ref'"
+          @add-data="onAddReplaceData"
+          @delete-data="onDeleteReplaceData"
+          @submit="onSubmit"
+        ></replace-list>
       </div>
     </div>
   </div>
@@ -111,6 +170,16 @@ const onSubmit = () => {
 <style scoped lang="scss">
 .table-list {
   max-height: 60vh;
+}
+
+.box {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.table-list- {
+  max-height: 30vh;
 }
 
 .interval {

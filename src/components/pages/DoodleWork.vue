@@ -121,6 +121,17 @@ const pagedAssets = ref([
   },
   {
     id: 1,
+    name: 'replace_maya_ref',
+    label: '替换引用',
+    textIcon: 'R',
+    disabled: true,
+    description: '',
+    color: '#9c45e6',
+    isVisible: true,
+    isBaseTemplate: true
+  },
+  {
+    id: 2,
     name: 'export_abc',
     label: '导出ABC',
     textIcon: 'A',
@@ -131,7 +142,7 @@ const pagedAssets = ref([
     isBaseTemplate: true
   },
   {
-    id: 2,
+    id: 3,
     name: 'auto_light',
     label: '自动灯光',
     textIcon: 'L',
@@ -142,7 +153,7 @@ const pagedAssets = ref([
     isBaseTemplate: true
   },
   {
-    id: 3,
+    id: 4,
     name: 'extract_caption',
     label: '提取字幕',
     textIcon: 'Z',
@@ -153,7 +164,7 @@ const pagedAssets = ref([
     isBaseTemplate: false
   },
   {
-    id: 4,
+    id: 5,
     name: 'merge_video',
     label: '图片转视频',
     textIcon: 'V',
@@ -164,7 +175,7 @@ const pagedAssets = ref([
     isBaseTemplate: true
   },
   {
-    id: 4,
+    id: 6,
     name: 'connect_video',
     label: '连接视频',
     textIcon: 'C',
@@ -175,7 +186,7 @@ const pagedAssets = ref([
     isBaseTemplate: true
   },
   {
-    id: 5,
+    id: 7,
     name: 'plugin_center',
     label: '插件中心',
     textIcon: 'P',
