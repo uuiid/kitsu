@@ -1,3 +1,5 @@
+import moment from 'moment'
+
 import assetsApi from '@/store/api/assets'
 import peopleApi from '@/store/api/people'
 import assetTypeStore from '@/store/modules/assettypes'
@@ -143,6 +145,7 @@ const helpers = {
       entity_type_name: asset.asset_type_name,
       entity: {
         id: asset.id,
+        name: asset.name,
         preview_file_id: asset.preview_file_id
       }
     })
@@ -852,6 +855,32 @@ const actions = {
       console.error(err)
       throw err
     }
+  },
+
+  async getPendingAssets({ commit }, daily = false) {
+    const assets = []
+    cache.assets.forEach(asset => {
+      let isPending = false
+      asset.tasks.forEach(taskId => {
+        const task = tasksStore.state.taskMap.get(taskId)
+        if (!isPending) {
+          const taskStatus = helpers.getTaskStatus(task.task_status_id)
+          if (daily) {
+            if (task.last_comment_date) {
+              const lastCommentDate = moment(task.last_comment_date)
+              const yesterday = moment().subtract(1, 'days')
+              isPending =
+                taskStatus.is_feedback_request &&
+                lastCommentDate.isAfter(yesterday)
+            }
+          } else {
+            isPending = taskStatus.is_feedback_request
+          }
+        }
+      })
+      if (isPending) assets.push(asset)
+    })
+    return assets
   }
 }
 

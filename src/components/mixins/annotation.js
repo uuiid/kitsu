@@ -526,9 +526,21 @@ export const annotationMixin = {
           }
         })
       }
+      this.updateAnnotationsInStore()
       const annotations = []
       this.annotations.forEach(a => annotations.push({ ...a }))
       return annotations
+    },
+
+    updateAnnotationsInStore() {
+      const preview = this.currentPreview
+      if (preview) {
+        this.$store.commit('UPDATE_PREVIEW_ANNOTATION', {
+          taskId: preview.task_id,
+          preview: preview,
+          annotations: this.annotations
+        })
+      }
     },
 
     /*
@@ -1335,7 +1347,7 @@ export const annotationMixin = {
           this.addObject(obj)
         })
         this.fabricCanvas.requestRenderAll()
-      } else {
+      } else if (mainObject) {
         this.addObject(mainObject)
         this.fabricCanvas.setActiveObject(mainObject)
         this.fabricCanvas.requestRenderAll()
@@ -1442,11 +1454,11 @@ export const annotationMixin = {
             if (obj._objects) {
               obj._objects.forEach(obj => {
                 tmpCanvas.add(obj)
-                obj.strokeWidth = 8 / scaleRatio
+                obj.strokeWidth = obj.strokeWidth / scaleRatio
               })
             } else {
               tmpCanvas.add(obj)
-              obj.strokeWidth = 8 / scaleRatio
+              obj.strokeWidth = obj.strokeWidth / scaleRatio
             }
           })
           tmpCanvas.setZoom(scaleRatio)

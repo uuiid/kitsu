@@ -81,6 +81,20 @@
           </div>
         </div>
 
+        <div class="flexrow" v-if="showAssignees && task.assignees.length > 0">
+          <span class="flexrow-item ml1">
+            {{ $t('tasks.fields.assignees') }}:
+          </span>
+          <people-avatar
+            :key="`assignee-${assigneeId}`"
+            class="flexrow-item"
+            :font-size="14"
+            :person="personMap.get(assigneeId)"
+            :size="24"
+            v-for="assigneeId in task.assignees"
+          />
+        </div>
+
         <div class="task-columns pa1 pt0" ref="task-columns">
           <div class="task-column preview-column" v-if="isPreview">
             <div class="preview-column-content">
@@ -197,6 +211,11 @@
                       "
                       :is-pinnable="
                         isDepartmentSupervisor || isCurrentUserManager
+                      "
+                      :is-replyable="
+                        isAssigned ||
+                        isDepartmentSupervisor ||
+                        isCurrentUserManager
                       "
                       :revision="currentRevision"
                       :task="task"
@@ -335,6 +354,7 @@ import Comment from '@/components/widgets/Comment.vue'
 import ComboboxStyled from '@/components/widgets/ComboboxStyled.vue'
 import DeleteModal from '@/components/modals/DeleteModal.vue'
 import EditCommentModal from '@/components/modals/EditCommentModal.vue'
+import PeopleAvatar from '@/components/widgets/PeopleAvatar.vue'
 import PreviewPlayer from '@/components/previews/PreviewPlayer.vue'
 import Spinner from '@/components/widgets/Spinner.vue'
 import TaskTypeName from '@/components/widgets/TaskTypeName.vue'
@@ -356,6 +376,7 @@ export default {
     CornerRightUpIcon,
     DeleteModal,
     EditCommentModal,
+    PeopleAvatar,
     PreviewPlayer,
     Spinner,
     TaskTypeName,
@@ -388,6 +409,10 @@ export default {
       default: true
     },
     silent: {
+      type: Boolean,
+      default: false
+    },
+    showAssignees: {
       type: Boolean,
       default: false
     },
@@ -493,7 +518,6 @@ export default {
 
   computed: {
     ...mapGetters([
-      'isSavingCommentPreview',
       'currentEpisode',
       'currentProduction',
       'getTaskComment',
@@ -505,6 +529,7 @@ export default {
       'isCurrentUserClient',
       'isCurrentUserManager',
       'isCurrentUserSupervisor',
+      'isSavingCommentPreview',
       'isSingleEpisode',
       'isTVShow',
       'nbSelectedTasks',
@@ -871,7 +896,7 @@ export default {
         this.currentPreviewDlPath = this.getOriginalDlPath()
         this.resetDraft()
         this.$nextTick(() => {
-          this.focusCommentTextarea()
+          this.$refs['preview-player']?.focus()
         })
       }
     },
@@ -981,7 +1006,8 @@ export default {
     },
 
     onAnnotationChanged({ preview, additions, deletions, updates }) {
-      const taskId = this.task ? this.task.id : this.previousTaskId
+      let taskId = this.task ? this.task.id : this.previousTaskId
+      taskId = taskId || preview.task_id
       if (taskId) {
         this.updatePreviewAnnotation({
           taskId,

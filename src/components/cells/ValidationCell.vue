@@ -9,63 +9,75 @@
     :style="cellStyle"
     @click="onClick"
   >
-    <div class="wrapper" v-if="!minimized">
-      <template v-if="task">
-        <span class="tag" :title="taskStatus.name" :style="tagStyle">
-          {{ taskStatus.short_name }}
+    <div class="wrapper" :style="wrapperStyle" v-if="!minimized">
+      <div
+        class="wrapper status-wrapper"
+        :style="statusWrapperStyle"
+        v-if="!minimized"
+      >
+        <template v-if="task">
+          <span
+            class="tag"
+            :title="taskStatus.name"
+            :style="tagStyle"
+            v-if="!contactSheet"
+          >
+            {{ taskStatus.short_name }}
+          </span>
+          <span class="filler" v-if="contactSheet"> </span>
+          <span
+            :class="{
+              priority: true,
+              high: task.priority === 1,
+              veryhigh: task.priority === 2,
+              emergency: task.priority === 3
+            }"
+            :title="formatPriority(task.priority)"
+            v-if="!isCurrentUserClient && !disabled && task.priority > 0"
+          >
+            {{ priority }}
+          </span>
+          <span
+            class="casting-status"
+            :class="{ 'casting-status-not-ready': !isCastingReady }"
+            :title="castingTitle"
+            v-if="!isCurrentUserClient && castingTitle"
+          >
+            <img src="@/assets/icons/casting-ready.png" v-if="isCastingReady" />
+            <img src="@/assets/icons/casting-not-ready.png" v-else />
+          </span>
+        </template>
+        <template v-if="isAssignees && !isCurrentUserClient && !disabled">
+          <span
+            class="avatar has-text-centered"
+            :title="person.full_name"
+            :style="{
+              backgroundColor: person.color,
+              color: isDarkTheme ? '#333' : '#FFF',
+              'font-weight': isDarkTheme ? 'bold' : 'normal'
+            }"
+            :key="`avatar-${person.id}`"
+            v-for="person in assignees"
+          >
+            <img
+              loading="lazy"
+              alt=""
+              :src="person.avatarPath"
+              v-if="person.has_avatar"
+            />
+            <template v-else>{{ person.initials }}</template>
+          </span>
+          <span
+            class="dot"
+            v-if="
+              typeof task?.file_exist === 'boolean' ? !task.file_exist : false
+            "
+          ></span>
+        </template>
+        <span class="subscribed" v-if="task?.is_subscribed">
+          <eye-icon :size="12" />
         </span>
-        <span
-          :class="{
-            priority: true,
-            high: task.priority === 1,
-            veryhigh: task.priority === 2,
-            emergency: task.priority === 3
-          }"
-          :title="formatPriority(task.priority)"
-          v-if="!isCurrentUserClient && !disabled && task.priority > 0"
-        >
-          {{ priority }}
-        </span>
-        <span
-          class="casting-status"
-          :class="{ 'casting-status-not-ready': !isCastingReady }"
-          :title="castingTitle"
-          v-if="!isCurrentUserClient && castingTitle"
-        >
-          <img src="@/assets/icons/casting-ready.png" v-if="isCastingReady" />
-          <img src="@/assets/icons/casting-not-ready.png" v-else />
-        </span>
-      </template>
-      <template v-if="isAssignees && !isCurrentUserClient && !disabled">
-        <span
-          class="avatar has-text-centered"
-          :title="person.full_name"
-          :style="{
-            backgroundColor: person.color,
-            color: isDarkTheme ? '#333' : '#FFF',
-            'font-weight': isDarkTheme ? 'bold' : 'normal'
-          }"
-          :key="`avatar-${person.id}`"
-          v-for="person in assignees"
-        >
-          <img
-            loading="lazy"
-            alt=""
-            :src="person.avatarPath"
-            v-if="person.has_avatar"
-          />
-          <template v-else>{{ person.initials }}</template>
-        </span>
-        <span
-          class="dot"
-          v-if="
-            typeof task?.file_exist === 'boolean' ? !task.file_exist : false
-          "
-        ></span>
-      </template>
-      <span class="subscribed" v-if="task?.is_subscribed">
-        <eye-icon :size="12" />
-      </span>
+      </div>
     </div>
     <div class="wrapper" v-else>
       <span class="tag" :style="tagStyle"> &nbsp; </span>
@@ -169,6 +181,10 @@ export default {
     canceled: {
       default: false,
       type: Boolean
+    },
+    contactSheet: {
+      default: false,
+      type: Boolean
     }
   },
 
@@ -232,6 +248,33 @@ export default {
       }
     },
 
+    wrapperStyle() {
+      if (!this.task || !this.contactSheet) return {}
+      const path =
+        '/api/pictures/thumbnails/preview-files/' +
+        this.task.last_preview_file_id +
+        '.png'
+      return {
+        'background-image': 'url(' + path + ')',
+        height: '100px',
+        width: '150px'
+      }
+    },
+
+    statusWrapperStyle() {
+      if (!this.task || !this.contactSheet)
+        return {
+          padding: '6px'
+        }
+      return {
+        'background-color': this.taskStatus.color + '44',
+        height: '100px',
+        width: '150px',
+        padding: '6px',
+        'text-align:': 'right'
+      }
+    },
+
     taskStatus() {
       const taskStatusId = this.task?.task_status_id
       return this.taskStatusMap?.get(taskStatusId) || {}
@@ -280,6 +323,7 @@ export default {
 .validation {
   cursor: pointer;
   margin-bottom: 3px;
+  padding: 0;
 
   &.selected {
     background-color: #bfc1ff !important;
@@ -299,9 +343,10 @@ export default {
 }
 
 .wrapper {
-  position: relative;
   display: flex;
+  flex: 1;
   flex-wrap: wrap;
+  position: relative;
 }
 
 .avatar {
@@ -337,8 +382,8 @@ export default {
 
 .casting-status {
   position: absolute;
-  right: -5px;
-  top: -8px;
+  right: 4px;
+  top: -2px;
 
   &.casting-status-not-ready {
     opacity: 0.5;
@@ -351,8 +396,8 @@ export default {
 
 .subscribed {
   position: absolute;
-  bottom: -10px;
-  right: -5px;
+  bottom: -4px;
+  right: 4px;
   color: $grey;
 }
 

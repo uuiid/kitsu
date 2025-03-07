@@ -36,6 +36,13 @@
                   v-model="selectedDepartment"
                   v-if="departments.length > 0"
                 />
+                <button-simple
+                  class="flexrow-item"
+                  icon="grid"
+                  :is-on="contactSheetMode"
+                  :title="$t('tasks.show_contact_sheet')"
+                  @click="contactSheetMode = !contactSheetMode"
+                />
                 <show-assignations-button class="flexrow-item" />
                 <show-infos-button class="flexrow-item" />
                 <big-thumbnails-button
@@ -91,6 +98,7 @@
           />
           <asset-list
             ref="asset-list"
+            :contact-sheet-mode="contactSheetMode"
             :displayed-assets="
               showSharedAssets
                 ? displayedAssetsByType
@@ -98,8 +106,8 @@
             "
             :is-loading="isAssetsLoading || initialLoading"
             :is-error="isAssetsLoadingError"
-            :validation-columns="assetValidationColumns"
             :department-filter="departmentFilter"
+            :validation-columns="assetValidationColumns"
             @change-sort="onChangeSortClicked"
             @create-tasks="showCreateTasksModal"
             @delete-all-tasks="onDeleteAllTasksClicked"
@@ -354,6 +362,7 @@ export default {
         }
       ],
       assetFilterTypes: ['Type'],
+      contactSheetMode: false,
       deleteAllTasksLockText: null,
       descriptorToEdit: {},
       departmentFilter: [],

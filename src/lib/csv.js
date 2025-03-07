@@ -19,20 +19,20 @@ const csv = {
     unit,
     organisation,
     detailLevel,
+    todayYear,
+    todayMonth,
     year,
     month,
-    currentYear,
-    currentMonth,
-    currentWeek
+    week
   ) {
     const headers = csv.getTimesheetHeaders(
       timesheet,
       detailLevel,
+      todayYear,
+      todayMonth,
       year,
       month,
-      currentYear,
-      currentMonth,
-      currentWeek
+      week
     )
     const entries = csv.getTimesheetEntries(
       organisation,
@@ -48,11 +48,11 @@ const csv = {
   getTimesheetHeaders(
     timesheet,
     detailLevel,
+    todayYear,
+    todayMonth,
     year,
     month,
-    currentYear,
-    currentMonth,
-    currentWeek
+    week
   ) {
     const headers = ['Person']
     let range = []
@@ -61,11 +61,11 @@ const csv = {
         headers.push(yearLabel)
       })
     } else if (detailLevel === 'month') {
-      range = getMonthRange(year, currentYear, currentMonth)
+      range = getMonthRange(year, todayYear, todayMonth)
     } else if (detailLevel === 'week') {
-      range = getWeekRange(year, currentYear, currentWeek)
+      range = getWeekRange(year, todayYear)
     } else if (detailLevel === 'day') {
-      range = getDayRange(year, month, currentYear, currentMonth)
+      range = getDayRange(year, month, todayYear, todayMonth)
     }
     for (const unit in range) {
       let value = parseInt(unit) + 1
@@ -408,6 +408,9 @@ const csv = {
           let key = year
           if (detailLevel === 'day') {
             key = `${year}-${String(month).padStart(2, '0')}-${String(index).padStart(2, '0')}`
+          } else if (detailLevel === 'week') {
+            // in the case of week its in the format of 1999-1 not 1999-01
+            key = `${year}-${index}`
           } else {
             key = `${year}-${String(index).padStart(2, '0')}`
           }
@@ -416,7 +419,10 @@ const csv = {
             quotas[person.id] &&
             quotas[person.id][detailLevel][countMode][key]
           ) {
-            line.push(quotas[person.id][detailLevel][countMode][key])
+            let value = quotas[person.id][detailLevel][countMode][key]
+            if (typeof value === 'number')
+              value = Math.round((value + Number.EPSILON) * 100) / 100
+            line.push(value)
           } else {
             line.push('-')
           }
