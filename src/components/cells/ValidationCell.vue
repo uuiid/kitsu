@@ -427,7 +427,7 @@ export default {
 
 .dot {
   position: absolute;
-  right: -5px;
+  right: 5px;
   border: 4px solid;
   color: red;
   border-radius: 4px;
