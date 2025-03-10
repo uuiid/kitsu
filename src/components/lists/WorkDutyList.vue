@@ -40,6 +40,7 @@
               :class="{
                 'datatable-row': true,
                 'datatable-row--selectable': true,
+                'datatable-row--selectable-none': !entry.is_custom,
                 selected:
                   selectionGrid && selectionGrid[i]
                     ? selectionGrid[i][0]
@@ -108,11 +109,14 @@
                   class="custom-input"
                   v-else
                   v-model="entry.start_time"
-                  :prefix-icon="1"
                   value-format="YYYY-MM-DD HH:mm:ss"
                   type="datetime"
+                  :disabled-date="
+                    time => {
+                      return time.getTime() >= new Date(entry.end_time)
+                    }
+                  "
                   placeholder="Select date and time"
-                  :default-value="entry.start_time"
                   @change="onEntryChange(entry, 'start_time')"
                 />
               </td>
@@ -125,11 +129,16 @@
                   v-else
                   @change="onEntryChange(entry, 'end_time')"
                   v-model="entry.end_time"
-                  :prefix-icon="1"
+                  :disabled-date="
+                    time => {
+                      return (
+                        time.getTime() <= new Date(entry.start_time) - 8.64e7
+                      )
+                    }
+                  "
                   type="datetime"
                   value-format="YYYY-MM-DD HH:mm:ss"
                   placeholder="Select date and time"
-                  :default-value="entry.end_time"
                 />
               </td>
               <td class="remark">
@@ -405,10 +414,6 @@ export default {
   border-top: 0;
 }
 
-.datatable .datatable-row {
-  cursor: pointer;
-}
-
 .name {
   width: 200px;
   min-width: 200px;
@@ -417,6 +422,10 @@ export default {
 .description {
   width: 200px;
   min-width: 200px;
+}
+
+.datatable-row--selectable-none {
+  cursor: initial;
 }
 
 .description li {
@@ -491,13 +500,15 @@ td.end-date {
   border: 1px solid transparent;
   color: var(--text);
   height: 100%;
-  padding: 0.5rem;
+  padding: 0.5rem 0.5rem 0.5rem 0;
   width: 100%;
   z-index: 100;
+  cursor: pointer;
 
   &:focus {
     border: 1px solid $green;
     background: var(--background);
+    cursor: text;
   }
 }
 
@@ -513,17 +524,46 @@ td.remark {
   min-width: 200px;
 }
 
-::v-deep .el-input__wrapper {
-  box-shadow: none !important; /* 取消默认边框 */
+:deep(.el-input__wrapper) {
+  box-shadow: none !important;
   padding: 0;
 }
 
-::v-deep .el-input__inner {
+:deep(.el-input__inner) {
   color: var(--text) !important;
+  cursor: pointer !important;
+
+  &:focus {
+    cursor: text !important;
+  }
 }
 
-::v-deep .el-input__prefix {
+:deep(.el-input__prefix) {
   width: 0 !important;
+}
+
+:deep(.el-input .el-input__icon) {
+  max-width: 0 !important;
+}
+
+.datatable .select select {
+  border: 1px solid transparent !important;
+  padding: 0 !important;
+  background: transparent !important;
+  min-width: 60px !important;
+  margin-left: -15px !important;
+
+  &:hover {
+    background: transparent !important;
+  }
+}
+
+.datatable option {
+  text-align: center !important;
+}
+
+.select:after {
+  border: none !important;
 }
 
 .actions {
