@@ -585,7 +585,17 @@ const actions = {
         return Promise.resolve(comment)
       })
   },
-
+  averageTime({ commit, state }, { user_id, year, month }) {
+    return tasksApi
+      .averageTime({
+        user_id,
+        year,
+        month
+      })
+      .then(comment => {
+        return Promise.resolve(comment)
+      })
+  },
   setUserRemark(
     { commit, state },
     { user_id, year, month, task_id, user_remark }

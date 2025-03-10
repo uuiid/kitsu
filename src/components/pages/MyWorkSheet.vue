@@ -66,7 +66,16 @@
               >
                 {{ $t('doodle.export') }}
               </button-simple>
-
+              <button
+                class="button"
+                :class="{
+                  'is-loading': isLoading
+                }"
+                :text="$t('doodle.add_task')"
+                @click="onAverageTime"
+              >
+                {{ $t('doodle.average_time') }}
+              </button>
               <button
                 class="button"
                 :class="{
@@ -548,7 +557,8 @@ export default {
       'countOneTaskTime',
       'countCustomTaskTime',
       'sortTaskTime',
-      'createCustomDuty'
+      'createCustomDuty',
+      'averageTime'
     ]),
 
     isActiveTab(tab) {
@@ -738,8 +748,8 @@ export default {
     },
 
     getUserInfo(user_id) {
-      this.getTaskTime(user_id)
-      this.getDutyList(user_id)
+      if (this.isActiveTab('workSheet')) this.getTaskTime(user_id)
+      else this.getDutyList(user_id)
       // this.reload().then(() => {
       //   this.getTaskTime(user_id)
       //   this.getDutyList(user_id)
@@ -854,6 +864,28 @@ export default {
           })
       }
     },
+    onAverageTime() {
+      const year = this.yearString
+      const month = this.monthString
+      const user_id = this.getUserId
+      const l_params = {
+        user_id,
+        year,
+        month
+      }
+      this.averageTime(l_params)
+        .then(res => {
+          if (res) {
+            this.resetTask(res.data)
+          } else {
+            this.resetTask([])
+          }
+        })
+        .catch(err => {
+          console.log('averageTime Error')
+          console.error(err)
+        })
+    },
     async onCountCustomTaskTime(custom_task) {
       const year = this.yearString
       const month = this.monthString
@@ -864,11 +896,9 @@ export default {
         month,
         custom_task
       }
-      console.log(custom_task)
       const res = await this.countCustomTaskTime(l_params)
       if (res.data) {
         this.setSortTask(res.data)
-        console.log(res.data)
       }
     },
     getTimeClick() {

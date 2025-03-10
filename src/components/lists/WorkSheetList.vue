@@ -91,7 +91,7 @@
               selected: task.checked || false
             }"
             @click="onLineClicked(task, $event)"
-            :draggable="true"
+            :draggable="isDraggable"
             @dragenter="onDragEnter(task, index)"
             @dragstart="onDragStart(task, index)"
             @dragend="onDragEnd"
@@ -174,6 +174,8 @@
                 min="0"
                 :value="getDurationValue(task.computing_time.duration)"
                 @focusout="event => durationDate(event, task.computing_time)"
+                @blur="isDraggable = true"
+                @focus="isDraggable = false"
                 @click="onLineClicked(task, 'duration')"
               />
             </td>
@@ -195,6 +197,8 @@
                 min="0"
                 :value="task.computing_time.user_remark"
                 @focusout="event => setUserRemark(event, task.computing_time)"
+                @blur="isDraggable = true"
+                @focus="isDraggable = false"
               />
             </td>
             <td
@@ -338,7 +342,8 @@ export default {
       },
       currentTask: null,
       dragStartIndex: 0,
-      dragIndex: 0
+      dragIndex: 0,
+      isDraggable: true
     }
   },
 
