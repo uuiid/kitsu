@@ -2,6 +2,7 @@
 import { computed, ref } from 'vue'
 import { useStore } from 'vuex'
 import i18n from '@/lib/i18n.js'
+import TimerCell from '@/components/cells/TimerCell.vue'
 
 const vuexStore = useStore()
 const props = defineProps({
@@ -200,6 +201,10 @@ const handleAction = (action_name, task_id) => {
               >
                 {{ formatTableBodyData(work, key) }}
               </span>
+              <timer-cell
+                :task="work"
+                v-else-if="value.type === 'time'"
+              ></timer-cell>
               <span v-else-if="value.type === 'boolean'">
                 <input type="checkbox" v-model="work.task_data[key]" />
               </span>

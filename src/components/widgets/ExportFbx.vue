@@ -76,14 +76,14 @@ const onClipboard = event => {
 // }
 doodleWork.actions.loadLocalDoodleWork()
 doodleWork.actions.isReloadDoodleWork()
-const intervalId = setInterval(() => {
-  if (doodleWork.currentDoodleWorkState.isReload) {
-    doodleWork.actions.loadLocalDoodleWork()
-    doodleWork.actions.isReloadDoodleWork()
-  } else {
-    doodleWork.actions.isReloadDoodleWork()
-  }
-}, 1000)
+// const intervalId = setInterval(() => {
+//   if (doodleWork.currentDoodleWorkState.isReload) {
+//     doodleWork.actions.loadLocalDoodleWork()
+//     doodleWork.actions.isReloadDoodleWork()
+//   } else {
+//     doodleWork.actions.isReloadDoodleWork()
+//   }
+// }, 1000)
 
 const reExecute = async () => {
   doodleWork.currentDoodleWorkState.workList.forEach(work => {
@@ -115,7 +115,7 @@ const onAction = async (action_name, task) => {
 }
 
 onUnmounted(() => {
-  clearInterval(intervalId)
+  //clearInterval(intervalId)
   document.removeEventListener('paste', onClipboard)
 })
 </script>

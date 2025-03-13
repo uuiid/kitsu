@@ -232,45 +232,45 @@ export const updateTaskFilesStore = defineStore(
           state.value.allFiles.set(task.id, task)
         }
         doodleWorkCheckFiles.uncommittedWorkList = new Map()
-      },
-      loadLocalDoodleWork: async task => {
-        const data = await doodlework.getWorkTask(
-          task.id,
-          state.value.localHttpPath
-        )
-        if (data.status === 'running') {
-          await doodleWork.actions.formatTask(task, data)
-          const currentTime = new Date()
-          const date = new Date(data.run_time)
-          task.computed_time =
-            currentTime > date
-              ? doodleWork.actions.formatDiffTime(currentTime - date)
-              : '00:00:00'
-        }
-        if (data.status !== task.status) {
-          if (data.status === 'failed') {
-            // const logs_str = await doodleWork.actions.getWorkTaskLog(task.id,'mini')
-            // const logs = logs_str.match(/^\[.*?] \[.*?] \[error].*$/gm)
-            // task.last_line_log = logs ? logs[logs?.length - 1] : ''
-            await doodleWork.actions.formatTask(task, data)
-          } else if (data.status === 'completed') {
-            await doodleWork.actions.formatTask(task, data)
-            task.status = 'updating'
-            state.value.updateTaskQueue.enqueue(task)
-          } else if (data.status === 'running') {
-            await doodleWork.actions.formatTask(task, data)
-            //   const currentTime = new Date()
-            //   const date = new Date(data.run_time)
-            //   task.run_time =
-            //     currentTime > date
-            //       ? actions.formatDiffTime(currentTime - date)
-            //       : '00:00:00'
-            // }
-          } else {
-            await doodleWork.actions.formatTask(task, data)
-          }
-        }
       }
+      // loadLocalDoodleWork: async task => {
+      //   const data = await doodlework.getWorkTask(
+      //     task.id,
+      //     state.value.localHttpPath
+      //   )
+      //   if (data.status === 'running') {
+      //     await doodleWork.actions.formatTask(task, data)
+      //     const currentTime = new Date()
+      //     const date = new Date(data.run_time)
+      //     task.computed_time =
+      //       currentTime > date
+      //         ? doodleWork.actions.formatDiffTime(currentTime - date)
+      //         : '00:00:00'
+      //   }
+      //   if (data.status !== task.status) {
+      //     if (data.status === 'failed') {
+      //       // const logs_str = await doodleWork.actions.getWorkTaskLog(task.id,'mini')
+      //       // const logs = logs_str.match(/^\[.*?] \[.*?] \[error].*$/gm)
+      //       // task.last_line_log = logs ? logs[logs?.length - 1] : ''
+      //       await doodleWork.actions.formatTask(task, data)
+      //     } else if (data.status === 'completed') {
+      //       await doodleWork.actions.formatTask(task, data)
+      //       task.status = 'updating'
+      //       state.value.updateTaskQueue.enqueue(task)
+      //     } else if (data.status === 'running') {
+      //       await doodleWork.actions.formatTask(task, data)
+      //       //   const currentTime = new Date()
+      //       //   const date = new Date(data.run_time)
+      //       //   task.run_time =
+      //       //     currentTime > date
+      //       //       ? actions.formatDiffTime(currentTime - date)
+      //       //       : '00:00:00'
+      //       // }
+      //     } else {
+      //       await doodleWork.actions.formatTask(task, data)
+      //     }
+      //   }
+      // }
     }
     return {
       state,

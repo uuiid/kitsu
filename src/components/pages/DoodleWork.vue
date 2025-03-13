@@ -13,6 +13,7 @@ import { ElMessage, ElNotification } from 'element-plus'
 import PluginsCentral from '@/components/widgets/PluginsCentral.vue'
 import ExtractCaption from '@/components/widgets/ExtractCaption.vue'
 import DoodleWorkHistoryTaskModal from '@/components/modals/DoodleWorkHistoryTaskModal.vue'
+//import { io } from 'socket.io-client'
 //import router from '@/router/index.js'
 useHead({
   title: i18n.global.t('doodle_work.doodle_work')
@@ -23,6 +24,7 @@ onMounted(() => {
   doodleWork.actions.getVisitorContext()
 })
 
+// 监听连接错误事件
 doodleWork.actions.checkIsVisitor()
 const currentPage = ref('')
 const isShowSettingButton = ref(false)
@@ -90,7 +92,7 @@ const intervalId = setInterval(() => {
 onUnmounted(() => {
   clearInterval(intervalId)
   doodleWork.state.isVisitor = false
-  message.close()
+  if (message) message.close()
 })
 let message = null
 watchEffect(() => {

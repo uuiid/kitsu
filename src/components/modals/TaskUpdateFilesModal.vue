@@ -4,6 +4,7 @@ import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles'
 import { onUnmounted, onMounted, computed } from 'vue'
 import { ElMessage, ElNotification } from 'element-plus'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
+import { doodleWorkStore } from '@/store/modules/doodlework.js'
 
 const updateTaskFiles = updateTaskFilesStore()
 const notNeedInspections = new Map()
@@ -24,26 +25,42 @@ const displayAllFiles = computed(() => {
     task => task.updateType === updateTaskFiles.state.currentUpdateType
   )
 })
-
+onMounted(() => {
+  if (doodleWorkStore().state.doodleSocket) {
+    doodleWorkStore().state.doodleSocket.on(
+      'doodle:task_info:update',
+      async data => {
+        if (data.type === 'check_maya') {
+          const task = updateTaskFiles.state.allFiles.get(data.id)
+          await doodleWorkStore().actions.formatTask(task, data)
+          if (data.status === 'completed') {
+            task.status = 'updating'
+            updateTaskFiles.state.updateTaskQueue.enqueue(task)
+          }
+        }
+      }
+    )
+  }
+})
 updateTaskFiles.doodleWork.state.currentDoodleWorkType = 'check_maya'
 const intervalId = setInterval(() => {
-  updateTaskFiles.actions.isReloadDoodleWork()
-  if (updateTaskFiles.doodleWorkCheckFiles.isReload) {
-    updateTaskFiles.state.allFiles.forEach(task => {
-      if (!['failed', 'updating', 'updated', 'waiting'].includes(task.status)) {
-        updateTaskFiles.actions.loadLocalDoodleWork(task)
-      } else if (task.status === 'updating') {
-        const currentTime = new Date()
-        const date = new Date(task.run_time)
-        task.computed_time =
-          currentTime > date
-            ? updateTaskFiles.doodleWork.actions.formatDiffTime(
-                currentTime - date
-              )
-            : '00:00:00'
-      }
-    })
-  }
+  // updateTaskFiles.actions.isReloadDoodleWork()
+  // if (updateTaskFiles.doodleWorkCheckFiles.isReload) {
+  //   updateTaskFiles.state.allFiles.forEach(task => {
+  //     if (!['failed', 'updating', 'updated', 'waiting'].includes(task.status)) {
+  //       updateTaskFiles.actions.loadLocalDoodleWork(task)
+  //     } else if (task.status === 'updating') {
+  //       const currentTime = new Date()
+  //       const date = new Date(task.run_time)
+  //       task.computed_time =
+  //         currentTime > date
+  //           ? updateTaskFiles.doodleWork.actions.formatDiffTime(
+  //               currentTime - date
+  //             )
+  //           : '00:00:00'
+  //     }
+  //   })
+  // }
   if (
     updateTaskFiles.state.updateTaskQueue.size > 0 &&
     updateTaskFiles.state.loadingNum < 3

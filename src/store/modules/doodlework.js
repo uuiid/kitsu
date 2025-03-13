@@ -7,6 +7,7 @@ import user from '@/store/modules/user.js'
 import productions from '@/store/modules/productions.js'
 import { v4 as uuid } from 'uuid'
 import { ElMessage } from 'element-plus'
+import { io } from 'socket.io-client'
 
 //import uuid from 'uuid'
 export class DoodleWorkBase {
@@ -25,7 +26,7 @@ export class DoodleWorkBase {
       name: { name: '文件名', type: 'string' },
       status: { name: '状态', type: 'string' },
       source_computer: { name: '运行主机', type: 'string' },
-      run_time: { name: '运行时间', type: 'string' },
+      run_time: { name: '运行时间', type: 'time' },
       submitter: { name: '创建者', type: 'string' },
       last_line_log: { name: '日志', type: 'string' },
       submit_time: {
@@ -453,7 +454,9 @@ function initState() {
     outPath: '',
     dialogFormVisible: false,
     setOutPathCallback: null,
-    versions: []
+    versions: [],
+    doodleSocket: null,
+    port: 0
   }
 }
 
@@ -489,7 +492,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       ['connect_video', doodleWorkConnectVideo]
     ])
   )
-
   const currentDoodleWorkState = computed(() => {
     const result = doodleWorkStateMap.value.get(
       state.value.currentDoodleWorkType
@@ -506,9 +508,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     return `${doodleWorkFilePath.value}/bin/doodle_kitsu_supplement.exe`
   })
 
-  // function sleep(ms) {
-  //   return new Promise(resolve => setTimeout(resolve, ms))
-  // }
+  function sleep(ms) {
+    return new Promise(resolve => setTimeout(resolve, ms))
+  }
 
   // const doodleWorkExeLocalPort = exePid => {
   //   const fs = require('fs')
@@ -521,6 +523,31 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
   //   }
   // }
   const actions = {
+    setSocketEvent: async () => {
+      state.value.doodleSocket.on('connect', () => {
+        console.log('connected')
+      })
+      state.value.doodleSocket.on('doodle:task_info:update', async data => {
+        //await sleep(10)
+        //let num=0
+        //while (!currentDoodleWorkState.value.workList.has(data.id))
+
+        if (
+          data.type !== 'check_maya' &&
+          doodleWorkStateMap.value.get(data.type) &&
+          doodleWorkStateMap.value.get(data.type).workList.has(data.id)
+        ) {
+          actions.resetTask(
+            data,
+            doodleWorkStateMap.value.get(data.type).workList.get(data.id)
+          )
+          console.log(
+            doodleWorkStateMap.value.get(data.type).workList.has(data.id)
+          )
+        }
+      })
+    },
+
     pullProcess: async () => {
       const fs = require('fs')
       const os = require('os')
@@ -541,10 +568,21 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         }
       }
       await window.api.doodleExeRun(doodleWorkExePath.value, ['--local'])
-      if (window.api.DoodleExePort() !== state.value.localHttpPath)
-        state.value.isPullProcessed = true
-      const port = window.api.DoodleExePort()
-      state.value.localHttpPath = `http://127.0.0.1:${port}`
+      let num = 0
+      while (window.api.DoodleExePort() === state.value.port) {
+        if (num > 30) break
+        num++
+        await sleep(2000)
+        if (window.api.DoodleExePort() !== state.value.port) {
+          state.value.isPullProcessed = true
+          const port = window.api.DoodleExePort()
+          state.value.localHttpPath = `http://127.0.0.1:${port}`
+          //state.value.doodleSocket = io(`http://127.0.0.1:5000/socket.io/`)
+          //state.value.doodleSocket = io(`http://192.168.20.89:50025/socket.io/`)
+          state.value.doodleSocket = io(`http://127.0.0.1:${port}/socket.io/`)
+          await actions.setSocketEvent()
+        }
+      }
     },
     setLocalHttpPath: async () => {
       const port = window.api.DoodleExePort()
@@ -696,22 +734,13 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
             task.id,
             state.value.localHttpPath
           )
-          if (data.status === 'running') {
-            await actions.formatTask(task, data)
-            const currentTime = new Date()
-            const date = new Date(data.run_time)
-            task.computed_time =
-              currentTime > date
-                ? actions.formatDiffTime(currentTime - date)
-                : '00:00:00'
-          }
-          if (data.status !== task.status && data.status !== 'running') {
-            await actions.formatTask(task, data)
-          }
+          await actions.resetTask(data, task)
         }
       }
     },
-
+    resetTask: async (newTask, task) => {
+      await actions.formatTask(task, newTask)
+    },
     isReloadDoodleWork: () => {
       const temp = [...currentDoodleWorkState.value.workList.values()].filter(
         item => {
