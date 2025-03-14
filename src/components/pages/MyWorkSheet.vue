@@ -674,6 +674,9 @@ export default {
       if (project_name === undefined) {
         project_name = this.productionMap.get(t.computing_time.project_id).name
       }
+      if (episodes < 10) {
+        episodes = `0${episodes}`
+      }
       line.push(`《${project_name}》第${season}季`)
       line.push(`EP${episodes}`)
       line.push(formatFullDate(t.computing_time.start_time))

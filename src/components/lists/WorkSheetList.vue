@@ -137,7 +137,17 @@
                   :empty-height="40"
                   :entity="{ preview_file_id: task.entity?.preview_file_id }"
                 />
-                <span>{{ task.computing_time.name || task.entity.name }}</span>
+                <span
+                  v-if="
+                    true //task.task_type
+                  "
+                  >{{ task.computing_time.name || task.entity.name }}</span
+                >
+                <!--input
+                class="duty-editor"
+                :value="task.computing_time.name"
+                v-else
+              /-->
                 <!--router-link class="entity-name" :to="entityPath(task.entity)">
 {{ task.entity.entity_name }}
 </router-link-->
@@ -877,5 +887,23 @@ td.end-date {
 .actions {
   min-width: 80px;
   padding: 0.4em;
+}
+
+.duty-editor {
+  text-align: left;
+  background: transparent;
+  border: 1px solid transparent;
+  color: var(--text);
+  height: 100%;
+  padding: 0.5rem 0.5rem 0.5rem 0;
+  width: 100%;
+  z-index: 100;
+  cursor: pointer;
+
+  &:focus {
+    border: 1px solid $green;
+    background: var(--background);
+    cursor: text;
+  }
 }
 </style>
