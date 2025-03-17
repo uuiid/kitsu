@@ -106,7 +106,7 @@
           class="flexrow-item mr0"
           v-if="mainConfig.indexer_configured"
         />
-        <div class="nav-item">
+        <div class="nav-item" v-show="false">
           <a
             class="changelog-button"
             target="_blank"
@@ -116,7 +116,7 @@
           </a>
         </div>
         <notification-bell class="nav-item notification-bell" />
-        <div class="nav-item">
+        <div class="nav-item" v-show="false">
           <a
             class="help-button"
             href="https://kitsu.cg-wire.com/"
@@ -168,8 +168,8 @@
             {{ $t('doodle.download') }}
           </a>
         </li>
-        <hr />
-        <li>
+        <hr v-show="false" />
+        <li v-show="false">
           <a
             href="https://www.youtube.com/playlist?list=PLp_1gB5ZBHXqnQgZ4TCrAt7smxesaDo29"
             target="_blank"
@@ -177,31 +177,31 @@
             {{ $t('main.tutorials') }}
           </a>
         </li>
-        <li>
+        <li v-show="false">
           <a @click="display.shortcutModal = true">
             {{ $t('keyboard.shortcuts') }}
           </a>
         </li>
-        <hr />
-        <li>
+        <hr v-show="false" />
+        <li v-show="false">
           <a href="https://discord.gg/VbCxtKN" target="_blank"> Discord </a>
         </li>
-        <li>
+        <li v-show="false">
           <a href="https://linkedin.com/company/cgwire/" target="_blank">
             LinkedIn
           </a>
         </li>
-        <li>
+        <li v-show="false">
           <a href="https://twitter.com/cgwirekitsu" target="_blank"> X </a>
         </li>
-        <li>
+        <li v-show="false">
           <a href="https://cgwire.canny.io" target="_blank">
             Roadmap / Feedback
           </a>
         </li>
         <hr />
         <li>
-          <a href="https://cg-wire.com/about" target="_blank">
+          <a target="_blank">
             {{ $t('main.about') }}
           </a>
         </li>

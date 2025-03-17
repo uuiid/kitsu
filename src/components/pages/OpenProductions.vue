@@ -1,6 +1,6 @@
 <template>
   <div class="open-productions page">
-    <div class="social-contributions" v-if="isContributions">
+    <div class="social-contributions" v-if="false">
       <h1 class="subtitle has-text-centered">
         {{ $t('intro.title') }}
       </h1>
@@ -441,6 +441,7 @@ a.secondary:hover {
 
   .logo {
     margin: 0 3px;
+    border-radius: 7px;
   }
 }
 
