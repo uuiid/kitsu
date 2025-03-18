@@ -178,12 +178,20 @@
     />
 
     <edit-sequence-modal
+      :active="modals.isEditDisplayed"
+      :is-loading="loading.edit"
+      :is-error="errors.edit"
+      :sequence-to-edit="sequenceToEdit"
+      @cancel="modals.isEditDisplayed = false"
+      @confirm="confirmEditSequence"
+    />
+    <add-sequence-modal
       :active="modals.isNewDisplayed"
       :is-loading="loading.edit"
       :is-error="errors.edit"
       :sequence-to-edit="sequenceToEdit"
       @cancel="modals.isNewDisplayed = false"
-      @confirm="confirmEditSequence"
+      @confirm="confirmAddSequence"
     />
 
     <hard-delete-modal
@@ -226,6 +234,9 @@ import SortingInfo from '@/components/widgets/SortingInfo.vue'
 import ShowAssignationsButton from '@/components/widgets/ShowAssignationsButton.vue'
 import ShowInfosButton from '@/components/widgets/ShowInfosButton.vue'
 import TaskInfo from '@/components/sides/TaskInfo.vue'
+import AddSequenceModal from '@/components/modals/AddSequenceModal.vue'
+import { ElMessage } from 'element-plus'
+import i18n from '@/lib/i18n.js'
 
 export default {
   name: 'sequences',
@@ -233,6 +244,7 @@ export default {
   mixins: [searchMixin, entitiesMixin],
 
   components: {
+    AddSequenceModal,
     AddMetadataModal,
     AddThumbnailsModal,
     BigThumbnailsButton,
@@ -284,7 +296,8 @@ export default {
         isDeleteAllTasksDisplayed: false,
         isImportRenderDisplayed: false,
         isImportDisplayed: false,
-        isNewDisplayed: false
+        isNewDisplayed: false,
+        isEditDisplayed: false
       },
       loading: {
         addMetadata: false,
@@ -585,14 +598,38 @@ export default {
 
     onEditClicked(sequence) {
       this.sequenceToEdit = sequence
-      this.modals.isNewDisplayed = true
+      this.modals.isEditDisplayed = true
     },
 
     onDeleteClicked(sequence) {
       this.sequenceToDelete = sequence
       this.modals.isDeleteDisplayed = true
     },
-
+    async confirmAddSequence(form) {
+      for (let i = form.start_episodes; i <= form.end_episodes; i++) {
+        const sequence = {
+          name: `${form.name}${String(i).padStart(3, '0')}`,
+          description: form.description,
+          data: {
+            resolution: form.data.resolution
+          },
+          project_id: this.currentProduction.id
+        }
+        if (sequence) {
+          try {
+            await this.newSequence(sequence)
+            this.loading.edit = false
+            this.modals.isNewDisplayed = false
+          } catch (err) {
+            ElMessage.error(
+              i18n.global.t('sequences.edit_error') + sequence.name
+            )
+            this.loading.edit = false
+            this.errors.edit = true
+          }
+        }
+      }
+    },
     confirmEditSequence(form) {
       this.loading.edit = true
       this.errors.edit = false
