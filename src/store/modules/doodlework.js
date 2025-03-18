@@ -568,24 +568,24 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         }
       }
       await window.api.doodleExeRun(doodleWorkExePath.value, ['--local'])
-      if (window.api.DoodleExePort() === 50024) {
-        await actions.setLocalHttpPath()
-      } else {
-        let num = 0
-        while (window.api.DoodleExePort() !== 50024) {
-          if (num > 30) break
-          num++
-          await sleep(2000)
-          if (window.api.DoodleExePort() === 50024) {
-            await actions.setLocalHttpPath()
-          }
+      let num = 0
+      while (window.api.DoodleExePort() === state.value.port) {
+        if (num > 30) break
+        num++
+        await sleep(2000)
+        if (window.api.DoodleExePort() !== state.value.port) {
+          state.value.isPullProcessed = true
+          const port = window.api.DoodleExePort()
+          state.value.localHttpPath = `http://127.0.0.1:${port}`
+          //state.value.doodleSocket = io(`http://127.0.0.1:5000/socket.io/`)
+          //state.value.doodleSocket = io(`http://192.168.20.89:50025/socket.io/`)
+          state.value.doodleSocket = io(`http://127.0.0.1:${port}/socket.io/`)
+          await actions.setSocketEvent()
         }
       }
     },
     setLocalHttpPath: async () => {
       const port = window.api.DoodleExePort()
-      state.value.doodleSocket = io(`http://127.0.0.1:${port}/socket.io/`)
-      await actions.setSocketEvent()
       state.value.localHttpPath = `http://127.0.0.1:${port}`
       if (port !== 0) {
         state.value.isPullProcessed = true
