@@ -537,6 +537,16 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           doodleWorkStateMap.value.get(data.type) &&
           doodleWorkStateMap.value.get(data.type).workList.has(data.id)
         ) {
+          if (data.status === 'failed') {
+            data.last_line_log = `[2025-03-18 15:44:30.580] [SX_EP033_SC036.ma] [error] E:\\Doodle\\src\\doodle_lib\\exe_warp\\import_and_render_ue.cpp(203): Throw in function class boost::asio::awaitable<class tl::expected<class std::filesystem::path,class std::basic_string<char,struct std::char_traits<char>,class std::allocator<char> > >,class boost::asio::any_io_executor> __cdecl doodle::import_and_render_ue_ns::args::run(void)Dynamic exception type: struct boost::wrapexcept<class doodle::doodle_error>std::exception::what: 获取引用文件失败 C:/sy/WDSXTQL/6-moxing/Ch/JD01_01/Ch144G/Rig/Ch144G_rig_mhc.ma`
+            const regex = /what:/i
+            if (regex.test(data.last_line_log)) {
+              const split_log = data.last_line_log.split('what:')
+              data.last_line_log = split_log[split_log.length - 1]
+            }
+          } else {
+            data.last_line_log = ''
+          }
           actions.resetTask(
             data,
             doodleWorkStateMap.value.get(data.type).workList.get(data.id)
