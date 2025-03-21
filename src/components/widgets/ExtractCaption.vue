@@ -131,10 +131,76 @@ const cutContent = text => {
   ) {
     const step = doodleWork.currentDoodleWorkState.task_data_filed.get(5).number
     const temp = []
-    for (let i = 0; i < text.length; i += step) {
-      const temp_text = text.slice(i, i + step)
-      temp.push(removeLastBlankSpace(temp_text))
+    let i = 0
+    let j = 0
+    while (i < text.length) {
+      const text_length = Math.min(step, text.length - i)
+      if (text.length - i <= step) {
+        temp.push(removeLastBlankSpace(text.slice(i, text.length)))
+        break
+      }
+      let difference = 0
+      let temp_text = ''
+      if (j > text.length / step) break
+      j++
+      const regex = /^\p{P}$/gmu
+      if (
+        text.slice(i + text_length - 1, i + text_length) === ' ' ||
+        regex.test(text.slice(i + text_length - 1, i + text_length))
+      ) {
+        temp_text = text.slice(i, i + text_length)
+      } else {
+        let forward = 0
+        let is_forward = false
+        while (forward < text_length) {
+          forward += 1
+          if (
+            text.slice(
+              i + text_length - forward - 1,
+              i + text_length - forward
+            ) === ' ' ||
+            regex.test(
+              text.slice(
+                i + text_length - forward - 1,
+                i + text_length - forward
+              )
+            )
+          ) {
+            is_forward = true
+            break
+          }
+        }
+
+        let backward = 0
+        while (backward < text.length - (i + text_length)) {
+          backward += 1
+          if (
+            text.slice(
+              i + text_length + backward - 1,
+              i + text_length + backward
+            ) === ' ' ||
+            regex.test(
+              text.slice(
+                i + text_length + backward - 1,
+                i + text_length + backward
+              )
+            )
+          ) {
+            break
+          }
+        }
+        if (is_forward === false || forward > backward) {
+          temp_text = text.slice(i, i + text_length + backward)
+          difference = backward
+        } else {
+          temp_text = text.slice(i, i + text_length - forward)
+          difference = -forward
+        }
+      }
+      i = i + text_length + difference
+      if (temp_text !== '') temp.push(removeLastBlankSpace(temp_text))
     }
+
     return temp
   }
   removeLastBlankSpace(text)
