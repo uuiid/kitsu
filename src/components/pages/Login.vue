@@ -249,7 +249,7 @@ export default {
 }
 
 .login-header img {
-  border-radius: 20%;
+  border-radius: 30%;
   padding: 1em;
   margin: 2.5em 0;
   width: 200px;
