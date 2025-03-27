@@ -1,5 +1,6 @@
 <script setup>
 import PageTitle from '@/components/widgets/PageTitle.vue'
+import { CircleArrowDown } from 'lucide-vue-next'
 import ExportFbx from '@/components/widgets/ExportFbx.vue'
 import { computed, onMounted, onUnmounted, ref, watchEffect, watch } from 'vue'
 import AddDoodleWork from '@/components/modals/AddDoodleWork.vue'
@@ -113,7 +114,7 @@ const pagedAssets = ref([
   {
     id: 0,
     name: 'export_fbx',
-    label: '导出FBX',
+    label: '自动动画',
     textIcon: 'F',
     disabled: true,
     description: '',
@@ -135,7 +136,7 @@ const pagedAssets = ref([
   {
     id: 2,
     name: 'export_abc',
-    label: '导出ABC',
+    label: '自动解算',
     textIcon: 'A',
     disabled: true,
     description: '',
@@ -168,7 +169,7 @@ const pagedAssets = ref([
   {
     id: 5,
     name: 'merge_video',
-    label: '图片转视频',
+    label: '合成视频',
     textIcon: 'V',
     disabled: true,
     description: '',
@@ -189,15 +190,111 @@ const pagedAssets = ref([
   },
   {
     id: 7,
-    name: 'plugin_center',
-    label: '插件中心',
-    textIcon: 'P',
+    name: 'solving_plugin',
+    label: '解算插件',
+    textIcon: 'M',
     disabled: true,
     description: '',
     color: '#75adec',
-    isVisible: true
+    isVisible: true,
+    isPlugin: false,
+    installState: false
+  },
+  {
+    id: 8,
+    name: 'UE_plugin',
+    label: '虚幻插件',
+    textIcon: 'U',
+    disabled: true,
+    description: '',
+    color: '#1e1f22',
+    isVisible: true,
+    isPlugin: false,
+    installState: false
   }
+  // {
+  //   id: 9,
+  //   name: 'plugin_center',
+  //   label: '插件中心',
+  //   textIcon: 'P',
+  //   disabled: true,
+  //   description: '',
+  //   color: '#75ec97',
+  //   isVisible: true
+  // }
 ])
+
+const installPlugin = async plugin => {
+  plugin.installState = true
+  try {
+    const os = require('os')
+    const fs = require('fs')
+    if (plugin.name === 'solving_plugin') {
+      if (doodleWork.doodleWorkFilePath) {
+        const sourcePath = `${doodleWork.doodleWorkFilePath}\\maya`
+        const destPathRoot = `${os.homedir()}\\Documents\\maya\\${plugin.version}\\modules`
+        const destPath = `${destPathRoot}\\doodle`
+        await doodleWork.actions.copyFolder(sourcePath, destPath)
+        fs.unlinkSync(`${destPath}\\doodle.mod`)
+        //fs.renameSync(`${destPath}\\maya`, `${destPath}\\doodle`)
+        fs.writeFileSync(
+          `${destPathRoot}\\doodle.mod`,
+          `+ doodle 1.1 ./doodle
+MYMODULE_LOCATION:= .
+PATH+:= plug-ins
+PYTHONPATH+:= scripts`
+        )
+      }
+    } else if (plugin.name === 'UE_plugin') {
+      if (doodleWork.state.doodleWorkSetting.UE_path) {
+        if (fs.existsSync(doodleWork.state.doodleWorkSetting.UE_path)) {
+          const subPlugins = [
+            { sourceName: 'SideFX_Labs', destName: 'SideFX_Labs' },
+            { sourceName: 'ue54_Plug', destName: 'Doodle' },
+            { sourceName: 'UnrealEngine5VLC', destName: 'UnrealEngine5VLC' }
+          ]
+          for (const subPlugin of subPlugins) {
+            const sourcePath = `${doodleWork.doodleWorkFilePath}\\${subPlugin.sourceName}`
+            const destPath = `${doodleWork.state.doodleWorkSetting.UE_path}\\Engine\\Plugins\\${subPlugin.destName}`
+            console.log(sourcePath, destPath)
+            doodleWork.actions.copyFolder(sourcePath, destPath)
+          }
+        } else {
+          ElNotification({
+            title: i18n.global.t('doodle_work.install_fail'),
+            message:
+              '找不到ue路径:' + doodleWork.state.doodleWorkSetting.UE_path,
+            type: 'error'
+          })
+          plugin.installState = false
+          return
+        }
+      } else {
+        ElNotification({
+          title: i18n.global.t('doodle_work.install_fail'),
+          message: '请先设置ue路径',
+          type: 'error'
+        })
+        plugin.installState = false
+        return
+      }
+    }
+    ElNotification({
+      title: i18n.global.t('doodle_work.install_success'),
+      message: '',
+      type: 'success'
+    })
+  } catch (e) {
+    ElNotification({
+      title: i18n.global.t('doodle_work.install_fail'),
+      message: '请检查文件是否被占用',
+      type: 'error'
+    })
+    console.error(e)
+  }
+  plugin.installState = false
+}
+
 const onSetOutPath = () => {
   const fs = require('fs')
   if (
@@ -231,7 +328,7 @@ const onSetOutPath = () => {
               :bold="true"
               @click="switchPage('')"
             />
-            <page-title class="mt1" :text="pagTitle" :bold="true" />
+            <page-title class="mt1 sub-title" :text="pagTitle" :bold="true" />
           </div>
           <div class="header-action">
             <settings
@@ -255,10 +352,20 @@ const onSetOutPath = () => {
         <div class="list-body" v-if="homePage">
           <ul class="items">
             <li
+              @mouseenter="
+                entity.isPlugin !== undefined ? (entity.isPlugin = true) : false
+              "
+              @mouseleave="
+                entity.isPlugin !== undefined
+                  ? (entity.isPlugin = false)
+                  : false
+              "
               class="item flexcolumn"
               :key="entity.id"
               v-for="entity in pagedAssets"
-              @click="switchPage(entity)"
+              @click="
+                entity.isPlugin !== undefined ? false : switchPage(entity)
+              "
               v-show="entity.isVisible || visitorShow"
             >
               <div class="card">
@@ -268,8 +375,22 @@ const onSetOutPath = () => {
                   >{{ entity.textIcon }}</span
                 >
                 <div class="item-description">
-                  <div class="entity-name" :title="entity.label">
-                    {{ entity.label }}
+                  <div class="item-entity-title">
+                    <span class="entity-name" :title="entity.label">{{
+                      entity.label
+                    }}</span>
+                    <a
+                      title="安装"
+                      :class="{
+                        'is-loading': entity.installState
+                      }"
+                      @click.stop="installPlugin(entity)"
+                    >
+                      <circle-arrow-down
+                        class="download"
+                        v-show="entity.isPlugin"
+                      ></circle-arrow-down>
+                    </a>
                   </div>
                   <div class="entity-description" :title="entity.label">
                     {{ entity.description }}
@@ -347,6 +468,26 @@ const onSetOutPath = () => {
 .header-row {
   display: flex;
   flex-direction: row;
+  align-items: center;
+}
+
+.download {
+  cursor: pointer;
+
+  &:hover {
+    color: green;
+  }
+}
+
+.item-entity-title {
+  display: flex;
+  justify-content: space-between;
+  gap: 4em;
+}
+
+.entity-button {
+  position: absolute;
+  bottom: 1em;
 }
 
 .header-action {
@@ -367,6 +508,10 @@ const onSetOutPath = () => {
   &:hover {
     cursor: pointer;
   }
+}
+
+.sub-title {
+  margin-top: 8px;
 }
 
 .list-body {

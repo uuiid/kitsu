@@ -118,6 +118,16 @@
             </div>
           </router-link>
         </div>
+        <div class="open-production has-text-centered" key="assetLibrary">
+          <router-link to="video-library">
+            <div class="avatar has-text-centered" style="background: #01d8d1">
+              库
+            </div>
+            <div class="production-name">
+              {{ $t('video_library.video_library') }}
+            </div>
+          </router-link>
+        </div>
       </div>
     </div>
 
@@ -532,6 +542,7 @@ a.secondary:hover {
 
   .open-productions-header {
     margin-bottom: 2em;
+
     h1 {
       font-size: 1.6em;
       font-weight: bold;
