@@ -198,7 +198,8 @@ const pagedAssets = ref([
     color: '#75adec',
     isVisible: true,
     isPlugin: false,
-    installState: false
+    installState: false,
+    version: '2020'
   },
   {
     id: 8,
