@@ -1,6 +1,5 @@
 <script setup>
 import { ref, computed, onMounted, watch, nextTick } from 'vue'
-import { Ollama } from 'ollama'
 import { MessageSquarePlus } from 'lucide-vue-next'
 import { generateUUID } from 'three/src/math/MathUtils.js'
 import { AiScriptStore } from '@/store/modules/AiScript.js'
@@ -43,21 +42,34 @@ function onInput(event) {
 }
 
 async function receiveMessage(content, id) {
-  const ollama = new Ollama({ host: 'http://192.168.40.180:11434' })
-  const response = await ollama.chat({
-    model: 'deepseek-r1:1.5b',
-    messages: [{ role: 'user', content: content }],
-    stream: true
-  })
-  const stdout = process.stdout
-  for await (const part of response) {
-    stdout.write(part.message.content)
-    AiScript.state.allDialogue.get(id).content.at(-1).content +=
-      part.message.content.replace(`<think>`, '').replace(`</think>`, '')
-    await nextTick(() => {
-      messageRef.value.scrollTop = messageRef.value.scrollHeight
-    })
-  }
+  await AiScript.action.chat(
+    {
+      model: 'deepseek-r1:1.5b',
+      messages: [{ role: 'user', content: content }],
+      stream: true
+    },
+    async chunk => {
+      try {
+        AiScript.state.allDialogue.get(id).content.at(-1).content += JSON.parse(
+          chunk
+        )
+          .message.content.replace(`<think>`, '')
+          .replace(`</think>`, '')
+        await nextTick(() => {
+          messageRef.value.scrollTop = messageRef.value.scrollHeight
+        })
+      } catch (error) {
+        console.error('解析错误:', error)
+      }
+    }
+  )
+  // for await (const part of response) {
+  //   AiScript.state.allDialogue.get(id).content.at(-1).content +=
+  //     part.message.content.replace(`<think>`, '').replace(`</think>`, '')
+  //   await nextTick(() => {
+  //     messageRef.value.scrollTop = messageRef.value.scrollHeight
+  //   })
+  // }
 }
 
 function onSend() {
