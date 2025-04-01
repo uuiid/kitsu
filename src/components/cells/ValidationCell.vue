@@ -82,8 +82,8 @@
           <eye-icon :size="12" />
         </span>
         <div v-if="isShowDate">
-          <div>{{ formatDate(task?.start_date) }}</div>
-          <div>{{ formatDate(task?.end_date) }}</div>
+          <div class="asset-date-block">{{ formatDate(task?.start_date) }}</div>
+          <div class="asset-date-block">{{ formatDate(task?.end_date) }}</div>
         </div>
       </div>
     </div>
@@ -306,7 +306,7 @@ export default {
     },
     formatDate(date) {
       if (date) return moment(date).format('YYYY-MM-DD')
-      return ''
+      return '\n'
     },
     select(event) {
       if (!this.selectable) {
@@ -444,7 +444,10 @@ export default {
     background-color: $red;
   }
 }
-
+.asset-date-block {
+  //display: block;
+  height: 15px;
+}
 .dot {
   position: absolute;
   right: 5px;
