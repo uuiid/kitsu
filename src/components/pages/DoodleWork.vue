@@ -122,7 +122,7 @@ const pagedAssets = ref([
     color: '#00b825',
     isVisible: true,
     isBaseTemplate: false,
-    hidden: true
+    hidden: false
   },
   {
     id: 1,
