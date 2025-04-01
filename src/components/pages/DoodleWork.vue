@@ -121,7 +121,8 @@ const pagedAssets = ref([
     description: '',
     color: '#00b825',
     isVisible: true,
-    isBaseTemplate: false
+    isBaseTemplate: false,
+    hidden: true
   },
   {
     id: 1,
@@ -380,7 +381,7 @@ const onSetOutPath = () => {
               @click="
                 entity.isPlugin !== undefined ? false : switchPage(entity)
               "
-              v-show="entity.isVisible || visitorShow"
+              v-show="(entity.isVisible || visitorShow) && !entity.hidden"
             >
               <div class="card">
                 <span
