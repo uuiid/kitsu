@@ -14,6 +14,7 @@ import { ElMessage, ElNotification } from 'element-plus'
 import PluginsCentral from '@/components/widgets/PluginsCentral.vue'
 import ExtractCaption from '@/components/widgets/ExtractCaption.vue'
 import DoodleWorkHistoryTaskModal from '@/components/modals/DoodleWorkHistoryTaskModal.vue'
+import AIScript from '@/components/widgets/AIScript.vue'
 //import { io } from 'socket.io-client'
 //import router from '@/router/index.js'
 useHead({
@@ -113,6 +114,17 @@ watch(version, () => {
 const pagedAssets = ref([
   {
     id: 0,
+    name: 'ai_script',
+    label: 'AI剧本',
+    textIcon: 'I',
+    disabled: true,
+    description: '',
+    color: '#00b825',
+    isVisible: true,
+    isBaseTemplate: false
+  },
+  {
+    id: 1,
     name: 'export_fbx',
     label: '自动动画',
     textIcon: 'F',
@@ -123,7 +135,7 @@ const pagedAssets = ref([
     isBaseTemplate: true
   },
   {
-    id: 1,
+    id: 2,
     name: 'replace_maya_ref',
     label: '替换引用',
     textIcon: 'R',
@@ -134,7 +146,7 @@ const pagedAssets = ref([
     isBaseTemplate: true
   },
   {
-    id: 2,
+    id: 3,
     name: 'export_abc',
     label: '自动解算',
     textIcon: 'A',
@@ -145,7 +157,7 @@ const pagedAssets = ref([
     isBaseTemplate: true
   },
   {
-    id: 3,
+    id: 4,
     name: 'auto_light',
     label: '自动灯光',
     textIcon: 'L',
@@ -156,7 +168,7 @@ const pagedAssets = ref([
     isBaseTemplate: true
   },
   {
-    id: 4,
+    id: 5,
     name: 'extract_caption',
     label: '提取字幕',
     textIcon: 'Z',
@@ -167,7 +179,7 @@ const pagedAssets = ref([
     isBaseTemplate: false
   },
   {
-    id: 5,
+    id: 6,
     name: 'merge_video',
     label: '合成视频',
     textIcon: 'V',
@@ -178,7 +190,7 @@ const pagedAssets = ref([
     isBaseTemplate: true
   },
   {
-    id: 6,
+    id: 7,
     name: 'connect_video',
     label: '连接视频',
     textIcon: 'C',
@@ -189,7 +201,7 @@ const pagedAssets = ref([
     isBaseTemplate: true
   },
   {
-    id: 7,
+    id: 8,
     name: 'solving_plugin',
     label: '解算插件',
     textIcon: 'M',
@@ -202,7 +214,7 @@ const pagedAssets = ref([
     version: '2020'
   },
   {
-    id: 8,
+    id: 9,
     name: 'UE_plugin',
     label: '虚幻插件',
     textIcon: 'U',
@@ -236,6 +248,7 @@ const installPlugin = async plugin => {
         const destPathRoot = `${os.homedir()}\\Documents\\maya\\${plugin.version}\\modules`
         const destPath = `${destPathRoot}\\doodle`
         await doodleWork.actions.copyFolder(sourcePath, destPath)
+        console.log(destPath)
         fs.unlinkSync(`${destPath}\\doodle.mod`)
         //fs.renameSync(`${destPath}\\maya`, `${destPath}\\doodle`)
         fs.writeFileSync(
@@ -417,6 +430,7 @@ const onSetOutPath = () => {
           v-if="currentPage.name === 'extract_caption'"
         />
         <plugins-central v-if="currentPage.name === 'plugin_center'" />
+        <a-i-script v-if="currentPage.name === 'ai_script'"></a-i-script>
       </div>
       <add-doodle-work />
       <doodle-work-log-modal v-if="doodleWork.state.isActiveLogModal" />
