@@ -610,16 +610,12 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     getToolVersions: async () => {
       state.value.versions = await doodlework.getToolVersion()
-      if (state.value.versions.length > 0) {
+      if (state.value.versions?.length > 0) {
         state.value.doodleWorkZipFileVision = state.value.versions[0]
       }
     },
     submitLocalDoodleWork: async () => {
       await actions.getLocalHttpPath()
-      // await fetch(state.value.localHttpPath + `/api/doodle/local_setting`, {
-      //   mode: 'no-cors'
-      // })
-      //const results = []
       for (const item of [
         ...currentDoodleWorkState.value.uncommittedWorkList.values()
       ]) {
