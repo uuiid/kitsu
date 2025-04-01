@@ -512,6 +512,7 @@
                   :is-assignees="isShowAssignations"
                   :selectable="isSelectable(asset, columnId)"
                   :disabled="!isSelectable(asset, columnId)"
+                  :is-show-date="true"
                   @select="onTaskSelected"
                   @unselect="onTaskUnselected"
                   v-for="(columnId, j) in nonStickedDisplayedValidationColumns"

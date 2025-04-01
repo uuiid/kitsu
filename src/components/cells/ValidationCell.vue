@@ -43,8 +43,12 @@
             :title="castingTitle"
             v-if="!isCurrentUserClient && castingTitle"
           >
-            <img src="@/assets/icons/casting-ready.png" v-if="isCastingReady" />
-            <img src="@/assets/icons/casting-not-ready.png" v-else />
+            <img
+              src="@/assets/icons/casting-ready.png"
+              v-if="isCastingReady"
+              alt=""
+            />
+            <img src="@/assets/icons/casting-not-ready.png" v-else alt="" />
           </span>
         </template>
         <template v-if="isAssignees && !isCurrentUserClient && !disabled">
@@ -77,6 +81,10 @@
         <span class="subscribed" v-if="task?.is_subscribed">
           <eye-icon :size="12" />
         </span>
+        <div v-if="isShowDate">
+          <div>{{ formatDate(task?.start_date) }}</div>
+          <div>{{ formatDate(task?.end_date) }}</div>
+        </div>
       </div>
     </div>
     <div class="wrapper" v-else>
@@ -92,6 +100,7 @@ import { EyeIcon } from 'lucide-vue-next'
 import colors from '@/lib/colors'
 import { sortPeople } from '@/lib/sorting'
 import { formatListMixin } from '@/components/mixins/format'
+import moment from 'moment-timezone'
 
 export default {
   name: 'validation-cell',
@@ -183,6 +192,10 @@ export default {
       type: Boolean
     },
     contactSheet: {
+      default: false,
+      type: Boolean
+    },
+    isShowDate: {
       default: false,
       type: Boolean
     }
@@ -286,8 +299,15 @@ export default {
       if (this.clickable) {
         this.select(event)
       }
+      console.log(this.task)
     },
-
+    getDate(date) {
+      return date ? moment(date, 'YYYY-MM-DD').toDate() : null
+    },
+    formatDate(date) {
+      if (date) return moment(date).format('YYYY-MM-DD')
+      return ''
+    },
     select(event) {
       if (!this.selectable) {
         return
