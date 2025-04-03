@@ -7,100 +7,113 @@
       validation: selectable
     }"
     :style="cellStyle"
-    @click="onClick"
   >
-    <div class="wrapper" :style="wrapperStyle" v-if="!minimized">
-      <div
-        class="wrapper status-wrapper"
-        :style="statusWrapperStyle"
-        v-if="!minimized"
-      >
-        <template v-if="task">
-          <span
-            class="tag"
-            :title="taskStatus.name"
-            :style="tagStyle"
-            v-if="!contactSheet"
-          >
-            {{ taskStatus.short_name }}
+    <el-config-provider :locale="zhCn">
+      <div class="wrapper" :style="wrapperStyle" v-if="!minimized">
+        <div
+          class="wrapper status-wrapper"
+          :class="{ 'custom-status': selectable }"
+          :style="statusWrapperStyle"
+          v-if="!minimized"
+          @click="onClick"
+        >
+          <template v-if="task">
+            <span
+              class="tag"
+              :title="taskStatus.name"
+              :style="tagStyle"
+              v-if="!contactSheet"
+            >
+              {{ taskStatus.short_name }}
+            </span>
+            <span class="filler" v-if="contactSheet"> </span>
+            <span
+              :class="{
+                priority: true,
+                high: task.priority === 1,
+                veryhigh: task.priority === 2,
+                emergency: task.priority === 3
+              }"
+              :title="formatPriority(task.priority)"
+              v-if="!isCurrentUserClient && !disabled && task.priority > 0"
+            >
+              {{ priority }}
+            </span>
+            <span
+              class="casting-status"
+              :class="{ 'casting-status-not-ready': !isCastingReady }"
+              :title="castingTitle"
+              v-if="!isCurrentUserClient && castingTitle"
+            >
+              <img
+                src="@/assets/icons/casting-ready.png"
+                v-if="isCastingReady"
+                alt=""
+              />
+              <img src="@/assets/icons/casting-not-ready.png" v-else alt="" />
+            </span>
+          </template>
+          <template v-if="isAssignees && !isCurrentUserClient && !disabled">
+            <span
+              class="avatar has-text-centered"
+              :title="person.full_name"
+              :style="{
+                backgroundColor: person.color,
+                color: isDarkTheme ? '#333' : '#FFF',
+                'font-weight': isDarkTheme ? 'bold' : 'normal'
+              }"
+              :key="`avatar-${person.id}`"
+              v-for="person in assignees"
+            >
+              <img
+                loading="lazy"
+                alt=""
+                :src="person.avatarPath"
+                v-if="person.has_avatar"
+              />
+              <template v-else>{{ person.initials }}</template>
+            </span>
+            <span
+              class="dot"
+              v-if="
+                typeof task?.file_exist === 'boolean' ? !task.file_exist : false
+              "
+            ></span>
+          </template>
+          <span class="subscribed" v-if="task?.is_subscribed">
+            <eye-icon :size="12" />
           </span>
-          <span class="filler" v-if="contactSheet"> </span>
-          <span
-            :class="{
-              priority: true,
-              high: task.priority === 1,
-              veryhigh: task.priority === 2,
-              emergency: task.priority === 3
-            }"
-            :title="formatPriority(task.priority)"
-            v-if="!isCurrentUserClient && !disabled && task.priority > 0"
-          >
-            {{ priority }}
-          </span>
-          <span
-            class="casting-status"
-            :class="{ 'casting-status-not-ready': !isCastingReady }"
-            :title="castingTitle"
-            v-if="!isCurrentUserClient && castingTitle"
-          >
-            <img
-              src="@/assets/icons/casting-ready.png"
-              v-if="isCastingReady"
-              alt=""
-            />
-            <img src="@/assets/icons/casting-not-ready.png" v-else alt="" />
-          </span>
-        </template>
-        <template v-if="isAssignees && !isCurrentUserClient && !disabled">
-          <span
-            class="avatar has-text-centered"
-            :title="person.full_name"
-            :style="{
-              backgroundColor: person.color,
-              color: isDarkTheme ? '#333' : '#FFF',
-              'font-weight': isDarkTheme ? 'bold' : 'normal'
-            }"
-            :key="`avatar-${person.id}`"
-            v-for="person in assignees"
-          >
-            <img
-              loading="lazy"
-              alt=""
-              :src="person.avatarPath"
-              v-if="person.has_avatar"
-            />
-            <template v-else>{{ person.initials }}</template>
-          </span>
-          <span
-            class="dot"
-            v-if="
-              typeof task?.file_exist === 'boolean' ? !task.file_exist : false
+        </div>
+        <div class="date-input" v-if="isShowDate && task">
+          <el-date-picker
+            class="custom-input"
+            v-model="task.dateRange"
+            type="daterange"
+            :range-separator="
+              task.start_date === null && task.due_date === null ? '' : '-'
             "
-          ></span>
-        </template>
-        <span class="subscribed" v-if="task?.is_subscribed">
-          <eye-icon :size="12" />
-        </span>
-        <div v-if="isShowDate">
-          <div class="asset-date-block">{{ formatDate(task?.start_date) }}</div>
-          <div class="asset-date-block">{{ formatDate(task?.end_date) }}</div>
+            unlink-panels
+            placeholder="Select date and time"
+            @change="onEntryChange"
+          />
         </div>
       </div>
-    </div>
-    <div class="wrapper" v-else>
-      <span class="tag" :style="tagStyle"> &nbsp; </span>
-    </div>
+      <div class="wrapper" v-else>
+        <span class="tag" :style="tagStyle"> &nbsp; </span>
+      </div>
+    </el-config-provider>
   </td>
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 import { EyeIcon } from 'lucide-vue-next'
 
 import colors from '@/lib/colors'
 import { sortPeople } from '@/lib/sorting'
 import { formatListMixin } from '@/components/mixins/format'
 import moment from 'moment-timezone'
+import { zhCn } from 'element-plus/es/locale/index'
 
 export default {
   name: 'validation-cell',
@@ -109,7 +122,8 @@ export default {
 
   data() {
     return {
-      task: null
+      task: null,
+      value: ''
     }
   },
 
@@ -207,9 +221,20 @@ export default {
     } else if (this.column && this.entity?.validations) {
       this.task = this.taskMap.get(this.entity.validations.get(this.column.id))
     }
+    if (this.task)
+      if (this.task.start_date === null && this.task.due_date === null)
+        this.task.dateRange = []
+      else
+        this.task.dateRange = [
+          this.task.start_date || '0000-00-00',
+          this.task.due_date || '9999-12-31'
+        ]
   },
 
   computed: {
+    zhCn() {
+      return zhCn
+    },
     ...mapGetters([
       'isCurrentUserClient',
       'isDarkTheme',
@@ -295,6 +320,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(['updateTask']),
     onClick(event) {
       if (this.clickable) {
         this.select(event)
@@ -307,6 +333,19 @@ export default {
     formatDate(date) {
       if (date) return moment(date).format('YYYY-MM-DD')
       return '\n'
+    },
+    onEntryChange() {
+      const taskId = this.task.id
+      const data = {
+        start_date: this.task.dateRange[0],
+        due_date: this.task.dateRange[1]
+      }
+      this.updateTask({ taskId, data })
+        .then(() => {
+          this.task.start_date = this.task.dateRange[0]
+          this.task.due_date = this.task.dateRange[1]
+        })
+        .catch(console.error)
     },
     select(event) {
       if (!this.selectable) {
@@ -352,13 +391,11 @@ export default {
       background-color: #5e60ba !important;
     }
   }
+}
 
-  &:not(.selected):hover {
-    background-color: #cfd1ff !important;
-
-    .dark & {
-      background-color: #6e70ca !important;
-    }
+.custom-status {
+  &:hover {
+    background-color: #5e60ba !important;
   }
 }
 
@@ -444,15 +481,71 @@ export default {
     background-color: $red;
   }
 }
+
 .asset-date-block {
-  //display: block;
   height: 15px;
 }
+
 .dot {
   position: absolute;
   right: 5px;
   border: 4px solid;
   color: red;
   border-radius: 4px;
+}
+
+:deep(.el-range-editor.el-input__wrapper) {
+  box-shadow: none !important;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0 0 2px 0;
+  width: 100%;
+  max-height: 20px !important;
+}
+
+:deep(.el-date-editor .el-range-separator) {
+  max-width: 2px !important;
+  padding: 0 5px !important;
+  margin-bottom: 2px !important;
+}
+
+:deep(.el-input__inner) {
+  color: var(--text) !important;
+  cursor: pointer !important;
+
+  &:focus {
+    cursor: text !important;
+  }
+}
+
+:deep(.el-input__prefix) {
+  width: 0 !important;
+}
+
+:deep(.el-input .el-input__icon) {
+  max-width: 0 !important;
+  max-height: 0 !important;
+}
+
+.date-input {
+  border: 1px solid transparent;
+  border-radius: 5px;
+
+  &:hover {
+    border: 1px solid #6bacea;
+  }
+}
+
+:deep(.el-icon) {
+  width: 2px !important;
+  //max-height: 2xp !important;
+  //margin-bottom: 5px;
+}
+
+:deep(.el-range-input) {
+  //height: 30px !important;
+  width: 100% !important;
+  text-align: left !important;
 }
 </style>

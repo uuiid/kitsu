@@ -1159,9 +1159,9 @@ td.ready-for {
 }
 
 .validation-cell {
-  min-width: 150px;
-  max-width: 150px;
-  width: 150px;
+  min-width: 160px;
+  max-width: 160px;
+  width: 160px;
   margin-right: 1em;
 }
 
