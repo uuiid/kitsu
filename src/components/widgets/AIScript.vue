@@ -7,11 +7,7 @@ import AiMarkdown from '@/components/cells/AiMarkdown.vue'
 import OpenAI from 'openai'
 import user from '@/store/modules/user.js'
 
-const openai = new OpenAI({
-  baseURL: 'https://api.deepseek.com',
-  apiKey: 'sk-eb7dadd82e7b4c6d83c6b1720edaf469',
-  dangerouslyAllowBrowser: true
-})
+let openai = null
 const inputRef = ref(null)
 const messageRef = ref(null)
 const inputMessage = ref(null)
@@ -139,14 +135,16 @@ function onSend() {
         }
       })
     if (
-      user.getters.isCurrentUserManager ||
-      user.getters.isCurrentUserSupervisor
+      (user.getters.isCurrentUserManager ||
+        user.getters.isCurrentUserSupervisor) &&
+      openai
     ) {
+      console.log(openai)
       receiveMessage(temp, AiScript.state.currentDialogue)
     } else {
-      AiScript.state.allDialogue.get(
-        AiScript.state.currentDialogue
-      ).content.message.content = '权限不足'
+      AiScript.state.allDialogue
+        .get(AiScript.state.currentDialogue)
+        .content.at(-1).message.content = '权限不足'
     }
     // AiScript.state.allDialogue
     //   .get(AiScript.state.currentDialogue)
@@ -162,7 +160,18 @@ function onSend() {
   // })
 }
 
-onMounted(() => {
+onMounted(async () => {
+  const response = await fetch(`/api/doodle/deepseek/key`, {
+    method: 'get'
+  })
+  const keys = await response.json()
+  if (response.status === 200 && keys.length > 0) {
+    openai = new OpenAI({
+      baseURL: 'https://api.deepseek.com',
+      apiKey: keys[0],
+      dangerouslyAllowBrowser: true
+    })
+  }
   messageRef.value.scrollTop = messageRef.value.scrollHeight
   watch(messageRef.value.scrollHeight, () => {
     messageRef.value.scrollTop = messageRef.value.scrollHeight

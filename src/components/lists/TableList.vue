@@ -53,6 +53,10 @@ const formatDiffTime = diffTime => {
   ].join(':')
 }
 
+function onDemonstrate() {
+  console.log('test')
+}
+
 const formatTableBodyData = (workTask, key) => {
   if (key === 'submitter') {
     const person = vuexStore.getters.personMap.get(workTask[key])
@@ -139,8 +143,11 @@ const handleAction = (action_name, task_id) => {
     @dragover="handleDragOver"
     @paste="onClipboard"
   >
-    <div v-if="isShowPrompt && isDrop">
-      {{ $t('video_library.placeholder') }}
+    <div class="doodle-work-placeholder" v-if="isShowPrompt && isDrop">
+      <div style="padding: 0 10px">
+        {{ $t('video_library.placeholder') }}
+      </div>
+      <div class="button" @click="onDemonstrate">功能演示(开发中)</div>
     </div>
     <div class="datatable-wrapper" v-if="!isShowPrompt">
       <table class="datatable">
@@ -291,6 +298,12 @@ const handleAction = (action_name, task_id) => {
   user-select: none;
   width: 100%;
   color: #bdbdbd;
+}
+
+.doodle-work-placeholder {
+  display: flex;
+  flex-direction: column;
+  justify-content: center;
 }
 
 .datatable-row-head {
