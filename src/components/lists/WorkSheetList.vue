@@ -46,6 +46,9 @@
                 allDuration
               }})
             </th>
+            <th scope="col" class="episode" v-if="!isToCheck">
+              {{ $t('doodle.grade') }}
+            </th>
             <th scope="col" class="start-date" v-if="!isToCheck">
               {{ $t('doodle.start_date') }}
             </th>
@@ -144,10 +147,10 @@
                   >{{ task.computing_time.name || task.entity.name }}</span
                 >
                 <!--input
-                class="duty-editor"
-                :value="task.computing_time.name"
-                v-else
-              /-->
+            class="duty-editor"
+            :value="task.computing_time.name"
+            v-else
+          /-->
                 <!--router-link class="entity-name" :to="entityPath(task.entity)">
 {{ task.entity.entity_name }}
 </router-link-->
@@ -188,6 +191,9 @@
                 @focus="isDraggable = false"
                 @click="onLineClicked(task, 'duration')"
               />
+            </td>
+            <td class="episode" v-if="!isToCheck">
+              {{ task.computing_time.grade }}
             </td>
             <td class="start-date" v-if="!isToCheck">
               {{ formatDate(task.computing_time.start_time) }}

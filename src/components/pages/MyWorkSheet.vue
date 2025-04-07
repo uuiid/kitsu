@@ -751,8 +751,8 @@ export default {
     },
 
     getUserInfo(user_id) {
-      if (this.isActiveTab('workSheet')) this.getTaskTime(user_id)
-      else this.getDutyList(user_id)
+      this.getTaskTime(user_id)
+      this.getDutyList(user_id)
       // this.reload().then(() => {
       //   this.getTaskTime(user_id)
       //   this.getDutyList(user_id)

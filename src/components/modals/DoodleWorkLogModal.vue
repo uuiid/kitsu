@@ -78,6 +78,7 @@ const onScroll = event => {
 onUnmounted(() => {
   document.removeEventListener('scroll', onScroll)
   clearInterval(intervalId)
+  doodleWork.state.workTaskLogData = ''
 })
 const regex = computed(() => {
   let temp = ``

@@ -1,7 +1,6 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import AiScript from '@/store/api/AiScript.js'
-
 const initState = {
   currentDialogue: '',
   allDialogue: new Map()

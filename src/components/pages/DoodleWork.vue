@@ -182,7 +182,7 @@ const pagedAssets = ref([
   {
     id: 6,
     name: 'merge_video',
-    label: '合成视频',
+    label: '一键合成视频(png)',
     textIcon: 'V',
     disabled: true,
     description: '',
@@ -193,14 +193,26 @@ const pagedAssets = ref([
   {
     id: 7,
     name: 'connect_video',
-    label: '连接视频',
+    label: '一键连接视频(pm4)',
     textIcon: 'C',
     disabled: true,
     description: '',
     color: '#686aef',
     isVisible: false,
     isBaseTemplate: true
-  },
+  }
+  // {
+  //   id: 9,
+  //   name: 'plugin_center',
+  //   label: '插件中心',
+  //   textIcon: 'P',
+  //   disabled: true,
+  //   description: '',
+  //   color: '#75ec97',
+  //   isVisible: true
+  // }
+])
+const pluginAssets = ref([
   {
     id: 8,
     name: 'solving_plugin',
@@ -226,18 +238,7 @@ const pagedAssets = ref([
     isPlugin: false,
     installState: false
   }
-  // {
-  //   id: 9,
-  //   name: 'plugin_center',
-  //   label: '插件中心',
-  //   textIcon: 'P',
-  //   disabled: true,
-  //   description: '',
-  //   color: '#75ec97',
-  //   isVisible: true
-  // }
 ])
-
 const installPlugin = async plugin => {
   plugin.installState = true
   try {
@@ -364,56 +365,114 @@ const onSetOutPath = () => {
             </p>
           </div>
         </header>
-        <div class="list-body" v-if="homePage">
-          <ul class="items">
-            <li
-              @mouseenter="
-                entity.isPlugin !== undefined ? (entity.isPlugin = true) : false
-              "
-              @mouseleave="
-                entity.isPlugin !== undefined
-                  ? (entity.isPlugin = false)
-                  : false
-              "
-              class="item flexcolumn"
-              :key="entity.id"
-              v-for="entity in pagedAssets"
-              @click="
-                entity.isPlugin !== undefined ? false : switchPage(entity)
-              "
-              v-show="(entity.isVisible || visitorShow) && !entity.hidden"
-            >
-              <div class="card">
-                <span
-                  class="text-icon"
-                  :style="`background-color: ${entity.color}`"
-                  >{{ entity.textIcon }}</span
-                >
-                <div class="item-description">
-                  <div class="item-entity-title">
-                    <span class="entity-name" :title="entity.label">{{
-                      entity.label
-                    }}</span>
-                    <a
-                      title="安装"
-                      :class="{
-                        'is-loading': entity.installState
-                      }"
-                      @click.stop="installPlugin(entity)"
-                    >
-                      <circle-arrow-down
-                        class="download"
-                        v-show="entity.isPlugin"
-                      ></circle-arrow-down>
-                    </a>
-                  </div>
-                  <div class="entity-description" :title="entity.label">
-                    {{ entity.description }}
+        <div v-if="homePage">
+          <div class="list-body" v-if="homePage">
+            <ul class="items">
+              <li
+                @mouseenter="
+                  entity.isPlugin !== undefined
+                    ? (entity.isPlugin = true)
+                    : false
+                "
+                @mouseleave="
+                  entity.isPlugin !== undefined
+                    ? (entity.isPlugin = false)
+                    : false
+                "
+                class="item flexcolumn"
+                :key="entity.id"
+                v-for="entity in pagedAssets"
+                @click="
+                  entity.isPlugin !== undefined ? false : switchPage(entity)
+                "
+                v-show="(entity.isVisible || visitorShow) && !entity.hidden"
+              >
+                <div class="card">
+                  <span
+                    class="text-icon"
+                    :style="`background-color: ${entity.color}`"
+                    >{{ entity.textIcon }}</span
+                  >
+                  <div class="item-description">
+                    <div class="item-entity-title">
+                      <span class="entity-name" :title="entity.label">{{
+                        entity.label
+                      }}</span>
+                      <a
+                        title="安装"
+                        :class="{
+                          'is-loading': entity.installState
+                        }"
+                        @click.stop="installPlugin(entity)"
+                      >
+                        <circle-arrow-down
+                          class="download"
+                          v-show="entity.isPlugin"
+                        ></circle-arrow-down>
+                      </a>
+                    </div>
+                    <div class="entity-description" :title="entity.label">
+                      {{ entity.description }}
+                    </div>
                   </div>
                 </div>
-              </div>
-            </li>
-          </ul>
+              </li>
+            </ul>
+          </div>
+          <div style="font-size: 30px; margin-bottom: 20px">插件中心</div>
+          <div class="list-body" v-if="homePage">
+            <ul class="items">
+              <li
+                @mouseenter="
+                  entity.isPlugin !== undefined
+                    ? (entity.isPlugin = true)
+                    : false
+                "
+                @mouseleave="
+                  entity.isPlugin !== undefined
+                    ? (entity.isPlugin = false)
+                    : false
+                "
+                class="item flexcolumn"
+                :key="entity.id"
+                v-for="entity in pluginAssets"
+                @click="
+                  entity.isPlugin !== undefined ? false : switchPage(entity)
+                "
+                v-show="(entity.isVisible || visitorShow) && !entity.hidden"
+              >
+                <div class="card">
+                  <span
+                    class="text-icon"
+                    :style="`background-color: ${entity.color}`"
+                    >{{ entity.textIcon }}</span
+                  >
+                  <div class="item-description">
+                    <div class="item-entity-title">
+                      <span class="entity-name" :title="entity.label">{{
+                        entity.label
+                      }}</span>
+                      <a
+                        title="安装"
+                        :class="{
+                          'is-loading': entity.installState
+                        }"
+                        @click.stop="installPlugin(entity)"
+                      >
+                        <circle-arrow-down
+                          class="download"
+                          v-show="entity.isPlugin"
+                        ></circle-arrow-down>
+                      </a>
+                    </div>
+                    <div class="entity-description" :title="entity.label">
+                      {{ entity.description }}
+                    </div>
+                  </div>
+                </div>
+              </li>
+            </ul>
+          </div>
         </div>
         <export-fbx
           class="datatable-wrapper"
@@ -549,7 +608,8 @@ const onSetOutPath = () => {
   flex-direction: row;
   align-items: center;
   gap: 20px;
-  min-width: 300px;
+  min-width: 320px;
+  max-width: 320px;
   min-height: 100px;
   box-shadow: 4px 4px 4px rgba(0, 0, 0, 0.1);
   border: 5px solid transparent;
@@ -588,6 +648,7 @@ const onSetOutPath = () => {
     flex-direction: column;
 
     .entity-name {
+      white-space: nowrap;
       font-size: 20px;
     }
   }

@@ -4,7 +4,14 @@ import { MessageSquarePlus } from 'lucide-vue-next'
 import { generateUUID } from 'three/src/math/MathUtils.js'
 import { AiScriptStore } from '@/store/modules/AiScript.js'
 import AiMarkdown from '@/components/cells/AiMarkdown.vue'
+import OpenAI from 'openai'
+import user from '@/store/modules/user.js'
 
+const openai = new OpenAI({
+  baseURL: 'https://api.deepseek.com',
+  apiKey: 'sk-eb7dadd82e7b4c6d83c6b1720edaf469',
+  dangerouslyAllowBrowser: true
+})
 const inputRef = ref(null)
 const messageRef = ref(null)
 const inputMessage = ref(null)
@@ -42,27 +49,57 @@ function onInput(event) {
 }
 
 async function receiveMessage(content, id) {
-  await AiScript.action.chat(
-    {
-      model: 'deepseek-r1:1.5b',
-      messages: [{ role: 'user', content: content }],
-      stream: true
-    },
-    async chunk => {
-      try {
-        AiScript.state.allDialogue.get(id).content.at(-1).content += JSON.parse(
-          chunk
-        )
-          .message.content.replace(`<think>`, '')
-          .replace(`</think>`, '')
-        await nextTick(() => {
-          messageRef.value.scrollTop = messageRef.value.scrollHeight
-        })
-      } catch (error) {
-        console.error('解析错误:', error)
-      }
+  //await openai.chat.completions
+  const selfAllContent = []
+  selfAllContent.push({
+    role: 'system',
+    name: id,
+    content: '你是名字是小以，是由索以科技开发的剧本创作AI助手'
+  })
+  for (const item of AiScript.state.allDialogue.get(
+    AiScript.state.currentDialogue
+  ).content) {
+    if (item.type === 'self') {
+      selfAllContent.push(item.message)
     }
-  )
+  }
+
+  const completion = await openai.chat.completions.create({
+    messages: selfAllContent,
+    model: 'deepseek-chat',
+    stream: true
+  })
+  //AiScript.state.allDialogue.get(id).content.at(-1).message.content = '123'
+  //console.log(AiScript.state.allDialogue.get(id).content)
+  for await (const part of completion) {
+    AiScript.state.allDialogue.get(id).content.at(-1).message.content +=
+      part.choices[0].delta.content || ''
+    await nextTick(() => {
+      messageRef.value.scrollTop = messageRef.value.scrollHeight
+    })
+  }
+  // await AiScript.action.chat(
+  //   {
+  //     role: 'user',
+  //     name: AiScript.state.currentDialogue.id,
+  //     model: 'deepseek-r1:1.5b',
+  //     messages: selfAllContent,
+  //     stream: true
+  //   },
+  //   async chunk => {
+  //     try {
+  //       AiScript.state.allDialogue.get(id).content.at(-1).message.content +=
+  //         JSON.parse(chunk)
+  //           .message.content.replace(`<think>`, '')
+  //           .replace(`</think>`, '')
+  //       await nextTick(() => {
+  //         messageRef.value.scrollTop = messageRef.value.scrollHeight
+  //       })
+  //     } catch (error) {
+  //       console.error('解析错误:', error)
+  //     }
+  //   }
+  // )
   // for await (const part of response) {
   //   AiScript.state.allDialogue.get(id).content.at(-1).content +=
   //     part.message.content.replace(`<think>`, '').replace(`</think>`, '')
@@ -84,15 +121,33 @@ function onSend() {
     }
     AiScript.state.allDialogue
       .get(AiScript.state.currentDialogue)
-      .content.push({ type: 'self', content: temp })
+      .content.push({
+        type: 'self',
+        message: {
+          role: 'user',
+          content: temp
+        }
+      })
     inputMessage.value = ''
     AiScript.state.allDialogue
       .get(AiScript.state.currentDialogue)
       .content.push({
         type: 'ai',
-        content: ''
+        message: {
+          role: 'system',
+          content: ''
+        }
       })
-    receiveMessage(temp, AiScript.state.currentDialogue)
+    if (
+      user.getters.isCurrentUserManager ||
+      user.getters.isCurrentUserSupervisor
+    ) {
+      receiveMessage(temp, AiScript.state.currentDialogue)
+    } else {
+      AiScript.state.allDialogue.get(
+        AiScript.state.currentDialogue
+      ).content.message.content = '权限不足'
+    }
     // AiScript.state.allDialogue
     //   .get(AiScript.state.currentDialogue)
     //   .content.push({
@@ -121,7 +176,7 @@ function handleInputKeyDown(event) {
   }
 }
 
-function onNewDialogue() {
+async function onNewDialogue() {
   const id = generateUUID()
   AiScript.state.allDialogue.set(id, { id: id, title: '', content: [] })
   AiScript.state.currentDialogue = id
@@ -160,10 +215,10 @@ function onNewDialogue() {
             <div v-for="item in messages" :key="item" class="">
               <div v-if="item.type === 'ai'" class="ai-message">
                 <img class="ai-avatar" src="@/assets/kitsu.png" alt="" />
-                <ai-markdown :content="item.content"></ai-markdown>
+                <ai-markdown :content="item.message.content"></ai-markdown>
               </div>
               <div v-else class="self-message">
-                <ai-markdown :content="item.content"></ai-markdown>
+                <ai-markdown :content="item.message.content"></ai-markdown>
                 <el-avatar class="self-avatar"> 我</el-avatar>
               </div>
             </div>
