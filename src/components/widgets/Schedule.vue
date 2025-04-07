@@ -1442,7 +1442,7 @@ export default {
     },
 
     onTimelineScroll(event) {
-      if (!event) return
+      if (!event?.target) return
       const position = event.target
       const newTop = position.scrollTop
       this.entityList.scrollTop = newTop
@@ -1847,6 +1847,9 @@ export default {
     },
 
     checkUserIsAllowed(item, person) {
+      if (!item) {
+        return false
+      }
       const production = this.openProductions.find(
         ({ id }) => id === item.project_id
       )
@@ -1859,11 +1862,12 @@ export default {
     },
 
     onTaskDragEnter(event, rootElement) {
-      const item = this.draggedItems[0]
+      const item = this.draggedItems?.[0]
       const isAllowed = this.checkUserIsAllowed(item, rootElement)
-      if (isAllowed) {
-        event.currentTarget.classList.add('droppable')
+      if (!isAllowed) {
+        return
       }
+      event.currentTarget.classList.add('droppable')
     },
 
     onTaskDragOver(event) {
@@ -1876,7 +1880,7 @@ export default {
 
     onTaskDrop(event, rootElement) {
       event.target.classList.remove('droppable')
-      const item = this.draggedItems[0]
+      const item = this.draggedItems?.[0]
 
       if (!this.checkUserIsAllowed(item, rootElement)) {
         return

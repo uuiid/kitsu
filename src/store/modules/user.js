@@ -109,6 +109,7 @@ const initialState = {
   isTodosLoading: false,
   isTodosLoadingError: false,
   todos: [],
+  todoMap: new Map(),
   displayedTodos: [],
   displayedDoneTasks: [],
   todosSearchText: '',
@@ -145,6 +146,7 @@ const getters = {
   isSaveProfileLoadingError: state => state.isSaveProfileLoadingError,
   changePassword: state => state.changePassword,
 
+  todoMap: state => state.todoMap,
   displayedTodos: state => state.displayedTodos,
   displayedDoneTasks: state => state.displayedDoneTasks,
   doneSelectionGrid: state => state.doneSelectionGrid,
@@ -300,6 +302,11 @@ const actions = {
         commit(USER_LOAD_TODOS_ERROR)
       }
     }
+  },
+
+  async loadUserTimeSpents({ commit }, { date }) {
+    const timeSpents = await peopleApi.loadTimeSpents(date)
+    commit(USER_LOAD_TIME_SPENTS_END, timeSpents)
   },
 
   async loadTasksToCheck({ commit }) {
@@ -559,6 +566,7 @@ const mutations = {
     })
     state.todoSelectionGrid = buildSelectionGrid(tasks.length, 1)
     state.todos = sortTasks(tasks, taskTypeMap)
+    state.todoMap = new Map(tasks.map(task => [task.id, task]))
     cache.todosIndex = buildTaskIndex(tasks)
     const keywords = getKeyWords(state.todosSearchText)
     const searchResult = indexSearch(cache.todosIndex, keywords)

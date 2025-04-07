@@ -210,6 +210,12 @@
             @root-element-expanded="expandPersonElement"
             @estimation-changed="updateEstimation"
           />
+
+          <task-list-numbers
+            :is-shots="entityType === 'Shot'"
+            :tasks="tasks"
+            v-if="!loading.entities"
+          />
         </div>
 
         <div
@@ -275,6 +281,7 @@ import { mapGetters, mapActions } from 'vuex'
 
 import csv from '@/lib/csv'
 import { buildSupervisorTaskIndex, indexSearch } from '@/lib/indexing'
+import { getPersonPath } from '@/lib/path'
 import { sortPeople } from '@/lib/sorting'
 import stringHelpers from '@/lib/string'
 import {
@@ -309,6 +316,7 @@ import SearchQueryList from '@/components/widgets/SearchQueryList.vue'
 import TaskInfo from '@/components/sides/TaskInfo.vue'
 import TaskList from '@/components/lists/TaskList.vue'
 import TaskTypeName from '@/components/widgets/TaskTypeName.vue'
+import TaskListNumbers from '@/components/widgets/TaskListNumbers.vue'
 
 const filters = {
   all(tasks) {
@@ -429,6 +437,7 @@ export default {
     ImportRenderModal,
     TaskList,
     TaskInfo,
+    TaskListNumbers,
     TaskTypeName
   },
 
@@ -1250,13 +1259,7 @@ export default {
           children: [],
           editable: false,
           daysOff: this.daysOffByPerson[person.id],
-          route: {
-            name: 'person-tab',
-            params: {
-              person_id: person.id,
-              tab: 'schedule'
-            }
-          }
+          route: getPersonPath(person.id, 'schedule')
         }
       }
 
@@ -1511,6 +1514,15 @@ export default {
       this.updateActiveTab()
     },
 
+    '$route.query.search'() {
+      const currentSearch = this.searchField.getValue()
+      const routeSearch = this.$route.query.search
+      if (routeSearch && routeSearch !== currentSearch) {
+        this.searchField.setValue(routeSearch)
+        this.onSearchChange(routeSearch)
+      }
+    },
+
     currentProduction() {
       this.initData(true)
     },
@@ -1610,20 +1622,16 @@ export default {
     events: {
       'task:update'(eventData) {
         if (
+          !this.isActiveTab('schedule') &&
           this.taskMap.get(eventData.task_id) &&
-          !this.isActiveTab('schedule')
+          this.selectedTasks === 0 &&
+          this.searchField &&
+          this.searchField.getValue() === ''
         ) {
-          setTimeout(() => {
-            this.resetTaskIndex()
-            this.$nextTick(() => {
-              if (
-                !this.selectedTasks.get(eventData.task_id) &&
-                this.searchField
-              ) {
-                this.onSearchChange(this.searchField.getValue())
-              }
-            })
-          }, 1000)
+          this.resetTaskIndex()
+          this.$nextTick(() => {
+            this.onSearchChange(this.searchField.getValue())
+          })
         }
       }
     }
@@ -1702,6 +1710,8 @@ export default {
 }
 
 .task-type-schedule {
+  display: flex;
+  flex-direction: column;
   flex: 1;
 }
 

@@ -262,9 +262,21 @@
                 {{ $t('main.reply') }}
               </span>
             </div>
-            <p class="pinned-text" v-if="comment.pinned">
+            <div class="pinned-text" v-if="comment.pinned">
               {{ $t('comments.pinned') }}
-            </p>
+            </div>
+            <div
+              class="edited-text"
+              v-if="
+                comment.editor_id && comment.editor_id !== comment.person_id
+              "
+            >
+              {{
+                $t('comments.edited_by', {
+                  name: personMap.get(comment.editor_id)?.full_name
+                })
+              }}
+            </div>
           </div>
         </div>
       </div>
@@ -272,10 +284,7 @@
         class="flexrow content-wrapper preview-info"
         v-if="comment.previews.length > 0 && !isConcept"
       >
-        <router-link
-          class="flexrow-item round-name revision"
-          :to="previewRoute"
-        >
+        <router-link class="round-name revision" :to="previewRoute">
           {{
             comment.pinned
               ? $t('comments.pinned_revision')
@@ -284,7 +293,7 @@
           {{ comment.previews[0].revision }}
         </router-link>
         <a
-          class="preview-link button flexrow-item"
+          class="preview-link button"
           :href="comment.links[0]"
           :title="$t('playlists.actions.open_link')"
           target="_blank"
@@ -294,12 +303,11 @@
         </a>
         <span
           class="flexrow-item preview-status"
+          :class="{ pointer: isCurrentUserManager }"
           :title="comment.previews[0].validation_status"
-          :style="getPreviewValidationStyle(comment.previews[0])"
-          @click="changePreviewValidationStatus(comment.previews[0])"
-        >
-          &nbsp;
-        </span>
+          :data-status="comment.previews[0].validation_status"
+          @click="changePreviewValidationStatus(comment.previews)"
+        ></span>
       </div>
     </article>
     <div class="empty-comment" v-else>
@@ -704,27 +712,19 @@ export default {
       })
     },
 
-    getPreviewValidationStyle(previewFile) {
-      let color = '#AAA'
-      if (previewFile.validation_status === 'validated') {
-        color = '#67BE48' // green
-      } else if (previewFile.validation_status === 'rejected') {
-        color = '#FF3860' // red
+    changePreviewValidationStatus(previewFiles) {
+      if (!this.isCurrentUserManager) {
+        return
       }
-      return { background: color }
-    },
-
-    changePreviewValidationStatus(previewFile) {
-      if (!this.isCurrentUserManager) return
-      let status = previewFile.status
-      if (previewFile.validation_status === 'validated') {
-        status = 'rejected'
-      } else if (previewFile.validation_status === 'rejected') {
-        status = 'neutral'
-      } else {
-        status = 'validated'
+      const statusMap = {
+        validated: 'rejected',
+        rejected: 'neutral',
+        neutral: 'validated'
       }
-      this.updatePreviewFileValidationStatus({ previewFile, status })
+      const status = statusMap[previewFiles[0].validation_status] || 'validated'
+      previewFiles.forEach(previewFile => {
+        this.updatePreviewFileValidationStatus({ previewFile, status })
+      })
     },
 
     renderComment,
@@ -894,9 +894,9 @@ article.comment {
   transform: scale(1.02);
 }
 
+.edited-text,
 .pinned-text {
   font-size: 0.8em;
-  margin: 0;
   text-align: right;
   color: $light-grey;
 }
@@ -953,15 +953,11 @@ article.comment {
 .like-button {
   align-items: center;
   background-color: transparent;
-  border: 0;
-  border-radius: 0.5rem;
   color: inherit;
   cursor: pointer;
   display: inline-flex;
   margin: 0;
   padding: 0.3rem 0;
-  width: 100%;
-  z-index: 10;
 
   span {
     margin-left: 0.3em;
@@ -1038,10 +1034,8 @@ p {
   color: var(--text);
   cursor: pointer;
   font-size: 0.8em;
-  padding: 0;
-  padding-right: 0.5em;
+  padding: 0 0.5em;
   text-align: right;
-  width: 60px;
 }
 
 textarea.reply {
@@ -1107,13 +1101,20 @@ textarea.reply {
 }
 
 .preview-status {
-  border-radius: 50%;
+  background: #aaa;
   border: 2px solid $grey;
-  cursor: pointer;
+  border-radius: 50%;
   height: 20px;
+  min-width: 20px;
   transition: background 0.3s ease;
   width: 20px;
-  min-width: 20px;
+
+  &[data-status='validated'] {
+    background: $light-green;
+  }
+  &[data-status='rejected'] {
+    background: $red;
+  }
 }
 
 @media screen and (max-width: 768px) {

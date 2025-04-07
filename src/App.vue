@@ -50,6 +50,7 @@ export default {
       'departmentMap',
       'editMap',
       'episodeMap',
+      'todoMap',
       'isCurrentUserAdmin',
       'isDataLoading',
       'isDarkTheme',
@@ -61,6 +62,7 @@ export default {
       'productionMap',
       'sequenceMap',
       'shotMap',
+      'taskComments',
       'taskMap',
       'taskStatusMap',
       'taskTypeMap',
@@ -175,13 +177,19 @@ export default {
     events: {
       'project:new'(eventData) {
         if (!this.productionMap.get(eventData.project_id)) {
-          this.loadProduction(eventData.project_id)
+          this.loadProduction(eventData.project_id).catch(err => {
+            console.error(err)
+          })
         }
       },
 
       'project:update'(eventData) {
         if (this.productionMap.get(eventData.project_id)) {
-          this.loadProduction(eventData.project_id)
+          this.loadProduction(eventData.project_id).catch(err => {
+            this.$store.commit('REMOVE_PRODUCTION', {
+              id: eventData.project_id
+            })
+          })
         } else {
           this.loadOpenProductions()
         }
@@ -415,11 +423,19 @@ export default {
 
       'comment:new'(eventData) {
         const commentId = eventData.comment_id
-        if (
-          !this.isSavingCommentPreview &&
-          this.taskMap.get(eventData.task_id)
-        ) {
-          this.loadComment({ commentId }).catch(console.error)
+        const task = this.taskMap.get(eventData.task_id)
+        if (!this.isSavingCommentPreview && task) {
+          if (
+            this.taskComments[eventData.task_id] ||
+            this.todoMap.get(eventData.task_id)
+          ) {
+            this.loadComment({ commentId }).catch(console.error)
+          } else {
+            this.$store.commit('UPDATE_TASK', {
+              task,
+              taskStatusId: eventData.task_status_id
+            })
+          }
         }
       },
 
@@ -1937,7 +1953,7 @@ td.fps {
 }
 
 .modal-content p.is-danger {
-  color: #ff3860;
+  color: $red;
   font-style: italic;
   margin-bottom: 2em;
 }
