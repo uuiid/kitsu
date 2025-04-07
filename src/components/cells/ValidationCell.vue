@@ -85,7 +85,11 @@
           </span>
         </div>
         <div class="date-input" v-if="isShowDate && task">
+          <span v-if="!isShouEditeDate" @click.stop="onClickDate">{{
+            `${formatDate(task.start_date)}-${formatDate(task.due_date)}`
+          }}</span>
           <el-date-picker
+            ref="datePicker"
             class="custom-input"
             v-model="task.dateRange"
             type="daterange"
@@ -95,6 +99,9 @@
             unlink-panels
             placeholder="Select date and time"
             @change="onEntryChange"
+            @blur="isShouEditeDate = false"
+            v-if="isShouEditeDate"
+            v-focus
           />
         </div>
       </div>
@@ -123,7 +130,8 @@ export default {
   data() {
     return {
       task: null,
-      value: ''
+      value: '',
+      isShouEditeDate: false
     }
   },
 
@@ -334,18 +342,34 @@ export default {
       if (date) return moment(date).format('YYYY-MM-DD')
       return '\n'
     },
+    onClickDate() {
+      this.isShouEditeDate = true
+      this.$nextTick(() => {
+        this.$refs.datePicker.focus()
+        console.log(this.$refs.datePicker)
+      })
+    },
     onEntryChange() {
-      const taskId = this.task.id
-      const data = {
-        start_date: this.task.dateRange[0],
-        due_date: this.task.dateRange[1]
+      if (this.task) {
+        const taskId = this.task.id
+        const data = {
+          start_date: this.formatDate(this.task.dateRange[0]),
+          due_date: this.formatDate(this.task.dateRange[1])
+        }
+        if (
+          this.task.start_date === data.start_date &&
+          this.task.due_date === data.due_date
+        ) {
+          return
+        } else {
+          this.updateTask({ taskId, data })
+            .then(() => {
+              this.task.start_date = data.start_date
+              this.task.due_date = data.due_date
+            })
+            .catch(console.error)
+        }
       }
-      this.updateTask({ taskId, data })
-        .then(() => {
-          this.task.start_date = this.task.dateRange[0]
-          this.task.due_date = this.task.dateRange[1]
-        })
-        .catch(console.error)
     },
     select(event) {
       if (!this.selectable) {
@@ -499,15 +523,15 @@ export default {
   display: flex;
   flex-direction: row;
   align-items: center;
-  padding: 0 0 2px 0;
+  padding: 0;
   width: 100%;
-  max-height: 20px !important;
+  max-height: 21px !important;
 }
 
 :deep(.el-date-editor .el-range-separator) {
   max-width: 2px !important;
-  padding: 0 5px !important;
-  margin-bottom: 2px !important;
+  font-style: inherit !important;
+  //padding: 0 5px !important;
 }
 
 :deep(.el-input__inner) {
@@ -529,6 +553,7 @@ export default {
 }
 
 .date-input {
+  font-style: inherit !important;
   border: 1px solid transparent;
   border-radius: 5px;
 
