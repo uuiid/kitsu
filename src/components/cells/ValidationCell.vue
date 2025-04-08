@@ -85,9 +85,17 @@
           </span>
         </div>
         <div class="date-input" v-if="isShowDate && task">
-          <span v-if="!isShouEditeDate" @click.stop="onClickDate">{{
-            `${formatDate(task.start_date)}-${formatDate(task.due_date)}`
-          }}</span>
+          <div
+            class="custom-input"
+            v-if="!isShouEditeDate"
+            @click.stop="onClickDate"
+          >
+            {{
+              task.start_date === null && task.due_date === null
+                ? ''
+                : `${formatDate(task.start_date)}-${formatDate(task.due_date)}`
+            }}
+          </div>
           <el-date-picker
             ref="datePicker"
             class="custom-input"
@@ -516,6 +524,11 @@ export default {
   border: 4px solid;
   color: red;
   border-radius: 4px;
+}
+
+.custom-input {
+  min-height: 21px;
+  min-width: 157px;
 }
 
 :deep(.el-range-editor.el-input__wrapper) {
