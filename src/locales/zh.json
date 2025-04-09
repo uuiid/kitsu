@@ -430,7 +430,7 @@
       "frames": "帧",
       "man_days": "人日| 人日",
       "select_column": "选择列",
-      "show": "节目",
+      "show": "过滤",
       "stick": "签",
       "timeSpent": "所花费的时间",
       "unstick": "不签",
@@ -1515,7 +1515,7 @@
       }
     },
     "board": {
-      "title": "董事会",
+      "title": "看板",
       "empty": "您的看板当前为空。这意味着在生产设置中没有为您的用户角色配置任务状态。",
       "settings": {
         "title": "董事会状态",

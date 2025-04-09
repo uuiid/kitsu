@@ -217,7 +217,7 @@ class DoodleWorkAutoLight extends DoodleWorkBase {
     this.task_data_filed.set('bind_skin', {
       id: 'bind_skin',
       name: '挂载骨架网格',
-      checked: false,
+      checked: true,
       type: Boolean
     })
   }

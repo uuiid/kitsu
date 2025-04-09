@@ -38,7 +38,6 @@ onMounted(() => {
     load()
   })
 })
-
 const onClickLogType = logType => {
   inputValue.value = ''
   logType.isSelected = !logType.isSelected
@@ -159,7 +158,7 @@ watch(logs, () => {
               />
             </div>
           </div>
-          <div class="log-content">
+          <div class="log-content" v-if="dynamicsLog.length > 0">
             <ul class="infinite-list" style="overflow: auto" @scroll="onScroll">
               <li
                 :class="{
@@ -180,6 +179,7 @@ watch(logs, () => {
               >
             </div-->
           </div>
+          <div class="log-content" v-else>记载中，请稍后</div>
         </div>
       </div>
     </div>

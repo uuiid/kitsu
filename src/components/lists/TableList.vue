@@ -27,7 +27,13 @@ const colors = [
   { color: '#1989fa', percentage: 80 },
   { color: '#5cb87a', percentage: 100 }
 ]
-const emit = defineEmits(['submit', 'add-data', 'handle-action', 'selected'])
+const emit = defineEmits([
+  'submit',
+  'add-data',
+  'handle-action',
+  'selected',
+  'view-log'
+])
 const isDragOver = ref(false)
 const displayWorkList = computed(() => {
   return [...props.bodyList.values()]
@@ -117,7 +123,8 @@ const onClickBody = (work, key) => {
     emit('selected', work)
   }
   if (key === 'last_line_log') {
-    handleAction('view-log', work)
+    //handleAction('view-log', work)
+    emit('view-log', work)
   }
 }
 
@@ -224,6 +231,15 @@ const handleAction = (action_name, task_id) => {
               />
             </td>
             <td class="action">
+              <a
+                class="action_item"
+                :class="{
+                  button: true
+                }"
+                v-if="isShowViewLog"
+                @click="handleAction('view-log', work)"
+                >{{ $t('doodle_work.view_log') }}</a
+              >
               <a
                 class="action_item"
                 :class="{

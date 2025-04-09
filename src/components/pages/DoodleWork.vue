@@ -15,6 +15,7 @@ import PluginsCentral from '@/components/widgets/PluginsCentral.vue'
 import ExtractCaption from '@/components/widgets/ExtractCaption.vue'
 import DoodleWorkHistoryTaskModal from '@/components/modals/DoodleWorkHistoryTaskModal.vue'
 import AIScript from '@/components/widgets/AIScript.vue'
+import router from '@/router/index.js'
 //import { io } from 'socket.io-client'
 //import router from '@/router/index.js'
 useHead({
@@ -34,7 +35,9 @@ const version = computed(() => {
   return doodleWork.state.doodleWorkZipFileVision
 })
 const switchPage = pageName => {
-  if (doodleWork.state.isPullProcessed) currentPage.value = pageName
+  if (pageName.name === 'material_Library') {
+    router.push('/video-library')
+  } else if (doodleWork.state.isPullProcessed) currentPage.value = pageName
   else
     ElNotification({
       title: i18n.global.t('video_library.warning'),
@@ -115,11 +118,23 @@ const pagedAssets = ref([
   {
     id: 0,
     name: 'ai_script',
-    label: 'AI剧本',
+    label: 'AI剧本创作',
     textIcon: 'I',
     disabled: true,
     description: '',
     color: '#00b825',
+    isVisible: true,
+    isBaseTemplate: false,
+    hidden: false
+  },
+  {
+    id: 9,
+    name: 'ai_painting',
+    label: 'AI原画创作',
+    textIcon: 'Y',
+    disabled: true,
+    description: '',
+    color: '#00a9b8',
     isVisible: true,
     isBaseTemplate: false,
     hidden: false
@@ -138,7 +153,7 @@ const pagedAssets = ref([
   {
     id: 2,
     name: 'replace_maya_ref',
-    label: '替换引用',
+    label: '动画替换引用',
     textIcon: 'R',
     disabled: true,
     description: '',
@@ -169,17 +184,6 @@ const pagedAssets = ref([
     isBaseTemplate: true
   },
   {
-    id: 5,
-    name: 'extract_caption',
-    label: '提取字幕',
-    textIcon: 'Z',
-    disabled: true,
-    description: '',
-    color: '#ecd875',
-    isVisible: false,
-    isBaseTemplate: false
-  },
-  {
     id: 6,
     name: 'merge_video',
     label: '一键合成视频(png)',
@@ -193,13 +197,35 @@ const pagedAssets = ref([
   {
     id: 7,
     name: 'connect_video',
-    label: '一键连接视频(pm4)',
+    label: '一键连接视频(mp4)',
     textIcon: 'C',
     disabled: true,
     description: '',
     color: '#686aef',
     isVisible: false,
     isBaseTemplate: true
+  },
+  {
+    id: 5,
+    name: 'extract_caption',
+    label: '提取字幕',
+    textIcon: 'Z',
+    disabled: true,
+    description: '',
+    color: '#ecd875',
+    isVisible: false,
+    isBaseTemplate: false
+  },
+  {
+    id: 5,
+    name: 'material_Library',
+    label: '数字资产库',
+    textIcon: 'L',
+    disabled: true,
+    description: '',
+    color: '#55e159',
+    isVisible: false,
+    isBaseTemplate: false
   }
   // {
   //   id: 9,

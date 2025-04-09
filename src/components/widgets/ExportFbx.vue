@@ -47,17 +47,11 @@ const reload = async () => {
 }
 
 const onViewLog = work_task => {
-  // doodleWork.state.viewLogWorkTask = work_task
-  // doodleWork.state.isActiveLogModal = true
-  // doodleWork.actions.getWorkTaskLog(work_task.id).then(log => {
-  //   doodleWork.state.workTaskLogData = log
-  // })
-  const os = require('os')
-  const fs = require('fs')
-  const logPath = `${os.tmpdir()}/doodle/server_task/${work_task.id}.log`
-  if (fs.existsSync(logPath)) {
-    window.api.openPath(logPath)
-  } else ElMessage.error('文件不存在，请稍后尝试')
+  doodleWork.state.viewLogWorkTask = work_task
+  doodleWork.state.isActiveLogModal = true
+  doodleWork.actions.getWorkTaskLog(work_task.id).then(log => {
+    doodleWork.state.workTaskLogData = log
+  })
 }
 
 const onAddData = files => {
@@ -104,7 +98,13 @@ const onAction = async (action_name, task) => {
     doodleWork.actions.deleteDoodleWorkTask(task.id)
     doodleWork.currentDoodleWorkState.value.workList.delete(task.id)
   } else if (action_name === 'view-log') {
-    onViewLog(task)
+    //onViewLog(task)
+    const os = require('os')
+    const fs = require('fs')
+    const logPath = `${os.tmpdir()}/doodle/server_task/${task.id}.log`
+    if (fs.existsSync(logPath)) {
+      window.api.openPath(logPath)
+    } else ElMessage.error('文件不存在，请稍后尝试')
   } else if (action_name === 'cancel-task') {
     try {
       await doodleWork.actions.cancelDoodleWorkTask(task)
