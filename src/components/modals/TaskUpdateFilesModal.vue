@@ -5,7 +5,6 @@ import { onUnmounted, onMounted, computed } from 'vue'
 import { ElMessage, ElNotification } from 'element-plus'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
-
 const updateTaskFiles = updateTaskFilesStore()
 const notNeedInspections = new Map()
 const updateTypes = [
@@ -92,7 +91,12 @@ const onActions = async (action_name, task) => {
     updateTaskFiles.state.allFiles.delete(task.id)
     updateTaskFiles.doodleWorkCheckFiles.uncommittedWorkList.delete(task.id)
   } else if (action_name === 'view-log') {
-    onViewLog(task)
+    const os = require('os')
+    const fs = require('fs')
+    const logPath = `${os.tmpdir()}/doodle/server_task/${task.id}.log`
+    if (fs.existsSync(logPath)) {
+      window.api.openPath(logPath)
+    } else ElMessage.error('文件不存在，请稍后尝试')
   } else if (action_name === 'cancel-task') {
     try {
       await updateTaskFiles.doodleWork.actions.cancelDoodleWorkTask(task)
@@ -241,12 +245,13 @@ const onSubmit = async () => {
           "
           :is-drop="true"
           :is-show-submit="true"
-          :is-show-view-log="false"
+          :is-show-view-log="true"
           :is-show-progress="true"
           :body-list="displayAllFiles"
           running-label="checking"
           @submit="onSubmit"
           @add-data="onAddData"
+          @view-log="onViewLog"
           @handle-action="onActions"
         ></table-list>
       </div>
@@ -259,7 +264,7 @@ const onSubmit = async () => {
 
 <style scoped lang="scss">
 .modal-content {
-  width: 60%;
+  width: 70%;
 }
 
 .update-type {

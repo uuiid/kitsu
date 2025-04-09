@@ -578,11 +578,11 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       }
       await window.api.doodleExeRun(doodleWorkExePath.value, ['--local'])
       let num = 0
-      while (window.api.DoodleExePort() === state.value.port) {
+      while (window.api.DoodleExePort() === 0) {
         if (num > 30) break
         num++
         await sleep(2000)
-        if (window.api.DoodleExePort() !== state.value.port) {
+        if (window.api.DoodleExePort() !== 0) {
           state.value.isPullProcessed = true
           const port = window.api.DoodleExePort()
           state.value.localHttpPath = `http://127.0.0.1:${port}`
