@@ -2,12 +2,13 @@
 import productions from '@/store/modules/productions.js'
 import { ref, reactive, onMounted, watch } from 'vue'
 import { zhCn } from 'element-plus/es/locale/index'
-import { CircleX } from 'lucide-vue-next'
+import { CircleX, ArrowUpDown } from 'lucide-vue-next'
 
 defineProps({
   active: { type: Boolean, default: false }
 })
 const isInitInputs = ref(false)
+const isShowProjectIcon = ref(false)
 const inputs = reactive({
   project_id: {
     value: '',
@@ -43,6 +44,8 @@ const inspectInputs = () => {
         outputs[input] = formatDate(inputs[input].value)
       } else if (inputs[input].type === 'number') {
         outputs[input] = Number(inputs[input].value)
+      } else if (input === 'project_id' && inputs[input].type === '') {
+        outputs['project_name'] = inputs[input].value
       } else outputs[input] = inputs[input].value
     } else {
       inputs[input].error = true
@@ -126,6 +129,12 @@ watch(
             :required="input.required"
             :label-width="120"
             v-for="(input, key) in inputs"
+            @mouseenter="
+              key === 'project_id' ? (isShowProjectIcon = true) : false
+            "
+            @mouseleave="
+              key === 'project_id' ? (isShowProjectIcon = false) : false
+            "
           >
             <el-select
               v-model="input.value"
@@ -163,11 +172,23 @@ watch(
               v-else
               @input="input.error = input.required ? !input.value : false"
             />
+            <div style="min-width: 15px" v-show="!input.error" />
             <circle-x
               class="circle-x"
+              style="min-width: 15px"
               size="15"
               v-show="input.error"
             ></circle-x>
+            <div
+              :title="input.type === '' ? '切换项目列表' : '自定义项目名称'"
+              @click="
+                input.type === '' ? (input.type = 'list') : (input.type = '')
+              "
+              v-if="key === 'project_id'"
+              v-show="isShowProjectIcon"
+            >
+              <arrow-up-down class="arrow-up-down" size="15" />
+            </div>
           </el-form-item>
         </el-config-provider>
         <div class="has-text-right">
@@ -209,5 +230,12 @@ watch(
 
 .circle-x {
   margin-left: 5px;
+}
+
+.arrow-up-down {
+  cursor: pointer;
+  &:hover {
+    color: #6bacea;
+  }
 }
 </style>

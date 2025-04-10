@@ -8,12 +8,8 @@
         <div class="flexrow" v-else>
           <div class="flexrow-select-company" v-if="companyString != null">
             <div class="flexrow-item-selector" v-if="showAllUser()">
-              <label class="label">
-                {{ $t('main.person') }}
-              </label>
               <people-field
                 class="person-field"
-                big
                 :label="$t('main.person')"
                 :people="personList"
                 :model-value="peopleFieldUser"

@@ -111,7 +111,11 @@
                   class="entity-name"
                   :is-tooltip="true"
                   :entry="task.project"
+                  v-if="task.project"
                 />
+                <span class="entity-name" v-else>{{
+                  task.computing_time.project_name
+                }}</span>
               </div>
             </td>
 
@@ -139,6 +143,7 @@
                   :empty-width="60"
                   :empty-height="40"
                   :entity="{ preview_file_id: task.entity?.preview_file_id }"
+                  v-if="task.entity"
                 />
                 <span
                   v-if="
@@ -147,10 +152,10 @@
                   >{{ task.computing_time.name || task.entity.name }}</span
                 >
                 <!--input
-            class="duty-editor"
-            :value="task.computing_time.name"
-            v-else
-          /-->
+    class="duty-editor"
+    :value="task.computing_time.name"
+    v-else
+  /-->
                 <!--router-link class="entity-name" :to="entityPath(task.entity)">
 {{ task.entity.entity_name }}
 </router-link-->
