@@ -16,6 +16,7 @@ import ExtractCaption from '@/components/widgets/ExtractCaption.vue'
 import DoodleWorkHistoryTaskModal from '@/components/modals/DoodleWorkHistoryTaskModal.vue'
 import AIScript from '@/components/widgets/AIScript.vue'
 import router from '@/router/index.js'
+import VideoModal from '@/components/modals/VideoModal.vue'
 //import { io } from 'socket.io-client'
 //import router from '@/router/index.js'
 useHead({
@@ -35,6 +36,7 @@ const version = computed(() => {
   return doodleWork.state.doodleWorkZipFileVision
 })
 const switchPage = pageName => {
+  doodleWork.state.DemonstrateVideoName = pageName.name
   if (pageName.name === 'material_Library') {
     router.push('/video-library')
   } else if (doodleWork.state.isPullProcessed) currentPage.value = pageName
@@ -148,7 +150,8 @@ const pagedAssets = ref([
     description: '',
     color: '#00b89c',
     isVisible: true,
-    isBaseTemplate: true
+    isBaseTemplate: true,
+    videoName: '自动导出动画'
   },
   {
     id: 2,
@@ -208,7 +211,7 @@ const pagedAssets = ref([
   {
     id: 5,
     name: 'extract_caption',
-    label: '提取字幕',
+    label: '自动提取字幕',
     textIcon: 'Z',
     disabled: true,
     description: '',
@@ -523,6 +526,7 @@ const onSetOutPath = () => {
       <doodle-work-history-task-modal
         v-if="doodleWork.state.isActiveHistoryModal"
       />
+      <video-modal v-if="doodleWork.state.isShowDemonstrateVideo" />
       <doodle-work-setting-modal />
     </div>
   </div>

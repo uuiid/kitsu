@@ -3,6 +3,7 @@ import { computed, ref } from 'vue'
 import { useStore } from 'vuex'
 import i18n from '@/lib/i18n.js'
 import TimerCell from '@/components/cells/TimerCell.vue'
+import { doodleWorkStore } from '@/store/modules/doodlework.js'
 
 const vuexStore = useStore()
 const props = defineProps({
@@ -17,7 +18,8 @@ const props = defineProps({
   bodyList: { type: Map, default: () => Map() },
   isShowViewLog: { type: Boolean, default: false },
   isShowProgress: { type: Boolean, default: false },
-  isSelectable: { type: Boolean, default: false }
+  isSelectable: { type: Boolean, default: false },
+  isShowDemonstrate: { type: Boolean, default: false }
 })
 const colors = [
   { color: '#fa1b1b', percentage: 0 },
@@ -60,6 +62,7 @@ const formatDiffTime = diffTime => {
 }
 
 function onDemonstrate() {
+  doodleWorkStore().state.isShowDemonstrateVideo = true
   console.log('test')
 }
 
@@ -154,7 +157,9 @@ const handleAction = (action_name, task_id) => {
       <div style="padding: 0 10px">
         {{ $t('video_library.placeholder') }}
       </div>
-      <div class="button" @click="onDemonstrate">功能演示(开发中)</div>
+      <div class="button" @click="onDemonstrate" v-if="isShowDemonstrate">
+        功能演示(开发中)
+      </div>
     </div>
     <div class="datatable-wrapper" v-if="!isShowPrompt">
       <table class="datatable">

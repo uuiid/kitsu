@@ -335,6 +335,7 @@ watchEffect(() => {})
       :is-drop="true"
       :is-show-view-log="false"
       :is-show-submit="true"
+      :is-show-demonstrate="true"
       @add-data="onAddFiles"
       @handle-action="onAction"
       @submit="onSubmit"

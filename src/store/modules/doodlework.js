@@ -439,6 +439,7 @@ function initState() {
     isActiveLogModal: false,
     isActiveSettingModal: false,
     isActiveHistoryModal: false,
+    isShowDemonstrateVideo: false,
     isReload: true,
     isVisitor: false,
     isPullProcessed: false,
@@ -456,7 +457,8 @@ function initState() {
     setOutPathCallback: null,
     versions: [],
     doodleSocket: null,
-    port: 0
+    port: 0,
+    DemonstrateVideoName: ''
   }
 }
 
