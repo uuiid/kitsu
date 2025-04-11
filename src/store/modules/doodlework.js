@@ -581,7 +581,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       }
       await window.api.doodleExeRun(doodleWorkExePath.value, ['--local'])
       let num = 0
-      while (window.api.DoodleExePort() === 0) {
+      const temp = true
+      while (temp) {
         if (num > 30) break
         num++
         await sleep(2000)
@@ -593,6 +594,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           //state.value.doodleSocket = io(`http://192.168.20.89:50025/socket.io/`)
           state.value.doodleSocket = io(`http://127.0.0.1:${port}/socket.io/`)
           await actions.setSocketEvent()
+          break
         }
       }
     },
