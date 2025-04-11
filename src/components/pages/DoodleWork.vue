@@ -601,7 +601,7 @@ const onSetOutPath = () => {
 .doodle-work {
   display: flex;
   flex-direction: column;
-  max-height: 100%;
+  max-height: 100vh;
   width: 100%;
   padding: 4em 2em 1em 2em;
   color: var(--text);
@@ -668,8 +668,8 @@ const onSetOutPath = () => {
 }
 
 .list-body {
-  max-height: 70%;
-  height: 70%;
+  max-height: 40vh;
+  height: 100%;
   overflow: auto;
   //border: thick dotted #ff0000;
 }
