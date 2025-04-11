@@ -179,7 +179,7 @@ watch(logs, () => {
               >
             </div-->
           </div>
-          <div class="log-content" v-else>记载中，请稍后</div>
+          <div class="log-content" v-else>加载中，请稍后 . . .</div>
         </div>
       </div>
     </div>

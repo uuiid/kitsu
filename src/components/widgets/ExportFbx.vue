@@ -135,6 +135,7 @@ onUnmounted(() => {
       :is-drop="true"
       :is-show-submit="false"
       :is-show-view-log="true"
+      :is-show-restart="true"
       :is-show-demonstrate="true"
       @add-data="onAddData"
       @remove-data="doodleWork.currentDoodleWorkState.workList.delete"

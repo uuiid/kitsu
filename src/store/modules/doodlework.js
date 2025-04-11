@@ -14,6 +14,7 @@ export class DoodleWorkBase {
   constructor() {
     this.name = ''
     this.isShowFiled = true
+    this.isSubmitting = false
     this.workList = new Map()
     this.uncommittedWorkList = new Map()
     this.task_data_filed = new Map()
@@ -617,6 +618,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       }
     },
     submitLocalDoodleWork: async () => {
+      currentDoodleWorkState.value.isSubmitting = true
       await actions.getLocalHttpPath()
       for (const item of [
         ...currentDoodleWorkState.value.uncommittedWorkList.values()
@@ -638,6 +640,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       currentDoodleWorkState.value.uncommittedWorkList = new Map()
       currentDoodleWorkState.value.replaceFiles = new Map()
       currentDoodleWorkState.value.isReload = true
+      currentDoodleWorkState.value.isSubmitting = false
       // results.forEach(result => {
       //   currentDoodleWorkState.value.workList.set(result.id, result)
       // })

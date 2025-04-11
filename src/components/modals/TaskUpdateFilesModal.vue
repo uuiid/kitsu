@@ -5,6 +5,7 @@ import { onUnmounted, onMounted, computed } from 'vue'
 import { ElMessage, ElNotification } from 'element-plus'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
+
 const updateTaskFiles = updateTaskFilesStore()
 const notNeedInspections = new Map()
 const updateTypes = [
@@ -18,7 +19,14 @@ const tests = computed(() => {
     type => type.id === updateTaskFiles.state.currentUpdateType
   )[0].label
 })
-
+const disPlayTaskDataFiled = computed(() => {
+  if (updateTaskFiles.doodleWorkCheckFiles) {
+    if (updateTaskFiles.doodleWorkCheckFiles.task_data_filed) {
+      return updateTaskFiles.doodleWorkCheckFiles.task_data_filed
+    }
+  }
+  return []
+})
 const displayAllFiles = computed(() => {
   return [...updateTaskFiles.state.allFiles.values()].filter(
     task => task.updateType === updateTaskFiles.state.currentUpdateType
@@ -237,6 +245,59 @@ const onSubmit = async () => {
             v-for="type in updateTypes"
           />
         </el-radio-group>
+        <div class="task-data-filed">
+          <div
+            class="interval"
+            v-if="
+              updateTaskFiles.doodleWorkCheckFiles.isShowFiled &&
+              updateTaskFiles.state.currentUpdateType === 0
+            "
+          >
+            <div
+              class="project-list"
+              :key="key"
+              v-for="(taskData, key) in disPlayTaskDataFiled"
+            >
+              <div
+                class="project-list-item"
+                v-if="taskData[1].type === Boolean"
+              >
+                <input
+                  class="input-checkbox"
+                  type="checkbox"
+                  v-model="taskData[1].checked"
+                  @click="
+                    console.log(
+                      doodleWork.currentDoodleWorkState.task_data_filed
+                    )
+                  "
+                />
+                <span>{{ taskData[1].name }}</span>
+              </div>
+              <div
+                class="project-list-item"
+                v-else-if="taskData[1].type === Number"
+                v-show="
+                  doodleWork.currentDoodleWorkState.task_data_filed.get(
+                    taskData[1].parent_id
+                  )?.checked
+                "
+              >
+                <input
+                  class="input"
+                  type="number"
+                  v-model="taskData[1].number"
+                  @click="
+                    console.log(
+                      doodleWork.currentDoodleWorkState.task_data_filed
+                    )
+                  "
+                />
+                <span>{{ taskData[1].name }}</span>
+              </div>
+            </div>
+          </div>
+        </div>
         <table-list
           class="table-list"
           :name="`上传(${tests})`"
@@ -273,5 +334,30 @@ const onSubmit = async () => {
 
 .table-list {
   max-height: 60vh;
+}
+
+.interval {
+  display: flex;
+  flex-direction: row;
+  gap: 2em;
+  margin-bottom: 10px;
+}
+
+.project-list-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
+.project-list-item {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 5px;
+}
+
+.task-data-filed {
+  min-height: 30px;
 }
 </style>

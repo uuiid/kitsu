@@ -19,7 +19,8 @@ const props = defineProps({
   isShowViewLog: { type: Boolean, default: false },
   isShowProgress: { type: Boolean, default: false },
   isSelectable: { type: Boolean, default: false },
-  isShowDemonstrate: { type: Boolean, default: false }
+  isShowDemonstrate: { type: Boolean, default: false },
+  isShowRestart: { type: Boolean, default: false }
 })
 const colors = [
   { color: '#fa1b1b', percentage: 0 },
@@ -275,7 +276,7 @@ const handleAction = (action_name, task_id) => {
                   button: true
                 }"
                 @click="handleAction('restart', work)"
-                v-if="isShowViewLog"
+                v-if="isShowRestart"
                 >{{ $t('doodle_work.restart') }}</a
               >
             </td>

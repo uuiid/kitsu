@@ -12,6 +12,24 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
     super()
     this.name = 'check_maya'
     this.productions = productions.state.openProductions
+    this.task_data_filed.set('kframe_check', {
+      id: 'kframe_check',
+      name: '是否检查K帧',
+      checked: true,
+      type: Boolean
+    })
+    this.task_data_filed.set('history_check', {
+      id: 'history_check',
+      name: '是否检查历史',
+      checked: true,
+      type: Boolean
+    })
+    this.task_data_filed.set('name_length_check', {
+      id: 'name_length_check',
+      name: '是否检查名称长度',
+      checked: true,
+      type: Boolean
+    })
     this.tableHeaderFiled['update_progress'] = {
       name: '上传进度',
       type: 'progress'
@@ -20,6 +38,12 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
 
   validateString(file) {
     return true
+  }
+
+  formatDataState(data) {
+    for (const [key, value] of this.task_data_filed) {
+      data.task_data[key] = value.checked
+    }
   }
 
   formatData(file) {
@@ -217,7 +241,7 @@ export const updateTaskFilesStore = defineStore(
         for (const item of [
           ...doodleWorkCheckFiles.uncommittedWorkList.values()
         ].filter(task => task.updateType === state.value.currentUpdateType)) {
-          //doodleWorkCheckFiles.formatDataState(item)
+          doodleWorkCheckFiles.formatDataState(item)
           const data = Object.assign({}, item)
           data.file = ''
 

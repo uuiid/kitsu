@@ -46,7 +46,9 @@ const onSubmit = () => {
   if (doodleWork.currentDoodleWorkState.name === 'extract_caption') {
     doodleWork.actions.submitExtractCaptionTask()
   } else {
-    doodleWork.actions.submitLocalDoodleWork()
+    if (!doodleWork.currentDoodleWorkState.isSubmitting)
+      doodleWork.actions.submitLocalDoodleWork()
+    else ElMessage.error('正在提交请稍后')
   }
 }
 const onAddReplaceData = files => {
