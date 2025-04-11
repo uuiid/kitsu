@@ -29,7 +29,7 @@ const messages = computed(() => {
     ? AiScript.state.allDialogue.get(AiScript.state.currentDialogue).content
     : []
 })
-window.addEventListener('resize', e => {
+window.addEventListener('resize', () => {
   innerHeight.value = window.innerHeight
 })
 const inputPosition = computed(() => {

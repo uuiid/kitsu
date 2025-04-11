@@ -258,11 +258,59 @@ const pluginAssets = ref([
   {
     id: 9,
     name: 'UE_plugin',
-    label: '虚幻插件',
-    textIcon: 'U',
+    label: '资产批量导入',
+    textIcon: 'I',
     disabled: true,
     description: '',
-    color: '#1e1f22',
+    color: '#9ea37f',
+    isVisible: true,
+    isPlugin: false,
+    installState: false
+  },
+  {
+    id: 10,
+    name: 'UE_plugin',
+    label: '特效资源库',
+    textIcon: 'F',
+    disabled: true,
+    description: '',
+    color: '#e366ef',
+    isVisible: true,
+    isPlugin: false,
+    installState: false
+  },
+  {
+    id: 11,
+    name: 'UE_plugin',
+    label: '查找超限材质',
+    textIcon: 'C',
+    disabled: true,
+    description: '',
+    color: '#6490f1',
+    isVisible: true,
+    isPlugin: false,
+    installState: false
+  },
+  {
+    id: 12,
+    name: 'UE_plugin',
+    label: '文件分类整理',
+    textIcon: 'O',
+    disabled: true,
+    description: '',
+    color: '#ed4f9d',
+    isVisible: true,
+    isPlugin: false,
+    installState: false
+  },
+  {
+    id: 12,
+    name: 'UE_plugin',
+    label: '一键渲染角色',
+    textIcon: 'R',
+    disabled: true,
+    description: '',
+    color: '#a64fed',
     isVisible: true,
     isPlugin: false,
     installState: false
@@ -620,7 +668,8 @@ const onSetOutPath = () => {
 }
 
 .list-body {
-  height: 90%;
+  max-height: 70%;
+  height: 70%;
   overflow: auto;
   //border: thick dotted #ff0000;
 }
@@ -680,6 +729,8 @@ const onSetOutPath = () => {
     .entity-name {
       white-space: nowrap;
       font-size: 20px;
+      max-width: 100px;
+      min-width: 100px;
     }
   }
 }

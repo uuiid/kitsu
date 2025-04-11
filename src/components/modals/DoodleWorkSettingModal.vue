@@ -25,12 +25,25 @@ const versions = computed(() => {
 if (doodleWork.state.localHttpPath) doodleWork.actions.getWorkSetting()
 const readUEVersion = path => {
   const fs = require('fs')
-  const vision_file = `${path}\\Engine\\Binaries\\Win64\\UnrealEditor.version`
+  let vision_file = `${path}\\Engine\\Binaries\\Win64\\UnrealEditor.version`
+  if (path.includes('\\Engine\\Binaries\\Win64')) {
+    vision_file = `${path}\\UnrealEditor.version`
+  } else if (path.includes('\\Engine\\Binaries')) {
+    vision_file = `${path}\\Win64\\UnrealEditor.version`
+  } else if (path.includes('\\Engine')) {
+    vision_file = `${path}\\Binaries\\Win64\\UnrealEditor.version`
+  }
   if (fs.existsSync(vision_file)) {
     const data = fs.readFileSync(vision_file, 'utf8')
     const jsonObject = JSON.parse(data)
+    doodleWork.state.doodleWorkSetting['UE_path'] = vision_file.replace(
+      '\\Engine\\Binaries\\Win64\\UnrealEditor.version',
+      ''
+    )
+    ElMessage.success('UE路径添加成功')
     return `${jsonObject['MajorVersion']}.${jsonObject['MinorVersion']}`
   }
+  ElMessage.error('请输入正确的UE路径例：D:\\EpicGame\\UE_5.5')
   return ''
 }
 const onTextChange = (val, key) => {
@@ -51,13 +64,17 @@ const textPlaceholder = (val, key) => {
 
 const onConfirm = async () => {
   try {
-    await doodleWork.actions.setWorkSetting()
-    ElMessage({
-      message: i18n.global.t('doodle_work.set_success'),
-      type: 'success'
-    })
+    if (doodleWork.state.doodleWorkSetting['UE_version']) {
+      await doodleWork.actions.setWorkSetting()
+      ElMessage({
+        message: i18n.global.t('doodle_work.set_success'),
+        type: 'success'
+      })
+    } else {
+      ElMessage.error('请先正确设置ue路径')
+    }
   } catch (error) {
-    ElMessage.error('error')
+    ElMessage.error('设置失败')
   }
 }
 </script>
