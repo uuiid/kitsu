@@ -129,6 +129,16 @@
             </div>
           </router-link>
         </div>
+        <div class="open-production has-text-centered" key="doodleWork">
+          <router-link to="doodle-work">
+            <div class="avatar has-text-centered" style="background: #3de867">
+              台
+            </div>
+            <div class="production-name">
+              {{ $t('doodle_work.doodle_work') }}
+            </div>
+          </router-link>
+        </div>
       </div>
     </div>
 
