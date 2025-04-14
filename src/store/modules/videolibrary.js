@@ -274,7 +274,7 @@ const actions = {
           const image = {
             id: video.id,
             data: data,
-            filetype: video.extension
+            filetype: 'image/png'
           }
           await videolibraryApi.addImage(image)
           commit('SET_UPDATED_NUM', 'add')
