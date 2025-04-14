@@ -30,12 +30,12 @@
           @set-error="value => (form.video_errored = value)"
           @custom-events="getFiles"
         ></list-view>
-        <progress
-          class="progress"
-          :value="updatedNum"
-          :max="fileNums"
-          v-show="updatedNum > 0"
-        ></progress>
+        <el-progress
+          :text-inside="true"
+          :stroke-width="26"
+          :percentage="Math.floor((updatedNum / fileNums) * 100)"
+          v-if="updatedNum > 0"
+        />
         <div class="has-text-right">
           <a
             :class="{
@@ -200,6 +200,7 @@ export default {
 .progress::-webkit-progress-value {
   background-color: #06b303;
 }
+
 .info-message {
   margin-top: 1em;
 }
