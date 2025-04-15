@@ -163,9 +163,12 @@ v-else
             </td>
 
             <td class="episode">
-              <div class="flexrow" :title="''" v-if="task.entity">
-                {{ getEpisodes(task) }}
-              </div>
+              <input
+                class="input-editor-readonly"
+                readonly
+                :value="getEpisodes(task)"
+                v-if="task.entity"
+              />
               <input
                 v-model="task.computing_time.episode"
                 class="input-editor"
@@ -922,6 +925,14 @@ td.end-date {
   color: $grey-strong;
   height: 100%;
   width: 100%;
+  background: transparent;
+}
+
+.input-editor-readonly {
+  text-align: right;
+  height: 100%;
+  width: 100%;
+  padding: 6px;
   background: transparent;
 }
 
