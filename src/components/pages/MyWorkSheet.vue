@@ -134,6 +134,7 @@
           @remove-sort-task="removeSortTask"
           @set-user-remark="setUserRemark"
           @soft-task="onSoftTask"
+          @copy-task="onAddCustomEntry"
           v-if="isActiveTab('workSheet')"
         />
 
@@ -570,6 +571,7 @@ export default {
       this.clearSelectedTasks()
     },
     onAddCustomEntry(task) {
+      if (!task.user_id) task.user_id = this.getUserId
       this.onCountCustomTaskTime(task)
     },
     onAddCustomDuty(task) {

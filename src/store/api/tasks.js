@@ -109,9 +109,11 @@ export default {
   setTaskTime(data) {
     const month = data.month.padStart(2, '0')
     const year_month = `${data.year}-${month}`
-    const duration = Number(data.duration) * 1000 * 1000 * 60 * 60
-    const commentData = {
-      duration: duration
+    const commentData = {}
+    if (data.duration) {
+      commentData.duration = Number(data.duration) * 1000 * 1000 * 60 * 60
+    } else if (data.episode) {
+      commentData.episode = Number(data.episode)
     }
     return client.ppatch(
       `/api/doodle/computing_time/${data.user_id}/${year_month}/${data.task_id}`,

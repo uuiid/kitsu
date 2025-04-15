@@ -93,7 +93,7 @@
               'datatable-row--selectable': true,
               selected: task.checked || false
             }"
-            @click="onLineClicked(task, $event)"
+            @click="onLineClicked(task)"
             :draggable="isDraggable"
             @dragenter="onDragEnter(task, index)"
             @dragstart="onDragStart(task, index)"
@@ -152,10 +152,10 @@
                   >{{ task.computing_time.name || task.entity.name }}</span
                 >
                 <!--input
-    class="duty-editor"
-    :value="task.computing_time.name"
-    v-else
-  /-->
+class="duty-editor"
+:value="task.computing_time.name"
+v-else
+/-->
                 <!--router-link class="entity-name" :to="entityPath(task.entity)">
 {{ task.entity.entity_name }}
 </router-link-->
@@ -163,9 +163,17 @@
             </td>
 
             <td class="episode">
-              <div class="flexrow" :title="''">
-                {{ task.computing_time.episode || getEpisodes(task) }}
+              <div class="flexrow" :title="''" v-if="task.entity">
+                {{ getEpisodes(task) }}
               </div>
+              <input
+                v-model="task.computing_time.episode"
+                class="input-editor"
+                @keyup.enter="
+                  event => durationDate(event, task.computing_time, 'episode')
+                "
+                v-else
+              />
             </td>
 
             <description-cell
@@ -194,7 +202,7 @@
                 @focusout="event => durationDate(event, task.computing_time)"
                 @blur="isDraggable = true"
                 @focus="isDraggable = false"
-                @click="onLineClicked(task, 'duration')"
+                @click="onLineClicked(task)"
               />
             </td>
             <td class="episode" v-if="!isToCheck">
@@ -237,7 +245,17 @@
             <td class="actions has-text-centered">
               <button
                 class="button"
+                title="复制"
+                tabindex="-1"
+                @click="onCopy(task)"
+                v-if="!task.task_type"
+              >
+                <copy class="icon is-small only-icon" />
+              </button>
+              <button
+                class="button"
                 data-test="button-delete"
+                style="margin-left: 8px"
                 tabindex="-1"
                 @click="onRemove(task)"
               >
@@ -264,7 +282,7 @@
 
 <script>
 import { mapGetters } from 'vuex'
-import { TrashIcon } from 'lucide-vue-next'
+import { TrashIcon, Copy } from 'lucide-vue-next'
 import { selectionListMixin } from '@/components/mixins/selection'
 import { formatListMixin } from '@/components/mixins/format'
 import { descriptorMixin } from '@/components/mixins/descriptors'
@@ -291,7 +309,8 @@ export default {
     TableInfo,
     TaskTypeCell,
     MetadataHeader,
-    TrashIcon
+    TrashIcon,
+    Copy
   },
 
   props: {
@@ -345,7 +364,8 @@ export default {
     'remove-sort-task',
     'scroll',
     'set-user-remark',
-    'soft-task'
+    'soft-task',
+    'copy-task'
   ],
 
   data() {
@@ -511,7 +531,7 @@ export default {
         this.page++
       }
     },
-    onLineClicked(task, event) {
+    onLineClicked(task) {
       if (this.isShiftSelected) {
         if (this.startSelection) {
           const start = this.tasks.indexOf(this.startSelection)
@@ -650,6 +670,10 @@ export default {
         if (res) this.$emit('remove-sort-task', res)
       }
     },
+    async onCopy(entry) {
+      console.log(entry)
+      this.$emit('copy-task', entry.computing_time)
+    },
     setUserRemark(event, entry) {
       const user_remark = event.target.value
       if (user_remark !== entry.user_remark) {
@@ -688,25 +712,31 @@ export default {
           })
       }
     },
-    durationDate(event, entry) {
-      const duration = event.target.value
-      if (duration !== this.getDurationValue(entry.duration)) {
-        const user_id = this.userId
-        const year = this.yearString
-        const month = this.monthString
-        const task_id = entry.id
+    durationDate(event, entry, field = 'duration') {
+      console.log('123')
+      const user_id = this.userId
+      const year = this.yearString
+      const month = this.monthString
+      const task_id = entry.id
+      const l_params = {
+        user_id,
+        year,
+        month,
+        task_id
+      }
+      const value = event.target.value
+      l_params[field] = value
+      let oldValue = entry[field]
+      if (field === 'duration') {
+        oldValue = this.getDurationValue(entry[field])
+      }
+      console.log(value, oldValue)
+      if (value !== oldValue || field !== 'duration') {
         if (!task_id) {
           alert(this.$t('doodle.calculate_tip'))
           return
         }
         const action = 'setTaskTime'
-        const l_params = {
-          user_id,
-          year,
-          month,
-          task_id,
-          duration
-        }
         this.$store
           .dispatch(action, l_params)
           .then(res => {
@@ -896,7 +926,7 @@ td.end-date {
 }
 
 .actions {
-  min-width: 80px;
+  min-width: 120px;
   padding: 0.4em;
 }
 

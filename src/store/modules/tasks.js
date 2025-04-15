@@ -572,18 +572,10 @@ const actions = {
       })
   },
 
-  setTaskTime({ commit, state }, { user_id, year, month, task_id, duration }) {
-    return tasksApi
-      .setTaskTime({
-        user_id,
-        year,
-        month,
-        task_id,
-        duration
-      })
-      .then(comment => {
-        return Promise.resolve(comment)
-      })
+  setTaskTime({ commit, state }, data) {
+    return tasksApi.setTaskTime(data).then(comment => {
+      return Promise.resolve(comment)
+    })
   },
   averageTime({ commit, state }, { user_id, year, month }) {
     return tasksApi
