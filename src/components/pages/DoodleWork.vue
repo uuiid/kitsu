@@ -15,6 +15,7 @@ import PluginsCentral from '@/components/widgets/PluginsCentral.vue'
 import ExtractCaption from '@/components/widgets/ExtractCaption.vue'
 import DoodleWorkHistoryTaskModal from '@/components/modals/DoodleWorkHistoryTaskModal.vue'
 import AIScript from '@/components/widgets/AIScript.vue'
+import AiPainting from '@/components/widgets/AiPainting.vue'
 import router from '@/router/index.js'
 import VideoModal from '@/components/modals/VideoModal.vue'
 //import { io } from 'socket.io-client'
@@ -568,6 +569,7 @@ const onSetOutPath = () => {
         />
         <plugins-central v-if="currentPage.name === 'plugin_center'" />
         <a-i-script v-if="currentPage.name === 'ai_script'"></a-i-script>
+        <ai-painting v-if="currentPage.name === 'ai_painting'"></ai-painting>
       </div>
       <add-doodle-work />
       <doodle-work-log-modal v-if="doodleWork.state.isActiveLogModal" />
