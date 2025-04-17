@@ -64,15 +64,17 @@ const textPlaceholder = (val, key) => {
 
 const onConfirm = async () => {
   try {
-    if (doodleWork.state.doodleWorkSetting['UE_version']) {
-      await doodleWork.actions.setWorkSetting()
-      ElMessage({
-        message: i18n.global.t('doodle_work.set_success'),
-        type: 'success'
-      })
-    } else {
-      ElMessage.error('请先正确设置ue路径')
+    if (doodleWork.state.doodleWorkSetting['UE_path']) {
+      if (!doodleWork.state.doodleWorkSetting['UE_version']) {
+        ElMessage.error('请先正确设置ue路径')
+        return 0
+      }
     }
+    await doodleWork.actions.setWorkSetting()
+    ElMessage({
+      message: i18n.global.t('doodle_work.set_success'),
+      type: 'success'
+    })
   } catch (error) {
     ElMessage.error('设置失败')
   }
