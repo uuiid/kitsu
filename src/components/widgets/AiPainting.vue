@@ -1,6 +1,7 @@
 <script setup>
 import { ref, reactive, computed } from 'vue'
 import { ChevronDown, ChevronRight } from 'lucide-vue-next'
+import ImageUpdateCell from '@/components/cells/imageUpdateCell.vue'
 
 const tabs = ['txt2Picture', 'txt2Video', 'picture2Video']
 const inputCount = 5
@@ -86,7 +87,40 @@ const txt2VInput = reactive({
     }
   ]
 })
-const picture2VInput = reactive({})
+const picture2VInput = reactive({
+  input: '',
+  negativeInput: '',
+  isOpenNegative: false,
+  picture: {
+    1: null,
+    2: null,
+    3: null,
+    4: null
+  },
+  config: [
+    {
+      value: '5s',
+      options: [
+        { value: '5s', label: '5s' },
+        { value: '10s', label: '10s' }
+      ]
+    },
+    {
+      value: '16:9',
+      options: [
+        { value: '16:9', label: '16:9' },
+        { value: '9:16', label: '9:16' },
+        { value: '1:1', label: '1:1' }
+      ]
+    },
+    {
+      value: 0.5,
+      max: 1,
+      min: 0,
+      visible: false
+    }
+  ]
+})
 
 function onInput() {}
 
@@ -105,7 +139,7 @@ function handleInputKeyDown() {}
               :key="tab"
               @click="currentTab = tab"
             >
-              <span> {{ tab }} </span>
+              <span> {{ $t(`ai_painting.${tab}`) }} </span>
               <div
                 :class="{
                   'ai-select-tab': currentTab === tab
@@ -115,6 +149,19 @@ function handleInputKeyDown() {}
             </div>
           </div>
           <div class="ai-painting-txt2p">
+            <div
+              class="ai-painting-image"
+              v-if="currentTab === 'picture2Video'"
+            >
+              <div class="ai-painting-image-item">
+                <image-update-cell />
+                <image-update-cell />
+              </div>
+              <div class="ai-painting-image-item">
+                <image-update-cell />
+                <image-update-cell />
+              </div>
+            </div>
             <div class="ai-painting-describe-title">
               <div class="ai-painting-describe-title"></div>
             </div>
@@ -219,7 +266,7 @@ function handleInputKeyDown() {}
 .ai-aside {
   display: flex;
   flex-direction: column;
-  width: 400px;
+  width: 30%;
   padding-right: 1em;
 }
 
@@ -227,6 +274,22 @@ function handleInputKeyDown() {}
   width: 100%;
   height: 100%;
   background: #5a4646;
+}
+
+.ai-painting-image {
+  display: flex;
+  flex-direction: column;
+  margin-top: 20px;
+  padding: 4px;
+  gap: 5px;
+  border: 1px solid rgba(204, 203, 203, 0.42);
+  border-radius: 5px;
+}
+
+.ai-painting-image-item {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
 }
 
 .ai-tabs {
