@@ -17,6 +17,7 @@ import DoodleWorkHistoryTaskModal from '@/components/modals/DoodleWorkHistoryTas
 import AIScript from '@/components/widgets/AIScript.vue'
 import router from '@/router/index.js'
 import VideoModal from '@/components/modals/VideoModal.vue'
+import AiPainting from '@/components/widgets/AiPainting.vue'
 //import { io } from 'socket.io-client'
 //import router from '@/router/index.js'
 useHead({
@@ -568,6 +569,7 @@ const onSetOutPath = () => {
         />
         <plugins-central v-if="currentPage.name === 'plugin_center'" />
         <a-i-script v-if="currentPage.name === 'ai_script'"></a-i-script>
+        <ai-painting v-show="currentPage.name === 'ai_painting'"></ai-painting>
       </div>
       <add-doodle-work />
       <doodle-work-log-modal v-if="doodleWork.state.isActiveLogModal" />
