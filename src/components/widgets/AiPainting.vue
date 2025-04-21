@@ -4,11 +4,12 @@ import { ref, onMounted } from 'vue'
 const myIframe = ref()
 const connectionStatus = ref(false)
 onMounted(() => {
-  setInterval(() => {
-    if (!connectionStatus.value) {
-      checkConnection()
-    }
-  })
+  checkConnection()
+  // setInterval(() => {
+  //   if (!connectionStatus.value) {
+  //     checkConnection()
+  //   }
+  // })
 })
 
 async function checkConnection() {
