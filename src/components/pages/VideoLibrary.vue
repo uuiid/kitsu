@@ -65,6 +65,7 @@
                 :key="item.id"
                 ref="TreeView"
                 :item="item"
+                :parent="videoTypeTreeData"
                 @on-selected-change="setSelected"
                 @on-add-type="showNewTypeModal"
                 @dragover="onDragOver"
