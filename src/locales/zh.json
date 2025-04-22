@@ -1804,7 +1804,7 @@
     "ai_painting": {
       "txt2Picture": "文生图片",
       "txt2Video": "文生视频",
-      "picture2Video": "图生视频"
+      "image2Video": "图生视频"
     }
   }
 }

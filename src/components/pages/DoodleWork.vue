@@ -18,8 +18,8 @@ import AIScript from '@/components/widgets/AIScript.vue'
 import AiPainting from '@/components/widgets/AiPainting.vue'
 import router from '@/router/index.js'
 import VideoModal from '@/components/modals/VideoModal.vue'
-//import { io } from 'socket.io-client'
-//import router from '@/router/index.js'
+import AiVideo from '@/components/widgets/AiVideo.vue'
+
 useHead({
   title: i18n.global.t('doodle_work.doodle_work')
 })
@@ -138,6 +138,19 @@ const pagedAssets = ref([
     disabled: true,
     description: '',
     color: '#00a9b8',
+    isVisible: true,
+    isBaseTemplate: false,
+    hidden: false
+  },
+
+  {
+    id: 12,
+    name: 'ai_video',
+    label: 'AI视频创作',
+    textIcon: 'Y',
+    disabled: true,
+    description: '',
+    color: '#00b865',
     isVisible: true,
     isBaseTemplate: false,
     hidden: false
@@ -567,9 +580,12 @@ const onSetOutPath = () => {
           :is-drop="true"
           v-if="currentPage.name === 'extract_caption'"
         />
-        <plugins-central v-if="currentPage.name === 'plugin_center'" />
-        <a-i-script v-if="currentPage.name === 'ai_script'"></a-i-script>
-        <ai-painting v-if="currentPage.name === 'ai_painting'"></ai-painting>
+        <plugins-central v-else-if="currentPage.name === 'plugin_center'" />
+        <a-i-script v-else-if="currentPage.name === 'ai_script'"></a-i-script>
+        <ai-painting
+          v-else-if="currentPage.name === 'ai_painting'"
+        ></ai-painting>
+        <ai-video v-else-if="currentPage.name === 'ai_video'"></ai-video>
       </div>
       <add-doodle-work />
       <doodle-work-log-modal v-if="doodleWork.state.isActiveLogModal" />

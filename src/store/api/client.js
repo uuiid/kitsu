@@ -58,6 +58,16 @@ const client = {
         })
     })
   },
+  ppostKling(path, data, token) {
+    data.callback_url = `${path}/${data.external_task_id}`
+    return new Promise((resolve, reject) => {
+      superagent
+        .post(path)
+        .set('Authorization', `Bearer ${token}`)
+        .set('Content-Type', 'application/json')
+        .send(data)
+    })
+  },
   ppostFileData(path, file, onProgress = null) {
     return new Promise((resolve, reject) => {
       superagent
