@@ -124,87 +124,41 @@ const removeBeforeColonContent = text => {
 }
 
 const cutContent = text => {
-  if (
-    doodleWork.currentDoodleWorkState.task_data_filed.get(4)?.checked &&
-    doodleWork.currentDoodleWorkState.task_data_filed.get(5)?.number <
-      text.length
-  ) {
-    const step = doodleWork.currentDoodleWorkState.task_data_filed.get(5).number
-    const temp = []
-    let i = 0
-    let j = 0
-    while (i < text.length) {
-      const text_length = Math.min(step, text.length - i)
-      if (text.length - i <= step) {
-        temp.push(removeLastBlankSpace(text.slice(i, text.length)))
-        break
-      }
-      let difference = 0
-      let temp_text = ''
-      if (j > text.length / step) break
-      j++
-      const regex = /^\p{P}$/gmu
-      if (
-        text.slice(i + text_length - 1, i + text_length) === ' ' ||
-        regex.test(text.slice(i + text_length - 1, i + text_length))
-      ) {
-        temp_text = text.slice(i, i + text_length)
-      } else {
-        let forward = 0
-        let is_forward = false
-        while (forward < text_length) {
-          forward += 1
-          if (
-            text.slice(
-              i + text_length - forward - 1,
-              i + text_length - forward
-            ) === ' ' ||
-            regex.test(
-              text.slice(
-                i + text_length - forward - 1,
-                i + text_length - forward
-              )
-            )
-          ) {
-            is_forward = true
-            break
-          }
-        }
-
-        let backward = 0
-        while (backward < text.length - (i + text_length)) {
-          backward += 1
-          if (
-            text.slice(
-              i + text_length + backward - 1,
-              i + text_length + backward
-            ) === ' ' ||
-            regex.test(
-              text.slice(
-                i + text_length + backward - 1,
-                i + text_length + backward
-              )
-            )
-          ) {
-            break
-          }
-        }
-        if (is_forward === false || forward > backward) {
-          temp_text = text.slice(i, i + text_length + backward)
-          difference = backward
-        } else {
-          temp_text = text.slice(i, i + text_length - forward)
-          difference = -forward
-        }
-      }
-      i = i + text_length + difference
-      if (temp_text !== '') temp.push(removeLastBlankSpace(temp_text))
+  const regex = /([^\u4e00-\u9fa5()（）：:a-zA-Z0-9_])/gm
+  const regex1 = /\s+$/gm
+  const texts = []
+  let start = 0
+  for (let i = 1; i < text.length + 1; i++) {
+    const temp_text = text.slice(start, i)
+    console.log(temp_text)
+    if (regex.test(temp_text) || regex1.test(text.slice(i - 1, i))) {
+      start = i
+      texts.push(temp_text)
     }
-
-    return temp
   }
-  removeLastBlankSpace(text)
-  return [text]
+  if (texts.length === 0) {
+    texts.push(text)
+  }
+  const temp = []
+  const step = doodleWork.currentDoodleWorkState.task_data_filed.get(5)?.number
+  for (const text of texts) {
+    if (
+      doodleWork.currentDoodleWorkState.task_data_filed.get(4)?.checked &&
+      doodleWork.currentDoodleWorkState.task_data_filed.get(5)?.number <
+        text.length
+    ) {
+      removeLastBlankSpace(text)
+      let i = 0
+      while (i < text.length) {
+        const text_length = Math.min(step, text.length - i)
+        temp.push(removeLastBlankSpace(text.slice(i, i + text_length)))
+        i += step
+      }
+    } else {
+      temp.push(text)
+    }
+  }
+  return temp
 }
 
 // const addFiles = files => {
