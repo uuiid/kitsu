@@ -7,13 +7,11 @@ onMounted(async () => {
   let temp = 'http://127.0.0.1:7860/'
   const isLocal = await checkConnection()
   if (!isLocal) temp = 'http://192.168.20.79:7860/'
-  console.log(localStorage.getItem('dark-theme'))
   if (localStorage.getItem('dark-theme') === 'true') {
     temp = temp + '?__theme=dark'
   } else {
     temp = temp + '?__theme=light'
   }
-  console.log(temp)
   url.value = temp
   // setInterval(() => {
   //   if (!connectionStatus.value) {

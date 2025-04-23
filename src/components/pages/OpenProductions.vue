@@ -97,6 +97,26 @@
         >
           {{ $t('main.search.no_result') }}
         </div>
+        <div class="open-production has-text-centered" key="assetLibrary">
+          <router-link to="video-library">
+            <div class="avatar has-text-centered" style="background: #01d8d1">
+              库
+            </div>
+            <div class="production-name">
+              {{ $t('video_library.video_library') }}
+            </div>
+          </router-link>
+        </div>
+        <div class="open-production has-text-centered" key="doodleWork">
+          <router-link to="doodle-work">
+            <div class="avatar has-text-centered" style="background: #3de867">
+              台
+            </div>
+            <div class="production-name">
+              {{ $t('doodle_work.doodle_work') }}
+            </div>
+          </router-link>
+        </div>
         <div
           class="open-production has-text-centered"
           :key="production.id"
@@ -119,29 +139,8 @@
             </div>
           </router-link>
         </div>
-        <div class="open-production has-text-centered" key="assetLibrary">
-          <router-link to="video-library">
-            <div class="avatar has-text-centered" style="background: #01d8d1">
-              库
-            </div>
-            <div class="production-name">
-              {{ $t('video_library.video_library') }}
-            </div>
-          </router-link>
-        </div>
-        <div class="open-production has-text-centered" key="doodleWork">
-          <router-link to="doodle-work">
-            <div class="avatar has-text-centered" style="background: #3de867">
-              台
-            </div>
-            <div class="production-name">
-              {{ $t('doodle_work.doodle_work') }}
-            </div>
-          </router-link>
-        </div>
       </div>
     </div>
-
     <div class="has-text-centered welcome" v-else>
       <p class="kitsu-logo info">
         <img src="../../assets/illustrations/empty_production.png" />
