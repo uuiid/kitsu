@@ -3,11 +3,10 @@ import { ref, onMounted } from 'vue'
 
 const myIframe = ref()
 const url = ref()
-const connectionStatus = ref(false)
-onMounted(() => {
+onMounted(async () => {
   let temp = 'http://127.0.0.1:7860/'
-  checkConnection()
-  if (!connectionStatus.value) temp = 'http://192.168.20.79:7860/'
+  const isLocal = await checkConnection()
+  if (!isLocal) temp = 'http://192.168.20.79:7860/'
   console.log(localStorage.getItem('dark-theme'))
   if (localStorage.getItem('dark-theme') === 'true') {
     temp = temp + '?__theme=dark'
@@ -32,9 +31,9 @@ async function checkConnection() {
       cache: 'no-store'
     })
 
-    connectionStatus.value = true
+    return true
   } catch (error) {
-    connectionStatus.value = false
+    return false
   }
 }
 </script>
