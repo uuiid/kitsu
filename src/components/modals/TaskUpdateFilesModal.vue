@@ -245,7 +245,7 @@ const onSubmit = async () => {
             v-for="type in updateTypes"
           />
         </el-radio-group>
-        <div class="task-data-filed">
+        <div class="task-data-filed" v-if="false">
           <div
             class="interval"
             v-if="
