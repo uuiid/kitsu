@@ -42,6 +42,7 @@
         :key="child.id"
         :item="child"
         :all="allOptions"
+        :parent="item"
         @on-add-type="addType"
         @on-drag-end="onDragEnd"
       />
@@ -91,6 +92,10 @@ export default {
     item: {
       type: Object,
       default: () => {}
+    },
+    parent: {
+      type: Object,
+      default: () => {}
     }
   },
   emits: ['on-selected-change', 'on-add-type', 'on-drag-end'],
@@ -128,7 +133,8 @@ export default {
     ...mapActions([
       'setVideoTypeOpen',
       'deleteVideoType',
-      'modifyVideoTypeOrder'
+      'modifyVideoTypeOrder',
+      'modifyVideos'
     ]),
     toggle(item) {
       this.setVideoTypeOpen(item)
@@ -174,29 +180,93 @@ export default {
       this.$store.commit('SET_CURRENT_VIDEO_TYPE', selectedItem)
       this.$emit('on-selected-change', selectedItem)
     },
-    orderUp() {
-      this.modifyVideoTypeOrder({
-        type: this.item,
-        other: this.originalVideoTypes.get(
-          this.$parent.item.children[
-            this.$parent.item.children.findIndex(
-              item => item.id === this.item.id
-            ) - 1
-          ].id
-        )
+    async orderUp() {
+      const other = this.originalVideoTypes.get(
+        this.$parent.item.children[
+          this.$parent.item.children.findIndex(
+            item => item.id === this.item.id
+          ) - 1
+        ].id
+      )
+      let current_order = this.item.order
+      let other_order = other.order
+      if (other.order === this.item.order) {
+        let num = 0
+        const videos = []
+        for (const i of this.parent.children) {
+          if (i.order !== num) {
+            i.order = num
+          }
+          videos.push(i)
+          if (i.id === this.item.id) {
+            current_order = i.order
+          } else if (i.id === other.id) {
+            other_order = i.order
+          }
+          num++
+        }
+        if (videos.length > 0) {
+          await this.modifyVideoTypeOrder(videos)
+        }
+      }
+      const data = []
+      data.push({
+        label: this.item.label,
+        parent_id: this.item.parent_id,
+        id: this.item.id,
+        order: other_order
       })
+      data.push({
+        label: other.label,
+        parent_id: other.parent_id,
+        id: other.id,
+        order: current_order
+      })
+      await this.modifyVideoTypeOrder(data)
     },
-    orderDown() {
-      this.modifyVideoTypeOrder({
-        type: this.item,
-        other: this.originalVideoTypes.get(
-          this.$parent.item.children[
-            this.$parent.item.children.findIndex(
-              item => item.id === this.item.id
-            ) + 1
-          ].id
-        )
+    async orderDown() {
+      const other = this.originalVideoTypes.get(
+        this.$parent.item.children[
+          this.$parent.item.children.findIndex(
+            item => item.id === this.item.id
+          ) + 1
+        ].id
+      )
+      let current_order = this.item.order
+      let other_order = other.order
+      if (other.order === this.item.order) {
+        let num = 0
+        const videos = []
+        for (const i of this.parent.children) {
+          if (i.order !== num) {
+            i.order = num
+          }
+          videos.push(i)
+          if (i.id === this.item.id) {
+            current_order = i.order
+          } else if (i.id === other.id) {
+            other_order = i.order
+          }
+          num++
+        }
+        if (videos.length > 0) {
+          await this.modifyVideoTypeOrder(videos)
+        }
+      }
+      const data = []
+      data.push({
+        label: this.item.label,
+        parent_id: this.item.parent_id,
+        id: this.item.id,
+        order: other_order
       })
+      data.push({
+        label: other.label,
+        parent_id: other.parent_id,
+        id: other.id,
+        order: current_order
+      })
+      await this.modifyVideoTypeOrder(data)
     },
     // 递归清除所有项的选中状态
     clearAllSelections(items) {

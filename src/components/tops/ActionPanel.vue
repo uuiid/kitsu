@@ -1201,11 +1201,16 @@ export default {
     isModelGroup() {
       for (const taskId of this.selectedTaskIds) {
         const task = this.taskMap.get(taskId)
-        if (task.task_type_id !== '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34') {
-          return false
+        if (
+          [
+            '13ddf60c-ed8e-4e65-85bb-57dc4207aeca',
+            '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
+          ].includes(task.task_type_id)
+        ) {
+          return true
         }
       }
-      return true
+      return false
     },
 
     isInDepartment() {

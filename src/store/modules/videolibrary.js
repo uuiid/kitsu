@@ -473,8 +473,8 @@ const actions = {
         return err
       })
   },
-  modifyVideoTypeOrder({ commit }, { type, other }) {
-    return videolibraryApi.modifyVideoTypeOrder(type, other).then(res => {
+  modifyVideoTypeOrder({ commit }, types) {
+    return videolibraryApi.modifyVideoTypeOrder(types).then(res => {
       commit('MODIFY_VIDEO_TYPE_ORDER', res)
       return res
     })

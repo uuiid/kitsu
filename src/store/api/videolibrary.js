@@ -102,22 +102,9 @@ export default {
     const path = `/api/doodle/pictures/${image.id}`
     return client.ppostFileData(path, image)
   },
-  modifyVideoTypeOrder(type, other) {
-    const data = []
-    data.push({
-      label: type.label,
-      parent_id: type.parent_id,
-      id: type.id,
-      order: other.order
-    })
-    data.push({
-      label: other.label,
-      parent_id: other.parent_id,
-      id: other.id,
-      order: type.order
-    })
+  modifyVideoTypeOrder(types) {
     const path = `/api/doodle/model_library/assets_tree`
-    return client.ppatch(path, data)
+    return client.ppatch(path, types)
   },
   getScanProject(bearer) {
     const path = `/api/doodle/file?${bearer}`
