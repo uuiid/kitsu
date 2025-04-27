@@ -66,6 +66,17 @@ const client = {
         .set('Authorization', `Bearer ${token}`)
         .set('Content-Type', 'application/json')
         .send(data)
+        .end((err, res) => {
+          if (res?.statusCode === 401) {
+            errors.backToLogin()
+            return reject(err)
+          } else {
+            if (err) {
+              err.body = res ? res.body : ''
+              return reject(err)
+            } else return resolve(res?.body)
+          }
+        })
     })
   },
   ppostFileData(path, file, onProgress = null) {

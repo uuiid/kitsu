@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import AiScript from '@/store/api/AiScript.js'
+import { generateUUID } from 'three/src/math/MathUtils.js'
 
 const initState = {
   currentDialogue: '',
@@ -23,9 +24,12 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       return AiScript.getKlingToken()
     },
     txt2video: data => {
+      console.log(data)
+      data.external_task_id = generateUUID()
       return AiScript.txt2video(data, state.value.klingToken)
     },
     image2video: data => {
+      data.external_task_id = generateUUID()
       return AiScript.image2video(data, state.value.klingToken)
     }
   }

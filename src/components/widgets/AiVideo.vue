@@ -9,7 +9,7 @@ const inputCount = 5
 const isOpenNegative = ref(false)
 const AiSpcript = AiScriptStore()
 
-const currentTab = ref('txt2image')
+const currentTab = ref('txt2Video')
 const currentTabContent = computed(() => {
   let temp = null
   switch (currentTab.value) {
@@ -125,6 +125,7 @@ function handleInputKeyDown() {}
 async function onGenerate() {
   switch (currentTab.value) {
     case 'txt2Video':
+      console.log(currentTab.value)
       await AiSpcript.action.txt2video({
         model_name: 'kling-v1-6',
         prompt: txt2VInput.input,
