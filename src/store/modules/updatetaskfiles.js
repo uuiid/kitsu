@@ -238,22 +238,36 @@ export const updateTaskFilesStore = defineStore(
         // await fetch(state.value.localHttpPath + `/api/doodle/local_setting`, {
         //   mode: 'no-cors'
         // })
+        console.log(state.value.selectedTask.task.task_type_id)
         for (const item of [
           ...doodleWorkCheckFiles.uncommittedWorkList.values()
-        ].filter(task => task.updateType === state.value.currentUpdateType)) {
-          doodleWorkCheckFiles.formatDataState(item)
-          const data = Object.assign({}, item)
-          data.file = ''
+        ].filter(task => {
+          return task.updateType === state.value.currentUpdateType
+        })) {
+          if (
+            state.value.selectedTask.task.task_type_id !==
+            '13ddf60c-ed8e-4e65-85bb-57dc4207aeca'
+          ) {
+            doodleWorkCheckFiles.formatDataState(item)
+            const data = Object.assign({}, item)
+            data.file = ''
 
-          const result = await doodlework.submitWorkTask(
-            data,
-            state.value.localHttpPath
-          )
-          const task = Object.assign({}, state.value.allFiles.get(item.id))
-          state.value.allFiles.delete(item.id)
-          task.id = result.id
-          await doodleWork.actions.formatTask(task, result)
-          state.value.allFiles.set(task.id, task)
+            const result = await doodlework.submitWorkTask(
+              data,
+              state.value.localHttpPath
+            )
+            const task = Object.assign({}, state.value.allFiles.get(item.id))
+            state.value.allFiles.delete(item.id)
+            task.id = result.id
+            await doodleWork.actions.formatTask(task, result)
+            state.value.allFiles.set(task.id, task)
+          } else {
+            const task = Object.assign({}, state.value.allFiles.get(item.id))
+            state.value.allFiles.delete(item.id)
+            task.status = 'updating'
+            state.value.updateTaskQueue.enqueue(task)
+            state.value.allFiles.set(task.id, task)
+          }
         }
         doodleWorkCheckFiles.uncommittedWorkList = new Map()
       }
