@@ -76,7 +76,7 @@ const extractCaption = async task => {
     for (const block of subtitle_blocks) {
       const lines = block.split(/\n/gm)
       if (lines.length >= 3) {
-        subtitles.push(lines[2])
+        subtitles.push(lines)
       }
     }
     task.extract_captions = subtitles
@@ -128,11 +128,13 @@ const cutContent = text => {
   const regex1 = /\s+$/gm
   const texts = []
   let start = 0
-  for (let i = 1; i < text.length + 1; i++) {
+  for (let i = 1; i <= text.length + 1; i++) {
     const temp_text = text.slice(start, i)
-    console.log(temp_text)
     if (regex.test(temp_text) || regex1.test(text.slice(i - 1, i))) {
       start = i
+      texts.push(temp_text)
+    }
+    if (i === text.length + 1) {
       texts.push(temp_text)
     }
   }
@@ -149,7 +151,7 @@ const cutContent = text => {
     ) {
       removeLastBlankSpace(text)
       let i = 0
-      while (i < text.length) {
+      while (i <= text.length) {
         const text_length = Math.min(step, text.length - i)
         temp.push(removeLastBlankSpace(text.slice(i, i + text_length)))
         i += step
@@ -161,12 +163,28 @@ const cutContent = text => {
   return temp
 }
 
+function parseTimeString(timeStr) {
+  // 匹配格式: "h:mm:ss,SSS" 或 "hh:mm:ss,SSS"
+  const match = timeStr.match(/^(\d{1,2}):(\d{2}):(\d{2})[,.](\d{3})$/)
+
+  if (!match) throw new Error('Invalid time format')
+
+  const [, h, m, s, ms] = match.map(Number)
+  return {
+    hours: h,
+    minutes: m,
+    seconds: s,
+    milliseconds: ms,
+    totalMs: (h * 3600 + m * 60 + s) * 1000 + ms
+  }
+}
+
 // const addFiles = files => {
 //   doodleWork.currentDoodleWorkState.addFilesData(files)
 // }
-const formatTime = seconds => {
+const formatTime = milliseconds => {
   const date = new Date(0)
-  date.setSeconds(seconds)
+  date.setMilliseconds(milliseconds)
   const hours = String(date.getUTCHours()).padStart(2, '0')
   const minutes = String(date.getUTCMinutes()).padStart(2, '0')
   const secs = String(date.getUTCSeconds()).padStart(2, '0')
@@ -189,19 +207,50 @@ const onSubmit = () => {
   const fs = require('fs')
   for (const task of [...doodleWork.currentDoodleWorkState.workList.values()]) {
     const final_extract_captions = []
-    let seconds = 0
-    for (let extract_caption of task.extract_captions) {
-      extract_caption = removeAllPunctuationMarks(extract_caption)
-      extract_caption = removeBracketedContent(extract_caption)
-      extract_caption = removeBeforeColonContent(extract_caption)
-      const sub_extract_captions = cutContent(extract_caption)
-      for (const sub_extract_caption of sub_extract_captions) {
-        final_extract_captions.push({
-          startTime: seconds,
-          endTime: seconds + 3,
-          text: sub_extract_caption
-        })
-        seconds += 3
+    if (task.file.path.endsWith('srt')) {
+      for (const extract_caption of task.extract_captions) {
+        let extract_caption_str = extract_caption[2]
+        const temp_data = extract_caption[1].split(' --> ')
+        const startTime = parseTimeString(temp_data[0]).totalMs
+        const endTime = parseTimeString(temp_data[1]).totalMs
+        extract_caption_str = removeAllPunctuationMarks(extract_caption_str)
+        extract_caption_str = removeBracketedContent(extract_caption_str)
+        extract_caption_str = removeBeforeColonContent(extract_caption_str)
+        const sub_extract_captions = cutContent(extract_caption_str)
+        if (sub_extract_captions.length > 1) {
+          const step = (endTime - startTime) / sub_extract_captions.length
+          let startTimeStep = startTime
+          for (const sub_extract_caption of sub_extract_captions) {
+            final_extract_captions.push({
+              startTime: startTimeStep,
+              endTime: startTimeStep + step,
+              text: sub_extract_caption
+            })
+            startTimeStep += step
+          }
+        } else {
+          final_extract_captions.push({
+            startTime: startTime,
+            endTime: endTime,
+            text: extract_caption_str
+          })
+        }
+      }
+    } else {
+      let seconds = 0
+      for (let extract_caption of task.extract_captions) {
+        extract_caption = removeAllPunctuationMarks(extract_caption)
+        extract_caption = removeBracketedContent(extract_caption)
+        extract_caption = removeBeforeColonContent(extract_caption)
+        const sub_extract_captions = cutContent(extract_caption)
+        for (const sub_extract_caption of sub_extract_captions) {
+          final_extract_captions.push({
+            startTime: seconds,
+            endTime: seconds + 3000,
+            text: sub_extract_caption
+          })
+          seconds += 3000
+        }
       }
     }
     const srtContent = generateSRTContent(final_extract_captions)
