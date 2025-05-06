@@ -9,7 +9,8 @@
     :style="cellStyle"
   >
     <el-config-provider :locale="zhCn">
-      <div class="wrapper" :style="wrapperStyle" v-if="!minimized">
+      <div class="wrapper full-wrapper" :style="wrapperStyle" v-if="!minimized">
+        <div class="filler" v-if="contactSheet"></div>
         <div
           class="wrapper status-wrapper"
           :class="{ 'custom-status': selectable }"
@@ -26,7 +27,7 @@
             >
               {{ taskStatus.short_name }}
             </span>
-            <span class="filler" v-if="contactSheet"> </span>
+            <span class="filler" v-if="contactSheet"></span>
             <span
               :class="{
                 priority: true,
@@ -310,8 +311,11 @@ export default {
         '.png'
       return {
         'background-image': 'url(' + path + ')',
+        'background-color': this.taskStatus.color + '44',
         height: '100px',
-        width: '150px'
+        width: '150px',
+        display: 'flex',
+        'flex-direction': this.contactSheet ? 'column' : 'row'
       }
     },
 
@@ -321,8 +325,6 @@ export default {
           padding: '6px'
         }
       return {
-        'background-color': this.taskStatus.color + '44',
-        height: '100px',
         width: '150px',
         padding: '6px',
         'text-align:': 'right'
@@ -433,9 +435,13 @@ export default {
 
 .wrapper {
   display: flex;
-  flex: 1;
   flex-wrap: wrap;
   position: relative;
+  width: 100%;
+}
+
+.full-wrapper {
+  flex: 1;
 }
 
 .avatar {

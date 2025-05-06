@@ -129,6 +129,61 @@ export default {
     }
   },
 
+  budget: {
+    add_entry: 'Add an entry',
+    analytics: 'Bugdget Analytics',
+    cash_evolution: 'Expense evolution',
+    cash_repartition: 'Expense repartition',
+    departments: 'Departments',
+
+    budgets_error: 'An error occurred while loading the budgets. Please contact our support team.',
+    budget_entries_error: 'An error occurred while loading the budget entries. Please contact our support team.',
+    create_budget: 'Create a new budget',
+    create_budget_error: 'An error occurred while saving this budget. Please contact our support team.',
+    delete_budget: 'Delete budget',
+    delete_budget_entry: 'Delete entry',
+    delete_budget_entry_error: 'An error occurred while deleting this budget entry. Please contact our support team.',
+    delete_budget_entry_message: 'Are you sure you want to delete this budget entry?',
+    delete_budget_error: 'An error occurred while deleting this budget. Please contact our support team.',
+    delete_budget_message: 'Are you sure you want to delete this budget? Type the budget name below to confirm.',
+    edit_budget: 'Edit current budget version',
+    edit_budget_entry: 'Edit entry',
+    edit_budget_entry_error: 'An error occurred while editing this budget entry. Please contact our support team.',
+    months: 'Months',
+    new_hiring: 'New hiring',
+    new_version: 'New version',
+    no_budget_found: 'There is no budget for this production. Do you want to create one?',
+    no_budget_entries_found: 'There is no budget entry for this production. Do you want to create one?',
+    no_analytics_to_show: 'There is no analytics to show for this production. Create a budget and add entries to see the analytics.',
+    persons: 'Persons',
+    salary_scale_title: 'Salary Scale',
+    title: 'Budget',
+    fields: {
+      currency: 'Currency',
+      department: 'Department',
+      months_duration: 'Months Duration',
+      name: 'Name',
+      person: 'Person',
+      position: 'Position',
+      revision: 'Revision',
+      start_date: 'Start Date',
+      end_date: 'End Date',
+      monthly_salary: 'Monthly Salary',
+      total_salary: 'Total Salary',
+      seniority: 'Seniority'
+    },
+    positions: {
+      artist: 'Artist',
+      lead: 'Lead',
+      supervisor: 'Supervisor'
+    },
+    seniorities: {
+      junior: 'Junior',
+      mid: 'Mid',
+      senior: 'Senior'
+    }
+  },
+
   chats: {
     delete_message: 'Are you sure you want to delete this message?',
     delete_message_confirm: 'Delete message',
@@ -533,6 +588,7 @@ export default {
     all_assets: 'All assets',
     all_edits: 'All edits',
     all_shots: 'All shots',
+    apply: 'Apply',
     archived: 'Archived',
     attach_snapshots: 'Attach snapshots from your annotation',
     avatar: {
@@ -828,6 +884,7 @@ export default {
     fields: {
       active: 'Active',
       contract: 'Contract',
+      daily_salary: 'Daily rate',
       departments: 'Departments',
       email: 'Email',
       first_name: 'First name',
@@ -836,7 +893,9 @@ export default {
       password: 'New password',
       password_2: 'New password (repeat)',
       phone: 'Phone',
+      position: 'Position',
       role: 'Role',
+      seniority: 'Seniority',
       studio: 'Studio'
     },
     list: {
@@ -846,9 +905,22 @@ export default {
       email: 'Email',
       expiration: 'Expiration',
       name: 'Name',
+      position: 'Position',
       phone: 'Phone',
       role: 'Role',
+      salary: 'Salary',
+      seniority: 'Seniority',
       studio: 'Studio'
+    },
+    position: {
+      artist: 'Artist',
+      supervisor: 'Supervisor',
+      lead: 'Lead'
+    },
+    seniority: {
+      junior: 'Junior',
+      mid: 'Mid',
+      senior: 'Senior'
     },
     role: {
       all: 'All',
@@ -890,7 +962,7 @@ export default {
     build_mp4: 'Build .mp4',
     building: 'Building...',
     client_playlist: 'Client Playlist',
-    comparing_missing_plan: 'Shot missing for current type',
+    comparing_missing_plan: 'Entity missing for current type',
     create_for_selection: 'Generate a playlist from selected tasks',
     create_title: 'Create playlist',
     created_at: 'Created at:',
@@ -923,9 +995,9 @@ export default {
     fields: {
       name: 'Name',
       created_at: 'Creation date',
-      updated_at: 'Update date',
       for_entity: 'Select entity to display',
-      for_client: 'To be shared with'
+      for_client: 'To be shared with',
+      updated_at: 'Update date'
     },
     actions: {
       annotation: 'Annotation',
@@ -1368,7 +1440,20 @@ export default {
       edit_milestone: 'Edit milestone for',
       name: 'Name',
       error: 'An error occurred while adding or editing the milestone. Please try again.'
-    }
+    },
+    detail_level: 'Detail level',
+    detail_level_prev: 'Forecast',
+    detail_level_real: 'Real',
+    revision: 'Revision',
+    apply_to_prod: 'Apply to production',
+    assign: 'Assign to:',
+    reset_list: 'Reset list',
+    no_entity: 'No assignable entity',
+    no_assignee: 'No assignable person',
+    show_assigned: 'Show assigned entities',
+    force_unassign: 'Override previous assignments',
+    forced_daily_quotas: 'Forced daily quotas:',
+    estimated_daily_quotas: 'Auto estimated daily quotas:'
   },
 
   team_schedule: {
@@ -1733,5 +1818,15 @@ export default {
   wrong_browser: {
     title: 'Your Browser is Not Supported by Kitsu',
     text: 'Kitsu can only be used with Firefox and Chrome browsers.'
-  }
+  },
+
+  row_actions: {
+    change_avatar: 'Change avatar',
+    change_password: 'Change password',
+    delete: 'Delete',
+    edit: "Edit",
+    history: 'History',
+    refresh: 'Refresh',
+    restore: 'Restore'
+  }  
 }

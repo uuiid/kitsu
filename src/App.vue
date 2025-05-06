@@ -101,6 +101,10 @@ export default {
     ]),
 
     onAssignation(eventData, assign = true) {
+      if (this.currentProduction?.id !== eventData.project_id) {
+        return
+      }
+
       const personId = eventData.person_id
       const selectedTaskIds = [eventData.task_id]
 
@@ -911,6 +915,18 @@ a:hover {
 
 .pa0 {
   padding: 0;
+}
+
+.pa02 {
+  padding: 0.2em;
+}
+
+.pa03 {
+  padding: 0.3em;
+}
+
+.pa05 {
+  padding: 0.5em;
 }
 
 .pa1 {
@@ -2048,6 +2064,16 @@ td.fps {
 .empty-list {
   margin-top: 2em;
   font-size: 1.5em;
+}
+
+.list-error {
+  background-color: $red;
+  border-radius: 0.5em;
+  color: white;
+  font-size: 1.1em;
+  font-weight: bold;
+  margin: auto;
+  padding: 1em 2em;
 }
 
 .entity-thumbnail {
