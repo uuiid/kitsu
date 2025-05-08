@@ -1,14 +1,19 @@
 <script setup>
-import { ref, reactive, computed } from 'vue'
+import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
 import { ChevronDown, ChevronRight } from 'lucide-vue-next'
-import ImageUpdateCell from '@/components/cells/imageUpdateCell.vue'
+import ImageUpdateCell from '@/components/cells/ImageUpdateCell.vue'
 import { AiScriptStore } from '@/store/modules/AiScript.js'
+import AiVideoCell from '@/components/cells/AiVideoCell.vue'
 
 const tabs = ['txt2Video', 'image2Video']
 const inputCount = 5
 const isOpenNegative = ref(false)
 const AiSpcript = AiScriptStore()
-
+const dragging = ref(false)
+const dragStartX = ref(0)
+const leftPanelWidth = ref(300)
+const startLeftWidth = ref(300)
+const rightPanelWidth = ref(window.innerWidth - leftPanelWidth.value - 10)
 const currentTab = ref('txt2Video')
 const currentTabContent = computed(() => {
   let temp = null
@@ -117,10 +122,50 @@ const image2VInput = reactive({
     }
   }
 })
+const numbers = computed(() => {
+  const result = []
+  for (let i = 1; i <= 85; i += 1) {
+    result.push(i)
+  }
+  return result
+})
+
+onMounted(() => {
+  window.addEventListener('resize', handleResize)
+})
+onUnmounted(() => {
+  window.removeEventListener('resize', handleResize)
+})
+
+function handleResize() {
+  rightPanelWidth.value = window.innerWidth - leftPanelWidth.value - 10
+}
 
 function onInput() {}
 
 function handleInputKeyDown() {}
+
+function onMouseDown(event) {
+  document.addEventListener('mousemove', onMouseMove)
+  document.addEventListener('mouseup', onMouseUp)
+  dragStartX.value = event.clientX
+  dragging.value = true
+  startLeftWidth.value = leftPanelWidth.value
+}
+
+function onMouseMove(event) {
+  if (dragging.value) {
+    const delta = event.clientX - dragStartX.value
+    leftPanelWidth.value = startLeftWidth.value + delta
+    rightPanelWidth.value = window.innerWidth - leftPanelWidth.value - 10 // 10 是分隔条的宽度
+  }
+}
+
+function onMouseUp() {
+  dragging.value = false
+  document.removeEventListener('mousemove', onMouseMove)
+  document.removeEventListener('mouseup', onMouseUp)
+}
 
 async function onGenerate() {
   switch (currentTab.value) {
@@ -147,7 +192,7 @@ async function onGenerate() {
   <div class="ai-video">
     <div class="ai-video-layout">
       <el-container class="ai-video-layout">
-        <el-aside class="ai-aside">
+        <el-aside class="ai-aside" :style="{ width: leftPanelWidth + 'px' }">
           <div class="ai-tabs">
             <div
               class="ai-tab-item"
@@ -242,7 +287,7 @@ async function onGenerate() {
                 <el-select
                   v-model="config.value"
                   placeholder="Select"
-                  size="mini"
+                  size="default"
                   style="width: 100px"
                   v-if="config.options"
                 >
@@ -257,7 +302,7 @@ async function onGenerate() {
                   <el-slider
                     :max="config.max"
                     :min="config.min"
-                    step="0.05"
+                    :step="0.05"
                     v-model="config.value"
                   />
                   <template #reference>
@@ -271,13 +316,21 @@ async function onGenerate() {
             <el-button @click="onGenerate">生成</el-button>
           </div>
         </el-aside>
-        <el-main class="main-content">
+        <div class="main-content-separator" @mousedown="onMouseDown"></div>
+        <el-main
+          class="main-content"
+          :style="{ width: rightPanelWidth + 'px' }"
+        >
           <div class="main-content">
-            <video
-              class="auto-resize"
-              src="file:///E:/AI/girls_out.mp4"
-              controls
-            />
+            <div class="video-list">
+              <div class="video-item" :key="number" v-for="number in numbers">
+                <div class="video-preview">
+                  <ai-video-cell
+                    :src="`http://127.0.0.1:5000/video/21344-重生八零成为村首富的美艳妻/${number}`"
+                  />
+                </div>
+              </div>
+            </div>
           </div>
         </el-main>
       </el-container>
@@ -308,12 +361,55 @@ async function onGenerate() {
 .main-content {
   width: 100%;
   height: 100%;
-  background: #25272b;
   display: flex;
   flex-direction: column;
-  justify-content: center;
-  align-items: center;
   border-radius: 10px;
+}
+
+.dark {
+  .main-content {
+    background: #25272b;
+  }
+}
+
+.video-list {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 10px;
+}
+
+.video-item {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 280px;
+  height: 200px;
+  border-radius: 8px;
+}
+
+.video-preview {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 280px;
+  height: 200px;
+  background: #000000;
+  border-radius: 8px;
+}
+
+.main-content-separator {
+  width: 2px;
+  cursor: ew-resize;
+  background-color: #cccccc;
+  position: relative;
+  z-index: 10;
+  margin-right: 10px;
+}
+
+.dark {
+  .main-content-separator {
+    background-color: #6a6a6a;
+  }
 }
 
 .ai-video-image {
@@ -390,6 +486,13 @@ async function onGenerate() {
   resize: none;
   overflow: auto;
   padding: 0.5em;
+}
+
+.fixed-resize {
+  max-width: 200px;
+  max-height: 180px;
+  width: auto;
+  height: auto;
 }
 
 .ai-video-config {

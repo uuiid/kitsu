@@ -1,6 +1,4 @@
 <script setup>
-import { Trash2 } from 'lucide-vue-next'
-
 defineEmits(['remove'])
 </script>
 

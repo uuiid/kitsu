@@ -1,6 +1,6 @@
 <script setup>
 import { ref, onMounted, onUnmounted } from 'vue'
-import AiImageAction from '@/components/cells/ai-image-action.vue'
+import AiImageAction from '@/components/cells/AiImageAction.vue'
 
 const previewSrc = ref('')
 const isDrop = ref(false)
