@@ -97,23 +97,37 @@
         >
           {{ $t('main.search.no_result') }}
         </div>
-        <div class="open-production has-text-centered" key="assetLibrary">
+        <div
+          class="open-production has-text-centered"
+          key="assetLibrary"
+          @mouseleave="isShowModelLibraryName = false"
+          @mouseenter="isShowModelLibraryName = true"
+        >
           <router-link to="video-library">
             <div class="avatar has-text-centered" style="background: #01d8d1">
               库
             </div>
             <div class="production-name">
-              {{ $t('video_library.video_library') }}
+              <div v-if="isShowModelLibraryName">
+                {{ $t('video_library.video_library') }}
+              </div>
             </div>
           </router-link>
         </div>
-        <div class="open-production has-text-centered" key="doodleWork">
+        <div
+          class="open-production has-text-centered"
+          key="doodleWork"
+          @mouseenter="isShowDoodleWorkName = true"
+          @mouseleave="isShowDoodleWorkName = false"
+        >
           <router-link to="doodle-work">
             <div class="avatar has-text-centered" style="background: #3de867">
               台
             </div>
             <div class="production-name">
-              {{ $t('doodle_work.doodle_work') }}
+              <div v-if="isShowDoodleWorkName">
+                {{ $t('doodle_work.doodle_work') }}
+              </div>
             </div>
           </router-link>
         </div>
@@ -121,6 +135,8 @@
           class="open-production has-text-centered"
           :key="production.id"
           v-for="production in filteredProductions"
+          @mouseenter="production.showName = true"
+          @mouseleave="production.showName = false"
         >
           <router-link :to="getPath(production)">
             <div
@@ -135,7 +151,9 @@
               <img :src="getThumbnailPath(production)" v-else />
             </div>
             <div class="production-name">
-              {{ production.name }}
+              <div v-if="production.showName">
+                {{ production.name }}
+              </div>
             </div>
           </router-link>
         </div>
@@ -192,7 +210,9 @@ export default {
   data() {
     return {
       isContributions: true,
-      filteredProductions: []
+      filteredProductions: [],
+      isShowModelLibraryName: false,
+      isShowDoodleWorkName: false
     }
   },
 
@@ -417,6 +437,7 @@ h1.title {
   color: $grey;
   margin: 0.5em auto;
   width: 200px;
+  height: 20px;
 }
 
 .welcome {
