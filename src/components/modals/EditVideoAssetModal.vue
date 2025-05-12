@@ -21,6 +21,7 @@
             v-model="asset_to_import.label"
           />
         </form>
+        <tag-select-cell ref="tagsRef" :input-tags="assetToEdit.labels" />
         <label class="label">{{ $t('video_library.thumbnail') }}</label>
         <list-view
           ref="image"
@@ -61,6 +62,8 @@ import { modalMixin } from '@/components/modals/base_modal'
 import TextField from '@/components/widgets/TextField.vue'
 import ListView from '@/components/widgets/ListView.vue'
 import { mapGetters } from 'vuex'
+import { ModelLibraryStore } from '@/store/modules/modellibrary.js'
+import TagSelectCell from '@/components/cells/TagSelectCell.vue'
 
 export default {
   name: 'edit-video-asset-modal',
@@ -68,6 +71,7 @@ export default {
   mixins: [modalMixin],
 
   components: {
+    TagSelectCell,
     TextField,
     ListView
   },
@@ -112,12 +116,14 @@ export default {
         source_id: null
       },
       asset_to_import: {},
-      assetSuccessText: ''
+      assetSuccessText: '',
+      options: []
       //editVideos:[], /*{"label": "string","parent_id": "1c6ca187-e61f-4301-8dcb-0e9749e89eef","id": "497f6eca-6276-4993-bfeb-53cbbbba6f08","path": "string",notes": "string","active": true}*/
     }
   },
-  mounted() {
+  async mounted() {
     this.assetSuccessText = ''
+    await this.handleOptions()
   },
 
   computed: {
@@ -144,12 +150,16 @@ export default {
       if (this.form.image_errored) {
         this.asset_to_import.has_thumbnail = true
       }
-      this.$emit('on-confirm', this.asset_to_import)
+      this.$emit('on-confirm', this.asset_to_import, this.$refs.tagsRef.tags)
+    },
+    async handleOptions() {
+      this.options = await ModelLibraryStore().actions.getAllTags()
     }
   },
   watch: {
     assetToEdit(value) {
       this.asset_to_import = Object.assign({}, value)
+      this.tags = this.asset_to_import.labels
     }
   }
 }

@@ -32,6 +32,7 @@
           @set-error="value => (form.image_errored = value)"
         >
         </list-view>
+        <tag-select-cell ref="tagsRef" />
         <form @submit.prevent>
           <text-field
             ref="nameField"
@@ -54,7 +55,6 @@
             v-model="videoToCreat.notes"
           />
         </form>
-
         <div class="has-text-right">
           <a
             :class="{
@@ -87,6 +87,7 @@ import { modalMixin } from '@/components/modals/base_modal'
 import TextField from '@/components/widgets/TextField.vue'
 import TextareaField from '@/components/widgets/TextareaField.vue'
 import ListView from '@/components/widgets/ListView.vue'
+import TagSelectCell from '@/components/cells/TagSelectCell.vue'
 
 export default {
   name: 'edit-video-library-modal',
@@ -94,6 +95,7 @@ export default {
   mixins: [modalMixin],
 
   components: {
+    TagSelectCell,
     TextField,
     ListView,
     TextareaField
@@ -164,7 +166,7 @@ export default {
     }
   },
 
-  mounted() {
+  async mounted() {
     this.assetSuccessText = ''
   },
 
@@ -176,7 +178,6 @@ export default {
     ...mapActions([]),
 
     getFiles(files) {},
-
     onCancel() {
       this.$emit('cancel')
     },
@@ -211,7 +212,7 @@ export default {
         this.videoToCreat.has_thumbnail = true
         this.videoToCreat.extension = this.$refs.video.videos[0].type
         this.videoToCreat.upimage = this.$refs.image.images[0]
-        this.$emit('on-confirm', this.videoToCreat)
+        this.$emit('on-confirm', this.videoToCreat, this.$refs.tagsRef.tags)
         this.clearData()
       }
     },
@@ -244,5 +245,9 @@ export default {
 
 .info-message {
   margin-top: 1em;
+}
+
+:deep(.el-select__wrapper) {
+  min-height: 45px;
 }
 </style>

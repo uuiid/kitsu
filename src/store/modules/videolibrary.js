@@ -400,6 +400,9 @@ const actions = {
       commit('DELETE_VIDEOS', videos)
     })
   },
+  setIsUpdatingVideos({ commit }) {
+    commit('SET_IS_UPDATING_VIDEOS')
+  },
   modifyVideoActive({ commit }, video) {
     return videolibraryApi
       .modifyVideoActive(video)

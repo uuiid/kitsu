@@ -109,5 +109,28 @@ export default {
   getScanProject(bearer) {
     const path = `/api/doodle/file?${bearer}`
     return client.pget(path)
+  },
+  getAllTags() {
+    return client.pget('/api/doodle/model_library/label')
+  },
+  createTag(tag) {
+    const path = `/api/doodle/model_library/label`
+    return client.ppost(path, tag)
+  },
+  modifyTag(tag) {
+    const path = `/api/doodle/model_library/label/${tag.id}`
+    return client.pput(path, tag)
+  },
+  deleteTag(tag) {
+    const path = `/api/doodle/model_library/label/${tag.id}`
+    return client.pdel(path, tag)
+  },
+  tagLinkAsset(tag_id, asset_id) {
+    const path = `/api/doodle/model_library/label/${tag_id}/assets/${asset_id}`
+    return client.ppost(path, {})
+  },
+  deleteTagLinkAsset(tag_id, asset_id) {
+    const path = `/api/doodle/model_library/label/${tag_id}/assets/${asset_id}`
+    return client.pdel(path, {})
   }
 }

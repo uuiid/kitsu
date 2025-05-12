@@ -22,6 +22,7 @@
             :model-value="videoType"
           />
         </form>
+        <tag-select-cell ref="tagsRef" />
         <label class="label">{{ $t('video_library.video_source_file') }}</label>
         <list-view
           ref="video"
@@ -77,6 +78,7 @@ import { mapGetters, mapActions } from 'vuex'
 import { modalMixin } from '@/components/modals/base_modal'
 import TextField from '@/components/widgets/TextField.vue'
 import ListView from '@/components/widgets/ListView.vue'
+import TagSelectCell from '@/components/cells/TagSelectCell.vue'
 
 export default {
   name: 'edit-video-library-batch-update-modal',
@@ -84,6 +86,7 @@ export default {
   mixins: [modalMixin],
 
   components: {
+    TagSelectCell,
     TextField,
     ListView
   },
@@ -141,7 +144,7 @@ export default {
     }
   },
 
-  mounted() {
+  async mounted() {
     this.assetSuccessText = ''
   },
 
@@ -177,11 +180,16 @@ export default {
       if (!this.form.video_errored) {
         this.formatFiles(this.$refs.video.files)
         this.fileNums = this.$refs.video.files.length
-        this.$emit('on-confirm', this.$refs.video.files)
+        this.$emit(
+          'on-confirm',
+          this.$refs.video.files,
+          this.$refs.tagsRef.tags
+        )
       }
     },
     clearData() {
       this.$refs.video.init()
+      this.tags = []
     }
   }
 }

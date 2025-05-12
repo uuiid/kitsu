@@ -39,17 +39,8 @@
           >
             {{ $t('video_library.batch_update_video') }}
           </button>
-          <!--button
-            :class="{
-              button: true,
-              'is-primary': false,
-              'update-video-button': true
-            }"
-            @click="refresh"
-          >
-            <refresh-cw></refresh-cw>
-            {{ $t('video_library.refresh') }}
-          </button-->
+          <model-library-tag-cell @click="onClickTag"></model-library-tag-cell>
+
           <span class="update-video-error" v-if="modals.isDisplayedUpdateError">
             请先选择类型</span
           >
@@ -249,10 +240,13 @@ import EditVideoLibraryAddTypeModal from '@/components/modals/EditVideoLibraryAd
 import ImagePreviewModal from '@/components/modals/ImagePreviewModal.vue'
 import EditVideoAssetModal from '@/components/modals/EditVideoAssetModal.vue'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
+import ModelLibraryTagCell from '@/components/cells/ModelLibraryTagCell.vue'
+import { ModelLibraryStore } from '@/store/modules/modellibrary.js'
 
 export default {
   name: 'video-library',
   components: {
+    ModelLibraryTagCell,
     ButtonSimple,
     VideoPreview,
     PageTitle,
@@ -331,7 +325,8 @@ export default {
       shiftEndSelection: null,
       currentPage: 0,
       maxNum: 504,
-      pageStartIndex: 0
+      pageStartIndex: 0,
+      selectedTags: new Map()
     }
   },
 
@@ -403,8 +398,10 @@ export default {
       return this.videos
         .filter(v => {
           return (
-            this.currentTypeAllId.includes(v.parent_id) ||
-            this.currentVideoType.id === 'all'
+            (this.currentTypeAllId.includes(v.parent_id) ||
+              this.currentVideoType.id === 'all') &&
+            (this.selectedTags.size === 0 ||
+              v.labels.some(label => this.selectedTags.has(label)))
           )
         })
         .sort(this.naturalCompare)
@@ -445,7 +442,8 @@ export default {
       'modifyVideos',
       'setVideoTypeOpen',
       'resetSelectedVideos',
-      'modifyVideoActive'
+      'modifyVideoActive',
+      'setIsUpdatingVideos'
     ]),
     handleResize() {
       this.rightPanelWidth = window.innerWidth - this.leftPanelWidth - 10
@@ -457,6 +455,7 @@ export default {
           this.currentSelectVideo = this.shiftEndSelection //[...this.selectedVideos.entries()].at(-1)[1]
       }
     },
+    handleTags(video) {},
     handleKeydown(event) {
       if (event.key === 'Shift') {
         this.isShiftSelected = true
@@ -473,6 +472,9 @@ export default {
       if (item.id !== 'all') this.dropEntry.parent_id = item.id
       else this.dropEntry.parent_id = ''
       this.confirmEditVideo(this.dropEntry)
+    },
+    onClickTag() {
+      this.selectedTags = ModelLibraryStore().state.selectedTags
     },
     onClickPageNumber(pageNumber) {
       this.currentPage = pageNumber - 1
@@ -551,22 +553,32 @@ export default {
         this.originalVideoTypes.get(entity.parent_id).label + '/' + entity.label
       )
     },
-    confirmNewVideo(video) {
-      this.newVideo(video)
+    async confirmNewVideo(video, tags) {
+      const res = await this.newVideo(video)
+      await ModelLibraryStore().actions.tagLinkAsset(tags, res.id)
     },
-    confirmBatchNewVideo(videos) {
-      this.newVideos(videos).then(res => {
-        this.$refs.edit_video_library_batch_update_modal.clearData()
-        return res
-      })
+    async confirmBatchNewVideo(videos, tags) {
+      const res = await this.newVideos(videos)
+      for (const re in res) {
+        await ModelLibraryStore().actions.tagLinkAsset(tags, re.id)
+      }
+      this.$refs.edit_video_library_batch_update_modal.clearData()
+      return res
     },
     confirmNewVideoType(videoType) {
       if (videoType.label) {
         this.newVideosType(videoType)
       }
     },
-    async confirmEditVideo(video) {
+    async confirmEditVideo(video, tags) {
       await this.modifyVideo(video)
+      await ModelLibraryStore().actions.tagLinkAsset(tags, video.id)
+      for (const tag of video.labels) {
+        if (!tags.includes(tag)) {
+          await ModelLibraryStore().actions.deleteTagLinkAsset(tag, video.id)
+        }
+      }
+      this.setIsUpdatingVideos()
       await this.refresh()
       if (this.$refs[video.id][0]) this.$refs[video.id][0].refreshKey += 1
     },
