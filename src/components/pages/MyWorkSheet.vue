@@ -642,6 +642,7 @@ export default {
     },
 
     exportLine(person, t) {
+      console.log(t)
       const line = []
       //const theTaskType = this.taskTypeMap.get(t.task_type_id)
       let department
@@ -668,7 +669,7 @@ export default {
           ? t.entity.data.ji_shu
           : Math.ceil(Number(episodes) / 20)
       }
-      let project_name = t.project?.name
+      let project_name = t.computing_time.project_name
       if (project_name === undefined) {
         project_name = this.productionMap.get(t.computing_time.project_id).name
       }
