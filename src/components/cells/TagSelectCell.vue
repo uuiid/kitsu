@@ -41,7 +41,7 @@ watch(tags, async (newValue, oldValue) => {
     await handleOptions()
     if (
       options.value.filter(option => {
-        return option.name === newValue[newValue.length - 1]
+        return option.id === newValue[newValue.length - 1]
       }).length === 0
     ) {
       if (isInitail) await handleInputConfirm()

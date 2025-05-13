@@ -42,7 +42,7 @@
         <div class="preview">{{ video.name }}</div>
       </div>
     </div>
-    <div class="parent_preview" v-if="isActiveImage && isShow">
+    <div class="parent_preview" v-if="isActiveImage && images?.length > 0">
       <div v-for="(image, index) in images" :key="index">
         <img class="img-preview" :src="getURL(image)" alt="" />
       </div>
@@ -278,6 +278,7 @@ export default {
       return form.type.startsWith('video')
     },
     getURL(form) {
+      console.log(form)
       return window.URL.createObjectURL(form)
     },
     onPastes(event) {

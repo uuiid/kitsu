@@ -25,8 +25,12 @@ function onMouseLeave() {
   closable.value = false
 }
 
-function onClose() {
+function onClickClose() {
   visible.value = true
+}
+
+function onClose() {
+  emits('close')
 }
 
 async function handleInputConfirm() {
@@ -41,9 +45,16 @@ async function handleInputConfirm() {
   }
 }
 
-function onClick() {
-  selected.value = !selected.value
-  emits('click', props.tag, selected.value)
+function onClick(event) {
+  if (
+    !(
+      event.target.tagName.toLowerCase() === 'svg' ||
+      event.target.tagName.toLowerCase() === 'path'
+    )
+  ) {
+    selected.value = !selected.value
+    emits('click', props.tag, selected.value)
+  }
 }
 
 async function onDblclick() {
@@ -68,9 +79,9 @@ onMounted(() => {
       'm-tag': !selected,
       input: inputVisible
     }"
-    @click="onClick"
-    @close="onClose"
+    @close.stop="onClickClose"
     @dblclick="onDblclick"
+    @click="onClick"
   >
     <el-input
       v-if="inputVisible"
@@ -83,11 +94,7 @@ onMounted(() => {
       @blur="handleInputConfirm"
     />
     <span v-if="!inputVisible">{{ tag.name }}</span>
-    <el-popconfirm
-      title="确定删除吗?"
-      @confirm="emits('close')"
-      v-if="!inputVisible"
-    >
+    <el-popconfirm title="确定删除吗?" @confirm="onClose" v-if="!inputVisible">
       <template #reference>
         <i class="el-icon el-tag__close" v-if="closable">
           <x style="color: #f87c7c"></x>
