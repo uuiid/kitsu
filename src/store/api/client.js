@@ -54,7 +54,6 @@ const client = {
               err.body = res ? res.body : ''
               return reject(err)
             } else {
-              console.log(res?.body)
               return resolve(res?.body)
             }
           }
