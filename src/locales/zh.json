@@ -1348,7 +1348,7 @@
       "empty_cells_selected": "选中空单元格 | 选中空单元格",
       "my_checks": "我的检查",
       "new_revision_number": "新修订编号",
-      "post": "职位",
+      "post": "提交",
       "publish_revision": "发布修订版",
       "revision_preview_file": "如果所选文件的名称中包含修订版编号（如 \"preview-v3.png\"），那么下一步将建议使用新的修订版名称（如 \"修订版 3\"）。",
       "selected_entities": "选定实体",
@@ -1792,7 +1792,9 @@
       "modified_successfully": "修改成功",
       "modified_failed": "修改成功",
       "already_exists": "已存在",
-      "average_time": "平均时间"
+      "average_time": "平均时间",
+      "select_all": "选择全部",
+      "not_select_all": "取消全选"
     },
     "doodle_productions": {
       "fields": {

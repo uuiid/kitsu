@@ -160,6 +160,7 @@
           :label="$t('doodle.filter-person')"
           :department-list="departments"
           :with-empty-choice="false"
+          :display-all-and-my-departments="true"
           v-model="selectedDepartment"
         />
         <p class="label mt2">
@@ -187,6 +188,18 @@
             }"
             :text="$t('doodle.batch-export')"
             @click="batchExport"
+          />
+          <button-simple
+            class="flexrow-item mt05 export-btn"
+            :class="{
+              'is-loading': isExporting
+            }"
+            :text="
+              isSelectAll
+                ? $t('doodle.not_select_all')
+                : $t('doodle.select_all')
+            "
+            @click="selectAll"
           />
         </div>
       </div>
@@ -318,6 +331,7 @@ export default {
       companyOptionList: [],
       dutys: [],
       selectPersons: [],
+      isSelectAll: false,
       selectedDepartment: null,
       filterPersonList: [],
       isShow: false,
@@ -424,7 +438,6 @@ export default {
       'people',
       'isDarkTheme'
     ]),
-
     notPendingTasks() {
       return this.tasks.filter(task => {
         return ![...this.calculatedTasks.keys()].includes(task.id)
@@ -561,7 +574,20 @@ export default {
     isActiveTab(tab) {
       return this.currentSection === tab
     },
-
+    selectAll() {
+      if (this.isSelectAll) {
+        this.filterPersonList.forEach(person => {
+          person.checked = false
+        })
+        this.selectPersons = []
+      } else {
+        this.filterPersonList.forEach(person => {
+          person.checked = true
+          this.selectPersons.push(person)
+        })
+      }
+      this.isSelectAll = !this.isSelectAll
+    },
     updateActiveTab() {
       const availableSections = ['duty']
       const currentSection = this.$route.query.section
@@ -1125,10 +1151,17 @@ export default {
     },
     updateDepartment() {
       const department = this.selectedDepartment
-      this.filterPersonList = []
-      this.personList.forEach(p => {
-        if (p.departments.includes(department)) this.filterPersonList.push(p)
-      })
+      if (department === 'ALL') {
+        this.filterPersonList = this.personList
+      } else {
+        this.filterPersonList = []
+        this.personList.forEach(p => {
+          p.checked = false
+          if (p.departments.includes(department)) this.filterPersonList.push(p)
+        })
+      }
+      this.selectPersons = []
+      this.isSelectAll = false
       //this.$forceUpdate()
     }
   },
