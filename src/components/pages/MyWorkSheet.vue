@@ -642,7 +642,6 @@ export default {
     },
 
     exportLine(person, t) {
-      console.log(t)
       const line = []
       //const theTaskType = this.taskTypeMap.get(t.task_type_id)
       let department
@@ -670,8 +669,8 @@ export default {
           : Math.ceil(Number(episodes) / 20)
       }
       let project_name = t.computing_time.project_name
-      if (project_name === undefined) {
-        project_name = this.productionMap.get(t.computing_time.project_id).name
+      if (project_name === undefined || project_name === '') {
+        project_name = this.productionMap.get(t.project_id).name
       }
       if (episodes < 10) {
         episodes = `0${episodes}`
