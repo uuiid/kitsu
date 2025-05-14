@@ -180,6 +180,7 @@ export default {
       if (!this.form.video_errored) {
         this.formatFiles(this.$refs.video.files)
         this.fileNums = this.$refs.video.files.length
+        console.log(this.$refs.tagsRef.tags)
         this.$emit(
           'on-confirm',
           this.$refs.video.files,

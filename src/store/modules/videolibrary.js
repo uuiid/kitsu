@@ -1,4 +1,5 @@
 import videolibraryApi from '../api/videolibrary'
+import { doodleWorkStore } from '@/store/modules/doodlework.js'
 
 const initialState = {
   videos: [],
@@ -244,7 +245,7 @@ const actions = {
   async newVideos({ commit }, videos) {
     commit('SET_IS_UPDATING_VIDEOS')
     const path = require('path')
-    const res_obj = videos.reduce((acc, video) => {
+    videos.reduce((acc, video) => {
       return acc.set(video.path, video)
     }, new Map())
     const res = await videolibraryApi.newVideos(videos)
@@ -270,7 +271,12 @@ const actions = {
         state.videoExtensions.includes(path.extname(video.path).slice(1))
       ) {
         try {
-          const data = await helpers.handleVideo(video, res_obj)
+          const task = {
+            video_path: video.path,
+            time: Math.random()
+          }
+          const data = await doodleWorkStore().actions.getVideoThumbnail(task)
+          console.log(data)
           const image = {
             id: video.id,
             data: data,
@@ -347,9 +353,9 @@ const actions = {
           videolibraryApi.addImage(re).then(() => {
             commit('NEW_VIDEO', res[0])
           })
-          return res
         }
         reader.readAsArrayBuffer(video.upimage)
+        return res[0]
       })
       .catch(err => {
         console.log(err)

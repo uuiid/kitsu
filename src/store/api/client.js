@@ -53,9 +53,25 @@ const client = {
             if (err) {
               err.body = res ? res.body : ''
               return reject(err)
-            } else return resolve(res?.body)
+            } else {
+              console.log(res?.body)
+              return resolve(res?.body)
+            }
           }
         })
+    })
+  },
+  ppostThumbnail(path, data) {
+    return new Promise((resolve, reject) => {
+      fetch(path, {
+        method: 'POST',
+        body: JSON.stringify(data),
+        headers: {
+          'Content-Type': 'application/json'
+        }
+      }).then(response => {
+        return resolve(response.blob())
+      })
     })
   },
   ppostFileData(path, file, onProgress = null) {

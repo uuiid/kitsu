@@ -556,11 +556,14 @@ export default {
     async confirmNewVideo(video, tags) {
       const res = await this.newVideo(video)
       await ModelLibraryStore().actions.tagLinkAsset(tags, res.id)
+      res.labels = tags
     },
     async confirmBatchNewVideo(videos, tags) {
       const res = await this.newVideos(videos)
-      for (const re in res) {
+      console.log(res)
+      for (const re of res) {
         await ModelLibraryStore().actions.tagLinkAsset(tags, re.id)
+        re.labels = tags
       }
       this.$refs.edit_video_library_batch_update_modal.clearData()
       return res

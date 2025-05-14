@@ -619,6 +619,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         state.value.doodleWorkZipFileVision = state.value.versions[0]
       }
     },
+    getVideoThumbnail: async task => {
+      return doodlework.getVideoThumbnail(task, state.value.localHttpPath)
+    },
     submitLocalDoodleWork: async () => {
       currentDoodleWorkState.value.isSubmitting = true
       await actions.getLocalHttpPath()

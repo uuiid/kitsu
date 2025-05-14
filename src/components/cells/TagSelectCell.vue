@@ -20,6 +20,9 @@ async function handleInputConfirm() {
   )
 }
 
+defineExpose({
+  tags
+})
 onMounted(() => {
   handleOptions()
   tags.value = props.inputTags
@@ -37,7 +40,7 @@ async function handleOptions() {
 }
 
 watch(tags, async (newValue, oldValue) => {
-  if (newValue.length > oldValue?.length && isInitail) {
+  if (newValue?.length > oldValue?.length && isInitail) {
     await handleOptions()
     if (
       options.value.filter(option => {
