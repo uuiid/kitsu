@@ -39,7 +39,10 @@
           >
             {{ $t('video_library.batch_update_video') }}
           </button>
-          <model-library-tag-cell @click="onClickTag"></model-library-tag-cell>
+          <model-library-tag-cell
+            class="model-library-tag"
+            @click="onClickTag"
+          ></model-library-tag-cell>
 
           <span class="update-video-error" v-if="modals.isDisplayedUpdateError">
             请先选择类型</span
@@ -865,6 +868,13 @@ export default {
 .video-flexrow {
   display: flex;
   margin-bottom: 20px;
+  max-height: 50px;
+}
+
+.model-library-tag {
+  overflow: auto;
+  max-height: 60px;
+  min-height: 60px;
 }
 
 .main-content {
