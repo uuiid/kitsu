@@ -39,11 +39,6 @@
           >
             {{ $t('video_library.batch_update_video') }}
           </button>
-          <model-library-tag-cell
-            class="model-library-tag"
-            @click="onClickTag"
-          ></model-library-tag-cell>
-
           <span class="update-video-error" v-if="modals.isDisplayedUpdateError">
             请先选择类型</span
           >
@@ -131,10 +126,7 @@
                           "
                         />
                         <div class="item-description flexrow">
-                          <div
-                            class="entity-name"
-                            :title="entityNameTitle(entity)"
-                          >
+                          <div class="entity-name">
                             {{ entity.label }}
                           </div>
                         </div>
@@ -191,6 +183,7 @@
         :active="modals.isNewDisplayed"
         :video-type-id="currentVideoType.id"
         :video-type="ancestorLabels"
+        :video-types="[...allTypeName.values()]"
         @cancel="modals.isNewDisplayed = false"
         @on-confirm="confirmNewVideo"
       />
@@ -199,6 +192,7 @@
         :active="modals.isBatchNewDisplayed"
         :video-type-id="currentVideoType.id"
         :video-type="ancestorLabels"
+        :video-types="[...allTypeName.values()]"
         @cancel="modals.isBatchNewDisplayed = false"
         @on-confirm="confirmBatchNewVideo"
       />
@@ -214,6 +208,7 @@
         ref="edit_video_asset_modal"
         :active="modals.isEditVideoAssetDisplayed"
         :asset-to-edit="currentSelectVideo"
+        :video-types="[...allTypeName.values()]"
         @cancel="modals.isEditVideoAssetDisplayed = false"
         @on-confirm="confirmEditVideo"
       />
@@ -243,13 +238,11 @@ import EditVideoLibraryAddTypeModal from '@/components/modals/EditVideoLibraryAd
 import ImagePreviewModal from '@/components/modals/ImagePreviewModal.vue'
 import EditVideoAssetModal from '@/components/modals/EditVideoAssetModal.vue'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
-import ModelLibraryTagCell from '@/components/cells/ModelLibraryTagCell.vue'
 import { ModelLibraryStore } from '@/store/modules/modellibrary.js'
 
 export default {
   name: 'video-library',
   components: {
-    ModelLibraryTagCell,
     ButtonSimple,
     VideoPreview,
     PageTitle,
@@ -329,7 +322,8 @@ export default {
       currentPage: 0,
       maxNum: 504,
       pageStartIndex: 0,
-      selectedTags: new Map()
+      selectedTags: new Map(),
+      allTypeName: new Map()
     }
   },
 
@@ -401,28 +395,15 @@ export default {
       return this.videos
         .filter(v => {
           return (
-            (this.currentTypeAllId.includes(v.parent_id) ||
-              this.currentVideoType.id === 'all') &&
-            (this.selectedTags.size === 0 ||
-              v.labels.some(label => this.selectedTags.has(label)))
+            this.checkIncludeType(v.parents, this.currentTypeAllId) ||
+            this.currentVideoType.id === 'all'
           )
         })
         .sort(this.naturalCompare)
     },
     searchAssetsData() {
       return this.sortedAssetsByType.filter(v => {
-        return (
-          v.label.indexOf(this.keyWord) !== -1 ||
-          (
-            (this.originalVideoTypes.get(
-              this.originalVideoTypes.get(v.parent_id).parent_id
-            )
-              ? this.originalVideoTypes.get(
-                  this.originalVideoTypes.get(v.parent_id).parent_id
-                ).label
-              : '') + this.originalVideoTypes.get(v.parent_id).label
-          ).indexOf(this.keyWord) !== -1
-        )
+        return v.label.indexOf(this.keyWord) !== -1 || this.searchType(v)
       })
     }
   },
@@ -464,6 +445,14 @@ export default {
         this.isShiftSelected = true
       }
     },
+    checkIncludeType(list = [], list2 = []) {
+      if (list && list2) {
+        for (const i of list) {
+          if (list2.includes(i)) return true
+        }
+      }
+      return false
+    },
     onDragStart(entry) {
       this.dropEntry = entry
     },
@@ -471,13 +460,36 @@ export default {
       event.preventDefault()
       event.dataTransfer.dropEffect = 'move'
     },
-    onDragEnd(item) {
-      if (item.id !== 'all') this.dropEntry.parent_id = item.id
-      else this.dropEntry.parent_id = ''
-      this.confirmEditVideo(this.dropEntry)
+    async onDragEnd(item) {
+      if (item.id !== this.currentVideoType.id) {
+        const index = this.dropEntry.parents.indexOf(this.currentVideoType.id)
+        if (index !== -1) {
+          await ModelLibraryStore().actions.deleteTagLinkAsset(
+            this.currentVideoType.id,
+            this.dropEntry.id
+          )
+          this.dropEntry.parents.splice(index, 1)
+        }
+        if (item.id !== 'all') {
+          await ModelLibraryStore().actions.tagLinkAsset(
+            [item.id],
+            this.dropEntry.id
+          )
+          this.dropEntry.parents.push(item.id)
+        }
+      }
+      //this.confirmEditVideo(this.dropEntry)
     },
     onClickTag() {
       this.selectedTags = ModelLibraryStore().state.selectedTags
+    },
+    searchType(asset) {
+      for (const parent of asset.parents) {
+        if (this.allTypeName.get(parent)?.path.indexOf(this.keyWord) !== -1) {
+          return true
+        }
+      }
+      return false
     },
     onClickPageNumber(pageNumber) {
       this.currentPage = pageNumber - 1
@@ -553,7 +565,9 @@ export default {
     },
     entityNameTitle(entity) {
       return (
-        this.originalVideoTypes.get(entity.parent_id).label + '/' + entity.label
+        this.originalVideoTypes.get(entity.parent_id)?.label +
+        '/' +
+        entity.label
       )
     },
     async confirmNewVideo(video, tags) {
@@ -563,11 +577,10 @@ export default {
     },
     async confirmBatchNewVideo(videos, tags) {
       const res = await this.newVideos(videos)
-      console.log(res)
-      for (const re of res) {
-        await ModelLibraryStore().actions.tagLinkAsset(tags, re.id)
-        re.labels = tags
-      }
+      // for (const re of res) {
+      //   await ModelLibraryStore().actions.tagLinkAsset(tags, re.id)
+      //   re.labels = tags
+      // }
       this.$refs.edit_video_library_batch_update_modal.clearData()
       return res
     },
@@ -579,7 +592,7 @@ export default {
     async confirmEditVideo(video, tags) {
       await this.modifyVideo(video)
       await ModelLibraryStore().actions.tagLinkAsset(tags, video.id)
-      for (const tag of video.labels) {
+      for (const tag of video.parents) {
         if (!tags.includes(tag)) {
           await ModelLibraryStore().actions.deleteTagLinkAsset(tag, video.id)
         }
@@ -595,6 +608,7 @@ export default {
       let out_data = []
       const tree = []
       const root = []
+
       if (data.size > 0) {
         const lookup = {}
         data.forEach((item, key) => {
@@ -620,13 +634,15 @@ export default {
       out_data = [
         {
           label: '所有',
-          parent_id: '',
+          parents: [],
           id: 'all',
           isOpen: true,
           isSelected: true,
           children: tree
         }
       ]
+      this.allTypeName = this.getAllTypePaths(out_data[0])
+      this.allTypeName.delete('all')
       if (this.currentVideoType.id === undefined) {
         this.setCurrentVideoType(out_data[0])
       }
@@ -638,19 +654,19 @@ export default {
     async menuAction(entity, action) {
       if (action === 'copyVideoPath') {
         try {
-          navigator.clipboard.writeText(entity.path)
+          await navigator.clipboard.writeText(entity.path)
         } catch (error) {
           console.log(error)
         }
       } else if (action === 'delete') {
-        this.modifyVideoActive(entity)
+        await this.modifyVideoActive(entity)
       } else if (action === 'openVideo') {
-        window.api.showItemInFolder(entity.path)
+        await window.api.showItemInFolder(entity.path)
       } else if (action === 'showBigImage') {
         this.modals.isImagePreviewDisplayed = true
         this.currentSelectVideo = entity
       } else if (action === 'deleteSelected') {
-        this.modifyVideos()
+        await this.modifyVideos()
         //console.log('deleteSelected')
       } else if (action === 'clearSelected') {
         this.clearSelectedVideos()
@@ -790,6 +806,21 @@ export default {
         })
       }
     },
+    getAllTypePaths(node, currentPath = '', result = new Map()) {
+      const path = currentPath ? `${currentPath}>${node.label}` : node.label
+      result.set(node.id, {
+        id: node.id,
+        path: path,
+        label: node.label
+      })
+
+      if (node.children && node.children.length > 0) {
+        for (const child of node.children) {
+          this.getAllTypePaths(child, path, result)
+        }
+      }
+      return result
+    },
     editVideoSelection() {
       this.$store.commit('SET_IS_EDIT_VIDEO_SELECTION')
       if (this.isEditVideoSelection) {
@@ -797,28 +828,21 @@ export default {
       }
     },
     showNewModal() {
-      if (
-        this.currentVideoType.id === 'all' ||
-        this.currentVideoType.id === undefined
-      ) {
-        this.modals.isDisplayedUpdateError = true
-      } else {
-        this.modals.isNewDisplayed = true
-        this.modals.isDisplayedUpdateError = false
-      }
+      // if (
+      //   this.currentVideoType.id === 'all' ||
+      //   this.currentVideoType.id === undefined
+      // ) {
+      //   this.modals.isDisplayedUpdateError = true
+      // } else {
+      this.modals.isNewDisplayed = true
+      this.modals.isDisplayedUpdateError = false
+      // }
       //this.$refs.edit_video_library_modal.videoToCreat.type =
       //this.ancestorLabels
     },
     showBatchNewModal() {
-      if (
-        this.currentVideoType.id === 'all' ||
-        this.currentVideoType.id === undefined
-      ) {
-        this.modals.isDisplayedUpdateError = true
-      } else {
-        this.modals.isBatchNewDisplayed = true
-        this.modals.isDisplayedUpdateError = false
-      }
+      this.modals.isBatchNewDisplayed = true
+      this.modals.isDisplayedUpdateError = false
     },
     showNewTypeModal() {
       //console.log(this.currentVideoType)

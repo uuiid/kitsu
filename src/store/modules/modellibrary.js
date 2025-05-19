@@ -42,7 +42,6 @@ export const ModelLibraryStore = defineStore('ModelLibraryStore', () => {
     },
     tagLinkAsset: async (tags, asset_id) => {
       for (const tag of tags) {
-        console.log(tag)
         await videolibraryApi.tagLinkAsset(tag, asset_id)
       }
     },

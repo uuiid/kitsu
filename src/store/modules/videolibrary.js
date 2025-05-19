@@ -276,7 +276,6 @@ const actions = {
             time: Math.random()
           }
           const data = await doodleWorkStore().actions.getVideoThumbnail(task)
-          console.log(data)
           const image = {
             id: video.id,
             data: data,

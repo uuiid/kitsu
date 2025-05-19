@@ -4,7 +4,7 @@ export default {
   newVideo(video) {
     const data = {
       label: video.label,
-      parent_id: video.parent_id,
+      parents: video.parents,
       id: video.id,
       path: video.path,
       notes: video.notes,
@@ -20,7 +20,7 @@ export default {
     videos.forEach(video => {
       data.push({
         label: video.label,
-        parent_id: video.parent_id,
+        parents: video.parents,
         id: video.id,
         path: video.path,
         notes: video.notes,
@@ -126,11 +126,11 @@ export default {
     return client.pdel(path, tag)
   },
   tagLinkAsset(tag_id, asset_id) {
-    const path = `/api/doodle/model_library/label/${tag_id}/assets/${asset_id}`
+    const path = `/api/doodle/model_library/assets_tree/${tag_id}/assets/${asset_id}`
     return client.ppost(path, {})
   },
   deleteTagLinkAsset(tag_id, asset_id) {
-    const path = `/api/doodle/model_library/label/${tag_id}/assets/${asset_id}`
+    const path = `/api/doodle/model_library/assets_tree/${tag_id}/assets/${asset_id}`
     return client.pdel(path, {})
   }
 }

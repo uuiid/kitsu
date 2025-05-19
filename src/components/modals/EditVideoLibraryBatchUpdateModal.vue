@@ -15,14 +15,18 @@
           {{ $t('video_library.new_video') }}
         </h1>
         <form @submit.prevent>
-          <text-field
+          <!--text-field
             ref="typeField"
             :label="$t('assets.fields.type')"
             :readonly="true"
             :model-value="videoType"
-          />
+          /-->
         </form>
-        <tag-select-cell ref="tagsRef" />
+        <tag-select-cell
+          :input-options="videoTypes"
+          ref="tagsRef"
+          :input-tags="videoTypeId === 'all' ? [] : [videoTypeId]"
+        />
         <label class="label">{{ $t('video_library.video_source_file') }}</label>
         <list-view
           ref="video"
@@ -76,7 +80,6 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import { modalMixin } from '@/components/modals/base_modal'
-import TextField from '@/components/widgets/TextField.vue'
 import ListView from '@/components/widgets/ListView.vue'
 import TagSelectCell from '@/components/cells/TagSelectCell.vue'
 
@@ -87,7 +90,6 @@ export default {
 
   components: {
     TagSelectCell,
-    TextField,
     ListView
   },
 
@@ -127,6 +129,10 @@ export default {
     videoTypeId: {
       type: String,
       default: ''
+    },
+    videoTypes: {
+      type: Array,
+      default: null
     }
   },
   emits: ['on-confirm', 'cancel'],
@@ -170,7 +176,7 @@ export default {
     formatFiles(files) {
       files.forEach(file => {
         file.label = file.name
-        file.parent_id = this.videoTypeId
+        file.parents = this.$refs.tagsRef.tags
         file.active = true
         file.notes = ''
       })
@@ -180,7 +186,6 @@ export default {
       if (!this.form.video_errored) {
         this.formatFiles(this.$refs.video.files)
         this.fileNums = this.$refs.video.files.length
-        console.log(this.$refs.tagsRef.tags)
         this.$emit(
           'on-confirm',
           this.$refs.video.files,

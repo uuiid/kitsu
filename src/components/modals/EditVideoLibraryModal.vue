@@ -21,6 +21,11 @@
           :errored="form.video_errored"
           @set-error="value => (form.video_errored = value)"
           @custom-events="getFiles"
+          @on-add-files="
+            files => {
+              videoToCreat.label = files[0].name.split('.')[0]
+            }
+          "
         >
         </list-view>
         <label class="label">{{ $t('video_library.thumbnail') }}</label>
@@ -32,7 +37,11 @@
           @set-error="value => (form.image_errored = value)"
         >
         </list-view>
-        <tag-select-cell ref="tagsRef" />
+        <tag-select-cell
+          ref="tagsRef"
+          :input-options="videoTypes"
+          :input-tags="videoTypeId === 'all' ? [] : [videoTypeId]"
+        />
         <form @submit.prevent>
           <text-field
             ref="nameField"
@@ -43,12 +52,12 @@
             v-model="videoToCreat.label"
             v-focus
           />
-          <text-field
+          <!--text-field
             ref="typeField"
             :label="$t('assets.fields.type')"
             :readonly="true"
             :model-value="videoType"
-          />
+          /-->
           <textarea-field
             ref="descriptionField"
             :label="$t('assets.fields.description')"
@@ -137,6 +146,10 @@ export default {
     videoTypeId: {
       type: String,
       default: ''
+    },
+    videoTypes: {
+      type: Array,
+      default: null
     }
   },
   emits: ['on-confirm', 'cancel'],
@@ -160,7 +173,7 @@ export default {
         path: '',
         type: this.videoType,
         notes: '',
-        parent_id: this.videoTypeId,
+        parents: [this.videoTypeId],
         active: true
       }
     }
@@ -207,7 +220,7 @@ export default {
           this.form.image_errored
         )
       ) {
-        this.videoToCreat.parent_id = this.videoTypeId
+        this.videoToCreat.parents = this.$refs.tagsRef.tags
         this.videoToCreat.path = this.$refs.video.videos[0].path
         this.videoToCreat.has_thumbnail = true
         this.videoToCreat.extension = this.$refs.video.videos[0].type
@@ -223,7 +236,7 @@ export default {
         path: '',
         type: this.videoType,
         notes: '',
-        parent_id: this.videoTypeId,
+        parents: [this.videoTypeId],
         active: true
       }
       this.$refs.image.init()

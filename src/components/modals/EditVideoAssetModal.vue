@@ -21,7 +21,11 @@
             v-model="asset_to_import.label"
           />
         </form>
-        <tag-select-cell ref="tagsRef" :input-tags="assetToEdit.labels" />
+        <tag-select-cell
+          ref="tagsRef"
+          :input-tags="assetToEdit.parents"
+          :input-options="videoTypes"
+        />
         <label class="label">{{ $t('video_library.thumbnail') }}</label>
         <list-view
           ref="image"
@@ -104,6 +108,10 @@ export default {
     assetToEdit: {
       type: Object,
       default: () => {}
+    },
+    videoTypes: {
+      type: Array,
+      default: null
     }
   },
   emits: ['on-confirm', 'cancel'],
