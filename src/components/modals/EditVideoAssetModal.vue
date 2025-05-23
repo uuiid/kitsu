@@ -22,9 +22,16 @@
           />
         </form>
         <tag-select-cell
-          ref="tagsRef"
-          :input-tags="assetToEdit.parents"
+          ref="typesRef"
+          :input-tags="currentType"
           :input-options="videoTypes"
+          :name="$t('doodle.type')"
+        />
+        <tag-select-cell
+          ref="tagsRef"
+          :input-tags="currentLabel"
+          :input-options="videoLabels"
+          :name="$t('doodle.label')"
         />
         <label class="label">{{ $t('video_library.thumbnail') }}</label>
         <list-view
@@ -66,7 +73,6 @@ import { modalMixin } from '@/components/modals/base_modal'
 import TextField from '@/components/widgets/TextField.vue'
 import ListView from '@/components/widgets/ListView.vue'
 import { mapGetters } from 'vuex'
-import { ModelLibraryStore } from '@/store/modules/modellibrary.js'
 import TagSelectCell from '@/components/cells/TagSelectCell.vue'
 
 export default {
@@ -112,6 +118,14 @@ export default {
     videoTypes: {
       type: Array,
       default: null
+    },
+    videoLabels: {
+      type: Array,
+      default: null
+    },
+    typesAndLabels: {
+      type: Object,
+      default: () => {}
     }
   },
   emits: ['on-confirm', 'cancel'],
@@ -135,39 +149,58 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['editVideo', 'isUpdatingVideo'])
+    ...mapGetters(['editVideo', 'isUpdatingVideo']),
+    currentType() {
+      return this.assetToEdit.parents?.filter(parent =>
+        this.typesAndLabels.types.includes(parent)
+      )
+    },
+    currentLabel() {
+      return this.assetToEdit.parents?.filter(parent =>
+        this.typesAndLabels.labels.includes(parent)
+      )
+    }
   },
 
   methods: {
     getFiles(files) {},
-
     onCancel() {
       this.$emit('cancel')
       this.$refs.image.isShow = true
     },
 
     checkData(datas) {
-      if (datas.length !== 0) {
+      if (datas.length === 0) {
         this.form.image_errored = true
       }
     },
     confirmClicked() {
       this.checkData(this.$refs.image.images)
       this.asset_to_import.upimage = this.$refs.image.images[0]
+      this.asset_to_import.parents = [
+        ...this.$refs.tagsRef.tags,
+        ...this.$refs.typesRef.tags
+      ]
       this.asset_to_import.has_thumbnail = this.assetToEdit.has_thumbnail
       if (this.form.image_errored) {
         this.asset_to_import.has_thumbnail = true
       }
-      this.$emit('on-confirm', this.asset_to_import, this.$refs.tagsRef.tags)
+      this.$emit('on-confirm', this.asset_to_import, [
+        ...this.$refs.tagsRef.tags,
+        ...this.$refs.typesRef.tags
+      ])
     },
     async handleOptions() {
-      this.options = await ModelLibraryStore().actions.getAllTags()
+      //this.options = await ModelLibraryStore().actions.getAllTags()
     }
   },
   watch: {
-    assetToEdit(value) {
+    assetToEdit(value, oldValue) {
       this.asset_to_import = Object.assign({}, value)
       this.tags = this.asset_to_import.labels
+      if (value.id !== oldValue.id) {
+        this.$refs.image.images = []
+      }
     }
   }
 }

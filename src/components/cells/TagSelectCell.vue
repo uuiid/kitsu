@@ -5,15 +5,23 @@ import { ref, watch, onMounted } from 'vue'
 const props = defineProps({
   inputTags: {
     type: Array,
-    default: null
+    default: () => []
   },
   inputOptions: {
     type: Array,
     default: null
+  },
+  name: {
+    type: String,
+    default: ''
+  },
+  placeholder: {
+    type: String,
+    default: ''
   }
 })
-const tags = ref()
-const options = ref([])
+const tags = ref([])
+//const options = ref([])
 //let isInitial = false
 // const modelLibrary = ModelLibraryStore()
 
@@ -29,7 +37,7 @@ defineExpose({
 })
 onMounted(() => {
   //handleOptions()
-  tags.value = props.inputTags
+  tags.value.push([...props.inputTags])
 })
 
 // function handleInputConfirmCallback(tag) {
@@ -67,8 +75,8 @@ watch(
 
 <template>
   <div class="field" style="margin-bottom: 15px">
-    <label class="label">{{ $t('doodle.type') }}</label>
-    <el-select
+    <label class="label">{{ name }}</label>
+    <!--el-select
       size="large"
       v-model="tags"
       ref="tagsRef"
@@ -85,7 +93,20 @@ watch(
         :label="item.path || item.name"
         :value="item.id"
       />
-    </el-select>
+    </el-select-->
+    <el-tree-select
+      v-model="tags"
+      multiple
+      :data="inputOptions"
+      :render-after-expand="false"
+      show-checkbox
+      check-strictly
+      check-on-click-node
+      default-expand-all
+      node-key="id"
+      value-key="id"
+      :placeholder="placeholder"
+    />
   </div>
 </template>
 

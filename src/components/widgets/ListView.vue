@@ -8,9 +8,17 @@
     @focus="handleFocus"
     @blur="handleBlur"
   >
-    <span class="placeholder" v-if="isShowPlaceholder && !assetToEdit">{{
-      $t('video_library.placeholder')
-    }}</span>
+    <span
+      class="placeholder"
+      v-if="
+        isShowPlaceholder &&
+        !assetToEdit &&
+        files.length === 0 &&
+        images.length === 0 &&
+        videos.length === 0
+      "
+      >{{ $t('video_library.placeholder') }}</span
+    >
     <ul v-if="isActiveText">
       <li v-for="(item, index) in options" :key="index">
         <span
@@ -42,8 +50,15 @@
         <div class="preview">{{ video.name }}</div>
       </div>
     </div>
-    <div class="parent_preview" v-if="isActiveImage && images?.length > 0">
-      <div v-for="(image, index) in images" :key="index">
+    <div
+      class="parent_preview"
+      v-if="isActiveImage && (assetToEdit || images?.length > 0)"
+    >
+      <div
+        v-for="(image, index) in images"
+        :key="index"
+        v-show="images?.length > 0"
+      >
         <img class="img-preview" :src="getURL(image)" alt="" />
       </div>
       <img
@@ -136,7 +151,7 @@ export default {
   computed: {
     ...mapGetters(['videoExtensions', 'imageExtensions']),
     thumbnailPath() {
-      if (this.assetToEdit) {
+      if (this.assetToEdit && this.images.length === 0) {
         const previewFileId = this.assetToEdit.id
         return (
           '/api/doodle/pictures/thumbnails/' +

@@ -46,7 +46,7 @@ const handleModify = async tag => {
 }
 
 onMounted(() => {
-  if (modelLibrary.state.tags.size === 0) modelLibrary.actions.setTags()
+  //if (modelLibrary.state.tags.size === 0) modelLibrary.actions.setTags()
 })
 
 function onClick(tag, status) {

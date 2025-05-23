@@ -20,12 +20,7 @@
           :any-file-type="true"
           :errored="form.video_errored"
           @set-error="value => (form.video_errored = value)"
-          @custom-events="getFiles"
-          @on-add-files="
-            files => {
-              videoToCreat.label = files[0].name.split('.')[0]
-            }
-          "
+          @on-add-files="onAddFiles"
         >
         </list-view>
         <label class="label">{{ $t('video_library.thumbnail') }}</label>
@@ -38,9 +33,16 @@
         >
         </list-view>
         <tag-select-cell
-          ref="tagsRef"
+          ref="typesRef"
           :input-options="videoTypes"
           :input-tags="videoTypeId === 'all' ? [] : [videoTypeId]"
+          :name="$t('doodle.type')"
+        />
+        <tag-select-cell
+          ref="tagsRef"
+          :input-options="videoLabels"
+          :input-tags="videoLabelId === '' ? [] : [videoLabelId]"
+          :name="$t('doodle.label')"
         />
         <form @submit.prevent>
           <text-field
@@ -49,7 +51,6 @@
             :errored="form.name_errored"
             :error-text="form.name_error_text"
             @input="form.name_errored = false"
-            v-model="videoToCreat.label"
             v-focus
           />
           <!--text-field
@@ -61,7 +62,6 @@
           <textarea-field
             ref="descriptionField"
             :label="$t('assets.fields.description')"
-            v-model="videoToCreat.notes"
           />
         </form>
         <div class="has-text-right">
@@ -150,6 +150,14 @@ export default {
     videoTypes: {
       type: Array,
       default: null
+    },
+    videoLabels: {
+      type: Array,
+      default: null
+    },
+    videoLabelId: {
+      type: String,
+      default: ''
     }
   },
   emits: ['on-confirm', 'cancel'],
@@ -184,7 +192,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['editVideo'])
+    ...mapGetters(['editVideo', 'imageExtensions'])
   },
 
   methods: {
@@ -194,9 +202,21 @@ export default {
     onCancel() {
       this.$emit('cancel')
     },
-
+    onAddFiles(files) {
+      const path = require('path')
+      console.log(this.$refs.nameField)
+      this.$refs.nameField.$refs.input.value = files[0].name.split('.')[0]
+      if (
+        this.imageExtensions.includes(
+          path.extname(files[0].path).slice(1).toLowerCase()
+        )
+      ) {
+        this.$refs.image.images = []
+        this.$refs.image.images.push(files[0])
+      }
+    },
     checkData() {
-      if (!this.videoToCreat.label) {
+      if (!this.$refs.nameField.$refs.input.value) {
         this.form.name_errored = true
         this.form.name_error_text = '空'
       }
@@ -204,7 +224,6 @@ export default {
         this.form.video_errored = true
         this.form.video_error_text = '空'
       }
-
       if (this.$refs.image.images.length === 0) {
         this.form.image_errored = true
         this.form.image_error_text = '空'
@@ -220,12 +239,17 @@ export default {
           this.form.image_errored
         )
       ) {
-        this.videoToCreat.parents = this.$refs.tagsRef.tags
+        this.videoToCreat.parents = [
+          ...this.$refs.tagsRef.tags,
+          ...this.$refs.typesRef.tags
+        ]
         this.videoToCreat.path = this.$refs.video.videos[0].path
         this.videoToCreat.has_thumbnail = true
+        this.videoToCreat.label = this.$refs.nameField.$refs.input.value
+        this.videoToCreat.notes = this.$refs.descriptionField.$refs.input.value
         this.videoToCreat.extension = this.$refs.video.videos[0].type
         this.videoToCreat.upimage = this.$refs.image.images[0]
-        this.$emit('on-confirm', this.videoToCreat, this.$refs.tagsRef.tags)
+        this.$emit('on-confirm', this.videoToCreat)
         this.clearData()
       }
     },

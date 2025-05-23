@@ -10,6 +10,7 @@ const initialState = {
   editVideoImage: null,
   isElectron: false,
   currentVideoType: {},
+  currentVideoLabel: {},
   selectedVideos: new Map(),
   openedVideoTypes: new Map(),
   videoExtensions: [
@@ -156,6 +157,9 @@ const mutations = {
     state.currentVideoType = videoType
     state.currentVideoType.isSelected = true
   },
+  SET_CURRENT_VIDEO_LABEL(state, label) {
+    state.currentVideoLabel = label
+  },
   SET_CURRENT_VIDEO_TYPE_STATUS(state, videoType) {
     videoType.isOpen = !videoType.isOpen
     console.log(videoType)
@@ -222,6 +226,7 @@ const getters = {
   isElectron: state => state.isElectron,
   openedVideoTypes: state => state.openedVideoTypes,
   currentVideoType: state => state.currentVideoType,
+  currentVideoLabel: state => state.currentVideoLabel,
   selectedVideos: state => state.selectedVideos,
   videoExtensions: state => state.videoExtensions,
   imageExtensions: state => state.imageExtensions,
@@ -248,7 +253,10 @@ const actions = {
     videos.reduce((acc, video) => {
       return acc.set(video.path, video)
     }, new Map())
-    const res = await videolibraryApi.newVideos(videos)
+    const res = []
+    for (const video of videos) {
+      res.push(await videolibraryApi.newVideo(video))
+    }
     for (const video of res) {
       if (
         state.imageExtensions.includes(
@@ -376,14 +384,12 @@ const actions = {
               return helpers.getFileFromPath(video.upimage.path).then(data => {
                 image.data = data
                 return videolibraryApi.addImage(image).then(re => {
-                  commit('SET_IS_UPDATING_VIDEOS')
                   return re
                 })
               })
             } else {
               return helpers.getDateFromFile(video.upimage).then(data => {
                 image.data = data
-                commit('SET_IS_UPDATING_VIDEOS')
                 return videolibraryApi.addImage(image).then(() => {})
               })
             }
@@ -437,7 +443,7 @@ const actions = {
       })
   },
   newVideosType({ commit }, type) {
-    videolibraryApi
+    return videolibraryApi
       .newVideoType(type)
       .then(res => {
         commit('NEW_VIDEOS_TYPE', res)
@@ -457,6 +463,9 @@ const actions = {
   setCurrentVideoTypeStatus({ commit }, status) {
     commit('SET_CURRENT_VIDEO_TYPE_STATUS', status)
   },
+  setCurrentVideoLabel({ commit }, label) {
+    commit('SET_CURRENT_VIDEO_LABEL', label)
+  },
   setVideoSelection({ commit }, video) {
     commit('SET_VIDEO_SELECTION', video)
   },
@@ -470,11 +479,11 @@ const actions = {
     commit('RESET_SELECTED_VIDEOS', videos)
   },
   deleteSelectedVideos({ commit }) {},
-  deleteVideoType({ commit }) {
+  deleteVideoType({ commit }, videoType) {
     return videolibraryApi
-      .deleteVideoType(state.currentVideoType)
+      .deleteVideoType(videoType)
       .then(res => {
-        commit('DELETE_VIDEO_TYPE', state.currentVideoType)
+        commit('DELETE_VIDEO_TYPE', videoType)
         return res
       })
       .catch(err => {

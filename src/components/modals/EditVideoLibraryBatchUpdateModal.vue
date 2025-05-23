@@ -24,8 +24,15 @@
         </form>
         <tag-select-cell
           :input-options="videoTypes"
-          ref="tagsRef"
+          ref="typesRef"
           :input-tags="videoTypeId === 'all' ? [] : [videoTypeId]"
+          :name="$t('doodle.type')"
+        />
+        <tag-select-cell
+          ref="tagsRef"
+          :input-tags="[videoLabelId]"
+          :input-options="videoLabels"
+          :name="$t('doodle.label')"
         />
         <label class="label">{{ $t('video_library.video_source_file') }}</label>
         <list-view
@@ -133,6 +140,14 @@ export default {
     videoTypes: {
       type: Array,
       default: null
+    },
+    videoLabels: {
+      type: Array,
+      default: null
+    },
+    videoLabelId: {
+      type: String,
+      default: ''
     }
   },
   emits: ['on-confirm', 'cancel'],
@@ -176,7 +191,7 @@ export default {
     formatFiles(files) {
       files.forEach(file => {
         file.label = file.name
-        file.parents = this.$refs.tagsRef.tags
+        file.parents = [...this.$refs.tagsRef.tags, ...this.$refs.typesRef.tags]
         file.active = true
         file.notes = ''
       })

@@ -13,7 +13,7 @@ export default {
       extension: video.extension
     }
     const path = `/api/doodle/model_library/assets`
-    return client.ppost(path, [data])
+    return client.ppost(path, data)
   },
   newVideos(videos) {
     const data = []
@@ -51,7 +51,7 @@ export default {
       has_thumbnail: video.has_thumbnail
     }
     const path = `/api/doodle/model_library/assets/${video.id}`
-    return client.ppost(path, tempVideo)
+    return client.pput(path, tempVideo)
   },
   modifyVideoActive(video) {
     const tempVideo = {
@@ -63,7 +63,7 @@ export default {
       active: !video.active
     }
     const path = `/api/doodle/model_library/assets/${video.id}`
-    return client.ppost(path, tempVideo)
+    return client.pput(path, tempVideo)
   },
   modifyVideos(videos) {
     const tempVideos = []
