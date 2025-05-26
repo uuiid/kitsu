@@ -57,7 +57,6 @@
 
     <button
       class="button"
-      :title="$t('row_actions.delete')"
       data-test="button-delete-admin"
       tabindex="-1"
       @click="$emit('delete-clicked')"

@@ -4,7 +4,6 @@ import { onMounted, onUnmounted } from 'vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
 import { ElMessage } from 'element-plus'
-
 //const _this = getCurrentInstance().appContext.config.globalProperties
 const doodleWork = doodleWorkStore()
 const props = defineProps(['name', 'isDrop', 'isSetOutPath'])
