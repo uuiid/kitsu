@@ -629,19 +629,25 @@ const actions = {
 
   setAssetSearch({ commit, state, rootGetters }, assetSearch) {
     const taskStatusMap = rootGetters.taskStatusMap
-    console.log(assetSearch)
     const taskTypeMap = rootGetters.taskTypeMap
     const taskMap = rootGetters.taskMap
     const production = rootGetters.currentProduction
     const persons = rootGetters.people
-    commit(SET_ASSET_SEARCH, {
-      assetSearch,
-      taskMap,
-      taskStatusMap,
-      taskTypeMap,
-      persons,
-      production
-    })
+
+    if (assetSearch === '') {
+      commit(SET_ASSET_SEARCH, {
+        treeFilter: true
+      })
+    } else {
+      commit(SET_ASSET_SEARCH, {
+        assetSearch,
+        taskMap,
+        taskStatusMap,
+        taskTypeMap,
+        persons,
+        production
+      })
+    }
   },
   setAssetTreeFilter({ commit }) {
     commit(SET_ASSET_SEARCH, {
