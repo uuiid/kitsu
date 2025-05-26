@@ -46,7 +46,27 @@
         icon="trash"
         @click="$emit('delete-budget')"
       />
+      <button-simple
+        class="mr05"
+        :active="isShowingExpenses"
+        :is-loading="isLoadingExpenses"
+        :text="
+          isShowingExpenses
+            ? $t('budget.hide_expenses')
+            : $t('budget.show_expenses')
+        "
+        @click="$emit('toggle-expenses')"
+      />
+      <span class="error" v-if="isErrorExpenses">
+        {{ $t('budget.expenses_error') }}
+      </span>
       <div class="filler"></div>
+      <button-simple
+        class="flexrow-item"
+        icon="export"
+        :title="$t('main.csv.export_file')"
+        @click="$emit('export-budget')"
+      />
       <button-simple
         :text="$t('budget.new_version')"
         icon="plus"
@@ -80,10 +100,29 @@ defineProps({
   isError: {
     type: Boolean,
     default: false
+  },
+  isErrorExpenses: {
+    type: Boolean,
+    default: true
+  },
+  isLoadingExpenses: {
+    type: Boolean,
+    default: false
+  },
+  isShowingExpenses: {
+    type: Boolean,
+    default: false
   }
 })
 
-defineEmits(['change-budget', 'delete-budget', 'edit-budget', 'new-version'])
+defineEmits([
+  'change-budget',
+  'delete-budget',
+  'edit-budget',
+  'export-budget',
+  'toggle-expenses',
+  'new-version'
+])
 </script>
 
 <style lang="scss" scoped>

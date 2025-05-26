@@ -70,7 +70,8 @@ export default {
       seniority: budgetEntry.seniority,
       start_date: formatSimpleDate(budgetEntry.start_date),
       months_duration: budgetEntry.months_duration,
-      daily_salary: budgetEntry.daily_salary
+      daily_salary: budgetEntry.daily_salary,
+      exceptions: budgetEntry.exceptions
     }
     return client.pput(
       `/api/data/projects/${projectId}/budgets/${budgetId}/entries/${budgetEntryId}`,
@@ -82,5 +83,9 @@ export default {
     return client.pdel(
       `/api/data/projects/${projectId}/budgets/${budgetId}/entries/${budgetEntryId}`
     )
+  },
+
+  getExpenses(projectId) {
+    return client.pget(`/api/data/projects/${projectId}/budgets/time-spents`)
   }
 }

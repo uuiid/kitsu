@@ -42,10 +42,13 @@
         is-estimation-linked
         hide-man-days
         :multiline="isTVShow"
+        :reassignable="true"
         :subchildren="!isTVShow"
+        @item-assign="onScheduleItemAssigned"
         @item-changed="onScheduleItemChanged"
         @item-drop="onScheduleItemDropped"
         @item-selected="selectTaskTypeElement"
+        @item-unassign="onScheduleItemUnassigned"
         @root-element-expanded="expandTaskTypeElement"
         @root-element-selected="selectParentElement"
       />
@@ -476,6 +479,7 @@ export default {
       'loadShots',
       'loadTasks',
       'saveScheduleItem',
+      'unassignPersonFromTask',
       'unassignSelectedTasks',
       'updateTask'
     ]),
@@ -623,7 +627,7 @@ export default {
         try {
           taskTypeElement.loading = true
 
-          this.selectedTaskType = taskTypeElement
+          this.selectedTaskType = !this.isTVShow ? taskTypeElement : null
           this.assignments.loading = resetAssignments
 
           taskTypeElement.children = []
@@ -1017,6 +1021,10 @@ export default {
       selectedEntityType = undefined,
       resetAssignments = true
     ) {
+      if (this.isTVShow) {
+        return
+      }
+
       this.selectedTaskType = taskType
 
       if (resetAssignments) {
@@ -1100,7 +1108,7 @@ export default {
     },
 
     closeSidePanel() {
-      this.selectedTaskType = undefined
+      this.selectedTaskType = null
       this.resetSidePanel()
     },
 
@@ -1236,6 +1244,31 @@ export default {
       }
 
       this.assignments.saving = false
+    },
+
+    async onScheduleItemAssigned(task, personId) {
+      // update task to refresh the schedule
+      task.assignees.push(personId)
+      task.parentElement.children.get(personId).push(task)
+
+      // save change
+      await this.assignSelectedTasks({
+        personId,
+        taskIds: [task.id]
+      })
+    },
+
+    async onScheduleItemUnassigned(task, personId) {
+      // update task to refresh the schedule
+      task.assignees = task.assignees.filter(id => id !== personId)
+      const tasks = task.parentElement.children.get(personId)
+      tasks.splice(tasks.indexOf(task), 1)
+
+      // save change
+      await this.unassignPersonFromTask({
+        person: { id: personId },
+        task
+      })
     }
   },
 
