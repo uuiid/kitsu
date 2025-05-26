@@ -97,14 +97,17 @@
             v-if="assetSorting?.length"
           />
           <div class="assets-row datatable-wrapper">
-            <tree-filter-view class="asset-list" />
+            <tree-filter-view
+              class="asset-list"
+              @tree-selection-changed="onTreeSelectionChanged"
+            />
             <asset-list
               class="asset-list"
               ref="asset-list"
               :contact-sheet-mode="contactSheetMode"
               :displayed-assets="
                 showSharedAssets
-                  ? groupEntitiesByParents(displayedAssets, 'asset_type_name')
+                  ? displayedAssetsByType
                   : displayedAssetsByTypeWithoutShared
               "
               :is-loading="isAssetsLoading || initialLoading"
@@ -321,8 +324,7 @@ import TaskUpdate from '@/components/bottoms/TaskUpdate.vue'
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 import TaskUpdateFilesModal from '@/components/modals/TaskUpdateFilesModal.vue'
 import TreeFilterView from '@/components/widgets/TreeFilterView.vue'
-//import { assetFilterStore } from '@/store/modules/assetfilter.js'
-import { groupEntitiesByParents } from '@/lib/models.js'
+import { assetFilterStore } from '@/store/modules/assetfilter.js'
 
 export default {
   name: 'assets',
@@ -449,6 +451,7 @@ export default {
         this.$refs['asset-list'].setScrollPosition(this.assetListScrollPosition)
         this.$nextTick(() => {
           this.$refs['asset-list']?.selectTaskFromQuery()
+          this.setAssetTreeFilter()
         })
       }
     }
@@ -594,7 +597,6 @@ export default {
   },
 
   methods: {
-    groupEntitiesByParents,
     updateTaskFilesStore,
     ...mapActions([
       'addMetadataDescriptor',
@@ -659,7 +661,9 @@ export default {
           this.errors.edit = true
         })
     },
-
+    onTreeSelectionChanged() {
+      this.setAssetTreeFilter()
+    },
     confirmEditAsset(form) {
       let action = 'newAsset'
       this.loading.edit = true
@@ -1041,6 +1045,7 @@ export default {
       this.loadAssets().then(() => {
         this.initialLoading = false
         this.applySearchFromUrl()
+        this.setAssetTreeFilter()
       })
     }
   },
@@ -1052,8 +1057,10 @@ export default {
       this.initialLoading = true
       if (!this.isTVShow) this.reset()
     },
-    displayedAssets() {
-      console.log(this.displayedAssets)
+    displayedAssetsByTypeWithoutShared() {
+      assetFilterStore().state.oldDisplayedAssetsByType = this.showSharedAssets
+        ? this.displayedAssetsByType
+        : this.displayedAssetsByTypeWithoutShared
     },
     currentEpisode() {
       this.$refs['asset-search-field']?.setValue('')

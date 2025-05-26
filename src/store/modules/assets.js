@@ -996,10 +996,8 @@ const mutations = {
 
     const assetTypes = Array.from(assetTypeMap.values())
     cache.assetTypeIndex = buildNameIndex(assetTypes)
-    const filteredAssets = assetFilterStore().actions.filteringAssets(
-      cache.result
-    )
-    const displayedAssets = filteredAssets.slice(0, PAGE_SIZE)
+
+    const displayedAssets = cache.result.slice(0, PAGE_SIZE)
     const filledColumns = getFilledColumns(displayedAssets)
 
     state.assetValidationColumns = helpers.sortValidationColumns(

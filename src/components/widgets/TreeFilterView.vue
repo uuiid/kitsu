@@ -1,25 +1,14 @@
 <script setup>
 import { ref, watchEffect, onMounted, nextTick, watch } from 'vue'
-import assets from '@/store/modules/assets.js'
 import { assetFilterStore } from '@/store/modules/assetfilter.js'
 
 const treeRef = ref()
-// const filter = ref(['ji_shu:22'])
-// const initialLoading = ref()
 const defaultProps = {
   children: 'children',
   label: 'label'
 }
 const assetFilter = assetFilterStore()
-
-// const intervalId = setInterval(() => {
-//   if (assets.cache.assets.length > 0) {
-//     initialLoading.value = assets.cache.assets.length
-//     //treeRef.value.setCheckedKeys(['ji_shu'], false)
-//   }
-// }, 1000)
-//
-// const initAssets = () => {}
+const emit = defineEmits(['tree-selection-changed'])
 const myElement = ref(null)
 const extendWidth = ref({
   maxWidth: 340,
@@ -27,77 +16,7 @@ const extendWidth = ref({
   startWidth: 0,
   isStartHandle: false
 })
-//
-// const filterAsset = () => {
-//   const temp = new Map()
-//   const keys = [...assetFilter.state.assetFilters.keys()]
-//   const filteredAsset = assetFilter.state.oldDisplayedAssetsByType.filter(
-//     asset => {
-//       if (asset !== {}) {
-//         let value = false
-//         for (let i = 0; i < assetFilter.state.assetFilters.size; i++) {
-//           const item = assetFilter.state.assetFilters.get(keys[i])
-//           const key = keys[i]
-//           let filter_value = false
-//           if (i === 0) {
-//             filter_value = true
-//           } else {
-//             const last_item = assetFilter.state.assetFilters.get(keys[i - 1])
-//             const last_key = keys[i - 1]
-//             if (last_item.values.includes(asset[last_item.parent][last_key])) {
-//               filter_value = true
-//             }
-//           }
-//           if (item.values.includes(asset[item.parent][key])) {
-//             value = true
-//           }
-//           if (filter_value) {
-//             const ch = {
-//               id: '',
-//               label: '',
-//               num: 1,
-//               parent: key
-//             }
-//             if (item.parent === 'data') {
-//               ch.id = `${key}:${asset.data[key]}`
-//               ch.label = asset.data[key]
-//             } else {
-//               ch.id = `${key}:${asset[key]}`
-//               ch.label = asset[key]
-//             }
-//             if (temp.has(item.id)) {
-//               temp.get(item.id).num += 1
-//               console.log(ch.id)
-//               if (ch.id === `${key}:undefined` || ch.id === '${key}:') {
-//                 ch.id = `${key}:undefined`
-//                 ch.label = '其他'
-//               }
-//               const children = temp
-//                 .get(item.id)
-//                 .children.filter(i => i.id === ch.id)
-//               if (children.length === 0) {
-//                 temp.get(item.id).children.push(ch)
-//                 temp.get(item.id).children.sort((a, b) => {
-//                   return String(a.label).localeCompare(String(b.label))
-//                 })
-//               } else {
-//                 children[0].num += 1
-//               }
-//             } else {
-//               temp.set(item.id, {
-//                 id: item.id,
-//                 label: item.id,
-//                 num: 1,
-//                 children: [ch]
-//               })
-//             }
-//           }
-//         }
-//         return value
-//       }
-//     }
-//   )
-// }
+
 const selfPosition = ref(0)
 const onExtendDown = event => {
   extendWidth.value.isStartHandle = true
@@ -123,16 +42,26 @@ onMounted(() => {
   })
 })
 
-const onCheckChange = (o, n, s) => {
-  //console.log(o, n, s)
-  // const id_split = o.id.split(':')
-  // if (s) {
-  //
-  //   assetFilter.state.assetFilter.get(id_split[0]).values.push(id_split[0][1])
-  // } else {
-  //
-  //   assetFilter.state.assetFilter.get(id_split[0]).values.pop(id_split[0][1])
-  // }
+const onCheckChange = event => {
+  //console.log('onCheckChange', event)
+}
+const onCheck = (o, n) => {
+  let id = ''
+  if (o.parent) {
+    if (assetFilter.state.assetFilters.has(o.parent)) {
+      id = o.parent
+    }
+  } else id = o.id
+  const assetFilterItem = assetFilter.state.assetFilters.get(id)
+  assetFilterItem.isChecked =
+    n.checkedNodes.filter(node => node.id === id).length > 0
+  assetFilterItem.values = []
+  n.checkedNodes.forEach(node => {
+    if (node.parent === id) {
+      assetFilterItem.values.push(node.value)
+    }
+  })
+  emit('tree-selection-changed')
 }
 const addEvents = () => {
   document.addEventListener('mousemove', onExtendMove)
@@ -151,14 +80,10 @@ watchEffect(() => {
   }
 })
 
-watch(assets.state.displayedAssets, () => {
-  console.log(assets.state.displayedAssets)
-})
 watch(
-  () => assetFilter.state.oldDisplayedAssetsByType,
+  () => assetFilter.state.filters,
   () => {
-    //filterAsset()
-    console.log(assetFilter.state.oldDisplayedAssetsByType)
+    treeRef.value.setCheckedKeys(assetFilter.state.filters, false)
   },
   { deep: true }
 )
@@ -180,10 +105,17 @@ watch(
         :show-checkbox="true"
         :check-on-click-node="true"
         :expand-on-click-node="false"
-        :default-checked-keys="['ji_shu:0', 'ji_shu:22']"
+        @check="onCheck"
         @check-change="onCheckChange"
         node-key="id"
-        default-expand-all
+        :default-expanded-keys="[...assetFilter.state.expanded_keys.values()]"
+        @node-expand="data => assetFilter.state.expanded_keys.add(data.id)"
+        @node-collapse="
+          data => {
+            if (assetFilter.state.expanded_keys.has(data.id))
+              assetFilter.state.expanded_keys.delete(data.id)
+          }
+        "
       >
         <template #default="{ node }">
           <span class="custom-tree-node">
