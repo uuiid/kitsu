@@ -124,43 +124,47 @@ const removeBeforeColonContent = text => {
 }
 
 const cutContent = text => {
-  const regex = /([^\u4e00-\u9fa5()（）：:a-zA-Z0-9_])/gm
-  const regex1 = /\s+$/gm
-  const texts = []
-  let start = 0
-  for (let i = 1; i <= text.length + 1; i++) {
-    const temp_text = text.slice(start, i)
-    if (regex.test(temp_text) || regex1.test(text.slice(i - 1, i))) {
-      start = i
-      texts.push(temp_text)
-    }
-    if (i === text.length + 1) {
-      texts.push(temp_text)
-    }
-  }
-  if (texts.length === 0) {
-    texts.push(text)
-  }
-  const temp = []
-  const step = doodleWork.currentDoodleWorkState.task_data_filed.get(5)?.number
-  for (const text of texts) {
-    if (
-      doodleWork.currentDoodleWorkState.task_data_filed.get(4)?.checked &&
-      doodleWork.currentDoodleWorkState.task_data_filed.get(5)?.number <
-        text.length
-    ) {
-      removeLastBlankSpace(text)
-      let i = 0
-      while (i <= text.length) {
-        const text_length = Math.min(step, text.length - i)
-        temp.push(removeLastBlankSpace(text.slice(i, i + text_length)))
-        i += step
+  if (doodleWork.currentDoodleWorkState.task_data_filed.get(4)?.checked) {
+    const regex = /([^\u4e00-\u9fa5()（）：:a-zA-Z0-9_])/gm
+    const regex1 = /\s+$/gm
+    const texts = []
+    let start = 0
+    for (let i = 1; i <= text.length + 1; i++) {
+      const temp_text = text.slice(start, i)
+      if (regex.test(temp_text) || regex1.test(text.slice(i - 1, i))) {
+        start = i
+        texts.push(temp_text)
       }
-    } else {
-      temp.push(text)
+      if (i === text.length + 1) {
+        texts.push(temp_text)
+      }
     }
+    if (texts.length === 0) {
+      texts.push(text)
+    }
+    const temp = []
+    const step =
+      doodleWork.currentDoodleWorkState.task_data_filed.get(5)?.number
+    for (const text of texts) {
+      if (
+        doodleWork.currentDoodleWorkState.task_data_filed.get(4)?.checked &&
+        doodleWork.currentDoodleWorkState.task_data_filed.get(5)?.number <
+          text.length
+      ) {
+        removeLastBlankSpace(text)
+        let i = 0
+        while (i <= text.length) {
+          const text_length = Math.min(step, text.length - i)
+          temp.push(removeLastBlankSpace(text.slice(i, i + text_length)))
+          i += step
+        }
+      } else {
+        temp.push(text)
+      }
+    }
+    return temp
   }
-  return temp
+  return [text]
 }
 
 function parseTimeString(timeStr) {
