@@ -6,7 +6,7 @@ import { computed, onMounted, onUnmounted, ref, watchEffect, watch } from 'vue'
 import AddDoodleWork from '@/components/modals/AddDoodleWork.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
-import { useHead } from 'unhead'
+import { useHead } from '@unhead/vue'
 import { Settings } from 'lucide-vue-next'
 import i18n from '@/lib/i18n.js'
 import DoodleWorkSettingModal from '@/components/modals/DoodleWorkSettingModal.vue'
@@ -28,6 +28,10 @@ onMounted(() => {
   //document.addEventListener('keydown', onKeyupEvent)
   doodleWork.actions.getVisitorContext()
 })
+
+// createHead(() => ({
+//   title: i18n.global.t('doodle_work.doodle_work')
+// }))
 
 // 监听连接错误事件
 doodleWork.actions.checkIsVisitor()
