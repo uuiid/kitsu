@@ -1807,7 +1807,7 @@
     "doodle_asset_tree": {
       "fields": {
         "asset_type_name": "资产类型名称",
-        "ji_shu": "季数",
+        "ji_du": "季度",
         "ji_shu_lie": "集数",
         "name": "名称",
         "description": "描述",

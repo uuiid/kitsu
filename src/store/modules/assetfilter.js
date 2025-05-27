@@ -22,8 +22,8 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
     values: [],
     isChecked: true
   })
-  state.value.assetFilters.set('ji_shu', {
-    id: 'ji_shu',
+  state.value.assetFilters.set('ji_du', {
+    id: 'ji_du',
     values: [],
     parent: 'data',
     isChecked: true
@@ -44,7 +44,8 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
   const actions = {
     filteringAsset: (asset, temp, keys) => {
       let value = false
-      if (asset !== {}) {
+      console.log(asset)
+      if (asset !== {} && asset.canceled === false) {
         for (let i = 0; i < state.value.assetFilters.size; i++) {
           const item = state.value.assetFilters.get(keys[i])
           const key = keys[i]
