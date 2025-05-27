@@ -1,12 +1,14 @@
 <script setup>
 import { ref, watchEffect, onMounted, nextTick, watch } from 'vue'
 import { assetFilterStore } from '@/store/modules/assetfilter.js'
+import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 
 const treeRef = ref()
 const defaultProps = {
   children: 'children',
   label: 'label'
 }
+const isOpen = ref(true)
 const assetFilter = assetFilterStore()
 const emit = defineEmits(['tree-selection-changed'])
 const myElement = ref(null)
@@ -90,55 +92,79 @@ watch(
 </script>
 
 <template>
-  <div
-    class="bottom-wrapper"
-    ref="myElement"
-    :style="`min-width: ${extendWidth.width}px;max-width: ${extendWidth.width}px`"
-  >
-    <div class="update-file-boxes">
-      <el-tree
-        ref="treeRef"
-        style="max-width: 600px"
-        class="filter-tree"
-        :data="assetFilter.state.treeFilterData"
-        :props="defaultProps"
-        :show-checkbox="true"
-        :check-on-click-node="true"
-        :expand-on-click-node="false"
-        @check="onCheck"
-        @check-change="onCheckChange"
-        node-key="id"
-        :default-expanded-keys="[...assetFilter.state.expanded_keys.values()]"
-        @node-expand="data => assetFilter.state.expanded_keys.add(data.id)"
-        @node-collapse="
-          data => {
-            if (assetFilter.state.expanded_keys.has(data.id))
-              assetFilter.state.expanded_keys.delete(data.id)
-          }
-        "
-      >
-        <template #default="{ node }">
-          <span class="custom-tree-node">
-            <span>{{ node.label }}</span>
-            <span>{{ node.data.num }}</span>
-          </span>
-        </template>
-      </el-tree>
-    </div>
+  <div class="bottom-wrapper-main">
     <div
-      class="extend-bar"
-      @mousedown.prevent="onExtendDown"
-      @touchstart.prevent="onExtendDown"
-    ></div>
+      class="bottom-wrapper"
+      ref="myElement"
+      :style="`min-width: ${isOpen ? extendWidth.width : 0}px;max-width: ${isOpen ? extendWidth.width : 0}px`"
+    >
+      <div class="update-file-boxes">
+        <el-tree
+          ref="treeRef"
+          style="max-width: 600px; height: 100%"
+          class="filter-tree"
+          :data="assetFilter.state.treeFilterData"
+          :props="defaultProps"
+          :show-checkbox="true"
+          :check-on-click-node="true"
+          :expand-on-click-node="false"
+          @check="onCheck"
+          @check-change="onCheckChange"
+          node-key="id"
+          :default-expanded-keys="[...assetFilter.state.expanded_keys.values()]"
+          @node-expand="data => assetFilter.state.expanded_keys.add(data.id)"
+          @node-collapse="
+            data => {
+              if (assetFilter.state.expanded_keys.has(data.id))
+                assetFilter.state.expanded_keys.delete(data.id)
+            }
+          "
+        >
+          <template #default="{ node }">
+            <span class="custom-tree-node">
+              <span>{{ node.label }}</span>
+              <span>{{ node.data.num }}</span>
+            </span>
+          </template>
+        </el-tree>
+      </div>
+      <div
+        class="extend-bar"
+        @mousedown.prevent="onExtendDown"
+        @touchstart.prevent="onExtendDown"
+      ></div>
+    </div>
+    <div class="extend-button">
+      <chevron-right
+        class="lucide-icon"
+        v-if="!isOpen"
+        @click="isOpen = !isOpen"
+      />
+      <chevron-left
+        class="lucide-icon"
+        v-if="isOpen"
+        @click="isOpen = !isOpen"
+      />
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
+.bottom-wrapper-main {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  align-items: center;
+  position: relative;
+  padding-right: 14px;
+}
+
 .bottom-wrapper {
   display: flex;
   flex-direction: row;
   height: 100%;
-  margin-right: 10px;
+  align-items: center;
+  position: relative;
   //border: 1px solid red;
 }
 
@@ -164,7 +190,8 @@ watch(
   gap: 1em;
   padding: 10px;
   width: 100%;
-  overflow: auto;
+  height: 100%;
+  overflow-y: auto;
 }
 
 .custom-tree-node {
@@ -174,5 +201,18 @@ watch(
   justify-content: space-between;
   font-size: 14px;
   padding-right: 8px;
+}
+
+.extend-button {
+  position: absolute;
+  right: -5px;
+}
+
+.lucide-icon {
+  cursor: pointer;
+
+  &:hover {
+    color: $green;
+  }
 }
 </style>

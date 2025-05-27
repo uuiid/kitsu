@@ -98,7 +98,7 @@
           />
           <div class="assets-row datatable-wrapper">
             <tree-filter-view
-              class="asset-list"
+              class="asset-list-tree"
               @tree-selection-changed="onTreeSelectionChanged"
               v-if="!isAssetsLoading || !initialLoading"
             />
