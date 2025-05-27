@@ -100,6 +100,7 @@
             <tree-filter-view
               class="asset-list"
               @tree-selection-changed="onTreeSelectionChanged"
+              v-if="!isAssetsLoading || !initialLoading"
             />
             <asset-list
               class="asset-list"
