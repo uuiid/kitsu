@@ -84,6 +84,7 @@ import {
   LOAD_UNSHARED_ASSETS_END
 } from '@/store/mutation-types'
 import async from 'async'
+import { assetFilterStore } from '@/store/modules/assetfilter.js'
 
 const helpers = {
   getCurrentProduction() {
@@ -222,7 +223,22 @@ const helpers = {
       helpers.getCurrentProduction()
     )
   },
+  buildTreeFilterResult(state) {
+    cache.result = assetFilterStore().actions.filteringAssets(cache.assets)
 
+    const limit =
+      state.displayedAssets.length > PAGE_SIZE
+        ? state.displayedAssets.length
+        : PAGE_SIZE
+    const displayedAssets = cache.result.slice(0, limit)
+    const maxX = displayedAssets.length
+    const maxY = state.nbValidationColumns
+
+    state.displayedAssets = displayedAssets
+    state.assetFilledColumns = getFilledColumns(displayedAssets)
+    helpers.setListStats(state, cache.result)
+    state.assetSelectionGrid = buildSelectionGrid(maxX, maxY)
+  },
   buildResult(
     state,
     { assetSearch, production, sorting, taskStatusMap, taskTypeMap, persons }
@@ -613,21 +629,31 @@ const actions = {
 
   setAssetSearch({ commit, state, rootGetters }, assetSearch) {
     const taskStatusMap = rootGetters.taskStatusMap
-    console.log(assetSearch)
     const taskTypeMap = rootGetters.taskTypeMap
     const taskMap = rootGetters.taskMap
     const production = rootGetters.currentProduction
     const persons = rootGetters.people
+
+    if (assetSearch === '') {
+      commit(SET_ASSET_SEARCH, {
+        treeFilter: true
+      })
+    } else {
+      commit(SET_ASSET_SEARCH, {
+        assetSearch,
+        taskMap,
+        taskStatusMap,
+        taskTypeMap,
+        persons,
+        production
+      })
+    }
+  },
+  setAssetTreeFilter({ commit }) {
     commit(SET_ASSET_SEARCH, {
-      assetSearch,
-      taskMap,
-      taskStatusMap,
-      taskTypeMap,
-      persons,
-      production
+      treeFilter: true
     })
   },
-
   setSharedAssetSearch({ commit }, assetSearch) {
     commit(SET_SHARED_ASSET_SEARCH, { assetSearch })
   },
@@ -948,7 +974,7 @@ const mutations = {
     assets = sortAssets(assets)
     cache.assets = assets
     cache.result = assets
-    cache.assetIndex = buildAssetIndex(assets)
+    cache.assetIndex = buildAssetIndex(cache.result)
     cache.assetMap = new Map()
 
     assets.forEach(asset => {
@@ -970,7 +996,8 @@ const mutations = {
 
     const assetTypes = Array.from(assetTypeMap.values())
     cache.assetTypeIndex = buildNameIndex(assetTypes)
-    const displayedAssets = cache.assets.slice(0, PAGE_SIZE)
+
+    const displayedAssets = cache.result.slice(0, PAGE_SIZE)
     const filledColumns = getFilledColumns(displayedAssets)
 
     state.assetValidationColumns = helpers.sortValidationColumns(
@@ -988,7 +1015,7 @@ const mutations = {
     state.nbValidationColumns = state.assetValidationColumns.length
 
     state.displayedAssets = displayedAssets
-    helpers.setListStats(state, cache.assets)
+    helpers.setListStats(state, cache.result)
 
     state.assetFilledColumns = filledColumns
 
@@ -1171,8 +1198,12 @@ const mutations = {
   [NEW_TASK_COMMENT_END](state, { comment, taskId }) {},
 
   [SET_ASSET_SEARCH](state, payload) {
-    payload.sorting = state.assetSorting
-    helpers.buildResult(state, payload)
+    if (payload.treeFilter) {
+      helpers.buildTreeFilterResult(state)
+    } else {
+      payload.sorting = state.assetSorting
+      helpers.buildResult(state, payload)
+    }
   },
 
   [SET_SHARED_ASSET_SEARCH](state, { assetSearch }) {
