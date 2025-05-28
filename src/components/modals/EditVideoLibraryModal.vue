@@ -37,12 +37,14 @@
           :input-options="videoTypes"
           :input-tags="videoTypeId === 'all' ? [] : [videoTypeId]"
           :name="$t('doodle.type')"
+          v-if="active"
         />
         <tag-select-cell
           ref="tagsRef"
           :input-options="videoLabels"
           :input-tags="videoLabelId === '' ? [] : [videoLabelId]"
           :name="$t('doodle.label')"
+          v-if="active"
         />
         <form @submit.prevent>
           <text-field

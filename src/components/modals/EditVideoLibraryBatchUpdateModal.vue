@@ -27,12 +27,14 @@
           ref="typesRef"
           :input-tags="videoTypeId === 'all' ? [] : [videoTypeId]"
           :name="$t('doodle.type')"
+          v-if="active"
         />
         <tag-select-cell
           ref="tagsRef"
           :input-tags="[videoLabelId]"
           :input-options="videoLabels"
           :name="$t('doodle.label')"
+          v-if="active"
         />
         <label class="label">{{ $t('video_library.video_source_file') }}</label>
         <list-view

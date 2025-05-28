@@ -221,6 +221,8 @@
         ref="edit_video_library_add_type_modal"
         :active="modals.isNewTypeDisplayed"
         :parent-video-type="isAddLabel ? currentVideoLabel : currentVideoType"
+        :video-types="isAddLabel ? labelTreeData : typeTreeData"
+        :video-type-id="isAddLabel ? currentVideoLabel.id : currentVideoType.id"
         @cancel="modals.isNewTypeDisplayed = false"
         @on-confirm="confirmNewVideoType"
       />
@@ -1022,7 +1024,7 @@ export default {
 .main-content-separator {
   width: 2px;
   cursor: ew-resize;
-  background-color: #ccc;
+  background-color: rgba(255, 255, 255, 0.2);
   position: relative;
   z-index: 10;
 }
@@ -1179,7 +1181,7 @@ export default {
   height: 2px;
   margin: 2px;
   cursor: ew-resize;
-  background-color: #ccc;
+  background-color: rgba(255, 255, 255, 0.2);
   position: relative;
   z-index: 10;
 }

@@ -26,12 +26,14 @@
           :input-tags="currentType"
           :input-options="videoTypes"
           :name="$t('doodle.type')"
+          v-if="active"
         />
         <tag-select-cell
           ref="tagsRef"
           :input-tags="currentLabel"
           :input-options="videoLabels"
           :name="$t('doodle.label')"
+          v-if="active"
         />
         <label class="label">{{ $t('video_library.thumbnail') }}</label>
         <list-view

@@ -1,5 +1,5 @@
 <script setup>
-import { ref, watch, onMounted } from 'vue'
+import { ref, onMounted } from 'vue'
 // import { ModelLibraryStore } from '@/store/modules/modellibrary.js'
 
 const props = defineProps({
@@ -18,9 +18,13 @@ const props = defineProps({
   placeholder: {
     type: String,
     default: ''
+  },
+  multiple: {
+    type: Boolean,
+    default: true
   }
 })
-const tags = ref([])
+const tags = ref()
 //const options = ref([])
 //let isInitial = false
 // const modelLibrary = ModelLibraryStore()
@@ -37,7 +41,10 @@ defineExpose({
 })
 onMounted(() => {
   //handleOptions()
-  tags.value.push([...props.inputTags])
+  if (props.multiple) {
+    tags.value = [...props.inputTags]
+  } else tags.value = props.inputTags[0]
+  console.log(tags.value)
 })
 
 // function handleInputConfirmCallback(tag) {
@@ -64,13 +71,15 @@ onMounted(() => {
 //   }
 //   isInitial = true
 // })
-watch(
-  () => props.inputTags,
-  () => {
-    //isInitial = false
-    tags.value = props.inputTags
-  }
-)
+// watch(
+//   () => props.inputTags,
+//   () => {
+//     //isInitial = false
+//     if (props.multiple) {
+//       tags.value = [...props.inputTags]
+//     } else tags.value = props.inputTags[0]
+//   }
+// )
 </script>
 
 <template>
@@ -96,7 +105,7 @@ watch(
     </el-select-->
     <el-tree-select
       v-model="tags"
-      multiple
+      :multiple="multiple"
       :data="inputOptions"
       :render-after-expand="false"
       show-checkbox
