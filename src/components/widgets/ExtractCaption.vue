@@ -225,6 +225,7 @@ const onSubmit = () => {
           const step = (endTime - startTime) / sub_extract_captions.length
           let startTimeStep = startTime
           for (const sub_extract_caption of sub_extract_captions) {
+            removeLastBlankSpace(sub_extract_caption)
             final_extract_captions.push({
               startTime: startTimeStep,
               endTime: startTimeStep + step,
@@ -233,6 +234,7 @@ const onSubmit = () => {
             startTimeStep += step
           }
         } else {
+          removeLastBlankSpace(extract_caption_str)
           final_extract_captions.push({
             startTime: startTime,
             endTime: endTime,
@@ -248,6 +250,7 @@ const onSubmit = () => {
         extract_caption = removeBeforeColonContent(extract_caption)
         const sub_extract_captions = cutContent(extract_caption)
         for (const sub_extract_caption of sub_extract_captions) {
+          removeLastBlankSpace(sub_extract_caption)
           final_extract_captions.push({
             startTime: seconds,
             endTime: seconds + 3000,
