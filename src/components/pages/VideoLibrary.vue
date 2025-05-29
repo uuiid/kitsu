@@ -638,8 +638,7 @@ export default {
         )
     },
     async confirmNewVideo(video) {
-      const res = await this.newVideo(video)
-      res.parents = video.parents
+      await this.newVideo(video)
     },
     async confirmBatchNewVideo(videos) {
       const res = await this.newVideos(videos)
@@ -1024,7 +1023,7 @@ export default {
 .main-content-separator {
   width: 2px;
   cursor: ew-resize;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(100, 100, 100, 0.5);
   position: relative;
   z-index: 10;
 }
@@ -1033,7 +1032,7 @@ export default {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  border-bottom: 2px solid #dadada;
+  border-bottom: 2px solid rgba(100, 100, 100, 0.5);
   margin-bottom: 0.2cm;
   margin-left: 0.1cm;
 }
@@ -1181,7 +1180,7 @@ export default {
   height: 2px;
   margin: 2px;
   cursor: ew-resize;
-  background-color: rgba(255, 255, 255, 0.2);
+  background-color: rgba(100, 100, 100, 0.5);
   position: relative;
   z-index: 10;
 }

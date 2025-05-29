@@ -23,7 +23,14 @@
           @on-add-files="onAddFiles"
         >
         </list-view>
-        <label class="label">{{ $t('video_library.thumbnail') }}</label>
+        <div class="thumbnail-field">
+          <label class="label">{{ $t('video_library.thumbnail') }}</label>
+          <refresh-cw
+            class="refresh-thumbnail"
+            size="15"
+            @click="getVideoThumbnail"
+          />
+        </div>
         <list-view
           ref="image"
           :is-active-text="true"
@@ -53,6 +60,7 @@
             :errored="form.name_errored"
             :error-text="form.name_error_text"
             @input="form.name_errored = false"
+            v-model="videoToCreat.label"
             v-focus
           />
           <!--text-field
@@ -64,6 +72,7 @@
           <textarea-field
             ref="descriptionField"
             :label="$t('assets.fields.description')"
+            v-model="videoToCreat.notes"
           />
         </form>
         <div class="has-text-right">
@@ -94,11 +103,13 @@
 
 <script>
 import { mapGetters, mapActions } from 'vuex'
+import { RefreshCw } from 'lucide-vue-next'
 import { modalMixin } from '@/components/modals/base_modal'
 import TextField from '@/components/widgets/TextField.vue'
 import TextareaField from '@/components/widgets/TextareaField.vue'
 import ListView from '@/components/widgets/ListView.vue'
 import TagSelectCell from '@/components/cells/TagSelectCell.vue'
+import { doodleWorkStore } from '@/store/modules/doodlework.js'
 
 export default {
   name: 'edit-video-library-modal',
@@ -109,7 +120,8 @@ export default {
     TagSelectCell,
     TextField,
     ListView,
-    TextareaField
+    TextareaField,
+    RefreshCw
   },
 
   props: {
@@ -194,7 +206,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['editVideo', 'imageExtensions'])
+    ...mapGetters(['editVideo', 'imageExtensions', 'videoExtensions'])
   },
 
   methods: {
@@ -204,7 +216,7 @@ export default {
     onCancel() {
       this.$emit('cancel')
     },
-    onAddFiles(files) {
+    async onAddFiles(files) {
       const path = require('path')
       console.log(this.$refs.nameField)
       this.$refs.nameField.$refs.input.value = files[0].name.split('.')[0]
@@ -215,6 +227,28 @@ export default {
       ) {
         this.$refs.image.images = []
         this.$refs.image.images.push(files[0])
+      } else if (
+        this.videoExtensions.includes(
+          path.extname(files[0].path).slice(1).toLowerCase()
+        )
+      ) {
+        await this.getVideoThumbnail()
+      }
+    },
+    async getVideoThumbnail() {
+      if (this.$refs.video.videos.length === 0) return
+      const task = {
+        video_path: this.$refs.video.videos[0].path,
+        time: Math.random()
+      }
+      const data = await doodleWorkStore().actions.getVideoThumbnail(task)
+      if (data.type === 'image/png') {
+        const file = new File([data], '', {
+          type: data.type,
+          lastModified: Date.now()
+        })
+        this.$refs.image.images = []
+        this.$refs.image.images.push(file)
       }
     },
     checkData() {
@@ -277,6 +311,10 @@ export default {
   margin-bottom: 1em;
 }
 
+.label {
+  margin-bottom: 0;
+}
+
 .is-danger {
   color: #ff3860;
   font-style: italic;
@@ -288,5 +326,21 @@ export default {
 
 :deep(.el-select__wrapper) {
   min-height: 45px;
+}
+
+.thumbnail-field {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  margin-bottom: 5px;
+  gap: 5px;
+}
+
+.refresh-thumbnail {
+  cursor: pointer;
+
+  &:hover {
+    color: $green;
+  }
 }
 </style>

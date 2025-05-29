@@ -44,7 +44,6 @@ onMounted(() => {
   if (props.multiple) {
     tags.value = [...props.inputTags]
   } else tags.value = props.inputTags[0]
-  console.log(tags.value)
 })
 
 // function handleInputConfirmCallback(tag) {

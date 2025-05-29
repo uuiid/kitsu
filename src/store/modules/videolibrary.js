@@ -344,30 +344,28 @@ const actions = {
     //   })
     // })
   },
-  newVideo({ commit }, video) {
-    return videolibraryApi
-      .newVideo(video)
-      .then(res => {
-        let data = null
-        const reader = new FileReader()
-        reader.onload = () => {
-          data = reader.result
-        }
-        reader.onloadend = () => {
-          const re = res[0]
-          re.data = data
-          re.filetype = video.upimage.type
-          videolibraryApi.addImage(re).then(() => {
-            commit('NEW_VIDEO', res[0])
-          })
-        }
-        reader.readAsArrayBuffer(video.upimage)
-        return res[0]
-      })
-      .catch(err => {
-        console.log(err)
-        return err
-      })
+  async newVideo({ commit }, video) {
+    try {
+      const res = await videolibraryApi.newVideo(video)
+      let data = null
+      const reader = new FileReader()
+      reader.onload = () => {
+        data = reader.result
+      }
+      reader.onloadend = () => {
+        const re = res
+        re.data = data
+        re.filetype = video.upimage.type
+        videolibraryApi.addImage(re).then(() => {
+          commit('NEW_VIDEO', res)
+        })
+      }
+      reader.readAsArrayBuffer(video.upimage)
+      return res
+    } catch (err) {
+      console.log(err)
+      return err
+    }
   },
   modifyVideo({ commit }, video) {
     commit('SET_IS_UPDATING_VIDEOS')
