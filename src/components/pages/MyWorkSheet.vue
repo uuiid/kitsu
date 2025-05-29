@@ -696,7 +696,12 @@ export default {
       }
       let project_name = t.computing_time.project_name
       if (project_name === undefined || project_name === '') {
-        project_name = this.productionMap.get(t.project_id).name
+        if (t.computing_time.project_id) {
+          project_name = this.productionMap.get(
+            t.computing_time.project_id
+          ).name
+        }
+        project_name = this.productionMap.get(t.project.id).name
       }
       if (episodes < 10) {
         episodes = `0${episodes}`
