@@ -169,6 +169,7 @@ const cutContent = text => {
 
 function parseTimeString(timeStr) {
   // 匹配格式: "h:mm:ss,SSS" 或 "hh:mm:ss,SSS"
+  timeStr = removeLastBlankSpace(timeStr)
   const match = timeStr.match(/^(\d{1,2}):(\d{2}):(\d{2})[,.](\d{3})$/)
 
   if (!match) throw new Error('Invalid time format')
