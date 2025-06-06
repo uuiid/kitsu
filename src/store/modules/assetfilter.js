@@ -44,7 +44,6 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
   const actions = {
     filteringAsset: (asset, temp, keys) => {
       let value = false
-      console.log(asset)
       if (asset !== {} && asset.canceled === false) {
         for (let i = 0; i < state.value.assetFilters.size; i++) {
           const item = state.value.assetFilters.get(keys[i])
@@ -116,37 +115,15 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
             for (const task_id of asset.tasks) {
               const task = tasks.state.taskMap.get(task_id)
               if (item.id === 'assignees') {
-                for (const assignee of task.assignees) {
+                if (task.assignees.length === 0) {
                   const ch = {
-                    id: '',
-                    label: '',
+                    id: `${key}:undefined`,
+                    label: '其他',
                     num: 1,
                     parent: key,
-                    value: ''
+                    value: undefined
                   }
-                  ch.id = `${key}:${assignee}`
-                  ch.label = people.getters.personMap().get(assignee).first_name
-                  ch.value = assignee
-                  ch.parent = key
-                  let filter_value = false
-                  for (let j = 0; j < i; j++) {
-                    const last_item = state.value.assetFilters.get(keys[j])
-                    const last_key = keys[j]
-                    let asset_value = asset[last_key]
-                    if (last_item.parent) {
-                      asset_value = asset[last_item.parent][last_key]
-                      if (asset[key] === '') asset_value = undefined
-                    }
-                    if (last_item.isChecked) filter_value = true
-                    else {
-                      if (last_item.values.includes(asset_value)) {
-                        filter_value = true
-                      } else {
-                        filter_value = false
-                        break
-                      }
-                    }
-                  }
+                  const filter_value = actions.filterTree(key, asset, i, keys)
                   if (filter_value) actions.addTreeFilterItem(temp, ch, item)
                   if (
                     i === state.value.assetFilters.size - 1 &&
@@ -155,6 +132,29 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
                   ) {
                     if (item.isChecked) has = true
                     else if (item.values.includes(ch.value)) has = true
+                  }
+                } else {
+                  for (const assignee of task.assignees) {
+                    const ch = {
+                      id: `${key}:${assignee}`,
+                      label: '',
+                      num: 1,
+                      parent: key,
+                      value: assignee
+                    }
+                    ch.label = people.getters
+                      .personMap()
+                      .get(assignee).first_name
+                    const filter_value = actions.filterTree(key, asset, i, keys)
+                    if (filter_value) actions.addTreeFilterItem(temp, ch, item)
+                    if (
+                      i === state.value.assetFilters.size - 1 &&
+                      filter_value &&
+                      !has
+                    ) {
+                      if (item.isChecked) has = true
+                      else if (item.values.includes(ch.value)) has = true
+                    }
                   }
                 }
               }
@@ -165,6 +165,29 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       }
       return value
     },
+    filterTree: (key, asset, i, keys) => {
+      let filter_value = false
+      for (let j = 0; j < i; j++) {
+        const last_item = state.value.assetFilters.get(keys[j])
+        const last_key = keys[j]
+        let asset_value = asset[last_key]
+        if (last_item.parent) {
+          asset_value = asset[last_item.parent][last_key]
+          if (asset[key] === '') asset_value = undefined
+        }
+        if (last_item.isChecked) filter_value = true
+        else {
+          if (last_item.values.includes(asset_value)) {
+            filter_value = true
+          } else {
+            filter_value = false
+            break
+          }
+        }
+      }
+      return filter_value
+    },
+
     addTreeFilterItem: (temp, ch, item) => {
       if (temp.has(item.id)) {
         temp.get(item.id).num += 1

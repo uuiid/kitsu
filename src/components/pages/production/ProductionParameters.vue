@@ -17,8 +17,8 @@
         />
         <text-field
           :label="$t('productions.fields.code')"
-          :errored="form.code.length < 2"
-          @enter="form.code.length > 1 ? runConfirmation : null"
+          :errored="form.code?.length < 2"
+          @enter="form.code?.length > 1 ? runConfirmation : null"
           v-model="form.code"
         />
         <div class="columns">
