@@ -700,8 +700,9 @@ export default {
           project_name = this.productionMap.get(
             t.computing_time.project_id
           ).name
+        } else {
+          project_name = this.productionMap.get(t.project.id).name
         }
-        project_name = this.productionMap.get(t.project.id).name
       }
       if (episodes < 10) {
         episodes = `0${episodes}`
@@ -742,7 +743,9 @@ export default {
         const taskInfos = await this.loadOpenTasks(params)
         this.isMore = taskInfos.is_more
         if (page === 1) this.tasks = taskInfos.data
-        else this.tasks.push(...taskInfos.data)
+        else {
+          this.tasks.push(...taskInfos.data)
+        }
       } catch (error) {
         this.isLoadingError = true
         console.error(error)
@@ -754,13 +757,16 @@ export default {
       await this.reload(`${year}-${month}-01`, this.pageNumber)
     },
 
-    async pageLoadOpenTasks(params) {
+    async pageLoadOpenTasks(params, yearString, monthString) {
       if (params === 'back_page') {
         this.pageNumber--
         this.isMore = true
       } else {
         if (this.tasks.length < (this.pageNumber + 1) * PAGE_SIZE)
-          await this.reload(this.pageNumber + 1)
+          await this.reload(
+            `${yearString}-${monthString.padStart(2, '0')}-01`,
+            this.pageNumber + 1
+          )
         this.pageNumber++
       }
     },
