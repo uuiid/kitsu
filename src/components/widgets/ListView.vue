@@ -59,7 +59,13 @@
         :key="index"
         v-show="images?.length > 0"
       >
-        <img class="img-preview" :src="getURL(image)" alt="" />
+        <img
+          class="img-preview"
+          :src="getURL(image)"
+          alt=""
+          v-if="isCreateImageUrl"
+        />
+        <img class="img-preview" :src="imageUrl" alt="" v-else />
       </div>
       <img
         class="img-preview"
@@ -126,6 +132,10 @@ export default {
     assetToEdit: {
       type: Object,
       default: () => {}
+    },
+    isCreateImageUrl: {
+      type: Boolean,
+      default: true
     }
   },
   emits: ['on-add-files', 'set-error'],
@@ -139,7 +149,8 @@ export default {
       anyFile: [],
       isShowPlaceholder: true,
       currentItem: this.initData,
-      isShow: true
+      isShow: true,
+      imageUrl: ''
     }
   },
   mounted() {
@@ -293,7 +304,6 @@ export default {
       return form.type.startsWith('video')
     },
     getURL(form) {
-      console.log(form)
       return window.URL.createObjectURL(form)
     },
     onPastes(event) {

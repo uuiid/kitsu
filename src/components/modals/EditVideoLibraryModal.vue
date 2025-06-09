@@ -36,6 +36,7 @@
           :is-active-text="true"
           :is-active-image="true"
           :errored="form.image_errored"
+          :is-create-image-url="false"
           @set-error="value => (form.image_errored = value)"
         >
         </list-view>
@@ -218,7 +219,6 @@ export default {
     },
     async onAddFiles(files) {
       const path = require('path')
-      console.log(this.$refs.nameField)
       this.$refs.nameField.$refs.input.value = files[0].name.split('.')[0]
       if (
         this.imageExtensions.includes(
@@ -249,6 +249,10 @@ export default {
         })
         this.$refs.image.images = []
         this.$refs.image.images.push(file)
+        this.$refs.image.imageUrl =
+          doodleWorkStore().state.localHttpPath +
+          '/api/doodle/video/thumbnail?t' +
+          new Date().getTime()
       }
     },
     checkData() {
