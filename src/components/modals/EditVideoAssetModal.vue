@@ -21,6 +21,12 @@
             v-model="asset_to_import.label"
           />
         </form>
+        <text-field
+          ref="nameField"
+          :label="$t('video_library.path')"
+          v-model="asset_to_import.path"
+          readonly
+        />
         <tag-select-cell
           ref="typesRef"
           :input-tags="currentType"

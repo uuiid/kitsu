@@ -790,7 +790,11 @@ export default {
         fs.existsSync(entity.path)
         if (this.isElectron)
           if (fs.existsSync(entity.path)) window.api.openPath(entity.path)
-          else ElMessage.error('文件不存在')
+          else
+            ElMessage.error({
+              message: '文件不存在' + entity.path,
+              dangerouslyUseHTMLString: true // 必须开启此项
+            })
         else ElMessage.error('请使用客服端')
       }
     },

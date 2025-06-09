@@ -1668,7 +1668,8 @@
       "open_file": "打开文件",
       "refresh": "刷新",
       "open_asset_type": "打开该资产类型",
-      "placeholder": "拖入文件或Ctrl+V"
+      "placeholder": "拖入文件或Ctrl+V",
+      "path": "路径"
     },
     "scan_project": {
       "scan_project": "扫描资产",
