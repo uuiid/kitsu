@@ -690,8 +690,8 @@ export default {
       }
       let season = t.computing_time.season
       if (season === undefined) {
-        season = t.entity.data.ji_shu
-          ? t.entity.data.ji_shu
+        season = t.entity.data.ji_du
+          ? t.entity.data.ji_du
           : Math.ceil(Number(episodes) / 20)
       }
       let project_name = t.computing_time.project_name
