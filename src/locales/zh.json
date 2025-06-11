@@ -1796,7 +1796,9 @@
       "average_time": "平均时间",
       "select_all": "选择全部",
       "not_select_all": "取消全选",
-      "label": "标签"
+      "label": "标签",
+      "show_completed": "显示已完成",
+      "hide_completed": "隐藏已完成"
     },
     "doodle_productions": {
       "fields": {
