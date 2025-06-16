@@ -346,15 +346,33 @@ PYTHONPATH+:= scripts`
     } else if (plugin.name === 'UE_plugin') {
       if (doodleWork.state.doodleWorkSetting.UE_path) {
         if (fs.existsSync(doodleWork.state.doodleWorkSetting.UE_path)) {
+          let doodleSourceName = 'ue55_Plug'
+          if (doodleWork.state.doodleWorkSetting.UE_version === '5.4') {
+            doodleSourceName = 'ue54_Plug'
+          }
+          if (
+            !fs.existsSync(
+              `${doodleWork.doodleWorkFilePath}\\${doodleSourceName.sourceName}`
+            )
+          ) {
+            ElNotification({
+              title: i18n.global.t('doodle_work.install_fail'),
+              message:
+                '找不到ue源路径:' +
+                `${doodleWork.doodleWorkFilePath}\\${doodleSourceName.sourceName}`,
+              type: 'error'
+            })
+            plugin.installState = false
+            return
+          }
           const subPlugins = [
             { sourceName: 'SideFX_Labs', destName: 'SideFX_Labs' },
-            { sourceName: 'ue54_Plug', destName: 'Doodle' },
+            { sourceName: doodleSourceName, destName: 'Doodle' },
             { sourceName: 'UnrealEngine5VLC', destName: 'UnrealEngine5VLC' }
           ]
           for (const subPlugin of subPlugins) {
             const sourcePath = `${doodleWork.doodleWorkFilePath}\\${subPlugin.sourceName}`
             const destPath = `${doodleWork.state.doodleWorkSetting.UE_path}\\Engine\\Plugins\\${subPlugin.destName}`
-            console.log(sourcePath, destPath)
             doodleWork.actions.copyFolder(sourcePath, destPath)
           }
         } else {

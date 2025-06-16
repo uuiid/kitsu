@@ -102,7 +102,6 @@ const onConfirm = async () => {
           label="版本"
           :options="versions"
           v-model="doodleWork.state.doodleWorkZipFileVision"
-          @change="onVersionChange"
         />
         <text-field
           ref="nameField"
