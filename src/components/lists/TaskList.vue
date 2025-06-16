@@ -167,9 +167,9 @@
                 @change="updateNbDrawings($event.target.value)"
                 v-if="isInDepartment(task) && selectionGrid[task.id]"
               />
-              <span v-else>
+              <template v-else>
                 {{ task.nb_drawings || 0 }}
-              </span>
+              </template>
             </td>
             <td class="difficulty number-cell">
               <combobox
@@ -202,9 +202,9 @@
                 @change="updateEstimation($event.target.value)"
                 v-if="isInDepartment(task) && selectionGrid[task.id]"
               />
-              <span v-else>
+              <template v-else>
                 {{ formatDuration(task.estimation) }}
-              </span>
+              </template>
             </td>
             <td
               :class="{
@@ -216,9 +216,9 @@
               {{ formatDuration(task.duration) }}
             </td>
             <td class="retake-count number-cell">
-              <span v-for="index in task.retake_count" :key="index">
+              <template v-for="index in task.retake_count" :key="index">
                 &bull;
-              </span>
+              </template>
             </td>
             <td class="start-date">
               <date-field
@@ -229,9 +229,9 @@
                 @update:model-value="updateStartDate"
                 v-if="isInDepartment(task) && selectionGrid[task.id]"
               />
-              <span v-else>
+              <template v-else>
                 {{ formatDate(task.start_date) }}
-              </span>
+              </template>
             </td>
             <td class="due-date">
               <date-field
@@ -242,9 +242,9 @@
                 @update:model-value="updateDueDate"
                 v-if="isInDepartment(task) && selectionGrid[task.id]"
               />
-              <span v-else>
+              <template v-else>
                 {{ formatDate(task.due_date) }}
-              </span>
+              </template>
             </td>
             <td class="real-start-date">
               {{ formatDate(task.real_start_date) }}
@@ -806,7 +806,7 @@ export default {
       }
 
       if (!event.shiftKey) {
-        if (isSelected && !isManySelection) {
+        if (isSelected) {
           this.removeSelectedTask({ task })
           this.selectionGrid[task.id] = undefined
         } else if (!isSelected || isManySelection) {
@@ -897,8 +897,11 @@ export default {
         this.$t('tasks.fields.done_date'),
         this.$t('tasks.fields.last_comment_date')
       ]
-      if (!this.isAssets) {
-        headers.splice(4, 0, 'Frames')
+      if (this.isShots) {
+        const value = !this.isPaperProduction
+          ? this.$t('tasks.fields.frames')
+          : this.$t('tasks.fields.drawings')
+        headers.splice(4, 0, value)
       }
       const taskLines = [headers]
       this.tasks.forEach(task => {
@@ -929,8 +932,10 @@ export default {
           this.formatDate(task.done_date),
           this.formatDate(task.last_comment_date)
         ]
-        if (!this.isAssets) {
-          const value = this.getEntity(task.entity.id).nb_frames
+        if (this.isShots) {
+          const value = !this.isPaperProduction
+            ? this.getEntity(task.entity.id).nb_frames
+            : task.nb_drawings || 0
           line.splice(4, 0, value)
         }
         taskLines.push(line)

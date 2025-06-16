@@ -64,6 +64,11 @@
               </span>
               <span
                 class="filler flexrow-item root-element-name ellipsis"
+                :style="{
+                  'border-left': rootElement.avatar
+                    ? null
+                    : `4px solid ${rootElement.color}`
+                }"
                 :title="rootElement.name"
                 v-if="!rootElement.route"
               >
@@ -71,12 +76,12 @@
               </span>
               <router-link
                 class="filler flexrow-item root-element-name ellipsis"
-                :title="rootElement.name"
                 :style="{
                   'border-left': rootElement.avatar
                     ? null
                     : `4px solid ${rootElement.color}`
                 }"
+                :title="rootElement.name"
                 :to="rootElement.route"
                 v-else
               >
@@ -407,6 +412,7 @@
                   <div
                     class="timebar"
                     v-show="isVisible(rootElement)"
+                    @click="$emit('root-element-selected', rootElement)"
                     v-if="rootElement.editable"
                   >
                     <div
@@ -439,7 +445,8 @@
               </div>
 
               <div
-                class="children drop-item-target"
+                class="children"
+                :class="{ 'drop-item-target': reassignable && multiline }"
                 :data-root-element-id="rootElement.id"
                 :style="childrenStyle(rootElement, multiline)"
                 v-else-if="rootElement.expanded"
@@ -470,6 +477,7 @@
                       timebarChildStyle(childElement, rootElement, multiline)
                     "
                     v-show="subchildren || isVisible(childElement)"
+                    @click="$emit('item-selected', rootElement, childElement)"
                   >
                     <div
                       class="timebar-left-hand"
@@ -486,7 +494,7 @@
                     <div
                       class="timebar-center"
                       :class="{
-                        ellipsis: multiline,
+                        ellipsis: multiline || subchildren,
                         'has-text-centered': subchildren
                       }"
                       @mousedown="moveTimebar(childElement, $event)"
@@ -525,6 +533,9 @@
                         height: `${40 * getNbLines(subchild)}px`
                       }"
                       class="subchild"
+                      :class="{ 'drop-item-target': reassignable }"
+                      :data-entity-type-id="childElement.object_id"
+                      :data-person-id="personId"
                     >
                       <div
                         class="day-off"
@@ -539,12 +550,43 @@
                       </div>
                       <div
                         class="timebar"
-                        :style="timebarSubchildStyle(task, rootElement)"
+                        :class="{ selected: isSelected(task) }"
                         :key="index"
-                        :title="`${task.entity.name} (${task.startDate.format('YYYY-MM-DD')} - ${task.endDate.format('YYYY-MM-DD')})`"
+                        :style="timebarSubchildStyle(task, rootElement)"
+                        :title="timebarSubchildTitle(task)"
                         v-for="(task, index) in subchild"
                       >
-                        {{ task.entity.name }}
+                        <div
+                          class="timebar-left-hand"
+                          @mousedown="moveTimebarLeftSide(task, $event)"
+                          @touchstart="moveTimebarLeftSide(task, $event)"
+                          v-if="
+                            !isChangeDates &&
+                            selection.length === 1 &&
+                            isSelected(task) &&
+                            task.editable &&
+                            !task.unresizable
+                          "
+                        ></div>
+                        <div
+                          class="timebar-center ellipsis"
+                          @mousedown="moveTimebar(task, $event)"
+                          @touchstart="moveTimebar(task, $event)"
+                        >
+                          {{ task.entity.name }}
+                        </div>
+                        <div
+                          class="timebar-right-hand"
+                          @mousedown="moveTimebarRightSide(task, $event)"
+                          @touchstart="moveTimebarRightSide(task, $event)"
+                          v-if="
+                            !isChangeDates &&
+                            selection.length === 1 &&
+                            isSelected(task) &&
+                            task.editable &&
+                            !task.unresizable
+                          "
+                        ></div>
                       </div>
                     </div>
                   </div>
@@ -734,8 +776,10 @@ export default {
     'item-assign',
     'item-changed',
     'item-drop',
+    'item-selected',
     'item-unassign',
-    'root-element-expanded'
+    'root-element-expanded',
+    'root-element-selected'
   ],
 
   mounted() {
@@ -1005,7 +1049,7 @@ export default {
 
     getNbLines(items = []) {
       const values = items.map(item => item.line || 0)
-      return values.length ? Math.max(...values) + 1 : 0
+      return values.length ? Math.max(...values) + 1 : 1
     },
 
     refreshAllItemPositions() {
@@ -1017,7 +1061,9 @@ export default {
     },
 
     refreshItemPositions(rootElement) {
-      if (!rootElement?.children?.length) return
+      if (!rootElement?.children) {
+        return
+      }
 
       if (this.multiline) {
         setItemPositions(rootElement.children, this.unitOfTime)
@@ -1025,9 +1071,13 @@ export default {
 
       if (this.subchildren) {
         rootElement.children.forEach(childElement => {
-          childElement.children.forEach(subchildElement => {
-            setItemPositions(subchildElement, this.unitOfTime)
-          })
+          if (childElement.children) {
+            childElement.children.forEach(subchildElement => {
+              setItemPositions(subchildElement, this.unitOfTime)
+            })
+          } else {
+            setItemPositions(childElement, this.unitOfTime)
+          }
         })
       }
     },
@@ -1160,7 +1210,42 @@ export default {
           this.resetDroppableTargets()
         }
         const currentRootElement = this.currentElement.parentElement
-        if (target && currentRootElement.id !== target.dataset.rootElementId) {
+        if (
+          this.subchildren &&
+          target &&
+          target.dataset.personId &&
+          target.dataset.entityTypeId &&
+          !this.currentElement.assignees.includes(target.dataset.personId)
+        ) {
+          // check rights
+          if (
+            target.dataset.personId === 'unassigned' ||
+            target.dataset.entityTypeId !== this.currentElement.entity_type_id
+          ) {
+            return
+          }
+
+          target.classList.add('droppable')
+
+          this.selection.forEach(item => {
+            // update item assignation in element hierarchy
+            const previousAssigneeId = item.assignees[0]
+            const newAssigneeId = target.dataset.personId
+            item.assignees = item.assignees.filter(
+              assigneeId => assigneeId !== previousAssigneeId
+            )
+            item.assignees.push(newAssigneeId)
+
+            this.$emit('item-unassign', item, previousAssigneeId)
+            this.$emit('item-assign', item, newAssigneeId)
+            this.refreshItemPositions(currentRootElement)
+          })
+        } else if (
+          !this.subchildren &&
+          target &&
+          target.dataset.rootElementId &&
+          currentRootElement.id !== target.dataset.rootElementId
+        ) {
           const newRootElement = this.hierarchy.find(
             rootElement => rootElement.id === target.dataset.rootElementId
           )
@@ -1216,7 +1301,7 @@ export default {
               item.startDate.add(dateDiff)
               item.endDate.add(dateDiff)
             })
-            if (this.multiline) {
+            if (this.multiline || this.subchildren) {
               const parentElements = [
                 ...new Set(this.selection.map(item => item.parentElement))
               ]
@@ -1591,7 +1676,8 @@ export default {
 
     dayOffStyle(dayOff) {
       return {
-        left: `${this.getDayOffLeft(dayOff)}px`
+        left: `${this.getDayOffLeft(dayOff)}px`,
+        width: `${this.cellWidth - 1}px`
       }
     },
 
@@ -1688,6 +1774,8 @@ export default {
     },
 
     timebarSubchildStyle(timeElement, rootElement) {
+      const color = timeElement.color || rootElement.color
+      const isSelected = this.isSelected(timeElement)
       return {
         left: `${this.getTimebarLeft(timeElement)}px`,
         width: `${this.getTimebarWidth(timeElement)}px`,
@@ -1697,9 +1785,17 @@ export default {
             : 'ew-resize'
           : 'default',
         top: `${5 + 38 * timeElement.line}px`,
-        background: `color-mix(in srgb, ${timeElement.color || rootElement.color} 40%, transparent)`,
-        'box-shadow': `inset 0 0 1px 2px ${timeElement.color || rootElement.color}`
+        background: `color-mix(in srgb, ${color} ${isSelected ? 80 : 40}%, transparent)`,
+        'box-shadow': `inset 0 0 1px 2px ${isSelected ? 'var(--background-selected)' : color}`
       }
+    },
+
+    timebarSubchildTitle(task) {
+      const name = task.entity.name
+      const startDate = task.startDate.format('YYYY-MM-DD')
+      const endDate = task.endDate.format('YYYY-MM-DD')
+      const estimation = this.formatDuration(task.estimation)
+      return `${name} (${startDate} - ${endDate}) ${estimation} ${this.$t('schedule.md')}`
     },
 
     getTimebarLeft(timeElement) {
@@ -1740,6 +1836,17 @@ export default {
     // Children
 
     expandRootElement(rootElement) {
+      if (rootElement.expanded) {
+        // clear selected items when collapsing the root element
+        this.selection.forEach(item => {
+          const taskRootElementId =
+            item.parentElement?.parentElement?.id || item.parentElement?.id
+          if (taskRootElementId === rootElement.id) {
+            this.removeFromSelection(item)
+          }
+        })
+      }
+
       this.$emit(
         'root-element-expanded',
         rootElement,
@@ -1862,10 +1969,16 @@ export default {
     },
 
     onTaskDragEnter(event, rootElement) {
-      const item = this.draggedItems?.[0]
-      const isAllowed = this.checkUserIsAllowed(item, rootElement)
-      if (!isAllowed) {
-        return
+      // HACK: the getData doesn't work on dragEnter, we use a "task-type-*" data key instead (key must be lowercase)
+      const draggedItemTaskType = event.dataTransfer.types.find(
+        dataKey => dataKey === `task-type-${rootElement.task_type_id}`
+      )
+      if (!draggedItemTaskType) {
+        const item = this.draggedItems?.[0]
+        const isAllowed = this.checkUserIsAllowed(item, rootElement)
+        if (!isAllowed) {
+          return
+        }
       }
       event.currentTarget.classList.add('droppable')
     },
@@ -1880,11 +1993,19 @@ export default {
 
     onTaskDrop(event, rootElement) {
       event.target.classList.remove('droppable')
-      const item = this.draggedItems?.[0]
 
-      if (!this.checkUserIsAllowed(item, rootElement)) {
-        return
+      let item = this.draggedItems?.[0]
+      if (!item) {
+        const entityId = event.dataTransfer.getData('entityId')
+        const taskTypeId = event.dataTransfer.getData('taskTypeId')
+        if (!entityId || taskTypeId !== rootElement.task_type_id) {
+          return // invalid task type
+        }
+        item = { entity_id: entityId }
+      } else if (!this.checkUserIsAllowed(item, rootElement)) {
+        return // invalid user rights
       }
+
       const position =
         this.timelineContentWrapper.scrollLeft +
         this.getClientX(event) -
@@ -1965,6 +2086,9 @@ export default {
  * @returns {Array<Object>} The list of items with updated positions.
  */
 const setItemPositions = (items, unitOfTime = 'days') => {
+  if (!items?.length) {
+    return
+  }
   const attributeName = 'line'
   const matrix = []
   const minDate = moment
@@ -2367,11 +2491,6 @@ const setItemPositions = (items, unitOfTime = 'days') => {
           line-height: 34px;
           font-size: 12px;
           padding: 0 5px;
-
-          // ellipsis
-          display: block;
-          overflow: hidden;
-          text-overflow: ellipsis;
           white-space: nowrap;
         }
 
@@ -2735,8 +2854,9 @@ const setItemPositions = (items, unitOfTime = 'days') => {
 
   .day-off-icon {
     position: absolute;
-    left: 3px;
+    left: 0;
     top: 15px;
+    width: 100%;
     z-index: 100;
   }
 }
@@ -2774,7 +2894,7 @@ input[type='number'] {
 }
 
 .droppable {
-  background-color: rgba(var(--background-selectable-rgb), 0.5);
+  background-color: rgba(var(--background-selectable-rgb), 0.5) !important;
 
   * {
     pointer-events: none;

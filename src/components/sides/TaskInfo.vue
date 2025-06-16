@@ -163,7 +163,6 @@
               <div>
                 <add-comment
                   ref="add-comment"
-                  :user="user"
                   :team="currentTeam"
                   :task="task"
                   :task-status="taskStatuses"
@@ -778,7 +777,8 @@ export default {
         .sort((a, b) => b.revision - a.revision)
         .map(preview => ({
           value: preview.id,
-          label: `v${preview.revision}`
+          label: `v${preview.revision}`,
+          validation_status: preview.validation_status
         }))
     },
 

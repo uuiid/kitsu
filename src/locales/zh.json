@@ -1348,7 +1348,7 @@
       "empty_cells_selected": "选中空单元格 | 选中空单元格",
       "my_checks": "我的检查",
       "new_revision_number": "新修订编号",
-      "post": "职位",
+      "post": "提交",
       "publish_revision": "发布修订版",
       "revision_preview_file": "如果所选文件的名称中包含修订版编号（如 \"preview-v3.png\"），那么下一步将建议使用新的修订版名称（如 \"修订版 3\"）。",
       "selected_entities": "选定实体",
@@ -1668,7 +1668,8 @@
       "open_file": "打开文件",
       "refresh": "刷新",
       "open_asset_type": "打开该资产类型",
-      "placeholder": "拖入文件或Ctrl+V"
+      "placeholder": "拖入文件或Ctrl+V",
+      "path": "路径"
     },
     "scan_project": {
       "scan_project": "扫描资产",
@@ -1792,7 +1793,12 @@
       "modified_successfully": "修改成功",
       "modified_failed": "修改成功",
       "already_exists": "已存在",
-      "average_time": "平均时间"
+      "average_time": "平均时间",
+      "select_all": "选择全部",
+      "not_select_all": "取消全选",
+      "label": "标签",
+      "show_completed": "显示已完成",
+      "hide_completed": "隐藏已完成"
     },
     "doodle_productions": {
       "fields": {
@@ -1801,10 +1807,23 @@
         "auto_upload_path": "自动上传路径"
       }
     },
+    "doodle_asset_tree": {
+      "fields": {
+        "asset_type_name": "资产类型名称",
+        "ji_du": "季度",
+        "ji_shu_lie": "集数",
+        "name": "名称",
+        "description": "描述",
+        "deng_ji": "等级",
+        "gui_dang": "归档",
+        "kai_shi_ji_shu": "开始集数",
+        "assignees": "制作者"
+      }
+    },
     "ai_painting": {
-      "txt2Picture": "文生图片",
-      "txt2Video": "文生视频",
-      "image2Video": "图生视频"
-    }
+    "txt2Picture": "文生图片",
+    "txt2Video": "文生视频",
+    "image2Video": "图生视频"
+  }
   }
 }

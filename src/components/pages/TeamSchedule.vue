@@ -91,7 +91,9 @@
 
     <div class="column side-column" v-if="isTaskSidePanelOpen">
       <task-info>
-        <a class="close-button" @click="toggleTaskSidePanel">x</a>
+        <a class="close-button" @click="toggleTaskSidePanel">
+          <x-icon class="align-middle" :size="16" />
+        </a>
         <h2 class="mt1">
           {{ $t('tasks.unassigned_tasks') }}
           <template v-if="!loading.unassignedTasks">
@@ -212,6 +214,7 @@
 /*
  * Page to manage the schedule of all the people in the studio
  */
+import { XIcon } from 'lucide-vue-next'
 import moment from 'moment-timezone'
 import { firstBy } from 'thenby'
 import { mapGetters, mapActions } from 'vuex'
@@ -260,7 +263,8 @@ export default {
     Spinner,
     TableInfo,
     TaskInfo,
-    TaskTypeName
+    TaskTypeName,
+    XIcon
   },
 
   data() {
@@ -604,6 +608,11 @@ export default {
 
     async onScheduleItemChanged(item) {
       if (item.type === 'Task') {
+        item.startDate = addBusinessDays(
+          item.startDate,
+          0,
+          item.parentElement.daysOff
+        )
         if (item.estimation) {
           item.endDate = addBusinessDays(
             item.startDate,
@@ -795,7 +804,7 @@ export default {
   position: relative;
   top: -30px;
   right: -14px;
-  height: calc(100% + 30px + 14px);
+  height: calc(100% + 44px);
   margin-top: 0;
 
   // Hide the task selection counter

@@ -39,17 +39,6 @@
           >
             {{ $t('video_library.batch_update_video') }}
           </button>
-          <!--button
-            :class="{
-              button: true,
-              'is-primary': false,
-              'update-video-button': true
-            }"
-            @click="refresh"
-          >
-            <refresh-cw></refresh-cw>
-            {{ $t('video_library.refresh') }}
-          </button-->
           <span class="update-video-error" v-if="modals.isDisplayedUpdateError">
             请先选择类型</span
           >
@@ -59,15 +48,34 @@
             class="main-content-left"
             :style="{ width: leftPanelWidth + 'px' }"
           >
-            <div class="treeView" @click="setSelected">
+            <div class="tree-view" @click="setSelected">
               <tree-view
-                v-for="item in videoTypeTreeData"
+                v-for="item in typeTreeData"
                 :key="item.id"
                 ref="TreeView"
                 :item="item"
-                :parent="videoTypeTreeData"
+                :parent="typeTreeData"
                 @on-selected-change="setSelected"
-                @on-add-type="showNewTypeModal"
+                @on-add-type="
+                  showNewTypeModal(typeTreeData, currentVideoType.id)
+                "
+                @dragover="onDragOver"
+                @on-drag-end="onDragEnd"
+              ></tree-view>
+            </div>
+            <div class="tree-view-separator"></div>
+            <div class="tree-view" @click="setSelected">
+              <tree-view
+                v-for="item in labelTreeData"
+                :key="item.id"
+                ref="LabelTreeView"
+                :item="item"
+                :parent="labelTreeData"
+                :is-label="true"
+                @on-selected-change="setSelected"
+                @on-add-type="
+                  showNewTypeModal(labelTreeData, currentVideoLabel.id, true)
+                "
                 @dragover="onDragOver"
                 @on-drag-end="onDragEnd"
               ></tree-view>
@@ -137,10 +145,7 @@
                           "
                         />
                         <div class="item-description flexrow">
-                          <div
-                            class="entity-name"
-                            :title="entityNameTitle(entity)"
-                          >
+                          <div class="entity-name">
                             {{ entity.label }}
                           </div>
                         </div>
@@ -196,7 +201,9 @@
         ref="edit_video_library_modal"
         :active="modals.isNewDisplayed"
         :video-type-id="currentVideoType.id"
-        :video-type="ancestorLabels"
+        :video-label-id="currentVideoLabel.id"
+        :video-types="typeTreeData"
+        :video-labels="labelTreeData"
         @cancel="modals.isNewDisplayed = false"
         @on-confirm="confirmNewVideo"
       />
@@ -204,15 +211,18 @@
         ref="edit_video_library_batch_update_modal"
         :active="modals.isBatchNewDisplayed"
         :video-type-id="currentVideoType.id"
-        :video-type="ancestorLabels"
+        :video-label-id="currentVideoLabel.id"
+        :video-types="typeTreeData"
+        :video-labels="labelTreeData"
         @cancel="modals.isBatchNewDisplayed = false"
         @on-confirm="confirmBatchNewVideo"
       />
       <edit-video-library-add-type-modal
         ref="edit_video_library_add_type_modal"
         :active="modals.isNewTypeDisplayed"
-        :parent-video-type="currentVideoType"
-        :video-type="ancestorLabels"
+        :parent-video-type="isAddLabel ? currentVideoLabel : currentVideoType"
+        :video-types="isAddLabel ? labelTreeData : typeTreeData"
+        :video-type-id="isAddLabel ? currentVideoLabel.id : currentVideoType.id"
         @cancel="modals.isNewTypeDisplayed = false"
         @on-confirm="confirmNewVideoType"
       />
@@ -220,6 +230,12 @@
         ref="edit_video_asset_modal"
         :active="modals.isEditVideoAssetDisplayed"
         :asset-to-edit="currentSelectVideo"
+        :video-types="typeTreeData"
+        :video-labels="labelTreeData"
+        :types-and-labels="{
+          types: getAllChildrenIds(typeTreeData[0]),
+          labels: getAllChildrenIds(labelTreeData[0])
+        }"
         @cancel="modals.isEditVideoAssetDisplayed = false"
         @on-confirm="confirmEditVideo"
       />
@@ -249,6 +265,8 @@ import EditVideoLibraryAddTypeModal from '@/components/modals/EditVideoLibraryAd
 import ImagePreviewModal from '@/components/modals/ImagePreviewModal.vue'
 import EditVideoAssetModal from '@/components/modals/EditVideoAssetModal.vue'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
+import { ModelLibraryStore } from '@/store/modules/modellibrary.js'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'video-library',
@@ -297,7 +315,7 @@ export default {
       },
       videoTypeTreeData: [
         {
-          label: '所有',
+          label: '类型',
           parent_id: '',
           id: 'all',
           isOpen: true,
@@ -331,7 +349,16 @@ export default {
       shiftEndSelection: null,
       currentPage: 0,
       maxNum: 504,
-      pageStartIndex: 0
+      pageStartIndex: 0,
+      selectedTags: new Map(),
+      allTypeName: new Map(),
+      assetLabels: [],
+      allVideoTypes: [],
+      allVideoLabels: [],
+      currentLabelAllId: [],
+      typeTreeData: [],
+      labelTreeData: [],
+      isAddLabel: false
     }
   },
 
@@ -361,15 +388,9 @@ export default {
       'isCurrentUserManager',
       'isEditVideoSelection',
       'imageExtensions',
-      'refreshTimer'
+      'refreshTimer',
+      'currentVideoLabel'
     ]),
-    ancestorLabels() {
-      const ancestors = this.getAncestors(
-        this.videoTypeTreeData,
-        this.currentVideoType.id
-      )
-      return ancestors.map(node => node.label).join(' > ')
-    },
     searchField() {
       return this.$refs['search-field']
     },
@@ -399,30 +420,17 @@ export default {
         : this.searchAssetsData
     },
     sortedAssetsByType() {
-      this.getAllChildrenId(this.currentVideoType)
+      this.setCurrentTypeAllId(this.currentVideoType)
+      this.setCurrentLabelAllId(this.currentVideoLabel)
       return this.videos
         .filter(v => {
-          return (
-            this.currentTypeAllId.includes(v.parent_id) ||
-            this.currentVideoType.id === 'all'
-          )
+          return this.filterAssetsByTypeAndLabel(v)
         })
         .sort(this.naturalCompare)
     },
     searchAssetsData() {
       return this.sortedAssetsByType.filter(v => {
-        return (
-          v.label.indexOf(this.keyWord) !== -1 ||
-          (
-            (this.originalVideoTypes.get(
-              this.originalVideoTypes.get(v.parent_id).parent_id
-            )
-              ? this.originalVideoTypes.get(
-                  this.originalVideoTypes.get(v.parent_id).parent_id
-                ).label
-              : '') + this.originalVideoTypes.get(v.parent_id).label
-          ).indexOf(this.keyWord) !== -1
-        )
+        return v.label.indexOf(this.keyWord) !== -1 || this.searchType(v)
       })
     }
   },
@@ -442,10 +450,11 @@ export default {
       'setCurrentVideoType',
       'setCurrentVideoTypeStatus',
       'clearSelectedVideos',
-      'modifyVideos',
       'setVideoTypeOpen',
       'resetSelectedVideos',
-      'modifyVideoActive'
+      'modifyVideoActive',
+      'setIsUpdatingVideos',
+      'setCurrentVideoLabel'
     ]),
     handleResize() {
       this.rightPanelWidth = window.innerWidth - this.leftPanelWidth - 10
@@ -457,10 +466,23 @@ export default {
           this.currentSelectVideo = this.shiftEndSelection //[...this.selectedVideos.entries()].at(-1)[1]
       }
     },
+    handleTags(video) {},
     handleKeydown(event) {
       if (event.key === 'Shift') {
         this.isShiftSelected = true
       }
+    },
+    ancestorLabels(treeData, id) {
+      const ancestors = this.getAncestors(treeData, id)
+      return ancestors.map(node => node.label).join(' > ')
+    },
+    checkIncludeType(list = [], list2 = []) {
+      if (list && list2) {
+        for (const i of list) {
+          if (list2.includes(i)) return true
+        }
+      }
+      return false
     },
     onDragStart(entry) {
       this.dropEntry = entry
@@ -469,10 +491,50 @@ export default {
       event.preventDefault()
       event.dataTransfer.dropEffect = 'move'
     },
-    onDragEnd(item) {
-      if (item.id !== 'all') this.dropEntry.parent_id = item.id
-      else this.dropEntry.parent_id = ''
-      this.confirmEditVideo(this.dropEntry)
+    async onDragEnd(item, isLabel) {
+      if (isLabel) {
+        const labelIndex = this.dropEntry.parents.indexOf(
+          this.currentVideoLabel.id
+        )
+        if (labelIndex !== -1) {
+          await ModelLibraryStore().actions.deleteTagLinkAsset(
+            this.currentVideoLabel.id,
+            this.dropEntry.id
+          )
+          this.dropEntry.parents.splice(labelIndex, 1)
+        }
+      } else {
+        if (item.id !== this.currentVideoType.id) {
+          const index = this.dropEntry.parents.indexOf(this.currentVideoType.id)
+          if (index !== -1) {
+            await ModelLibraryStore().actions.deleteTagLinkAsset(
+              this.currentVideoType.id,
+              this.dropEntry.id
+            )
+            this.dropEntry.parents.splice(index, 1)
+          }
+        }
+      }
+
+      if (item.id !== 'all') {
+        await ModelLibraryStore().actions.tagLinkAsset(
+          [item.id],
+          this.dropEntry.id
+        )
+        this.dropEntry.parents.push(item.id)
+      }
+      //this.confirmEditVideo(this.dropEntry)
+    },
+    onClickTag() {
+      this.selectedTags = ModelLibraryStore().state.selectedTags
+    },
+    searchType(asset) {
+      for (const parent of asset.parents) {
+        if (this.allTypeName.get(parent)?.path.indexOf(this.keyWord) !== -1) {
+          return true
+        }
+      }
+      return false
     },
     onClickPageNumber(pageNumber) {
       this.currentPage = pageNumber - 1
@@ -548,25 +610,60 @@ export default {
     },
     entityNameTitle(entity) {
       return (
-        this.originalVideoTypes.get(entity.parent_id).label + '/' + entity.label
+        this.originalVideoTypes.get(entity.parent_id)?.label +
+        '/' +
+        entity.label
       )
     },
-    confirmNewVideo(video) {
-      this.newVideo(video)
+    filterAssetsByTypeAndLabel(asset) {
+      if (
+        this.currentVideoType.id === 'all' &&
+        this.currentVideoLabel.id === '0196eb9d-5dc0-727d-8a75-1b05dea8494d'
+      )
+        return true
+      else if (
+        this.currentVideoType.id === 'all' &&
+        this.checkIncludeType(asset.parents, this.currentLabelAllId)
+      )
+        return true
+      else if (
+        this.currentVideoLabel.id === '0196eb9d-5dc0-727d-8a75-1b05dea8494d' &&
+        this.checkIncludeType(asset.parents, this.currentTypeAllId)
+      )
+        return true
+      else
+        return (
+          this.checkIncludeType(asset.parents, this.currentTypeAllId) &&
+          this.checkIncludeType(asset.parents, this.currentLabelAllId)
+        )
     },
-    confirmBatchNewVideo(videos) {
-      this.newVideos(videos).then(res => {
-        this.$refs.edit_video_library_batch_update_modal.clearData()
-        return res
-      })
+    async confirmNewVideo(video) {
+      await this.newVideo(video)
     },
-    confirmNewVideoType(videoType) {
+    async confirmBatchNewVideo(videos) {
+      const res = await this.newVideos(videos)
+      // for (const re of res) {
+      //   await ModelLibraryStore().actions.tagLinkAsset(tags, re.id)
+      //   re.labels = tags
+      // }
+      this.$refs.edit_video_library_batch_update_modal.clearData()
+      return res
+    },
+    async confirmNewVideoType(videoType) {
       if (videoType.label) {
-        this.newVideosType(videoType)
+        if (await this.newVideosType(videoType)) ElMessage.success('创建成功')
       }
     },
-    async confirmEditVideo(video) {
+    async confirmEditVideo(video, tags) {
+      await ModelLibraryStore().actions.tagLinkAsset(tags, video.id)
+      for (const tag of video.parents) {
+        if (!tags.includes(tag)) {
+          await ModelLibraryStore().actions.deleteTagLinkAsset(tag, video.id)
+        }
+      }
       await this.modifyVideo(video)
+      this.currentSelectVideo = video
+      this.setIsUpdatingVideos()
       await this.refresh()
       if (this.$refs[video.id][0]) this.$refs[video.id][0].refreshKey += 1
     },
@@ -577,6 +674,7 @@ export default {
       let out_data = []
       const tree = []
       const root = []
+
       if (data.size > 0) {
         const lookup = {}
         data.forEach((item, key) => {
@@ -601,38 +699,37 @@ export default {
       tree.sort((a, b) => (a.order || 0) - (b.order || 0))
       out_data = [
         {
-          label: '所有',
-          parent_id: '',
+          label: '类型',
+          parents: [],
           id: 'all',
           isOpen: true,
           isSelected: true,
           children: tree
         }
       ]
-      if (this.currentVideoType.id === undefined) {
-        this.setCurrentVideoType(out_data[0])
-      }
-      if (!this.openedVideoTypes.has(out_data[0].id)) {
-        this.setVideoTypeOpen(out_data[0])
-      }
+      this.allTypeName = this.getAllTypePaths(out_data[0])
+      this.allTypeName.delete('all')
       return out_data
     },
     async menuAction(entity, action) {
       if (action === 'copyVideoPath') {
         try {
-          navigator.clipboard.writeText(entity.path)
+          await navigator.clipboard.writeText(entity.path)
         } catch (error) {
           console.log(error)
         }
       } else if (action === 'delete') {
-        this.modifyVideoActive(entity)
+        await this.modifyVideoActive(entity)
       } else if (action === 'openVideo') {
-        window.api.showItemInFolder(entity.path)
+        await window.api.showItemInFolder(entity.path)
       } else if (action === 'showBigImage') {
         this.modals.isImagePreviewDisplayed = true
         this.currentSelectVideo = entity
       } else if (action === 'deleteSelected') {
-        this.modifyVideos()
+        const videos = Array.from(this.selectedVideos.values())
+        for (const video of videos) {
+          await this.modifyVideoActive(video)
+        }
         //console.log('deleteSelected')
       } else if (action === 'clearSelected') {
         this.clearSelectedVideos()
@@ -689,7 +786,16 @@ export default {
         this.modals.isImagePreviewDisplayed = true
         this.currentSelectVideo = entity
       } else {
-        if (this.isElectron) window.api.openPath(entity.path)
+        const fs = require('fs')
+        fs.existsSync(entity.path)
+        if (this.isElectron)
+          if (fs.existsSync(entity.path)) window.api.openPath(entity.path)
+          else
+            ElMessage.error({
+              message: '文件不存在' + entity.path,
+              dangerouslyUseHTMLString: true // 必须开启此项
+            })
+        else ElMessage.error('请使用客服端')
       }
     },
 
@@ -760,17 +866,41 @@ export default {
       path.push(this.currentVideoType)
       return path.slice(0, -1)
     },
-    getAllChildrenId(type) {
-      this.currentTypeAllId.push(type.id)
-      if (type.children && type.children.length > 0) {
-        type.children.forEach(i => {
-          if (i.children && i.children.length > 0) {
-            this.getAllChildrenId(i)
-          } else {
-            this.currentTypeAllId.push(i.id)
-          }
-        })
+    async setCurrentTypeAllId(type) {
+      this.currentTypeAllId = this.getAllChildrenIds(type)
+    },
+    setCurrentLabelAllId(type) {
+      this.currentLabelAllId = this.getAllChildrenIds(type)
+    },
+    getAllChildrenIds(type, result = []) {
+      if (type) {
+        result.push(type.id)
+        if (type.children && type.children.length > 0) {
+          type.children.forEach(i => {
+            if (i.children && i.children.length > 0) {
+              this.getAllChildrenIds(i, result)
+            } else {
+              result.push(i.id)
+            }
+          })
+        }
       }
+      return result
+    },
+    getAllTypePaths(node, currentPath = '', result = new Map()) {
+      const path = currentPath ? `${currentPath}>${node.label}` : node.label
+      result.set(node.id, {
+        id: node.id,
+        path: path,
+        label: node.label
+      })
+
+      if (node.children && node.children.length > 0) {
+        for (const child of node.children) {
+          this.getAllTypePaths(child, path, result)
+        }
+      }
+      return result
     },
     editVideoSelection() {
       this.$store.commit('SET_IS_EDIT_VIDEO_SELECTION')
@@ -779,44 +909,64 @@ export default {
       }
     },
     showNewModal() {
-      if (
-        this.currentVideoType.id === 'all' ||
-        this.currentVideoType.id === undefined
-      ) {
-        this.modals.isDisplayedUpdateError = true
-      } else {
-        this.modals.isNewDisplayed = true
-        this.modals.isDisplayedUpdateError = false
-      }
+      // if (
+      //   this.currentVideoType.id === 'all' ||
+      //   this.currentVideoType.id === undefined
+      // ) {
+      //   this.modals.isDisplayedUpdateError = true
+      // } else {
+      this.modals.isNewDisplayed = true
+      this.modals.isDisplayedUpdateError = false
+      // }
       //this.$refs.edit_video_library_modal.videoToCreat.type =
       //this.ancestorLabels
     },
     showBatchNewModal() {
-      if (
-        this.currentVideoType.id === 'all' ||
-        this.currentVideoType.id === undefined
-      ) {
-        this.modals.isDisplayedUpdateError = true
-      } else {
-        this.modals.isBatchNewDisplayed = true
-        this.modals.isDisplayedUpdateError = false
-      }
+      this.modals.isBatchNewDisplayed = true
+      this.modals.isDisplayedUpdateError = false
     },
-    showNewTypeModal() {
+    showNewTypeModal(treeData, id, isLabel = false) {
       //console.log(this.currentVideoType)
-      this.modals.isNewTypeDisplayed = true
+      this.isAddLabel = isLabel
       this.$refs.edit_video_library_add_type_modal.videoTypeToCreat.type =
-        this.ancestorLabels
+        this.ancestorLabels(treeData, id)
+      this.modals.isNewTypeDisplayed = true
     }
   },
   watch: {
     originalVideoTypes(value) {
       this.videoTypeTreeData = this.listToTree(value)
+      this.typeTreeData = [
+        {
+          label: '类型',
+          parent_id: '',
+          id: 'all',
+          isOpen: true,
+          isSelected: true,
+          disabled: true,
+          children: this.videoTypeTreeData[0].children.filter(
+            t => t.id !== '0196eb9d-5dc0-727d-8a75-1b05dea8494d'
+          )
+        }
+      ]
+      this.labelTreeData = this.videoTypeTreeData[0].children.filter(
+        t => t.id === '0196eb9d-5dc0-727d-8a75-1b05dea8494d'
+      )
+      this.labelTreeData[0].isSelected = true
+      if (this.currentVideoType.id === undefined) {
+        this.setCurrentVideoType(this.typeTreeData)
+      }
+      if (this.currentVideoLabel.id === undefined) {
+        this.setCurrentVideoLabel(this.typeTreeData)
+      }
+      if (!this.openedVideoTypes.has(this.videoTypeTreeData[0].id)) {
+        this.setVideoTypeOpen(this.videoTypeTreeData[0])
+      }
     },
     currentVideoType() {
       this.currentTypeAllId = []
 
-      //this.getAllChildrenId(this.currentVideoType)
+      //this.getAllChildrenIds(this.currentVideoType)
     },
     displayAllAssets() {
       this.pageStartIndex = 0
@@ -850,6 +1000,13 @@ export default {
 .video-flexrow {
   display: flex;
   margin-bottom: 20px;
+  max-height: 50px;
+}
+
+.model-library-tag {
+  overflow: auto;
+  max-height: 60px;
+  min-height: 60px;
 }
 
 .main-content {
@@ -864,13 +1021,13 @@ export default {
 .main-content-left {
   height: 100%;
   //border-left:thick dotted #ff0000;
-  overflow: auto; // 启用滚动条
+  overflow: hidden; // 启用滚动条
 }
 
 .main-content-separator {
   width: 2px;
   cursor: ew-resize;
-  background-color: #ccc;
+  background-color: rgba(100, 100, 100, 0.5);
   position: relative;
   z-index: 10;
 }
@@ -879,7 +1036,7 @@ export default {
   display: flex;
   flex-direction: row;
   justify-content: space-between;
-  border-bottom: 2px solid #dadada;
+  border-bottom: 2px solid rgba(100, 100, 100, 0.5);
   margin-bottom: 0.2cm;
   margin-left: 0.1cm;
 }
@@ -1016,5 +1173,19 @@ export default {
   .selectedItem {
     background-color: var(--background-selected);
   }
+}
+
+.tree-view {
+  max-height: 48%;
+  overflow: auto;
+}
+
+.tree-view-separator {
+  height: 2px;
+  margin: 2px;
+  cursor: ew-resize;
+  background-color: rgba(100, 100, 100, 0.5);
+  position: relative;
+  z-index: 10;
 }
 </style>

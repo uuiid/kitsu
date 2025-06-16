@@ -23,7 +23,7 @@
             </li>
             <li>
               {{ $t('intro.second') }}
-              <a href="https://twitter.com/cgwirekitsu">X</a>
+              <a href="https://x.com/cgwirekitsu">X</a>
               {{ $t('main.or') }}
               <a href="https://www.linkedin.com/company/cgwire/">LinkedIn</a>
             </li>
@@ -71,6 +71,16 @@
       >
         {{ $t('productions.home.create_new') }}
       </button>
+      <button
+        class="button"
+        @click="isShowCompletedProductions = !isShowCompletedProductions"
+      >
+        {{
+          isShowCompletedProductions
+            ? $t('doodle.hide_completed')
+            : $t('doodle.show_completed')
+        }}
+      </button>
     </div>
     <div
       class="open-productions-box"
@@ -97,23 +107,37 @@
         >
           {{ $t('main.search.no_result') }}
         </div>
-        <div class="open-production has-text-centered" key="assetLibrary">
+        <div
+          class="open-production has-text-centered"
+          key="assetLibrary"
+          @mouseleave="isShowModelLibraryName = false"
+          @mouseenter="isShowModelLibraryName = true"
+        >
           <router-link to="video-library">
             <div class="avatar has-text-centered" style="background: #01d8d1">
-              库
+              <span class="avatar-initials"> 库 </span>
             </div>
             <div class="production-name">
-              {{ $t('video_library.video_library') }}
+              <div v-if="isShowModelLibraryName">
+                {{ $t('video_library.video_library') }}
+              </div>
             </div>
           </router-link>
         </div>
-        <div class="open-production has-text-centered" key="doodleWork">
+        <div
+          class="open-production has-text-centered"
+          key="doodleWork"
+          @mouseenter="isShowDoodleWorkName = true"
+          @mouseleave="isShowDoodleWorkName = false"
+        >
           <router-link to="doodle-work">
             <div class="avatar has-text-centered" style="background: #3de867">
-              台
+              <span class="avatar-initials"> 台 </span>
             </div>
             <div class="production-name">
-              {{ $t('doodle_work.doodle_work') }}
+              <div v-if="isShowDoodleWorkName">
+                {{ $t('doodle_work.doodle_work') }}
+              </div>
             </div>
           </router-link>
         </div>
@@ -121,6 +145,8 @@
           class="open-production has-text-centered"
           :key="production.id"
           v-for="production in filteredProductions"
+          @mouseenter="production.showName = true"
+          @mouseleave="production.showName = false"
         >
           <router-link :to="getPath(production)">
             <div
@@ -130,12 +156,22 @@
               }"
             >
               <template v-if="!production.has_avatar">
-                {{ generateAvatar(production) }}
+                <span
+                  class="avatar-initials"
+                  :style="{
+                    fontSize:
+                      generateAvatar(production).length > 2 ? '48px' : '64px'
+                  }"
+                >
+                  {{ generateAvatar(production) }}
+                </span>
               </template>
               <img :src="getThumbnailPath(production)" v-else />
             </div>
             <div class="production-name">
-              {{ production.name }}
+              <div v-if="production.showName">
+                {{ production.name }}
+              </div>
             </div>
           </router-link>
         </div>
@@ -192,16 +228,21 @@ export default {
   data() {
     return {
       isContributions: true,
-      filteredProductions: []
+      filteredProductions: [],
+      isShowModelLibraryName: false,
+      isShowDoodleWorkName: false,
+      isShowCompletedProductions: false,
+      canvas: null
     }
   },
 
   mounted() {
-    this.filteredProductions = this.openProductions
+    this.filteredProductions = this.filterProductions(this.openProductions)
     this.productionIndex = buildNameIndex(this.openProductions)
     this.isContributions =
       this.mainConfig.is_self_hosted &&
       preferences.getPreference('open-productions:contributions') !== 'false'
+    this.canvas = document.createElement('canvas')
   },
 
   computed: {
@@ -218,7 +259,7 @@ export default {
 
   methods: {
     generateAvatar(production) {
-      const firstLetter = production.name?.[0] || 'P'
+      const firstLetter = production.code || production.name?.[0] || 'P'
       return firstLetter.toUpperCase()
     },
 
@@ -288,15 +329,26 @@ export default {
         name: 'new-production'
       })
     },
-
+    getFontSize(text) {
+      const canvas = document.createElement('canvas')
+      const ctx = canvas.getContext('2d')
+      ctx.font = 'bold 64px Arial'
+      console.log(text, ctx.measureText(text.value).width)
+      return ctx.measureText(text.value).width // 补足 padding
+    },
     onSearchChange(search) {
       if (search === '') {
-        this.filteredProductions = this.openProductions
+        this.filteredProductions = this.filterProductions(this.openProductions)
       } else {
         this.filteredProductions = this.productionIndex[search]
       }
     },
-
+    filterProductions(productions) {
+      if (this.isShowCompletedProductions) return productions
+      return productions.filter(production => {
+        return new Date(production.end_date) > new Date()
+      })
+    },
     hideContributions() {
       this.isContributions = false
       preferences.setPreference('open-productions:contributions', false)
@@ -309,8 +361,11 @@ export default {
         const searchQuery = this.$refs['search-field']?.getValue() || ''
         this.onSearchChange(searchQuery)
       } else {
-        this.filteredProductions = this.openProductions
+        this.filteredProductions = this.filterProductions(this.openProductions)
       }
+    },
+    isShowCompletedProductions() {
+      this.filteredProductions = this.filterProductions(this.openProductions)
     }
   },
 
@@ -372,12 +427,22 @@ h1.title {
   text-align: center;
 
   .avatar {
-    width: 100px;
-    height: 100px;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    width: 110px;
+    height: 110px;
     margin: auto;
-    font-size: 64px;
-    font-weight: bold;
     border-radius: 25px;
+    transition: font-size 0.3s ease;
+  }
+
+  .avatar-initials {
+    display: inline-block;
+    font-size: calc(64px);
+    font-weight: bold;
+    white-space: nowrap;
   }
 
   .avatar img {
@@ -417,6 +482,7 @@ h1.title {
   color: $grey;
   margin: 0.5em auto;
   width: 200px;
+  height: 20px;
 }
 
 .welcome {

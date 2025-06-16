@@ -32,6 +32,7 @@ const Backgrounds = () => import('@/components/pages/Backgrounds.vue')
 const Bots = () => import('@/components/pages/Bots.vue')
 const Breakdown = () => import('@/components/pages/Breakdown.vue')
 const Brief = () => import('@/components/pages/Brief.vue')
+const Budget = () => import('@/components/pages/budget/Budget.vue')
 const Concepts = () => import('@/components/pages/Concepts.vue')
 const CustomActions = () => import('@/components/pages/CustomActions.vue')
 const Departments = () => import('@/components/pages/Departments.vue')
@@ -61,6 +62,7 @@ const Profile = () => import('@/components/pages/Profile.vue')
 const ResetPassword = () => import('@/components/pages/ResetPassword.vue')
 const ResetChangePassword = () =>
   import('@/components/pages/ResetChangePassword.vue')
+const SalaryScale = () => import('@/components/pages/budget/SalaryScale.vue')
 const Sequence = () => import('@/components/pages/Sequence.vue')
 const Sequences = () => import('@/components/pages/Sequences.vue')
 const SequenceStats = () => import('@/components/pages/SequenceStats.vue')
@@ -90,6 +92,7 @@ const ADMIN_PAGES = [
   'newsfeed',
   'people',
   'productions',
+  'salary-scale',
   'task-status',
   'task-types',
   'team-schedule',
@@ -106,12 +109,12 @@ export const routes = [
     beforeEnter: (to, from, next) => {
       const browser = Bowser.getParser(window.navigator.userAgent)
       const isValidBrowser = browser.satisfies({
-        // see https://vitejs.dev/guide/build.html#browser-compatibility
+        // see https://vitejs.dev/guide/build.html#browser-compatibility + ES2020 support
         chrome: '>=87',
-        firefox: '>=78',
+        firefox: '>=79',
         edge: '>90',
-        vivaldi: '>2.8',
-        opera: '>=50',
+        vivaldi: '>=3.5',
+        opera: '>=73',
         safari: '>=14',
         Electron: '>=29'
       })
@@ -241,6 +244,12 @@ export const routes = [
         path: 'studios',
         name: 'studios',
         component: Studios
+      },
+
+      {
+        path: 'salary-scale',
+        name: 'salary-scale',
+        component: SalaryScale
       },
 
       {
@@ -444,6 +453,12 @@ export const routes = [
         path: 'productions/:production_id/team',
         component: Team,
         name: 'team'
+      },
+
+      {
+        path: 'productions/:production_id/budget',
+        component: Budget,
+        name: 'budget'
       },
 
       {

@@ -228,7 +228,6 @@ export default {
     ]),
 
     displayedTasks() {
-      console.log(this.tasks.length)
       return this.tasks.slice(
         (this.page - 1) * PAGE_SIZE,
         this.page * PAGE_SIZE

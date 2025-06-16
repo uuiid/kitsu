@@ -160,6 +160,7 @@
           :label="$t('doodle.filter-person')"
           :department-list="departments"
           :with-empty-choice="false"
+          :display-all-and-my-departments="true"
           v-model="selectedDepartment"
         />
         <p class="label mt2">
@@ -187,6 +188,18 @@
             }"
             :text="$t('doodle.batch-export')"
             @click="batchExport"
+          />
+          <button-simple
+            class="flexrow-item mt05 export-btn"
+            :class="{
+              'is-loading': isExporting
+            }"
+            :text="
+              isSelectAll
+                ? $t('doodle.not_select_all')
+                : $t('doodle.select_all')
+            "
+            @click="selectAll"
           />
         </div>
       </div>
@@ -318,6 +331,7 @@ export default {
       companyOptionList: [],
       dutys: [],
       selectPersons: [],
+      isSelectAll: false,
       selectedDepartment: null,
       filterPersonList: [],
       isShow: false,
@@ -424,7 +438,6 @@ export default {
       'people',
       'isDarkTheme'
     ]),
-
     notPendingTasks() {
       return this.tasks.filter(task => {
         return ![...this.calculatedTasks.keys()].includes(task.id)
@@ -561,7 +574,20 @@ export default {
     isActiveTab(tab) {
       return this.currentSection === tab
     },
-
+    selectAll() {
+      if (this.isSelectAll) {
+        this.filterPersonList.forEach(person => {
+          person.checked = false
+        })
+        this.selectPersons = []
+      } else {
+        this.filterPersonList.forEach(person => {
+          person.checked = true
+          this.selectPersons.push(person)
+        })
+      }
+      this.isSelectAll = !this.isSelectAll
+    },
     updateActiveTab() {
       const availableSections = ['duty']
       const currentSection = this.$route.query.section
@@ -664,13 +690,19 @@ export default {
       }
       let season = t.computing_time.season
       if (season === undefined) {
-        season = t.entity.data.ji_shu
-          ? t.entity.data.ji_shu
+        season = t.entity.data.ji_du
+          ? t.entity.data.ji_du
           : Math.ceil(Number(episodes) / 20)
       }
-      let project_name = t.project?.name
-      if (project_name === undefined) {
-        project_name = this.productionMap.get(t.computing_time.project_id).name
+      let project_name = t.computing_time.project_name
+      if (project_name === undefined || project_name === '') {
+        if (t.computing_time.project_id) {
+          project_name = this.productionMap.get(
+            t.computing_time.project_id
+          ).name
+        } else {
+          project_name = this.productionMap.get(t.project.id).name
+        }
       }
       if (episodes < 10) {
         episodes = `0${episodes}`
@@ -711,7 +743,9 @@ export default {
         const taskInfos = await this.loadOpenTasks(params)
         this.isMore = taskInfos.is_more
         if (page === 1) this.tasks = taskInfos.data
-        else this.tasks.push(...taskInfos.data)
+        else {
+          this.tasks.push(...taskInfos.data)
+        }
       } catch (error) {
         this.isLoadingError = true
         console.error(error)
@@ -723,13 +757,16 @@ export default {
       await this.reload(`${year}-${month}-01`, this.pageNumber)
     },
 
-    async pageLoadOpenTasks(params) {
+    async pageLoadOpenTasks(params, yearString, monthString) {
       if (params === 'back_page') {
         this.pageNumber--
         this.isMore = true
       } else {
         if (this.tasks.length < (this.pageNumber + 1) * PAGE_SIZE)
-          await this.reload(this.pageNumber + 1)
+          await this.reload(
+            `${yearString}-${monthString.padStart(2, '0')}-01`,
+            this.pageNumber + 1
+          )
         this.pageNumber++
       }
     },
@@ -1125,10 +1162,17 @@ export default {
     },
     updateDepartment() {
       const department = this.selectedDepartment
-      this.filterPersonList = []
-      this.personList.forEach(p => {
-        if (p.departments.includes(department)) this.filterPersonList.push(p)
-      })
+      if (department === 'ALL') {
+        this.filterPersonList = this.personList
+      } else {
+        this.filterPersonList = []
+        this.personList.forEach(p => {
+          p.checked = false
+          if (p.departments.includes(department)) this.filterPersonList.push(p)
+        })
+      }
+      this.selectPersons = []
+      this.isSelectAll = false
       //this.$forceUpdate()
     }
   },

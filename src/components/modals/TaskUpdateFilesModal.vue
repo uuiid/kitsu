@@ -117,6 +117,41 @@ const onActions = async (action_name, task) => {
     }
   }
 }
+
+function pathRule() {
+  const pin_yin_ming_cheng =
+    updateTaskFiles.state.selectedTask.entity.data.pin_yin_ming_cheng
+  const bian_hao = updateTaskFiles.state.selectedTask.entity.data.bian_hao
+  let final_file_name = pin_yin_ming_cheng
+  if (updateTaskFiles.state.selectedTask.entity.data.ban_ben !== '')
+    final_file_name = `${final_file_name}_${updateTaskFiles.state.selectedTask.entity.data.ban_ben}`
+  const file_path = {
+    pin_yin_ming_cheng: pin_yin_ming_cheng,
+    root_path: '',
+    maya_file_name: ''
+  }
+  if (
+    updateTaskFiles.state.selectedTask.entity.asset_type_id ===
+    'f9a8be37-2d05-4e20-8fae-751a61960ce4'
+  ) {
+    file_path.root_path = `Content/Character/${pin_yin_ming_cheng}/Meshs/SK_Ch${bian_hao}.uasset`
+    file_path.maya_file_name = `Ch${bian_hao}.ma`
+  } else if (
+    updateTaskFiles.state.selectedTask.entity.asset_type_id ===
+    '8c02b76a-6be6-4959-af58-5c31a85fe072'
+  ) {
+    file_path.root_path = `Content/Prop/${pin_yin_ming_cheng}/Mesh/SK_${final_file_name}.uasset`
+    file_path.maya_file_name = `${final_file_name}.ma`
+  } else if (
+    updateTaskFiles.state.selectedTask.entity.asset_type_id ===
+    '21b3f5aa-cdd6-4fca-ace4-65077494df4b'
+  ) {
+    file_path.root_path = `Content/${pin_yin_ming_cheng}/Map/${final_file_name}.umap`
+    file_path.maya_file_name = `${final_file_name}.ma`
+  }
+  return file_path
+}
+
 const onAddData = files => {
   const messages = []
   const result = updateTaskFiles.actions.checkEntity(
@@ -135,26 +170,22 @@ const onAddData = files => {
   const path = require('path')
   const fs = require('fs')
   const files_ = []
-  const bian_hao = updateTaskFiles.state.selectedTask.entity.data.bian_hao
-  const pin_yin_ming_cheng =
-    updateTaskFiles.state.selectedTask.entity.data.pin_yin_ming_cheng
+  const file_path = pathRule()
+  console.log(file_path)
   for (const file of files) {
     if (
       updateTaskFiles.state.currentUpdateType === 0 &&
       file.name.endsWith('.ma') &&
-      `Ch${bian_hao}.ma` === file.name
+      file_path.maya_file_name === file.name
     )
       files_.push(file)
     else if (
       updateTaskFiles.state.currentUpdateType === 3 &&
       file.name.endsWith('.uproject') &&
-      `${pin_yin_ming_cheng}_UE5.uproject` === file.name
+      `${file_path.pin_yin_ming_cheng}_UE5.uproject` === file.name
     ) {
       const root_path = path.dirname(file.path)
-      const sk_path = path.join(
-        root_path,
-        `Content/Character/${pin_yin_ming_cheng}/Meshs/SK_Ch${bian_hao}.uasset`
-      )
+      const sk_path = path.join(root_path, file_path.root_path)
       if (fs.existsSync(sk_path)) {
         const task = updateTaskFiles.doodleWorkCheckFiles.formatData(file)
         task.status = 'waiting'
@@ -164,7 +195,7 @@ const onAddData = files => {
         updateTaskFiles.state.allFiles.set(task.id, task)
         notNeedInspections.set(task.id, task)
       } else {
-        messages.push(`${file.name}:请检查Sk路径`)
+        messages.push(`${file.name}:请检查文件路径`)
       }
     } else if (
       updateTaskFiles.state.currentUpdateType === 1 ||

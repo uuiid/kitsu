@@ -8,9 +8,17 @@
     @focus="handleFocus"
     @blur="handleBlur"
   >
-    <span class="placeholder" v-if="isShowPlaceholder && !assetToEdit">{{
-      $t('video_library.placeholder')
-    }}</span>
+    <span
+      class="placeholder"
+      v-if="
+        isShowPlaceholder &&
+        !assetToEdit &&
+        files.length === 0 &&
+        images.length === 0 &&
+        videos.length === 0
+      "
+      >{{ $t('video_library.placeholder') }}</span
+    >
     <ul v-if="isActiveText">
       <li v-for="(item, index) in options" :key="index">
         <span
@@ -42,9 +50,22 @@
         <div class="preview">{{ video.name }}</div>
       </div>
     </div>
-    <div class="parent_preview" v-if="isActiveImage && isShow">
-      <div v-for="(image, index) in images" :key="index">
-        <img class="img-preview" :src="getURL(image)" alt="" />
+    <div
+      class="parent_preview"
+      v-if="isActiveImage && (assetToEdit || images?.length > 0)"
+    >
+      <div
+        v-for="(image, index) in images"
+        :key="index"
+        v-show="images?.length > 0"
+      >
+        <img
+          class="img-preview"
+          :src="getURL(image)"
+          alt=""
+          v-if="isCreateImageUrl"
+        />
+        <img class="img-preview" :src="imageUrl" alt="" v-else />
       </div>
       <img
         class="img-preview"
@@ -111,6 +132,10 @@ export default {
     assetToEdit: {
       type: Object,
       default: () => {}
+    },
+    isCreateImageUrl: {
+      type: Boolean,
+      default: true
     }
   },
   emits: ['on-add-files', 'set-error'],
@@ -124,7 +149,8 @@ export default {
       anyFile: [],
       isShowPlaceholder: true,
       currentItem: this.initData,
-      isShow: true
+      isShow: true,
+      imageUrl: ''
     }
   },
   mounted() {
@@ -136,7 +162,7 @@ export default {
   computed: {
     ...mapGetters(['videoExtensions', 'imageExtensions']),
     thumbnailPath() {
-      if (this.assetToEdit) {
+      if (this.assetToEdit && this.images.length === 0) {
         const previewFileId = this.assetToEdit.id
         return (
           '/api/doodle/pictures/thumbnails/' +

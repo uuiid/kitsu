@@ -144,15 +144,13 @@ export default {
 
   props: {
     name: {
-      default: '',
+      required: true,
       type: String
     },
     title: {
-      default: '',
       type: String
     },
     alt: {
-      default: undefined,
       type: String
     },
     active: {

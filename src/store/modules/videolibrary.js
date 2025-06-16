@@ -1,4 +1,5 @@
 import videolibraryApi from '../api/videolibrary'
+import { doodleWorkStore } from '@/store/modules/doodlework.js'
 
 const initialState = {
   videos: [],
@@ -9,6 +10,7 @@ const initialState = {
   editVideoImage: null,
   isElectron: false,
   currentVideoType: {},
+  currentVideoLabel: {},
   selectedVideos: new Map(),
   openedVideoTypes: new Map(),
   videoExtensions: [
@@ -155,6 +157,9 @@ const mutations = {
     state.currentVideoType = videoType
     state.currentVideoType.isSelected = true
   },
+  SET_CURRENT_VIDEO_LABEL(state, label) {
+    state.currentVideoLabel = label
+  },
   SET_CURRENT_VIDEO_TYPE_STATUS(state, videoType) {
     videoType.isOpen = !videoType.isOpen
     console.log(videoType)
@@ -221,6 +226,7 @@ const getters = {
   isElectron: state => state.isElectron,
   openedVideoTypes: state => state.openedVideoTypes,
   currentVideoType: state => state.currentVideoType,
+  currentVideoLabel: state => state.currentVideoLabel,
   selectedVideos: state => state.selectedVideos,
   videoExtensions: state => state.videoExtensions,
   imageExtensions: state => state.imageExtensions,
@@ -244,10 +250,13 @@ const actions = {
   async newVideos({ commit }, videos) {
     commit('SET_IS_UPDATING_VIDEOS')
     const path = require('path')
-    const res_obj = videos.reduce((acc, video) => {
+    videos.reduce((acc, video) => {
       return acc.set(video.path, video)
     }, new Map())
-    const res = await videolibraryApi.newVideos(videos)
+    const res = []
+    for (const video of videos) {
+      res.push(await videolibraryApi.newVideo(video))
+    }
     for (const video of res) {
       if (
         state.imageExtensions.includes(
@@ -270,7 +279,11 @@ const actions = {
         state.videoExtensions.includes(path.extname(video.path).slice(1))
       ) {
         try {
-          const data = await helpers.handleVideo(video, res_obj)
+          const task = {
+            video_path: video.path,
+            time: Math.random()
+          }
+          const data = await doodleWorkStore().actions.getVideoThumbnail(task)
           const image = {
             id: video.id,
             data: data,
@@ -331,30 +344,28 @@ const actions = {
     //   })
     // })
   },
-  newVideo({ commit }, video) {
-    return videolibraryApi
-      .newVideo(video)
-      .then(res => {
-        let data = null
-        const reader = new FileReader()
-        reader.onload = () => {
-          data = reader.result
-        }
-        reader.onloadend = () => {
-          const re = res[0]
-          re.data = data
-          re.filetype = video.upimage.type
-          videolibraryApi.addImage(re).then(() => {
-            commit('NEW_VIDEO', res[0])
-          })
-          return res
-        }
-        reader.readAsArrayBuffer(video.upimage)
-      })
-      .catch(err => {
-        console.log(err)
-        return err
-      })
+  async newVideo({ commit }, video) {
+    try {
+      const res = await videolibraryApi.newVideo(video)
+      let data = null
+      const reader = new FileReader()
+      reader.onload = () => {
+        data = reader.result
+      }
+      reader.onloadend = () => {
+        const re = res
+        re.data = data
+        re.filetype = video.upimage.type
+        videolibraryApi.addImage(re).then(() => {
+          commit('NEW_VIDEO', res)
+        })
+      }
+      reader.readAsArrayBuffer(video.upimage)
+      return res
+    } catch (err) {
+      console.log(err)
+      return err
+    }
   },
   modifyVideo({ commit }, video) {
     commit('SET_IS_UPDATING_VIDEOS')
@@ -371,14 +382,12 @@ const actions = {
               return helpers.getFileFromPath(video.upimage.path).then(data => {
                 image.data = data
                 return videolibraryApi.addImage(image).then(re => {
-                  commit('SET_IS_UPDATING_VIDEOS')
                   return re
                 })
               })
             } else {
               return helpers.getDateFromFile(video.upimage).then(data => {
                 image.data = data
-                commit('SET_IS_UPDATING_VIDEOS')
                 return videolibraryApi.addImage(image).then(() => {})
               })
             }
@@ -399,6 +408,9 @@ const actions = {
       commit('CLEAR_SELECTED_VIDEOS')
       commit('DELETE_VIDEOS', videos)
     })
+  },
+  setIsUpdatingVideos({ commit }) {
+    commit('SET_IS_UPDATING_VIDEOS')
   },
   modifyVideoActive({ commit }, video) {
     return videolibraryApi
@@ -429,7 +441,7 @@ const actions = {
       })
   },
   newVideosType({ commit }, type) {
-    videolibraryApi
+    return videolibraryApi
       .newVideoType(type)
       .then(res => {
         commit('NEW_VIDEOS_TYPE', res)
@@ -449,6 +461,9 @@ const actions = {
   setCurrentVideoTypeStatus({ commit }, status) {
     commit('SET_CURRENT_VIDEO_TYPE_STATUS', status)
   },
+  setCurrentVideoLabel({ commit }, label) {
+    commit('SET_CURRENT_VIDEO_LABEL', label)
+  },
   setVideoSelection({ commit }, video) {
     commit('SET_VIDEO_SELECTION', video)
   },
@@ -462,11 +477,11 @@ const actions = {
     commit('RESET_SELECTED_VIDEOS', videos)
   },
   deleteSelectedVideos({ commit }) {},
-  deleteVideoType({ commit }) {
+  deleteVideoType({ commit }, videoType) {
     return videolibraryApi
-      .deleteVideoType(state.currentVideoType)
+      .deleteVideoType(videoType)
       .then(res => {
-        commit('DELETE_VIDEO_TYPE', state.currentVideoType)
+        commit('DELETE_VIDEO_TYPE', videoType)
         return res
       })
       .catch(err => {

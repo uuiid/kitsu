@@ -4,7 +4,7 @@
       class="treeViewItem"
       :class="{ selectedItem: isSelected(item), 'drop-item': item.isDragging }"
       @click="selectItem(item)"
-      @drop="onDragEnd(item)"
+      @drop="onDragEnd(item, isLabel)"
       @dragenter="onDragEnter(item)"
       @dragleave="onDragLeave(item)"
     >
@@ -32,7 +32,7 @@
         <minus
           :size="18"
           v-if="isCurrentUserManager && isShowRoot"
-          @click="deleteType"
+          @click="deleteType(item)"
         />
       </span>
     </span>
@@ -43,6 +43,7 @@
         :item="child"
         :all="allOptions"
         :parent="item"
+        :is-label="isLabel"
         @on-add-type="addType"
         @on-drag-end="onDragEnd"
       />
@@ -67,6 +68,7 @@ import {
 } from 'lucide-vue-next'
 import { mapActions, mapGetters } from 'vuex'
 import MessageBox from '@/components/modals/MessageBox.vue'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'tree-view',
@@ -96,6 +98,10 @@ export default {
     parent: {
       type: Object,
       default: () => {}
+    },
+    isLabel: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['on-selected-change', 'on-add-type', 'on-drag-end'],
@@ -112,10 +118,15 @@ export default {
       'openedVideoTypes',
       'currentVideoType',
       'isCurrentUserManager',
-      'originalVideoTypes'
+      'originalVideoTypes',
+      'currentVideoLabel'
     ]),
     isShowRoot() {
-      return this.isCurrentUserManager && this.item.id !== 'all'
+      return (
+        this.isCurrentUserManager &&
+        this.item.id !== 'all' &&
+        this.item.id !== '0196eb9d-5dc0-727d-8a75-1b05dea8494d'
+      )
     },
     isShowArrowDown() {
       return this.showArrowDown()
@@ -126,38 +137,49 @@ export default {
   },
   mounted() {
     if (this.item.isSelected) {
-      this.$store.commit('SET_CURRENT_VIDEO_TYPE', this.item)
+      if (this.isLabel) {
+        this.$store.commit('SET_CURRENT_VIDEO_LABEL', this.item)
+      } else this.$store.commit('SET_CURRENT_VIDEO_TYPE', this.item)
     }
   },
   methods: {
     ...mapActions([
       'setVideoTypeOpen',
       'deleteVideoType',
-      'modifyVideoTypeOrder',
-      'modifyVideos'
+      'modifyVideoTypeOrder'
     ]),
     toggle(item) {
       this.setVideoTypeOpen(item)
     },
     isSelected(entity) {
-      if (this.currentVideoType) {
-        return this.currentVideoType.id === entity.id
-      } else {
-        return false
-      }
-    },
-    showArrowDown() {
-      if (this.isShowRoot && this.$parent.item.children.length > 0) {
+      if (this.currentVideoType || this.currentVideoLabel) {
         return (
-          this.$parent.item.children[this.$parent.item.children.length - 1]
-            .id !== this.item.id
+          this.currentVideoType.id === entity.id ||
+          this.currentVideoLabel.id === entity.id
         )
       } else {
         return false
       }
     },
+    showArrowDown() {
+      if (
+        this.item.id !== '0196eb9d-5dc0-727d-8a75-1b05dea8494d' &&
+        this.isShowRoot &&
+        this.$parent.item.children.length > 0
+      ) {
+        return (
+          this.$parent.item.children[this.$parent.item.children.length - 1]
+            .id !== this.item.id
+        )
+      }
+      return false
+    },
     showArrowUp() {
-      if (this.isShowRoot && this.$parent.item.children.length > 0) {
+      if (
+        this.item.id !== '0196eb9d-5dc0-727d-8a75-1b05dea8494d' &&
+        this.isShowRoot &&
+        this.$parent.item.children.length > 0
+      ) {
         return this.$parent.item.children[0].id !== this.item.id
       } else {
         return false
@@ -169,15 +191,17 @@ export default {
     onDragLeave(item) {
       item.isDragging = false
     },
-    onDragEnd(event) {
+    onDragEnd(event, isLabel) {
       event.isDragging = false
-      this.$emit('on-drag-end', event)
+      this.$emit('on-drag-end', event, isLabel)
     },
     isOpened(item) {
       return this.openedVideoTypes.has(item.id)
     },
     selectItem(selectedItem) {
-      this.$store.commit('SET_CURRENT_VIDEO_TYPE', selectedItem)
+      if (this.isLabel) {
+        this.$store.commit('SET_CURRENT_VIDEO_LABEL', this.item)
+      } else this.$store.commit('SET_CURRENT_VIDEO_TYPE', this.item)
       this.$emit('on-selected-change', selectedItem)
     },
     async orderUp() {
@@ -280,11 +304,12 @@ export default {
     addType() {
       this.$emit('on-add-type')
     },
-    deleteType() {
-      this.deleteVideoType().then(res => {
+    deleteType(item) {
+      this.deleteVideoType(item).then(res => {
         if (res.status === 400) {
           this.isMessageBox = true
         }
+        ElMessage.success('删除成功')
       })
     }
   }
@@ -311,7 +336,8 @@ export default {
   }
 
   &.drop-item {
-    border-color: var(--background-selected);
+    border-color: $green;
+    color: $green;
   }
 }
 

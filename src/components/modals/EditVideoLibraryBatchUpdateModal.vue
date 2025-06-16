@@ -15,13 +15,27 @@
           {{ $t('video_library.new_video') }}
         </h1>
         <form @submit.prevent>
-          <text-field
+          <!--text-field
             ref="typeField"
             :label="$t('assets.fields.type')"
             :readonly="true"
             :model-value="videoType"
-          />
+          /-->
         </form>
+        <tag-select-cell
+          :input-options="videoTypes"
+          ref="typesRef"
+          :input-tags="videoTypeId === 'all' ? [] : [videoTypeId]"
+          :name="$t('doodle.type')"
+          v-if="active"
+        />
+        <tag-select-cell
+          ref="tagsRef"
+          :input-tags="[videoLabelId]"
+          :input-options="videoLabels"
+          :name="$t('doodle.label')"
+          v-if="active"
+        />
         <label class="label">{{ $t('video_library.video_source_file') }}</label>
         <list-view
           ref="video"
@@ -75,8 +89,8 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import { modalMixin } from '@/components/modals/base_modal'
-import TextField from '@/components/widgets/TextField.vue'
 import ListView from '@/components/widgets/ListView.vue'
+import TagSelectCell from '@/components/cells/TagSelectCell.vue'
 
 export default {
   name: 'edit-video-library-batch-update-modal',
@@ -84,7 +98,7 @@ export default {
   mixins: [modalMixin],
 
   components: {
-    TextField,
+    TagSelectCell,
     ListView
   },
 
@@ -124,6 +138,18 @@ export default {
     videoTypeId: {
       type: String,
       default: ''
+    },
+    videoTypes: {
+      type: Array,
+      default: null
+    },
+    videoLabels: {
+      type: Array,
+      default: null
+    },
+    videoLabelId: {
+      type: String,
+      default: ''
     }
   },
   emits: ['on-confirm', 'cancel'],
@@ -141,7 +167,7 @@ export default {
     }
   },
 
-  mounted() {
+  async mounted() {
     this.assetSuccessText = ''
   },
 
@@ -167,7 +193,7 @@ export default {
     formatFiles(files) {
       files.forEach(file => {
         file.label = file.name
-        file.parent_id = this.videoTypeId
+        file.parents = [...this.$refs.tagsRef.tags, ...this.$refs.typesRef.tags]
         file.active = true
         file.notes = ''
       })
@@ -177,11 +203,16 @@ export default {
       if (!this.form.video_errored) {
         this.formatFiles(this.$refs.video.files)
         this.fileNums = this.$refs.video.files.length
-        this.$emit('on-confirm', this.$refs.video.files)
+        this.$emit(
+          'on-confirm',
+          this.$refs.video.files,
+          this.$refs.tagsRef.tags
+        )
       }
     },
     clearData() {
       this.$refs.video.init()
+      this.tags = []
     }
   }
 }

@@ -6,7 +6,7 @@ import { computed, onMounted, onUnmounted, ref, watchEffect, watch } from 'vue'
 import AddDoodleWork from '@/components/modals/AddDoodleWork.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
-import { useHead } from 'unhead'
+import { useHead } from '@unhead/vue'
 import { Settings } from 'lucide-vue-next'
 import i18n from '@/lib/i18n.js'
 import DoodleWorkSettingModal from '@/components/modals/DoodleWorkSettingModal.vue'
@@ -28,6 +28,10 @@ onMounted(() => {
   //document.addEventListener('keydown', onKeyupEvent)
   doodleWork.actions.getVisitorContext()
 })
+
+// createHead(() => ({
+//   title: i18n.global.t('doodle_work.doodle_work')
+// }))
 
 // 监听连接错误事件
 doodleWork.actions.checkIsVisitor()
@@ -355,15 +359,33 @@ PYTHONPATH+:= scripts`
     } else if (plugin.name === 'UE_plugin') {
       if (doodleWork.state.doodleWorkSetting.UE_path) {
         if (fs.existsSync(doodleWork.state.doodleWorkSetting.UE_path)) {
+          let doodleSourceName = 'ue55_Plug'
+          if (doodleWork.state.doodleWorkSetting.UE_version === '5.4') {
+            doodleSourceName = 'ue54_Plug'
+          }
+          if (
+            !fs.existsSync(
+              `${doodleWork.doodleWorkFilePath}\\${doodleSourceName.sourceName}`
+            )
+          ) {
+            ElNotification({
+              title: i18n.global.t('doodle_work.install_fail'),
+              message:
+                '找不到ue源路径:' +
+                `${doodleWork.doodleWorkFilePath}\\${doodleSourceName.sourceName}`,
+              type: 'error'
+            })
+            plugin.installState = false
+            return
+          }
           const subPlugins = [
             { sourceName: 'SideFX_Labs', destName: 'SideFX_Labs' },
-            { sourceName: 'ue54_Plug', destName: 'Doodle' },
+            { sourceName: doodleSourceName, destName: 'Doodle' },
             { sourceName: 'UnrealEngine5VLC', destName: 'UnrealEngine5VLC' }
           ]
           for (const subPlugin of subPlugins) {
             const sourcePath = `${doodleWork.doodleWorkFilePath}\\${subPlugin.sourceName}`
             const destPath = `${doodleWork.state.doodleWorkSetting.UE_path}\\Engine\\Plugins\\${subPlugin.destName}`
-            console.log(sourcePath, destPath)
             doodleWork.actions.copyFolder(sourcePath, destPath)
           }
         } else {

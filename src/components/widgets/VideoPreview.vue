@@ -82,9 +82,9 @@
           <li @click="menuAction('showBigImage')">
             {{ $t('video_library.show_big_image') }}
           </li>
-          <li @click="menuAction('openVideoType')">
+          <!--li @click="menuAction('openVideoType')">
             {{ $t('video_library.open_asset_type') }}
-          </li>
+          </li-->
           <li @click="menuAction('delete')" v-if="isCurrentUserManager">
             {{ $t('video_library.delete') }}
           </li>

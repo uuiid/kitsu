@@ -15,11 +15,13 @@
           {{ $t('video_library.new_video_type') }}
         </h1>
         <form @submit.prevent>
-          <text-field
-            ref="typeField"
-            :label="$t('video_library.current_parent_type')"
-            :readonly="true"
-            v-model="videoTypeToCreat.type"
+          <tag-select-cell
+            :input-options="videoTypes"
+            ref="tagsRef"
+            :multiple="false"
+            :input-tags="videoTypeId === 'all' ? [] : [videoTypeId]"
+            :name="$t('doodle.type')"
+            v-if="active"
           />
           <text-field
             ref="nameField"
@@ -56,10 +58,12 @@
 
 <script>
 import TextField from '@/components/widgets/TextField.vue'
+import TagSelectCell from '@/components/cells/TagSelectCell.vue'
 
 export default {
   name: 'edit-video-library-add-type-modal',
   components: {
+    TagSelectCell,
     TextField
   },
 
@@ -99,6 +103,14 @@ export default {
     parentVideoType: {
       type: Object,
       default: () => {}
+    },
+    videoTypes: {
+      type: Array,
+      default: () => []
+    },
+    videoTypeId: {
+      type: String,
+      default: ''
     }
   },
   emits: ['on-confirm', 'cancel'],
@@ -155,7 +167,7 @@ export default {
         if (this.parentVideoType.id === 'all') {
           this.videoTypeToCreat.parent_id = ''
         } else {
-          this.videoTypeToCreat.parent_id = this.parentVideoType.id
+          this.videoTypeToCreat.parent_id = this.$refs.tagsRef.tags
         }
         this.$emit('on-confirm', this.videoTypeToCreat)
         this.clearData()

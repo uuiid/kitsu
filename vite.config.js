@@ -22,7 +22,8 @@ export default defineConfig({
     })
   ],
   build: {
-    sourcemap: true
+    sourcemap: true,
+    target: 'es2020'
   },
   resolve: {
     extensions: ['.mjs', '.js', '.ts', '.jsx', '.tsx', '.json', '.vue'],
@@ -47,14 +48,35 @@ export default defineConfig({
     host: '127.0.0.1',
     port: 8080,
     proxy: {
+      // '/AiPainting': {
+      //   target: 'http://127.0.0.1:7860',
+      //   rewrite: path => path.replace(/^\/AiPainting/, '')
+      // },
+      // '/assets': {
+      //   target: 'http://127.0.0.1:7860'
+      // },
+      // '/file': {
+      //   target: 'http://127.0.0.1:7860',
+      //   rewrite: path => path.replace(/^\/AiPainting/, '')
+      // },
+      // '/styles': {
+      //   target: 'http://127.0.0.1:7860',
+      //   rewrite: path => path.replace(/^\/AiPainting/, '')
+      // },
+      // '/AiPainting/physton_prompt/styles': {
+      //   target: 'http://127.0.0.1:7860'
+      // },
       '/api': {
-        target: process.env.KITSU_API_TARGET || 'http://127.0.0.1:5000',
-        changeOrigin: true,
-        rewrite: path => path.replace(/^\/api/, '')
+        target: process.env.KITSU_API_TARGET || 'http://127.0.0.1:50025'
+        //changeOrigin: true,
+        //rewrite: path => path.replace(/^\/api/, '')
       },
       '/socket.io': {
-        target: process.env.KITSU_EVENT_TARGET || 'http://127.0.0.1:5001',
+        target: process.env.KITSU_EVENT_TARGET || 'http://127.0.0.1:50025',
         ws: true
+      },
+      '/Doodle-3.6.571-win64.zip': {
+        target: process.env.KITSU_API_TARGET || 'http://127.0.0.1:50025'
       }
     }
   },
