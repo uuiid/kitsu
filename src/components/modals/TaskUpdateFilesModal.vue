@@ -123,12 +123,16 @@ function pathRule() {
     updateTaskFiles.state.selectedTask.entity.data.pin_yin_ming_cheng
   const bian_hao = updateTaskFiles.state.selectedTask.entity.data.bian_hao
   let final_file_name = pin_yin_ming_cheng
-  if (updateTaskFiles.state.selectedTask.entity.data.ban_ben !== '')
+  if (
+    updateTaskFiles.state.selectedTask.entity.data.ban_ben !== undefined &&
+    updateTaskFiles.state.selectedTask.entity.data.ban_ben !== ''
+  )
     final_file_name = `${final_file_name}_${updateTaskFiles.state.selectedTask.entity.data.ban_ben}`
   const file_path = {
     pin_yin_ming_cheng: pin_yin_ming_cheng,
     root_path: '',
-    maya_file_name: ''
+    maya_file_name: '',
+    ue_file_name: ''
   }
   if (
     updateTaskFiles.state.selectedTask.entity.asset_type_id ===
@@ -136,18 +140,21 @@ function pathRule() {
   ) {
     file_path.root_path = `Content/Character/${pin_yin_ming_cheng}/Meshs/SK_Ch${bian_hao}.uasset`
     file_path.maya_file_name = `Ch${bian_hao}.ma`
+    file_path.ue_file_name = `${pin_yin_ming_cheng}_UE5.uproject`
   } else if (
     updateTaskFiles.state.selectedTask.entity.asset_type_id ===
     '8c02b76a-6be6-4959-af58-5c31a85fe072'
   ) {
     file_path.root_path = `Content/Prop/${pin_yin_ming_cheng}/Mesh/SK_${final_file_name}.uasset`
     file_path.maya_file_name = `${final_file_name}.ma`
+    file_path.ue_file_name = `${pin_yin_ming_cheng}.uproject`
   } else if (
     updateTaskFiles.state.selectedTask.entity.asset_type_id ===
-    '21b3f5aa-cdd6-4fca-ace4-65077494df4b'
+    '0e40cd9b-7f50-418b-8322-39c451f49dde'
   ) {
     file_path.root_path = `Content/${pin_yin_ming_cheng}/Map/${final_file_name}.umap`
-    file_path.maya_file_name = `${final_file_name}.ma`
+    file_path.maya_file_name = `${final_file_name}_Low.ma`
+    file_path.ue_file_name = `${pin_yin_ming_cheng}.uproject`
   }
   return file_path
 }
@@ -182,7 +189,7 @@ const onAddData = files => {
     else if (
       updateTaskFiles.state.currentUpdateType === 3 &&
       file.name.endsWith('.uproject') &&
-      `${file_path.pin_yin_ming_cheng}_UE5.uproject` === file.name
+      file_path.ue_file_name === file.name
     ) {
       const root_path = path.dirname(file.path)
       const sk_path = path.join(root_path, file_path.root_path)

@@ -73,15 +73,15 @@
                 <button-simple
                   class="flexrow-item"
                   icon="image"
-                  :title="$t('tasks.show_contact_sheet')"
-                  @click="isShowOnlyPreview = !isShowOnlyPreview"
+                  :title="$t('doodle.only_has_not_preview_image')"
+                  @click="isShowOnlyPreview = true"
                   v-if="!isShowOnlyPreview"
                 />
                 <button-simple
                   class="flexrow-item"
                   icon="image-off"
-                  :title="$t('tasks.show_contact_sheet')"
-                  @click="isShowOnlyPreview = !isShowOnlyPreview"
+                  :title="$t('doodle.show_all')"
+                  @click="isShowOnlyPreview = false"
                   v-else
                 />
                 <button-simple
@@ -544,7 +544,9 @@ export default {
     },
     displayedAssetsByTypeWithPreview() {
       return this.displayedAssetsByType.map(type =>
-        type.filter(asset => !this.isShowOnlyPreview || asset.preview_file_id)
+        type.filter(
+          asset => !this.isShowOnlyPreview || asset.preview_file_id === ''
+        )
       )
     },
     displayedAssetsByTypeWithoutShared() {
