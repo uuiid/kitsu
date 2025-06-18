@@ -157,7 +157,8 @@ const initState = {
   receiveImageList: [
     'https://p9-aiop-sign.byteimg.com/tos-cn-i-vuqhorh59i/20250617140115F5258BAC2C3966A0D916-0~tplv-vuqhorh59i-image.image?rk3s=7f9e702d&x-expires=1750226483&x-signature=VBcK%2FBbP53G85dwPmMypVhjM8as%3D'
   ],
-  receiveVideoList: []
+  receiveVideoList: [],
+  receiveImage2VideoList: []
 }
 export const AiScriptStore = defineStore('AiScriptStore', () => {
   const state = ref(initState)
@@ -182,41 +183,22 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
         true,
         data
       )
-      console.log(signParams)
       const res = await AiScript.txt2image(data, signParams, authorization)
-      console.log(res)
       if (res.data.image_urls.length > 0)
         state.value.receiveImageList.push(...res.data.image_urls)
       return res
     },
-    txt2video: data => {
+    txt2video: async data => {
       data.req_key = 'jimeng_vgfm_t2v_l20'
-      const signParams = {
-        headers: {
-          // x-date header 是必传的
-          ['X-Date']: getDateTimeNow()
-        },
-        method: 'POST',
-        query: {
-          Version: '2022-08-31',
-          Action: action
-        },
-        accessKeyId: 'AKLTZWM3MTcxOTY2MzhmNGQwYzgwMDQxYjBiOTNmZjE3NzE\n',
-        secretAccessKey:
-          'WVRZek5UaGxPR0V6WVdNMk5EQTNOV0k1TVRVNFptSTFZVE5sTVRoaU1tTQ==',
-        serviceName: 'cv',
-        region: 'cn-north-1',
-        bodySha: getBodySha(JSON.stringify(data))
-      }
-      return AiScript.txt2video(
-        data,
-        action.createAuthorization(
-          signParams,
-          'CVSync2AsyncSubmitTask',
-          true,
-          data
-        )
+      const { authorization, signParams } = action.createAuthorization(
+        'CVProcess',
+        true,
+        data
       )
+      const res = await AiScript.txt2image(data, signParams, authorization)
+      if (res.data.image_urls.length > 0)
+        state.value.receiveVideoList.push(...res.data.image_urls)
+      return res
     },
     image2video: data => {
       data.req_key = 'jimeng_vgfm_i2v_l20'
