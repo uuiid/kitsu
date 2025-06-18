@@ -19,6 +19,7 @@ import AiPainting from '@/components/widgets/AiPainting.vue'
 import router from '@/router/index.js'
 import VideoModal from '@/components/modals/VideoModal.vue'
 import AiVideo from '@/components/widgets/AiVideo.vue'
+import { AiScriptStore } from '@/store/modules/AiScript.js'
 
 useHead({
   title: i18n.global.t('doodle_work.doodle_work')
@@ -607,7 +608,10 @@ const onSetOutPath = () => {
         <ai-painting
           v-else-if="currentPage.name === 'ai_painting'"
         ></ai-painting>
-        <ai-video v-else-if="currentPage.name === 'ai_video'"></ai-video>
+        <ai-video
+          :src-list="AiScriptStore().state.receiveVideoList"
+          v-else-if="currentPage.name === 'ai_video'"
+        ></ai-video>
       </div>
       <add-doodle-work />
       <doodle-work-log-modal v-if="doodleWork.state.isActiveLogModal" />

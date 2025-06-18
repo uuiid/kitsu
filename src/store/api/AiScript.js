@@ -27,20 +27,24 @@ export default {
       console.log('发生错误:', err)
     }
   },
-  getKlingToken() {
+  getJiMengToken() {
     const path = ``
     return client.pget(path)
   },
+  txt2image(data, signParams, authorization) {
+    const path = `https://visual.volcengineapi.com?Action=CVProcess&Version=2022-08-31`
+    return client.ppostJiMeng(path, data, signParams, authorization)
+  },
   txt2video(data, token) {
     const path = `https://api.klingai.com/v1/videos/text2video`
-    return client.ppostKling(path, data, token)
+    return client.ppostJiMeng(path, data, token)
   },
   image2video(data, token) {
     const path = `https://api.klingai.com/v1/videos/image2video`
-    return client.ppostKling(path, data, token)
+    return client.ppostJiMeng(path, data, token)
   },
   videoExtend(data, token) {
     const path = `https://api.klingai.com/v1/videos/video-extend`
-    return client.ppostKling(path, data, token)
+    return client.ppostJiMeng(path, data, token)
   }
 }

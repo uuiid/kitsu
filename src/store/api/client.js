@@ -73,26 +73,38 @@ const client = {
       })
     })
   },
-  ppostKling(path, data, token) {
-    data.callback_url = `${path}/${data.external_task_id}`
+  async ppostJiMeng(path, data, signParams, authorization) {
     return new Promise((resolve, reject) => {
-      superagent
-        .post(path)
-        .set('Authorization', `Bearer ${token}`)
-        .set('Content-Type', 'application/json')
-        .send(data)
-        .end((err, res) => {
-          if (res?.statusCode === 401) {
-            errors.backToLogin()
-            return reject(err)
-          } else {
-            if (err) {
-              err.body = res ? res.body : ''
-              return reject(err)
-            } else return resolve(res?.body)
-          }
-        })
+      fetch(path, {
+        method: 'POST',
+        headers: {
+          ...signParams.headers,
+          'Content-Type': 'application/json',
+          Host: 'visual.volcengineapi.com',
+          Authorization: authorization.replace(/\n/g, '')
+        },
+        body: JSON.stringify(data)
+      }).then(response => {
+        return resolve(response?.json())
+      })
     })
+    // superagent
+    //   .post(path)
+    //   .set('X-Date', Date.now().toString())
+    //   .set('Authorization', authorization)
+    //   .set('Content-Type', 'application/json')
+    //   .send(data)
+    //   .end((err, res) => {
+    //     if (res?.statusCode === 401) {
+    //       errors.backToLogin()
+    //       return reject(err)
+    //     } else {
+    //       if (err) {
+    //         err.body = res ? res.body : ''
+    //         return reject(err)
+    //       } else return resolve(res?.body)
+    //     }
+    //   })
   },
   ppostFileData(path, file, onProgress = null) {
     return new Promise((resolve, reject) => {

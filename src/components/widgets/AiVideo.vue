@@ -1,24 +1,38 @@
 <script setup>
 import { ref, reactive, computed, onMounted, onUnmounted } from 'vue'
-import { ChevronDown, ChevronRight } from 'lucide-vue-next'
 import ImageUpdateCell from '@/components/cells/ImageUpdateCell.vue'
 import { AiScriptStore } from '@/store/modules/AiScript.js'
 import AiVideoCell from '@/components/cells/AiVideoCell.vue'
+import AiImageCell from '@/components/cells/AiImageCell.vue'
 
-const tabs = ['txt2Video', 'image2Video']
+const AiScript = AiScriptStore()
+const props = defineProps({
+  tabs: {
+    type: Array,
+    default: () => ['txt2Video', 'image2Video']
+  },
+  isVideo: {
+    type: Boolean,
+    default: true
+  },
+  srcList: {
+    type: Array,
+    default: () => []
+  }
+})
+
+const tabs = props.tabs
 const inputCount = 5
-const isOpenNegative = ref(false)
-const AiSpcript = AiScriptStore()
 const dragging = ref(false)
 const dragStartX = ref(0)
 const leftPanelWidth = ref(300)
 const startLeftWidth = ref(300)
 const rightPanelWidth = ref(window.innerWidth - leftPanelWidth.value - 10)
-const currentTab = ref('txt2Video')
+const currentTab = ref(tabs[0])
 const currentTabContent = computed(() => {
   let temp = null
   switch (currentTab.value) {
-    case 'txt2image':
+    case 'txt2Picture':
       temp = txt2PInput
       break
     case 'txt2Video':
@@ -33,38 +47,41 @@ const currentTabContent = computed(() => {
 const txt2PInput = reactive({
   input: '',
   negativeInput: '',
-  config: [
-    {
-      value: '9:16',
+  config: {
+    aspect_ratio: {
+      value: '288*512',
       options: [
-        { value: '1:1', label: '1:1' },
-        { value: '16:9', label: '16:9' },
-        { value: '4:3', label: '4:3' },
-        { value: '9:16', label: '9:16' }
-      ]
-    },
-    {
-      value: '1',
-      options: [
-        {
-          value: '1',
-          label: '1张'
-        },
-        {
-          value: '2',
-          label: '2张'
-        },
-        {
-          value: '3',
-          label: '3张'
-        },
-        {
-          value: '4',
-          label: '4张'
-        }
+        { value: '512*512', label: '1:1', resolution: '512*512' },
+        { value: '512*384', label: '4:3', resolution: '512*384' },
+        { value: '384*512', label: '3:4', resolution: '384*512' },
+        { value: '512*341', label: '3:2', resolution: '512*341' },
+        { value: '341*512', label: '2:3', resolution: '341*512' },
+        { value: '512*288', label: '16:9', resolution: '512*288' },
+        { value: '288*512', label: '9:16', resolution: '288*512' }
       ]
     }
-  ]
+  }
+  // {
+  //   value: '1',
+  //   options: [
+  //     {
+  //       value: '1',
+  //       label: '1张'
+  //     },
+  //     {
+  //       value: '2',
+  //       label: '2张'
+  //     },
+  //     {
+  //       value: '3',
+  //       label: '3张'
+  //     },
+  //     {
+  //       value: '4',
+  //       label: '4张'
+  //     }
+  //   ]
+  // }
 })
 const txt2VInput = reactive({
   input: '',
@@ -74,8 +91,8 @@ const txt2VInput = reactive({
     duration: {
       value: '5s',
       options: [
-        { value: '5s', label: '5s' },
-        { value: '10s', label: '10s' }
+        { value: '5s', label: '5s' }
+        // { value: '10s', label: '10s' }
       ]
     },
     aspect_ratio: {
@@ -83,14 +100,10 @@ const txt2VInput = reactive({
       options: [
         { value: '16:9', label: '16:9' },
         { value: '9:16', label: '9:16' },
-        { value: '1:1', label: '1:1' }
+        { value: '1:1', label: '1:1' },
+        { value: '1:1', label: '1:1' },
+        { value: '21:9', label: '21:9' }
       ]
-    },
-    cfg_scale: {
-      value: 0.5,
-      max: 1,
-      min: 0,
-      visible: false
     }
   }
 })
@@ -108,8 +121,8 @@ const image2VInput = reactive({
     duration: {
       value: '5s',
       options: [
-        { value: '5s', label: '5s' },
-        { value: '10s', label: '10s' }
+        { value: '5s', label: '5s' }
+        // { value: '10s', label: '10s' }
       ]
     },
     aspect_ratio: {
@@ -117,17 +130,12 @@ const image2VInput = reactive({
       options: [
         { value: '16:9', label: '16:9' },
         { value: '9:16', label: '9:16' },
-        { value: '1:1', label: '1:1' }
+        { value: '1:1', label: '1:1' },
+        { value: '1:1', label: '1:1' },
+        { value: '21:9', label: '21:9' }
       ]
     }
   }
-})
-const numbers = computed(() => {
-  const result = []
-  for (let i = 1; i <= 85; i += 1) {
-    result.push(i)
-  }
-  return result
 })
 
 onMounted(() => {
@@ -169,20 +177,24 @@ function onMouseUp() {
 
 async function onGenerate() {
   switch (currentTab.value) {
+    case 'txt2Picture':
+      await AiScript.action.txt2image({
+        prompt: txt2PInput.input,
+        width: parseInt(txt2PInput.config.aspect_ratio.value.split('*')[0], 10),
+        height: parseInt(txt2PInput.config.aspect_ratio.value.split('*')[1], 10)
+      })
+      break
     case 'txt2Video':
       console.log(currentTab.value)
-      await AiSpcript.action.txt2video({
-        model_name: 'kling-v1-6',
+      await AiScript.action.txt2video({
         prompt: txt2VInput.input,
-        negative_prompt: txt2VInput.negativeInput,
-        cfg_scale: txt2VInput.config.cfg_scale.value,
         duration: txt2VInput.config.duration.value,
         aspect_ratio: txt2VInput.config.aspect_ratio.value
       })
       break
     case 'image2Video':
       console.log(currentTab.value)
-      AiSpcript.action.txt2video(currentTab.value)
+      AiScript.action.txt2video(currentTab.value)
       break
   }
 }
@@ -243,7 +255,7 @@ async function onGenerate() {
                 />
               </div>
             </div>
-            <div class="ai-video-describe" v-if="currentTab !== 'txt2image'">
+            <!--div class="ai-video-describe" v-if="currentTab !== 'txt2Picture'">
               <div class="ai-video-negative-describe-title">
                 <div>
                   <span> 不希望呈现的内容 </span>
@@ -264,7 +276,7 @@ async function onGenerate() {
               </div>
               <div
                 class="ai-video-describe-content"
-                v-if="!isOpenNegative && currentTab !== 'txt2image'"
+                v-if="!isOpenNegative && currentTab !== 'txt2Picture'"
               >
                 <textarea
                   ref="inputRef"
@@ -276,7 +288,7 @@ async function onGenerate() {
                   @keydown="handleInputKeyDown"
                 />
               </div>
-            </div>
+            </div-->
 
             <div class="ai-video-config">
               <div
@@ -323,11 +335,20 @@ async function onGenerate() {
         >
           <div class="main-content">
             <div class="video-list">
-              <div class="video-item" :key="number" v-for="number in numbers">
-                <div class="video-preview">
-                  <ai-video-cell
-                    :src="`http://127.0.0.1:5000/video/21344-重生八零成为村首富的美艳妻/${number}`"
-                  />
+              <div
+                class="video-item"
+                :key="src"
+                v-for="(src, index) in srcList"
+              >
+                <div class="video-preview" v-if="props.isVideo">
+                  <ai-video-cell :src="src" />
+                </div>
+                <div class="video-preview" v-else>
+                  <ai-image-cell
+                    class="auto-resize"
+                    :src-index="index"
+                    :src-list="srcList"
+                  ></ai-image-cell>
                 </div>
               </div>
             </div>
