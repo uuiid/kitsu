@@ -72,6 +72,20 @@
                 />
                 <button-simple
                   class="flexrow-item"
+                  icon="image"
+                  :title="$t('tasks.show_contact_sheet')"
+                  @click="isShowOnlyPreview = !isShowOnlyPreview"
+                  v-if="!isShowOnlyPreview"
+                />
+                <button-simple
+                  class="flexrow-item"
+                  icon="image-off"
+                  :title="$t('tasks.show_contact_sheet')"
+                  @click="isShowOnlyPreview = !isShowOnlyPreview"
+                  v-else
+                />
+                <button-simple
+                  class="flexrow-item"
                   :text="$t('assets.new_asset')"
                   icon="plus"
                   @click="showNewModal"
@@ -108,7 +122,7 @@
               :contact-sheet-mode="contactSheetMode"
               :displayed-assets="
                 showSharedAssets
-                  ? displayedAssetsByType
+                  ? displayedAssetsByTypeWithPreview
                   : displayedAssetsByTypeWithoutShared
               "
               :is-loading="isAssetsLoading || initialLoading"
@@ -428,7 +442,8 @@ export default {
       },
       success: {
         edit: false
-      }
+      },
+      isShowOnlyPreview: false
     }
   },
 
@@ -527,7 +542,11 @@ export default {
     searchField() {
       return this.$refs['asset-search-field']
     },
-
+    displayedAssetsByTypeWithPreview() {
+      return this.displayedAssetsByType.map(type =>
+        type.filter(asset => !this.isShowOnlyPreview || asset.preview_file_id)
+      )
+    },
     displayedAssetsByTypeWithoutShared() {
       return this.displayedAssetsByType.map(type =>
         type.filter(asset => !asset.shared)
