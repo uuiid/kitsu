@@ -44,7 +44,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
   const actions = {
     filteringAsset: (asset, temp, keys) => {
       let value = false
-      if (asset !== {} && asset.canceled === false) {
+      if (asset !== {}) {
         for (let i = 0; i < state.value.assetFilters.size; i++) {
           const item = state.value.assetFilters.get(keys[i])
           const key = keys[i]
@@ -222,6 +222,12 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
         return actions.filteringAsset(asset, temp, keys)
       })
       state.value.treeFilterData = [...temp.values()]
+      state.value.treeFilterData[1].children.sort((a, b) => {
+        return a.label - b.label
+      })
+      state.value.treeFilterData[2].children.sort((a, b) => {
+        return a.label - b.label
+      })
       const temp_filters = []
       state.value.assetFilters.forEach((value, key) => {
         if (value.isChecked) temp_filters.push(value.id)
