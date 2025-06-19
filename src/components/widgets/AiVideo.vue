@@ -29,6 +29,7 @@ const leftPanelWidth = ref(300)
 const startLeftWidth = ref(300)
 const rightPanelWidth = ref(window.innerWidth - leftPanelWidth.value - 10)
 const currentTab = ref(tabs[0])
+const imageInputRef = ref()
 const currentTabContent = computed(() => {
   let temp = null
   switch (currentTab.value) {
@@ -100,9 +101,11 @@ const txt2VInput = reactive({
       options: [
         { value: '16:9', label: '16:9' },
         { value: '9:16', label: '9:16' },
+        { value: '4:3', label: '4:3' },
+        { value: '3:4', label: '3:4' },
         { value: '1:1', label: '1:1' },
-        { value: '1:1', label: '1:1' },
-        { value: '21:9', label: '21:9' }
+        { value: '21:9', label: '21:9' },
+        { value: '9:21', label: '9:21' }
       ]
     }
   }
@@ -130,9 +133,11 @@ const image2VInput = reactive({
       options: [
         { value: '16:9', label: '16:9' },
         { value: '9:16', label: '9:16' },
+        { value: '4:3', label: '4:3' },
+        { value: '3:4', label: '3:4' },
         { value: '1:1', label: '1:1' },
-        { value: '1:1', label: '1:1' },
-        { value: '21:9', label: '21:9' }
+        { value: '21:9', label: '21:9' },
+        { value: '9:21', label: '9:21' }
       ]
     }
   }
@@ -188,13 +193,15 @@ async function onGenerate() {
       console.log(currentTab.value)
       await AiScript.action.txt2video({
         prompt: txt2VInput.input,
-        duration: txt2VInput.config.duration.value,
         aspect_ratio: txt2VInput.config.aspect_ratio.value
       })
       break
     case 'image2Video':
-      console.log(currentTab.value)
-      AiScript.action.txt2video(currentTab.value)
+      AiScript.action.image2video({
+        prompt: txt2VInput.input,
+        binary_data_base64: [imageInputRef.value.previewSrc],
+        aspect_ratio: txt2VInput.config.aspect_ratio.value
+      })
       break
   }
 }
@@ -224,7 +231,7 @@ async function onGenerate() {
           <div class="ai-video-txt2p">
             <div class="ai-video-image" v-if="currentTab === 'image2Video'">
               <div class="ai-video-image-item">
-                <image-update-cell />
+                <image-update-cell ref="imageInputRef" />
                 <!--image-update-cell />
               </div>
               <div class="ai-video-image-item">
@@ -244,14 +251,17 @@ async function onGenerate() {
                 </div>
               </div>
               <div class="ai-video-describe-content">
-                <textarea
+                <el-input
                   ref="inputRef"
                   class="ai-input"
+                  type="textarea"
                   :rows="inputCount"
                   v-model="currentTabContent.input"
                   placeholder="给我点创作提示吧"
                   @input="onInput"
                   @keydown="handleInputKeyDown"
+                  maxlength="150"
+                  show-word-limit
                 />
               </div>
             </div>
@@ -496,7 +506,7 @@ async function onGenerate() {
 }
 
 .ai-video-describe-content {
-  border: #6bacea solid 1px;
+  border: transparent solid 1px;
   border-radius: 5px;
 }
 
@@ -506,7 +516,6 @@ async function onGenerate() {
   background: transparent;
   resize: none;
   overflow: auto;
-  padding: 0.5em;
 }
 
 .fixed-resize {

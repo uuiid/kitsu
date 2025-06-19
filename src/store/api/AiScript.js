@@ -36,11 +36,15 @@ export default {
     return client.ppostJiMeng(path, data, signParams, authorization)
   },
   txt2video(data, signParams, authorization) {
-    const path = `https://api.klingai.com/v1/videos/text2video`
+    const path = `https://visual.volcengineapi.com/?Action=CVSync2AsyncSubmitTask&Version=2022-08-31`
+    return client.ppostJiMeng(path, data, signParams, authorization)
+  },
+  getTxt2video(data, signParams, authorization) {
+    const path = `https://visual.volcengineapi.com?Action=CVSync2AsyncGetResult&Version=2022-08-31`
     return client.ppostJiMeng(path, data, signParams, authorization)
   },
   image2video(data, signParams, authorization) {
-    const path = `https://api.klingai.com/v1/videos/image2video`
+    const path = `https://visual.volcengineapi.com?Action=CVSync2AsyncSubmitTask&Version=2022-08-31`
     return client.ppostJiMeng(path, data, signParams, authorization)
   },
   videoExtend(data, token) {

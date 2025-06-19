@@ -4,7 +4,7 @@ import { ref, computed } from 'vue'
 const videoRef = ref()
 const emits = defineEmits(['on-click'])
 const isShowControls = ref(false)
-const props = defineProps(['src'])
+defineProps(['src'])
 const currentTime = ref()
 const videoTime = computed(() => {
   if (videoRef.value && currentTime.value) {
@@ -59,12 +59,12 @@ function enterFullscreen() {
     <video
       ref="videoRef"
       class="auto-resize"
-      :src="props.src"
       muted
       loop
       @mouseenter="onMouseEnter"
       @mouseleave="onMouseLeave"
       @timeupdate="currentTime = videoRef.currentTime"
+      :src="src"
     ></video>
     <span class="video-time" v-if="isShowControls">{{ videoTime }}</span>
   </div>

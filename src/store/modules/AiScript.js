@@ -158,7 +158,8 @@ const initState = {
     'https://p9-aiop-sign.byteimg.com/tos-cn-i-vuqhorh59i/20250617140115F5258BAC2C3966A0D916-0~tplv-vuqhorh59i-image.image?rk3s=7f9e702d&x-expires=1750226483&x-signature=VBcK%2FBbP53G85dwPmMypVhjM8as%3D'
   ],
   receiveVideoList: [],
-  receiveImage2VideoList: []
+  receiveImage2VideoList: [],
+  receiveTxt2ImageTimer: null
 }
 export const AiScriptStore = defineStore('AiScriptStore', () => {
   const state = ref(initState)
@@ -191,18 +192,50 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
     txt2video: async data => {
       data.req_key = 'jimeng_vgfm_t2v_l20'
       const { authorization, signParams } = action.createAuthorization(
-        'CVProcess',
+        'CVSync2AsyncSubmitTask',
         true,
         data
       )
-      const res = await AiScript.txt2image(data, signParams, authorization)
-      if (res.data.image_urls.length > 0)
-        state.value.receiveVideoList.push(...res.data.image_urls)
+      const res = await AiScript.txt2video(data, signParams, authorization)
+      if (res.message === 'success') {
+        const startDate = Date.now()
+        state.value.receiveTxt2ImageTimer = setInterval(() => {
+          action.getTxt2video(
+            {
+              req_key: data.req_key,
+              task_id: res.data.task_id
+            },
+            startDate
+          )
+        }, 1000)
+      }
       return res
     },
-    image2video: data => {
-      data.req_key = 'jimeng_vgfm_i2v_l20'
-      return AiScript.image2video(data, state.value.klingToken)
+    getTxt2video: async (data, startDate) => {
+      const { authorization, signParams } = action.createAuthorization(
+        'CVSync2AsyncGetResult',
+        true,
+        data
+      )
+      const res = await AiScript.getTxt2video(data, signParams, authorization)
+      console.log(res)
+      if (res.message === 'Success') {
+        clearTimeout(state.value.receiveTxt2ImageTimer)
+        state.value.receiveVideoList.push(res.data.video_url)
+      }
+      return res
+    },
+    image2video: async data => {
+      data.req_key = 'jimeng_vgfm_t2v_l20'
+      const { authorization, signParams } = action.createAuthorization(
+        'CVSync2AsyncSubmitTask',
+        true,
+        data
+      )
+      const res = await AiScript.image2video(data, signParams, authorization)
+      if (res.data.image_urls.length > 0)
+        state.value.receiveimage2VideoList.push(...res.data.image_urls)
+      return res
     },
     createAuthorization(action, post = true, data = {}) {
       const signParams = {
@@ -217,8 +250,9 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
           Version: '2022-08-31',
           Action: action
         },
-        accessKeyId: 'AK**************',
-        secretAccessKey: '*************************==',
+        accessKeyId: 'AKLTZWM3MTcxOTY2MzhmNGQwYzgwMDQxYjBiOTNmZjE3NzE',
+        secretAccessKey:
+          'WVRZek5UaGxPR0V6WVdNMk5EQTNOV0k1TVRVNFptSTFZVE5sTVRoaU1tTQ==',
         serviceName: 'cv',
         region: 'cn-north-1',
         bodySha: getBodySha(JSON.stringify(data))

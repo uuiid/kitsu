@@ -53,10 +53,8 @@ async function handleData(files) {
   const file = files[0]
   if (file.type.startsWith('image/')) {
     try {
-      const base64String = await readFileAsBase64(file)
-      previewSrc.value = base64String
+      previewSrc.value = await readFileAsBase64(file)
       isShowActon.value = false
-      console.log(base64String)
     } catch (e) {
       console.error(e)
     }
@@ -78,6 +76,10 @@ function readFileAsBase64(file) {
     reader.readAsDataURL(file)
   })
 }
+
+defineExpose({
+  previewSrc
+})
 </script>
 
 <template>
