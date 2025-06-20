@@ -198,8 +198,8 @@ async function onGenerate() {
       break
     case 'image2Video':
       AiScript.action.image2video({
-        prompt: txt2VInput.input,
-        binary_data_base64: [imageInputRef.value.previewSrc],
+        prompt: image2VInput.input,
+        binary_data_base64: [imageInputRef.value.previewSrc.split(',')[1]],
         aspect_ratio: txt2VInput.config.aspect_ratio.value
       })
       break

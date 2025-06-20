@@ -159,7 +159,8 @@ const initState = {
   ],
   receiveVideoList: [],
   receiveImage2VideoList: [],
-  receiveTxt2ImageTimer: null
+  receiveTxt2ImageTimer: null,
+  receiveImage2ImageTimer: null
 }
 export const AiScriptStore = defineStore('AiScriptStore', () => {
   const state = ref(initState)
@@ -212,13 +213,15 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       return res
     },
     getTxt2video: async (data, startDate) => {
+      if (Date.now() - startDate > 60000) {
+        clearInterval(state.value.receiveTxt2ImageTimer)
+      }
       const { authorization, signParams } = action.createAuthorization(
         'CVSync2AsyncGetResult',
         true,
         data
       )
       const res = await AiScript.getTxt2video(data, signParams, authorization)
-      console.log(res)
       if (res.message === 'Success') {
         clearTimeout(state.value.receiveTxt2ImageTimer)
         state.value.receiveVideoList.push(res.data.video_url)
@@ -226,15 +229,41 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       return res
     },
     image2video: async data => {
-      data.req_key = 'jimeng_vgfm_t2v_l20'
+      data.req_key = 'jimeng_vgfm_i2v_l20'
       const { authorization, signParams } = action.createAuthorization(
         'CVSync2AsyncSubmitTask',
         true,
         data
       )
       const res = await AiScript.image2video(data, signParams, authorization)
-      if (res.data.image_urls.length > 0)
-        state.value.receiveimage2VideoList.push(...res.data.image_urls)
+      if (res.message === 'Success') {
+        const startDate = Date.now()
+        state.value.receiveImage2ImageTimer = setInterval(() => {
+          action.getImage2Video(
+            {
+              req_key: data.req_key,
+              task_id: res.data.task_id
+            },
+            startDate
+          )
+        }, 1000)
+      }
+      return res
+    },
+    getImage2Video: async (data, startDate) => {
+      if (Date.now() - startDate > 60000) {
+        clearInterval(state.value.receiveImage2ImageTimer)
+      }
+      const { authorization, signParams } = action.createAuthorization(
+        'CVSync2AsyncGetResult',
+        true,
+        data
+      )
+      const res = await AiScript.getTxt2video(data, signParams, authorization)
+      if (res.message === 'Success') {
+        clearTimeout(state.value.receiveImage2ImageTimer)
+        state.value.receiveImage2VideoList.push(res.data.video_url)
+      }
       return res
     },
     createAuthorization(action, post = true, data = {}) {
