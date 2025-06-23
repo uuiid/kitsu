@@ -160,7 +160,10 @@ const initState = {
   receiveVideoList: [],
   receiveImage2VideoList: [],
   receiveTxt2ImageTimer: null,
-  receiveImage2ImageTimer: null
+  receiveImage2ImageTimer: null,
+  txt2ImageIsLoading: false,
+  image2VideoIsLoading: false,
+  txt2VideoIsLoading: false
 }
 export const AiScriptStore = defineStore('AiScriptStore', () => {
   const state = ref(initState)
@@ -188,6 +191,7 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       const res = await AiScript.txt2image(data, signParams, authorization)
       if (res.data.image_urls.length > 0)
         state.value.receiveImageList.push(...res.data.image_urls)
+      state.value.txt2ImageIsLoading = false
       return res
     },
     txt2video: async data => {
@@ -224,6 +228,7 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       const res = await AiScript.getTxt2video(data, signParams, authorization)
       if (res.message === 'Success') {
         clearTimeout(state.value.receiveTxt2ImageTimer)
+        state.value.txt2VideoIsLoading = false
         state.value.receiveVideoList.push(res.data.video_url)
       }
       return res
@@ -262,6 +267,7 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       const res = await AiScript.getTxt2video(data, signParams, authorization)
       if (res.message === 'Success') {
         clearTimeout(state.value.receiveImage2ImageTimer)
+        state.value.image2VideoIsLoading = false
         state.value.receiveImage2VideoList.push(res.data.video_url)
       }
       return res

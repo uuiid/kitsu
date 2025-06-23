@@ -30,6 +30,36 @@ const startLeftWidth = ref(300)
 const rightPanelWidth = ref(window.innerWidth - leftPanelWidth.value - 10)
 const currentTab = ref(tabs[0])
 const imageInputRef = ref()
+const currentLoading = computed(() => {
+  let temp = false
+  switch (currentTab.value) {
+    case 'txt2Picture':
+      temp = AiScript.state.txt2ImageIsLoading
+      break
+    case 'txt2Video':
+      temp = AiScript.state.txt2VideoIsLoading
+      break
+    case 'image2Video':
+      temp = AiScript.state.image2VideoIsLoading
+      break
+  }
+  return temp
+})
+const currentSrcList = computed(() => {
+  let temp = []
+  switch (currentTab.value) {
+    case 'txt2Picture':
+      temp = AiScript.state.receiveImageList
+      break
+    case 'txt2Video':
+      temp = AiScript.state.receiveVideoList
+      break
+    case 'image2Video':
+      temp = AiScript.state.receiveImage2VideoList
+      break
+  }
+  return temp
+})
 const currentTabContent = computed(() => {
   let temp = null
   switch (currentTab.value) {
@@ -41,6 +71,22 @@ const currentTabContent = computed(() => {
       break
     case 'image2Video':
       temp = image2VInput
+      break
+  }
+  return temp
+})
+
+const isGenerate = computed(() => {
+  let temp = false
+  switch (currentTab.value) {
+    case 'txt2Picture':
+      temp = currentTabContent.value.input === ''
+      break
+    case 'txt2Video':
+      temp = currentTabContent.value.input === ''
+      break
+    case 'image2Video':
+      temp = imageInputRef.value?.previewSrc === ''
       break
   }
   return temp
@@ -188,13 +234,14 @@ async function onGenerate() {
         width: parseInt(txt2PInput.config.aspect_ratio.value.split('*')[0], 10),
         height: parseInt(txt2PInput.config.aspect_ratio.value.split('*')[1], 10)
       })
+      AiScript.state.txt2ImageIsLoading = true
       break
     case 'txt2Video':
-      console.log(currentTab.value)
       await AiScript.action.txt2video({
         prompt: txt2VInput.input,
         aspect_ratio: txt2VInput.config.aspect_ratio.value
       })
+      AiScript.state.txt2VideoIsLoading = true
       break
     case 'image2Video':
       AiScript.action.image2video({
@@ -202,6 +249,7 @@ async function onGenerate() {
         binary_data_base64: [imageInputRef.value.previewSrc.split(',')[1]],
         aspect_ratio: txt2VInput.config.aspect_ratio.value
       })
+      AiScript.state.image2VideoIsLoading = true
       break
   }
 }
@@ -230,6 +278,16 @@ async function onGenerate() {
           </div>
           <div class="ai-video-txt2p">
             <div class="ai-video-image" v-if="currentTab === 'image2Video'">
+              <div class="ai-video-describe-title">
+                <div class="ai-video-describe-title">
+                  <div>
+                    <span> 图片参考 </span>
+                    <span style="color: rgba(255, 255, 255, 0.4)">
+                      (必填)
+                    </span>
+                  </div>
+                </div>
+              </div>
               <div class="ai-video-image-item">
                 <image-update-cell ref="imageInputRef" />
                 <!--image-update-cell />
@@ -244,7 +302,10 @@ async function onGenerate() {
                 <div class="ai-video-describe-title">
                   <div>
                     <span> 创意描述 </span>
-                    <span style="color: rgba(255, 255, 255, 0.4)">
+                    <span
+                      style="color: rgba(255, 255, 255, 0.4)"
+                      v-if="currentTab !== 'image2Video'"
+                    >
                       (必填)
                     </span>
                   </div>
@@ -335,7 +396,14 @@ async function onGenerate() {
             </div>
           </div>
           <div class="ai-video-generate">
-            <el-button @click="onGenerate">生成</el-button>
+            <el-button
+              type="primary"
+              style="width: 80px"
+              :loading="currentLoading"
+              :disabled="isGenerate"
+              @click="onGenerate"
+              >生成
+            </el-button>
           </div>
         </el-aside>
         <div class="main-content-separator" @mousedown="onMouseDown"></div>
@@ -348,7 +416,7 @@ async function onGenerate() {
               <div
                 class="video-item"
                 :key="src"
-                v-for="(src, index) in srcList"
+                v-for="(src, index) in currentSrcList"
               >
                 <div class="video-preview" v-if="props.isVideo">
                   <ai-video-cell :src="src" />
@@ -357,7 +425,7 @@ async function onGenerate() {
                   <ai-image-cell
                     class="auto-resize"
                     :src-index="index"
-                    :src-list="srcList"
+                    :src-list="currentSrcList"
                   ></ai-image-cell>
                 </div>
               </div>
@@ -446,10 +514,10 @@ async function onGenerate() {
 .ai-video-image {
   display: flex;
   flex-direction: column;
-  margin-top: 20px;
+  //margin-top: 10px;
   padding: 4px;
   gap: 5px;
-  border: 1px solid rgba(204, 203, 203, 0.42);
+  //border: 1px solid rgba(204, 203, 203, 0.42);
   border-radius: 5px;
 }
 
@@ -555,5 +623,21 @@ async function onGenerate() {
   max-height: 100%;
   width: auto;
   height: auto;
+}
+
+.el-button .custom-loading .circular {
+  margin-right: 6px;
+  width: 18px;
+  height: 18px;
+  animation: loading-rotate 2s linear infinite;
+}
+
+.el-button .custom-loading .circular .path {
+  animation: loading-dash 1.5s ease-in-out infinite;
+  stroke-dasharray: 90, 150;
+  stroke-dashoffset: 0;
+  stroke-width: 2;
+  stroke: var(--el-button-text-color);
+  stroke-linecap: round;
 }
 </style>
