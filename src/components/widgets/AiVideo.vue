@@ -4,6 +4,8 @@ import ImageUpdateCell from '@/components/cells/ImageUpdateCell.vue'
 import { AiScriptStore } from '@/store/modules/AiScript.js'
 import AiVideoCell from '@/components/cells/AiVideoCell.vue'
 import AiImageCell from '@/components/cells/AiImageCell.vue'
+import user from '@/store/modules/user.js'
+import { ElMessage } from 'element-plus'
 
 const AiScript = AiScriptStore()
 const props = defineProps({
@@ -31,19 +33,12 @@ const rightPanelWidth = ref(window.innerWidth - leftPanelWidth.value - 10)
 const currentTab = ref(tabs[0])
 const imageInputRef = ref()
 const currentLoading = computed(() => {
-  let temp = false
-  switch (currentTab.value) {
-    case 'txt2Picture':
-      temp = AiScript.state.txt2ImageIsLoading
-      break
-    case 'txt2Video':
-      temp = AiScript.state.txt2VideoIsLoading
-      break
-    case 'image2Video':
-      temp = AiScript.state.image2VideoIsLoading
-      break
+  const loadingStates = {
+    txt2Picture: AiScript.state.txt2ImageIsLoading,
+    txt2Video: AiScript.state.txt2VideoIsLoading,
+    image2Video: AiScript.state.image2VideoIsLoading
   }
-  return temp
+  return loadingStates[currentTab.value]
 })
 const currentSrcList = computed(() => {
   let temp = []
@@ -227,29 +222,34 @@ function onMouseUp() {
 }
 
 async function onGenerate() {
+  if (!user.getters.isCurrentUserManager) {
+    ElMessage.error('您没有权限')
+    return
+  }
   switch (currentTab.value) {
     case 'txt2Picture':
+      AiScript.state.txt2ImageIsLoading = true
       await AiScript.action.txt2image({
         prompt: txt2PInput.input,
         width: parseInt(txt2PInput.config.aspect_ratio.value.split('*')[0], 10),
         height: parseInt(txt2PInput.config.aspect_ratio.value.split('*')[1], 10)
       })
-      AiScript.state.txt2ImageIsLoading = true
       break
     case 'txt2Video':
+      AiScript.state.txt2VideoIsLoading = true
       await AiScript.action.txt2video({
         prompt: txt2VInput.input,
         aspect_ratio: txt2VInput.config.aspect_ratio.value
       })
-      AiScript.state.txt2VideoIsLoading = true
       break
     case 'image2Video':
-      AiScript.action.image2video({
+      AiScript.state.image2VideoIsLoading = true
+      //console.log(imageInputRef.value.imagePreview.naturalWidth)
+      await AiScript.action.image2video({
         prompt: image2VInput.input,
         binary_data_base64: [imageInputRef.value.previewSrc.split(',')[1]],
-        aspect_ratio: txt2VInput.config.aspect_ratio.value
+        aspect_ratio: image2VInput.config.aspect_ratio.value
       })
-      AiScript.state.image2VideoIsLoading = true
       break
   }
 }
@@ -400,7 +400,7 @@ async function onGenerate() {
               type="primary"
               style="width: 80px"
               :loading="currentLoading"
-              :disabled="isGenerate"
+              :disabled="currentLoading ? false : isGenerate"
               @click="onGenerate"
               >生成
             </el-button>

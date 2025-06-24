@@ -150,13 +150,15 @@ function getBodySha(body) {
   return hash.digest('hex')
 }
 
+// function sleep(ms) {
+//   return new Promise(resolve => setTimeout(resolve, ms))
+// }
+
 const initState = {
   currentDialogue: '',
   allDialogue: new Map(),
   jiMengAccessKeyId: '',
-  receiveImageList: [
-    'https://p9-aiop-sign.byteimg.com/tos-cn-i-vuqhorh59i/20250617140115F5258BAC2C3966A0D916-0~tplv-vuqhorh59i-image.image?rk3s=7f9e702d&x-expires=1750226483&x-signature=VBcK%2FBbP53G85dwPmMypVhjM8as%3D'
-  ],
+  receiveImageList: [],
   receiveVideoList: [],
   receiveImage2VideoList: [],
   receiveTxt2ImageTimer: null,
@@ -183,11 +185,15 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
     txt2image: async data => {
       data.req_key = 'jimeng_high_aes_general_v21_L'
       data.return_url = true
+      const keys = await AiScript.getJiMengKey()
       const { authorization, signParams } = action.createAuthorization(
         'CVProcess',
+        keys,
         true,
         data
       )
+      // await sleep(10000)
+      console.log(signParams)
       const res = await AiScript.txt2image(data, signParams, authorization)
       if (res.data.image_urls.length > 0)
         state.value.receiveImageList.push(...res.data.image_urls)
@@ -196,13 +202,15 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
     },
     txt2video: async data => {
       data.req_key = 'jimeng_vgfm_t2v_l20'
+      const keys = await AiScript.getJiMengKey()
       const { authorization, signParams } = action.createAuthorization(
         'CVSync2AsyncSubmitTask',
+        keys,
         true,
         data
       )
       const res = await AiScript.txt2video(data, signParams, authorization)
-      if (res.message === 'success') {
+      if (res.message === 'Success') {
         const startDate = Date.now()
         state.value.receiveTxt2ImageTimer = setInterval(() => {
           action.getTxt2video(
@@ -212,7 +220,7 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
             },
             startDate
           )
-        }, 1000)
+        }, 2000)
       }
       return res
     },
@@ -220,13 +228,15 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       if (Date.now() - startDate > 60000) {
         clearInterval(state.value.receiveTxt2ImageTimer)
       }
+      const keys = await AiScript.getJiMengKey()
       const { authorization, signParams } = action.createAuthorization(
         'CVSync2AsyncGetResult',
+        keys,
         true,
         data
       )
       const res = await AiScript.getTxt2video(data, signParams, authorization)
-      if (res.message === 'Success') {
+      if (res.message === 'Success' && res.data.video_url !== '') {
         clearTimeout(state.value.receiveTxt2ImageTimer)
         state.value.txt2VideoIsLoading = false
         state.value.receiveVideoList.push(res.data.video_url)
@@ -235,8 +245,10 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
     },
     image2video: async data => {
       data.req_key = 'jimeng_vgfm_i2v_l20'
+      const keys = await AiScript.getJiMengKey()
       const { authorization, signParams } = action.createAuthorization(
         'CVSync2AsyncSubmitTask',
+        keys,
         true,
         data
       )
@@ -251,28 +263,30 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
             },
             startDate
           )
-        }, 1000)
+        }, 2000)
       }
       return res
     },
     getImage2Video: async (data, startDate) => {
-      if (Date.now() - startDate > 60000) {
-        clearInterval(state.value.receiveImage2ImageTimer)
-      }
+      // if (Date.now() - startDate > 60000) {
+      //   clearInterval(state.value.receiveImage2ImageTimer)
+      // }
+      const keys = await AiScript.getJiMengKey()
       const { authorization, signParams } = action.createAuthorization(
         'CVSync2AsyncGetResult',
+        keys,
         true,
         data
       )
       const res = await AiScript.getTxt2video(data, signParams, authorization)
-      if (res.message === 'Success') {
+      if (res.message === 'Success' && res.data.video_url !== '') {
         clearTimeout(state.value.receiveImage2ImageTimer)
         state.value.image2VideoIsLoading = false
         state.value.receiveImage2VideoList.push(res.data.video_url)
       }
       return res
     },
-    createAuthorization(action, post = true, data = {}) {
+    createAuthorization(action, keys, post = true, data = {}) {
       const signParams = {
         headers: {
           ['X-Date']: getDateTimeNow(),
@@ -285,9 +299,8 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
           Version: '2022-08-31',
           Action: action
         },
-        accessKeyId: 'AKLTZWM3MTcxOTY2MzhmNGQwYzgwMDQxYjBiOTNmZjE3NzE',
-        secretAccessKey:
-          'WVRZek5UaGxPR0V6WVdNMk5EQTNOV0k1TVRVNFptSTFZVE5sTVRoaU1tTQ==',
+        accessKeyId: keys.access_key_id,
+        secretAccessKey: keys.secret_access_key,
         serviceName: 'cv',
         region: 'cn-north-1',
         bodySha: getBodySha(JSON.stringify(data))

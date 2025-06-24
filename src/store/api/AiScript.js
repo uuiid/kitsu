@@ -50,5 +50,9 @@ export default {
   videoExtend(data, token) {
     const path = `https://api.klingai.com/v1/videos/video-extend`
     return client.ppostJiMeng(path, data, token)
+  },
+  getJiMengKey() {
+    const path = `/api/doodle/key/ji_meng`
+    return client.pget(path)
   }
 }

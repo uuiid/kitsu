@@ -3,6 +3,7 @@ import { ref, onMounted, onUnmounted } from 'vue'
 import AiImageAction from '@/components/cells/AiImageAction.vue'
 
 const previewSrc = ref('')
+const imagePreview = ref()
 const isDrop = ref(false)
 const fileInput = ref()
 const imageCellRef = ref()
@@ -16,7 +17,6 @@ const openFilePicker = () => {
 }
 
 function updateDocumentSize() {
-  console.log(imageCellRef.value.clientWidth)
   size.width = imageCellRef.value.clientWidth
   size.height = imageCellRef.value.clientHeight
 }
@@ -78,7 +78,8 @@ function readFileAsBase64(file) {
 }
 
 defineExpose({
-  previewSrc
+  previewSrc,
+  imagePreview
 })
 </script>
 
@@ -99,6 +100,7 @@ defineExpose({
       :style="`position: absolute;width:${size.width}px;height:${size.height}px;background: rgba(0, 0, 0, 0.49);border-radius: 5px;`"
     ></ai-image-action>
     <img
+      ref="imagePreview"
       class="auto-resize"
       style="width: auto; height: auto"
       alt=""
