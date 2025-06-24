@@ -366,14 +366,14 @@ PYTHONPATH+:= scripts`
           }
           if (
             !fs.existsSync(
-              `${doodleWork.doodleWorkFilePath}\\${doodleSourceName.sourceName}`
+              `${doodleWork.doodleWorkFilePath}\\${doodleSourceName}`
             )
           ) {
             ElNotification({
               title: i18n.global.t('doodle_work.install_fail'),
               message:
                 '找不到ue源路径:' +
-                `${doodleWork.doodleWorkFilePath}\\${doodleSourceName.sourceName}`,
+                `${doodleWork.doodleWorkFilePath}\\${doodleSourceName}`,
               type: 'error'
             })
             plugin.installState = false

@@ -150,7 +150,7 @@ function pathRule() {
     file_path.ue_file_name = `${pin_yin_ming_cheng}.uproject`
   } else if (
     updateTaskFiles.state.selectedTask.entity.asset_type_id ===
-    '0e40cd9b-7f50-418b-8322-39c451f49dde'
+    '21b3f5aa-cdd6-4fca-ace4-65077494df4b'
   ) {
     file_path.root_path = `Content/${pin_yin_ming_cheng}/Map/${final_file_name}.umap`
     file_path.maya_file_name = `${final_file_name}_Low.ma`
