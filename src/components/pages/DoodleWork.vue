@@ -15,11 +15,12 @@ import PluginsCentral from '@/components/widgets/PluginsCentral.vue'
 import ExtractCaption from '@/components/widgets/ExtractCaption.vue'
 import DoodleWorkHistoryTaskModal from '@/components/modals/DoodleWorkHistoryTaskModal.vue'
 import AIScript from '@/components/widgets/AIScript.vue'
+import AiPainting from '@/components/widgets/AiPainting.vue'
 import router from '@/router/index.js'
 import VideoModal from '@/components/modals/VideoModal.vue'
-import AiPainting from '@/components/widgets/AiPainting.vue'
-//import { io } from 'socket.io-client'
-//import router from '@/router/index.js'
+import AiVideo from '@/components/widgets/AiVideo.vue'
+import { AiScriptStore } from '@/store/modules/AiScript.js'
+
 useHead({
   title: i18n.global.t('doodle_work.doodle_work')
 })
@@ -142,6 +143,19 @@ const pagedAssets = ref([
     disabled: true,
     description: '',
     color: '#00a9b8',
+    isVisible: true,
+    isBaseTemplate: false,
+    hidden: false
+  },
+
+  {
+    id: 12,
+    name: 'ai_video',
+    label: 'AI视频创作',
+    textIcon: 'Y',
+    disabled: true,
+    description: '',
+    color: '#00b865',
     isVisible: true,
     isBaseTemplate: false,
     hidden: false
@@ -346,15 +360,33 @@ PYTHONPATH+:= scripts`
     } else if (plugin.name === 'UE_plugin') {
       if (doodleWork.state.doodleWorkSetting.UE_path) {
         if (fs.existsSync(doodleWork.state.doodleWorkSetting.UE_path)) {
+          let doodleSourceName = 'ue55_Plug'
+          if (doodleWork.state.doodleWorkSetting.UE_version === '5.4') {
+            doodleSourceName = 'ue54_Plug'
+          }
+          if (
+            !fs.existsSync(
+              `${doodleWork.doodleWorkFilePath}\\${doodleSourceName}`
+            )
+          ) {
+            ElNotification({
+              title: i18n.global.t('doodle_work.install_fail'),
+              message:
+                '找不到ue源路径:' +
+                `${doodleWork.doodleWorkFilePath}\\${doodleSourceName}`,
+              type: 'error'
+            })
+            plugin.installState = false
+            return
+          }
           const subPlugins = [
             { sourceName: 'SideFX_Labs', destName: 'SideFX_Labs' },
-            { sourceName: 'ue54_Plug', destName: 'Doodle' },
+            { sourceName: doodleSourceName, destName: 'Doodle' },
             { sourceName: 'UnrealEngine5VLC', destName: 'UnrealEngine5VLC' }
           ]
           for (const subPlugin of subPlugins) {
             const sourcePath = `${doodleWork.doodleWorkFilePath}\\${subPlugin.sourceName}`
             const destPath = `${doodleWork.state.doodleWorkSetting.UE_path}\\Engine\\Plugins\\${subPlugin.destName}`
-            console.log(sourcePath, destPath)
             doodleWork.actions.copyFolder(sourcePath, destPath)
           }
         } else {
@@ -571,9 +603,15 @@ const onSetOutPath = () => {
           :is-drop="true"
           v-if="currentPage.name === 'extract_caption'"
         />
-        <plugins-central v-if="currentPage.name === 'plugin_center'" />
-        <a-i-script v-if="currentPage.name === 'ai_script'"></a-i-script>
-        <ai-painting v-show="currentPage.name === 'ai_painting'"></ai-painting>
+        <plugins-central v-else-if="currentPage.name === 'plugin_center'" />
+        <a-i-script v-else-if="currentPage.name === 'ai_script'"></a-i-script>
+        <ai-painting
+          v-else-if="currentPage.name === 'ai_painting'"
+        ></ai-painting>
+        <ai-video
+          :src-list="AiScriptStore().state.receiveVideoList"
+          v-else-if="currentPage.name === 'ai_video'"
+        ></ai-video>
       </div>
       <add-doodle-work />
       <doodle-work-log-modal v-if="doodleWork.state.isActiveLogModal" />

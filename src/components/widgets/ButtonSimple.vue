@@ -28,6 +28,7 @@
     <pause-icon class="icon" v-else-if="icon === 'pause'" />
     <edit-icon class="icon" v-else-if="icon === 'edit'" />
     <image-icon class="icon" v-else-if="icon === 'image'" />
+    <image-off-icon class="icon" v-else-if="icon === 'image-off'" />
     <maximize-icon class="icon" v-else-if="icon === 'maximize'" />
     <skip-back-icon class="icon" v-else-if="icon === 'back'" />
     <skip-forward-icon class="icon" v-else-if="icon === 'forward'" />
@@ -87,6 +88,7 @@ import {
   GridIcon,
   FilmIcon,
   ImageIcon,
+  ImageOffIcon,
   KeyIcon,
   LayersIcon,
   LinkIcon,
@@ -129,6 +131,7 @@ export default {
     GlobeIcon,
     GridIcon,
     ImageIcon,
+    ImageOffIcon,
     KeyIcon,
     KitsuIcon,
     LayersIcon,

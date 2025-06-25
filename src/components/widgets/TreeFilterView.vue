@@ -8,6 +8,7 @@ const defaultProps = {
   children: 'children',
   label: 'label'
 }
+const currentNode = ref(null)
 const isOpen = ref(true)
 const assetFilter = assetFilterStore()
 const emit = defineEmits(['tree-selection-changed'])
@@ -74,6 +75,12 @@ const removeEvents = () => {
   document.removeEventListener('mouseup', onExtendUp)
 }
 
+function onClickFilter(node, data) {
+  treeRef.value.setChecked(node.parent, false, true)
+  treeRef.value.setChecked(data, true)
+  onCheck(data, { checkedNodes: treeRef.value.getCheckedNodes() })
+}
+
 watchEffect(() => {
   if (extendWidth.value.isStartHandle) {
     addEvents()
@@ -120,11 +127,20 @@ watch(
             }
           "
         >
-          <template #default="{ node }">
-            <span class="custom-tree-node">
-              <span>{{ node.label }}</span>
-              <span>{{ node.data.num }}</span>
-            </span>
+          <template #default="{ node, data }">
+            <div class="custom-tree-node" @mouseenter="currentNode = node">
+              <div class="tag-container">
+                <span>{{ node.data.label }}</span>
+                <span>({{ node.data.num }})</span>
+              </div>
+
+              <span
+                class="filter-tag"
+                @click.stop="onClickFilter(node, data)"
+                v-if="node === currentNode"
+                >仅筛选此项</span
+              >
+            </div>
           </template>
         </el-tree>
       </div>
@@ -214,5 +230,11 @@ watch(
   &:hover {
     color: $green;
   }
+}
+
+.filter-tag {
+  background: $green;
+  border-radius: 3px;
+  padding: 1px 0.2em;
 }
 </style>

@@ -63,7 +63,7 @@
                 @on-drag-end="onDragEnd"
               ></tree-view>
             </div>
-            <div class="tree-view-separator"></div>
+            <div class="tree-view-separator" style="cursor: default"></div>
             <div class="tree-view" @click="setSelected">
               <tree-view
                 v-for="item in labelTreeData"
