@@ -25,13 +25,13 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
   state.value.assetFilters.set('ji_du', {
     id: 'ji_du',
     values: [],
-    parent: 'data',
+    parent: null,
     isChecked: true
   })
   state.value.assetFilters.set('ji_shu_lie', {
     id: 'ji_shu_lie',
     values: [],
-    parent: 'data',
+    parent: null,
     isChecked: true
   })
   state.value.assetFilters.set('assignees', {

@@ -762,7 +762,7 @@ export default {
         if (task.task_type?.for_entity.includes('Shot')) {
           episodes = task.entity?.sequence_name.replaceAll('EP', '') ?? ''
         } else {
-          episodes = task.entity?.data.ji_shu_lie
+          episodes = task.entity?.data.ji_shu_lie || task.entity?.ji_shu_lie
         }
       }
       return episodes

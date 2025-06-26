@@ -69,7 +69,7 @@ const confirmInputs = () => {
 }
 
 onMounted(() => {
-  console.log(productions.state.openProductions)
+  //console.log(productions.state.openProductions)
 })
 
 watch(
