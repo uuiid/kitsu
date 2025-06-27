@@ -80,9 +80,10 @@ const visitorShow = computed(() => {
 // }
 
 const onClickSetting = () => {
-  if (doodleWork.state.isPullProcessed)
+  if (doodleWork.state.isPullProcessed) {
+    doodleWork.actions.getWorkSetting()
     doodleWork.state.isActiveSettingModal = true
-  else
+  } else
     ElNotification({
       title: i18n.global.t('video_library.warning'),
       message: messageContent.value,

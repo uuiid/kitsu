@@ -592,6 +592,10 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           state.value.localHttpPath = `http://127.0.0.1:${port}`
           //state.value.doodleSocket = io(`http://127.0.0.1:5000/socket.io/`)
           //state.value.doodleSocket = io(`http://192.168.20.89:50025/socket.io/`)
+          await actions.getWorkSetting()
+          if (state.value.doodleSocket) {
+            state.value.doodleSocket.disconnect()
+          }
           state.value.doodleSocket = io(`http://127.0.0.1:${port}/socket.io/`)
           await actions.setSocketEvent()
           break
@@ -615,9 +619,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     getToolVersions: async () => {
       state.value.versions = await doodlework.getToolVersion()
-      if (state.value.versions?.length > 0) {
-        state.value.doodleWorkZipFileVision = state.value.versions[0]
-      }
+      // if (state.value.versions?.length > 0) {
+      //   state.value.doodleWorkZipFileVision = state.value.versions[0]
+      // }
     },
     getVideoThumbnail: async task => {
       return doodlework.getVideoThumbnail(task, state.value.localHttpPath)
@@ -795,8 +799,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         )
       }
       let logs_str = ''
-      if (res) {
-        const reader = res.body.getReader()
+      if (res?.status === 200) {
+        const reader = res?.body.getReader()
         const decoder = new TextDecoder()
         let value = await reader.read()
         logs_str = decoder.decode(new Uint8Array(value.value))
@@ -805,6 +809,11 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           const fullData = decoder.decode(new Uint8Array(value.value))
           logs_str += fullData
         }
+      } else {
+        const fs = require('fs')
+        const os = require('os')
+        const filePath = `${os.tmpdir()}\\doodle\\server_task\\${task_id}.log`
+        logs_str = fs.readFileSync(filePath).toString()
       }
       return new Promise(resolve => {
         resolve(logs_str)
