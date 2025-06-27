@@ -120,10 +120,10 @@ export const updateTaskFilesStore = defineStore(
     const actions = {
       checkEntity: entity => {
         let message = ''
-        if (!entity.data.bian_hao) message += '编号 '
-        if (!entity.data.pin_yin_ming_cheng) message += '拼音名称 '
-        if (!entity.data.gui_dang) message += '归档 '
-        if (!entity.data.kai_shi_ji_shu) message += '开始集数'
+        if (!entity.bian_hao) message += '编号 '
+        if (!entity.pin_yin_ming_cheng) message += '拼音名称 '
+        if (!entity.gui_dang) message += '归档 '
+        if (!entity.kai_shi_ji_shu) message += '开始集数'
         return message
       },
       walkDir: async (dir, files) => {
