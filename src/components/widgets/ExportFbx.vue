@@ -1,14 +1,51 @@
 <script setup>
-import { onMounted, onUnmounted } from 'vue'
+import { onMounted, onUnmounted, ref, computed } from 'vue'
 //import { getCurrentInstance } from 'vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
 import { ElMessage } from 'element-plus'
+import { SearchIcon } from 'lucide-vue-next'
 //const _this = getCurrentInstance().appContext.config.globalProperties
 const doodleWork = doodleWorkStore()
 const props = defineProps(['name', 'isDrop', 'isSetOutPath'])
 doodleWork.state.currentDoodleWorkType = props.name
 //const isDragOver = ref(false)
+const inputValue = ref('')
+const inputValueModel = ref('')
+
+const statusNum = computed(() => {
+  let temp = 0
+  doodleWork.currentDoodleWorkState.workList.forEach((value, key) => {
+    if (value.status === 'failed') {
+      //temp_list.push(value)
+      temp++
+    }
+  })
+  return temp
+})
+
+const filteredWorkList = computed(() => {
+  if (inputValue.value) {
+    const temp = new Map()
+    //const temp_list = []
+    doodleWork.currentDoodleWorkState.workList.forEach((value, key) => {
+      if (
+        new RegExp(`.*?${inputValue.value}.*$`, 'gmi').test(value.last_line_log)
+      ) {
+        //temp_list.push(value)
+        temp.set(value.id, value)
+      }
+    })
+    // temp_list.sort((a, b) => {
+    //   return a.name.localeCompare(b.name)
+    // })
+    // temp_list.forEach(item => {
+    //   temp.set(item.id, item)
+    // })
+    return temp
+  }
+  return doodleWork.currentDoodleWorkState.workList
+})
 
 onMounted(() => {
   if (props.isSetOutPath && doodleWork.state.outPath === '') {
@@ -127,9 +164,26 @@ onUnmounted(() => {
 
 <template>
   <div class="datatable-main">
+    <div class="has-right">
+      <div class="search-field-main">
+        <span class="search-icon">
+          <search-icon :size="20" />
+        </span>
+        <input
+          ref="search-field"
+          class="input"
+          :placeholder="$t('doodle_work.log')"
+          v-model.trim="inputValueModel"
+          @keydown.enter="inputValue = inputValueModel"
+          @input="inputValueModel ? undefined : (inputValue = inputValueModel)"
+        />
+      </div>
+    </div>
     <table-list
       :table-header-filed="doodleWork.currentDoodleWorkState.tableHeaderFiled"
-      :body-list="doodleWork.currentDoodleWorkState.workList"
+      :body-list="
+        filteredWorkList || doodleWork.currentDoodleWorkState.workList
+      "
       name="刷新"
       :is-drop="true"
       :is-show-submit="false"
@@ -141,6 +195,15 @@ onUnmounted(() => {
       @view-log="onViewLog"
       @handle-action="onAction"
     ></table-list>
+    <div
+      class="has-right"
+      v-if="doodleWork.currentDoodleWorkState.workList.size > 0"
+    >
+      <span>失败/所有:</span>
+      <span>
+        {{ statusNum }}/{{ doodleWork.currentDoodleWorkState.workList.size }}
+      </span>
+    </div>
     <div class="has-text-right">
       <div class="buttons">
         <a
@@ -211,5 +274,38 @@ onUnmounted(() => {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
+}
+
+.search-field-main {
+  margin-bottom: 5px;
+  //display: flex;
+  padding-top: 0;
+  position: relative;
+
+  .input {
+    font-size: 0.8em;
+    border-radius: 10px;
+    padding-left: 40px;
+  }
+
+  .search-icon {
+    position: absolute;
+    color: $grey;
+    z-index: 4;
+    top: 6px;
+    left: 10px;
+  }
+}
+
+.has-right {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: flex-end;
+  margin-bottom: 5px;
+}
+
+.input {
+  min-width: 180px;
 }
 </style>
