@@ -590,7 +590,7 @@ const actions = {
   },
   setUserRemark(
     { commit, state },
-    { user_id, year, month, task_id, user_remark }
+    { user_id, year, month, task_id, work_user_remark }
   ) {
     return tasksApi
       .setUserRemark({
@@ -598,7 +598,7 @@ const actions = {
         year,
         month,
         task_id,
-        user_remark
+        work_user_remark
       })
       .then(comment => {
         return Promise.resolve(comment)

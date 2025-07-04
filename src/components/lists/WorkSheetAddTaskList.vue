@@ -347,7 +347,7 @@ export default {
       if (theTaskType.for_entity.includes('Shot')) {
         episodes = entry.sequence_name.replaceAll('EP', '') ?? ''
       } else {
-        episodes = entry.entity_data.ji_shu_lie
+        episodes = entry?.ji_shu_lie
       }
       return episodes
     }

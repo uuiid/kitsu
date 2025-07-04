@@ -61,12 +61,9 @@ export default {
   countTaskTime(data) {
     const month = data.month.padStart(2, '0')
     const year_month = `${data.year}-${month}`
-    const commentData = {
-      data: data.data_list
-    }
     return client.ppost(
       `/api/doodle/computing_time/${data.user_id}/${year_month}`,
-      commentData
+      data.data_list
     )
   },
   countOneTaskTime(data) {
@@ -110,10 +107,11 @@ export default {
     const month = data.month.padStart(2, '0')
     const year_month = `${data.year}-${month}`
     const commentData = {}
-    if (data.duration) {
-      commentData.duration = Number(data.duration) * 1000 * 1000 * 60 * 60
-    } else if (data.episode) {
-      commentData.episode = Number(data.episode)
+    if (data.work_duration) {
+      commentData.work_duration =
+        Number(data.work_duration) * 1000 * 1000 * 60 * 60
+    } else if (data.entity_ji_shu_lie) {
+      commentData.entity_ji_shu_lie = Number(data.entity_ji_shu_lie)
     }
     return client.ppatch(
       `/api/doodle/computing_time/${data.user_id}/${year_month}/${data.task_id}`,
@@ -132,7 +130,7 @@ export default {
     const month = data.month.padStart(2, '0')
     const year_month = `${data.year}-${month}`
     const commentData = {
-      user_remark: data.user_remark
+      work_user_remark: data.work_user_remark
     }
     return client.ppatch(
       `/api/doodle/computing_time/${data.user_id}/${year_month}/${data.task_id}`,

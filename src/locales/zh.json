@@ -1781,7 +1781,7 @@
       "folder_up": "上传文件",
       "add_custom_entry": "添加自定义任务",
       "select_production": "选择项目",
-      "project_id": "项目",
+      "project_uuid": "项目",
       "name": "名称",
       "season": "季数",
       "episode": "集数",
@@ -1800,7 +1800,14 @@
       "show_completed": "显示已完成",
       "hide_completed": "隐藏已完成",
       "show_all": "显示所以",
-      "only_has_not_preview_image": "仅没有预览图"
+      "only_has_not_preview_image": "仅没有预览图",
+      "entity_deng_ji": "等级",
+      "entity_ji_du": "季度",
+      "entity_ji_shu_lie": "集数",
+      "task_name": "名称",
+      "work_user_remark": "备注",
+      "work_start_time": "开始时间",
+      "work_end_time": "结束时间"
     },
     "doodle_productions": {
       "fields": {

@@ -87,7 +87,7 @@
         >
           <tr
             v-for="(task, index) in displayedTasks"
-            :key="task.computing_time.id"
+            :key="task.id"
             :class="{
               'datatable-row': true,
               'datatable-row--selectable': true,
@@ -110,12 +110,10 @@
                 <production-name-cell
                   class="entity-name"
                   :is-tooltip="true"
-                  :entry="task.project"
-                  v-if="task.project"
+                  :entry="productionMap.get(task.project_uuid)"
+                  v-if="task.project_uuid"
                 />
-                <span class="entity-name" v-else>{{
-                  task.computing_time.project_name
-                }}</span>
+                <span class="entity-name" v-else>{{ task.project_name }}</span>
               </div>
             </td>
 
@@ -142,18 +140,18 @@
                 <entity-thumbnail
                   :empty-width="60"
                   :empty-height="40"
-                  :entity="{ preview_file_id: task.entity?.preview_file_id }"
+                  :entity="{ preview_file_id: task.task_last_preview_file_id }"
                   v-if="task.entity"
                 />
                 <span
                   v-if="
                     true //task.task_type
                   "
-                  >{{ task.computing_time.name || task.entity.name }}</span
+                  >{{ task?.entity_name || task?.task_name }}</span
                 >
                 <!--input
 class="duty-editor"
-:value="task.computing_time.name"
+:value="task.name"
 v-else
 /-->
                 <!--router-link class="entity-name" :to="entityPath(task.entity)">
@@ -170,10 +168,10 @@ v-else
                 v-if="task.entity"
               />
               <input
-                v-model="task.computing_time.episode"
+                v-model="task.entity_ji_shu_lie"
                 class="input-editor"
                 @keyup.enter="
-                  event => durationDate(event, task.computing_time, 'episode')
+                  event => durationDate(event, task, 'entity_ji_shu_lie')
                 "
                 v-else
               />
@@ -199,36 +197,34 @@ v-else
             <td class="estimation" :title="$t('doodle.duration_cue_word')">
               <input
                 class="input-editor"
-                @keyup.enter="event => durationDate(event, task.computing_time)"
+                @keyup.enter="event => durationDate(event, task)"
                 min="0"
-                :value="getDurationValue(task.computing_time.duration)"
-                @focusout="event => durationDate(event, task.computing_time)"
+                :value="getDurationValue(task.work_duration)"
+                @focusout="event => durationDate(event, task)"
                 @blur="isDraggable = true"
                 @focus="isDraggable = false"
                 @click="onLineClicked(task)"
               />
             </td>
             <td class="episode" v-if="!isToCheck">
-              {{ task.computing_time.grade }}
+              {{ task.entity_deng_ji }}
             </td>
             <td class="start-date" v-if="!isToCheck">
-              {{ formatDate(task.computing_time.start_time) }}
+              {{ formatDate(task.work_start_time) }}
             </td>
             <td class="due-date">
-              {{ formatDate(task.computing_time.end_time) }}
+              {{ formatDate(task.work_end_time) }}
             </td>
             <td class="time-remark">
-              {{ task.computing_time.remark }}
+              {{ task.work_remark }}
             </td>
             <td class="user-remark">
               <input
                 class="input-editor"
-                @keyup.enter="
-                  event => setUserRemark(event, task.computing_time)
-                "
+                @keyup.enter="event => setUserRemark(event, task)"
                 min="0"
-                :value="task.computing_time.user_remark"
-                @focusout="event => setUserRemark(event, task.computing_time)"
+                :value="task.work_user_remark"
+                @focusout="event => setUserRemark(event, task)"
                 @blur="isDraggable = true"
                 @focus="isDraggable = false"
               />
@@ -239,9 +235,7 @@ v-else
               v-for="(field_name, index) in Object.keys(metadataDescriptorsMap)"
             >
               {{
-                dataFieldMapping[field_name]
-                  ? task.computing_time[dataFieldMapping[field_name]]
-                  : task.entity?.data[field_name]
+                dataFieldMapping[field_name] || task.entity?.data[field_name]
               }}
             </td>
 
@@ -420,7 +414,7 @@ export default {
     allDuration() {
       let duration = 0
       this.tasks.forEach(task => {
-        duration += Number(task.computing_time.duration)
+        duration += Number(task.work_duration)
       })
       return duration / (1000 * 1000 * 60 * 60 * 8)
     },
@@ -506,7 +500,7 @@ export default {
       this.currentTask.checked = false
       const task_ids = []
       this.displayedTasks.forEach(task => {
-        task_ids.push(task.computing_time.id)
+        task_ids.push(task.id)
       })
       this.$emit('soft-task', task_ids)
       // const year = this.yearString
@@ -658,7 +652,7 @@ export default {
       let res = null
       for (const entry of this.tasks) {
         if (entry.checked) {
-          const time_task_id = entry.computing_time.id
+          const time_task_id = entry.id
           const action = 'removeTaskTime'
           const l_params = {
             time_task_id
@@ -674,12 +668,17 @@ export default {
       }
     },
     async onCopy(entry) {
-      console.log(entry)
-      this.$emit('copy-task', entry.computing_time)
+      const temp = {}
+      Object.keys(entry).forEach(key => {
+        if (entry[key] !== null) {
+          temp[key] = entry[key]
+        }
+      })
+      this.$emit('copy-task', temp)
     },
     setUserRemark(event, entry) {
-      const user_remark = event.target.value
-      if (user_remark !== entry.user_remark) {
+      const work_user_remark = event.target.value
+      if (work_user_remark !== entry.work_user_remark) {
         const user_id = this.userId
         const year = this.yearString
         const month = this.monthString
@@ -694,14 +693,14 @@ export default {
           year,
           month,
           task_id,
-          user_remark
+          work_user_remark
         }
         this.$store
           .dispatch(action, l_params)
           .then(res => {
             console.log('setUserRemark Done')
-            if (res.data) {
-              this.$emit('set-user-remark', entry, user_remark)
+            if (res) {
+              this.$emit('set-user-remark', entry, work_user_remark)
               ElMessage({
                 message: this.$t('doodle_work.set_success'),
                 type: 'success'
@@ -715,8 +714,7 @@ export default {
           })
       }
     },
-    durationDate(event, entry, field = 'duration') {
-      console.log('123')
+    durationDate(event, entry, field = 'work_duration') {
       const user_id = this.userId
       const year = this.yearString
       const month = this.monthString
@@ -733,8 +731,7 @@ export default {
       if (field === 'duration') {
         oldValue = this.getDurationValue(entry[field])
       }
-      console.log(value, oldValue)
-      if (value !== oldValue || field !== 'duration') {
+      if (value !== oldValue || field !== 'work_duration') {
         if (!task_id) {
           alert(this.$t('doodle.calculate_tip'))
           return
@@ -743,9 +740,8 @@ export default {
         this.$store
           .dispatch(action, l_params)
           .then(res => {
-            console.log('setTaskTime Done')
-            if (res.data) {
-              this.$emit('set-sort-task', res.data)
+            if (res) {
+              this.$emit('set-sort-task', res)
             }
           })
           .catch(err => {
@@ -756,6 +752,7 @@ export default {
       }
     },
     getEpisodes(task) {
+      console.log(task)
       let episodes = ''
       if (task.entity) {
         //const theTaskType = this.taskTypeMap.get(entry.entity_type_id)
@@ -764,6 +761,8 @@ export default {
         } else {
           episodes = task.entity?.data.ji_shu_lie || task.entity?.ji_shu_lie
         }
+      } else if (task.entity_ji_shu_lie) {
+        episodes = task.entity_ji_shu_lie
       }
       return episodes
     }
