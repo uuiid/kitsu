@@ -94,13 +94,14 @@
           v-focus
         />
       </div>
-
+      <productions-show :productions="filteredProductions"></productions-show>
       <div
         :class="{
           'open-productions-list': true,
           'is-grid': openProductions?.length > 4
         }"
       >
+        <div class="production-type">其他</div>
         <div
           class="open-production has-text-centered"
           v-if="!filteredProductions?.length"
@@ -141,7 +142,7 @@
             </div>
           </router-link>
         </div>
-        <div
+        <!--div
           class="open-production has-text-centered"
           :key="production.id"
           v-for="production in filteredProductions"
@@ -174,7 +175,7 @@
               </div>
             </div>
           </router-link>
-        </div>
+        </div-->
       </div>
     </div>
     <div class="has-text-centered welcome" v-else>
@@ -202,6 +203,13 @@
         </p>
       </div>
     </div>
+    <el-drawer
+      v-model="isShowCompletedProductions"
+      title="I am the title"
+      :with-header="false"
+    >
+      <productions-show :productions="completedProductions"></productions-show>
+    </el-drawer>
   </div>
 </template>
 
@@ -215,11 +223,13 @@ import preferences from '@/lib/preferences'
 
 import SearchField from '@/components/widgets/SearchField.vue'
 import Spinner from '@/components/widgets/Spinner.vue'
+import ProductionsShow from '@/components/widgets/ProductionsShow.vue'
 
 export default {
   name: 'open-productions',
 
   components: {
+    ProductionsShow,
     SearchField,
     Spinner,
     XIcon
@@ -254,7 +264,12 @@ export default {
       'lastProductionScreen',
       'mainConfig',
       'openProductions'
-    ])
+    ]),
+    completedProductions() {
+      return this.openProductions.filter(production => {
+        return new Date(production.end_date) < new Date()
+      })
+    }
   },
 
   methods: {
@@ -262,7 +277,6 @@ export default {
       const firstLetter = production.code || production.name?.[0] || 'P'
       return firstLetter.toUpperCase()
     },
-
     getAvatarColor(production) {
       return colors.fromString(production.name)
     },
@@ -344,7 +358,6 @@ export default {
       }
     },
     filterProductions(productions) {
-      if (this.isShowCompletedProductions) return productions
       return productions.filter(production => {
         return new Date(production.end_date) > new Date()
       })
@@ -647,5 +660,10 @@ a.secondary:hover {
   .social-contributions .flexrow {
     flex-direction: column;
   }
+}
+
+.production-type {
+  font-size: 30px;
+  font-weight: bold;
 }
 </style>

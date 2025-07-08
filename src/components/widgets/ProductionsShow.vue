@@ -3,15 +3,37 @@ import colors from '@/lib/colors.js'
 import user from '@/store/modules/user.js'
 import main from '@/store/modules/main.js'
 import openProductions from '@/store/modules/productions.js'
+import { PRODUCTION_CUSTOM_TYPE_OPTIONS } from '@/lib/productions'
+import { ref, computed } from 'vue'
+
+const props = defineProps({
+  productions: {
+    type: Array,
+    default: () => []
+  }
+})
+
+const currentProduction = ref('')
+
+const productionTypes = computed(() => {
+  return Object.keys(PRODUCTION_CUSTOM_TYPE_OPTIONS)
+})
 
 function getAvatarColor(production) {
   return colors.fromString(production.name)
 }
 
+function getThumbnailPath(production) {
+  const lastUpdate = production.updated_at || production.created_at
+  const timestamp = Date.parse(lastUpdate)
+  return `/api/pictures/thumbnails/projects/${production.id}.png?t=${timestamp}`
+}
+
 function sectionPath(production, section) {
-  const routeName = user.getters.isCurrentUserClient
-    ? 'playlists'
-    : production.homepage || section
+  const routeName =
+    user.state.user && user.state.user.role === 'client'
+      ? 'playlists'
+      : production.homepage || section
   const route = {
     name: routeName,
     params: {
@@ -53,62 +75,78 @@ function sectionPath(production, section) {
 }
 
 function generateAvatar(production) {
+  if (production.short_name) return production.short_name
   const firstLetter = production.name?.slice(0, 2) || 'P'
   return firstLetter.toUpperCase()
 }
 
 function getPath(production) {
-  return sectionPath(production, main.getters.lastProductionScreen)
+  return sectionPath(production, main.state.lastProductionScreen)
 }
 </script>
 
 <template>
-  <div class="production-type">短剧</div>
-  <div
-    :class="{
-      'open-productions-list': true,
-      'is-grid': openProductions.getters.openProductions?.length > 4
-    }"
-  >
-    <div
-      class="open-production has-text-centered"
-      v-if="!filteredProductions?.length"
-    >
-      {{ $t('main.search.no_result') }}
+  <div :key="productionType" v-for="productionType in productionTypes">
+    <div class="production-type">
+      {{
+        $t(
+          'productions.type.' +
+            PRODUCTION_CUSTOM_TYPE_OPTIONS[productionType].value
+        )
+      }}
     </div>
     <div
-      class="open-production has-text-centered"
-      :key="production.id"
-      v-for="production in filteredProductions"
-      @mouseenter="production.showName = true"
-      @mouseleave="production.showName = false"
+      :class="{
+        'open-productions-list': true,
+        'is-grid': openProductions.state.openProductions?.length > 4
+      }"
     >
-      <router-link :to="getPath(production)">
-        <div
-          class="avatar has-text-centered"
-          :style="{
-            background: getAvatarColor(production)
-          }"
-        >
-          <template v-if="!production.has_avatar">
-            <span
-              class="avatar-initials"
-              :style="{
-                fontSize:
-                  generateAvatar(production).length > 2 ? '48px' : '42px'
-              }"
-            >
-              {{ generateAvatar(production) }}
-            </span>
-          </template>
-          <img :src="getThumbnailPath(production)" alt="" v-else />
-        </div>
-        <div class="production-name">
-          <div v-if="production.showName">
-            {{ production.name }}
+      <div
+        class="open-production has-text-centered"
+        v-if="!props.productions?.length"
+      >
+        {{ $t('main.search.no_result') }}
+      </div>
+      <div
+        class="open-production has-text-centered"
+        :key="production.id"
+        v-for="production in props.productions"
+        @mouseenter="currentProduction = production.name"
+        @mouseleave="currentProduction = ''"
+        v-show="
+          production.production_category ===
+            PRODUCTION_CUSTOM_TYPE_OPTIONS[productionType].value ||
+          (production.production_category === '' &&
+            PRODUCTION_CUSTOM_TYPE_OPTIONS[productionType].value === 'short')
+        "
+      >
+        <router-link :to="getPath(production)">
+          <div
+            class="avatar has-text-centered"
+            :style="{
+              background: getAvatarColor(production)
+            }"
+          >
+            <template v-if="!production.has_avatar">
+              <span
+                class="avatar-initials"
+                :style="{
+                  fontSize:
+                    generateAvatar(production).length === 2 ? '48px' : '35px'
+                }"
+              >
+                {{ generateAvatar(production) }}
+              </span>
+            </template>
+            <img :src="getThumbnailPath(production)" alt="" v-else />
           </div>
-        </div>
-      </router-link>
+          <div class="production-name">
+            <div v-if="production.name === currentProduction">
+              {{ production.name }}
+            </div>
+          </div>
+        </router-link>
+      </div>
     </div>
   </div>
 </template>

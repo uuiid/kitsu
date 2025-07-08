@@ -775,6 +775,11 @@
         "title": "执行多个制作",
         "welcome": "欢迎使用Kitsu"
       },
+      "category": {
+        "short": "短剧",
+        "series": "番剧",
+        "ova": "剧场版"
+      },
       "fields": {
         "fps": "FPS",
         "name": "名称",
@@ -793,7 +798,8 @@
         "is_set_preview_automated": "自动将新预览设置为实体缩略图",
         "homepage": "主页（显示的第一页）",
         "code": "简称",
-        "is_publish_default": "在发布模式下默认设置艺术家评论小部件"
+        "is_publish_default": "在发布模式下默认设置艺术家评论小部件",
+        "category": "分类"
       },
       "metadata": {
         "add_explaination": "添加此项目需要的特定数据.",
@@ -823,7 +829,9 @@
         "featurefilm": "故事片",
         "tvshow": "电视节目",
         "assets": "仅资产",
-        "shots": "仅镜头"
+        "shots": "仅镜头",
+        "ova": "剧场版",
+        "series": "番剧"
       },
       "edit_error": "编辑产品时出错。请联系我们的支持团队。",
       "brief": {
@@ -1813,7 +1821,9 @@
       "fields": {
         "en_str": "拼音全称",
         "path": "项目路径",
-        "auto_upload_path": "自动上传路径"
+        "auto_upload_path": "自动上传路径",
+        "category": "类别",
+        "short_name": "中文简称"
       }
     },
     "doodle_asset_tree": {
@@ -1830,9 +1840,9 @@
       }
     },
     "ai_painting": {
-    "txt2Picture": "文生图片",
-    "txt2Video": "文生视频",
-    "image2Video": "图生视频"
-  }
+      "txt2Picture": "文生图片",
+      "txt2Video": "文生视频",
+      "image2Video": "图生视频"
+    }
   }
 }

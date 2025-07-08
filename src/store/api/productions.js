@@ -33,6 +33,8 @@ export default {
       project_status_id: production.project_status_id,
       production_type: production.production_type,
       production_style: production.production_style,
+      production_category: production.production_category,
+      short_name: production.short_name,
       fps: production.fps,
       ratio: production.ratio,
       resolution: production.resolution,
