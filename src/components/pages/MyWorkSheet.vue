@@ -84,9 +84,6 @@
               </button>
               <button
                 class="button"
-                :class="{
-                  'is-loading': isLoading
-                }"
                 :text="$t('doodle.add_task')"
                 @click="modals.add = true"
               >
@@ -617,7 +614,7 @@ export default {
       }
       this.sortTaskTime(l_params).then(res => {
         if (res) {
-          this.resetTask(res.data)
+          this.resetTask(res)
         }
       })
     },
@@ -637,7 +634,8 @@ export default {
       this.clearSelectedTasks()
       this.tasks = []
       const start_date = `${this.$refs['add-task-sheet-modal'].yearString}-${this.$refs['add-task-sheet-modal'].monthString}-01`
-      this.reload(start_date).then(() => {
+      const end_date = `${this.$refs['add-task-sheet-modal'].endYearString}-${this.$refs['add-task-sheet-modal'].endMonthString}-01`
+      this.reload(start_date, end_date).then(() => {
         this.isLoading = false
         this.modals.edit = true
       })
@@ -679,27 +677,25 @@ export default {
       line.push(department)
       line.push(person.first_name)
       let episodes = ''
-      if (t.computing_time.episode || t.computing_time.episode === 0)
-        episodes = t.computing_time.episode
+      if (t.entity_ji_shu_lie || t.entity_ji_shu_lie === 0)
+        episodes = t.entity_ji_shu_lie
       else {
-        if (t.task_type.for_entity.includes('Shot')) {
+        if (t.task_type?.for_entity?.includes('Shot')) {
           episodes = t.entity.sequence_name.replaceAll('EP', '') ?? ''
         } else {
-          episodes = t.entity.data.ji_shu_lie
+          episodes = t.entity_ji_shu_lie
         }
       }
-      let season = t.computing_time.season
-      if (season === undefined) {
-        season = t.entity.data.ji_du
-          ? t.entity.data.ji_du
-          : Math.ceil(Number(episodes) / 20)
-      }
-      let project_name = t.computing_time.project_name
+      const season = t.entity_ji_du
+      // if (season === undefined) {
+      //   season = t.entity.data.ji_du
+      //     ? t.entity.data.ji_du
+      //     : Math.ceil(Number(episodes) / 20)
+      // }
+      let project_name = t.project_name
       if (project_name === undefined || project_name === '') {
-        if (t.computing_time.project_id) {
-          project_name = this.productionMap.get(
-            t.computing_time.project_id
-          ).name
+        if (t.project_uuid) {
+          project_name = this.productionMap.get(t.project_uuid).name
         } else {
           project_name = this.productionMap.get(t.project.id).name
         }
@@ -709,25 +705,21 @@ export default {
       }
       line.push(`《${project_name}》第${season}季`)
       line.push(`EP${episodes}`)
-      line.push(formatFullDate(t.computing_time.start_time))
-      line.push(formatFullDate(t.computing_time.end_time))
-      const duration = Number(
-        t.computing_time.duration / (1000 * 1000 * 60 * 60 * 8)
-      )
+      line.push(formatFullDate(t.work_start_time))
+      line.push(formatFullDate(t.work_end_time))
+      const duration = Number(t.work_duration / (1000 * 1000 * 60 * 60 * 8))
       line.push(duration)
-      line.push(t.computing_time.remark)
-      if (t.computing_time.user_remark)
-        line.push(
-          `${t.computing_time.name || t.entity.name}(${t.computing_time.user_remark})`
-        )
-      else line.push(t.computing_time.name || t.entity.name)
-      const level = t.computing_time.grade || t.entity?.data.deng_ji
+      line.push(t.work_remark)
+      if (t.work_user_remark) line.push(`${t.task_name}(${t.work_user_remark})`)
+      else line.push(t.task_name)
+      const level = t.entity_deng_ji
       line.push(level)
       return line
     },
 
     async reload(
-      start_date = `${moment().year()}-${moment().month() + 1}-01`,
+      start_date = `${moment().year()}-${moment().month()}-01`,
+      end_date = `${moment().year()}-${moment().month() + 1}-01`,
       page = 1
     ) {
       try {
@@ -738,13 +730,14 @@ export default {
         const params = {
           person_id: this.person ? this.person.id : null,
           page: page,
-          start_date: start_date
+          start_date: start_date,
+          end_date: end_date
         }
         const taskInfos = await this.loadOpenTasks(params)
         this.isMore = taskInfos.is_more
-        if (page === 1) this.tasks = taskInfos.data
+        if (page === 1) this.tasks = taskInfos
         else {
-          this.tasks.push(...taskInfos.data)
+          this.tasks.push(...taskInfos)
         }
       } catch (error) {
         this.isLoadingError = true
@@ -752,9 +745,13 @@ export default {
       }
     },
 
-    async timeLoadOpenTasks(year, month) {
+    async timeLoadOpenTasks(year, month, end_year, end_month) {
       this.pageNumber = 1
-      await this.reload(`${year}-${month}-01`, this.pageNumber)
+      await this.reload(
+        `${year}-${month}-01`,
+        `${end_year}-${end_month}-01`,
+        this.pageNumber
+      )
     },
 
     async pageLoadOpenTasks(params, yearString, monthString) {
@@ -833,7 +830,7 @@ export default {
         .dispatch(action, l_params)
         .then(res => {
           if (res) {
-            this.setSortTask(res.data)
+            this.setSortTask(res)
           } else {
             this.setSortTask([])
           }
@@ -855,11 +852,13 @@ export default {
       const data_list = []
       this.prepareCalculateTasks = [...this.prepareCalculateTasks]
       this.prepareCalculateTasks.forEach(task => {
+        console.log(task)
         const data = {}
         if (task.assignees) {
-          data.start_time = task.computing_time?.start_time || task.created_at
-          data.end_time = task.computing_time?.end_time || task.updated_at
-          data.task_id = task.computing_time?.id || task.id
+          data.work_start_time = task.start_date || task.created_at
+          data.work_end_time = task.due_date || task.updated_at
+          data.task_id = task.id
+
           data_list.push(data)
         }
       })
@@ -878,7 +877,7 @@ export default {
           num++
           const res = await this.countOneTaskTime(l_params)
           if (num === data_list.length) {
-            this.setSortTask(res.data)
+            this.setSortTask(res)
           }
         }
       } else {
@@ -887,8 +886,8 @@ export default {
           .dispatch(action, l_params)
           .then(res => {
             console.log('countTaskTime Done')
-            if (res.data) {
-              this.setSortTask(res.data)
+            if (res) {
+              this.setSortTask(res)
             }
           })
           .catch(err => {
@@ -914,7 +913,7 @@ export default {
       this.averageTime(l_params)
         .then(res => {
           if (res) {
-            this.resetTask(res.data)
+            this.resetTask(res)
           } else {
             this.resetTask([])
           }
@@ -935,8 +934,8 @@ export default {
         custom_task
       }
       const res = await this.countCustomTaskTime(l_params)
-      if (res.data) {
-        this.setSortTask(res.data)
+      if (res) {
+        this.setSortTask(res)
       }
     },
     getTimeClick() {
@@ -1035,21 +1034,19 @@ export default {
     resetTask(data) {
       data.forEach(item => {
         if (this.calculatedTasks.has(item.kitsu_task_ref_id || item.id)) {
-          this.calculatedTasks.get(
-            item.kitsu_task_ref_id || item.id
-          ).computing_time = item
+          this.calculatedTasks.set(item.kitsu_task_ref_id || item.id, item)
         }
       })
     },
     setSortTask(data) {
       this.calculatedTasks = new Map()
       data.forEach(item => {
-        if (item.computing_time.kitsu_task_ref_id) {
-          item.computing_time.name = item.entity.name
-          this.calculatedTasks.set(item.computing_time.kitsu_task_ref_id, item)
+        if (item.kitsu_task_ref_id) {
+          item.name = item.entity.name
+          this.calculatedTasks.set(item.kitsu_task_ref_id, item)
         } else {
-          item.project = this.productionMap.get(item.computing_time.project_id)
-          this.calculatedTasks.set(item.computing_time.id, item)
+          item.project = this.productionMap.get(item.project_id)
+          this.calculatedTasks.set(item.id, item)
         }
       })
       this.person.tasks = [...this.calculatedTasks.values()]
@@ -1079,14 +1076,14 @@ export default {
     },
     removeSortTask(ent) {
       const temp = new Map(
-        ent.data.map(value => [value.kitsu_task_ref_id || value.id, value])
+        ent.map(value => [value.kitsu_task_ref_id || value.id, value])
       )
       if (ent) {
         temp.set(temp)
       }
       Array.from(this.calculatedTasks.keys()).forEach(item => {
         if (temp.has(item)) {
-          this.calculatedTasks.get(item).computing_time = temp.get(item)
+          this.calculatedTasks.set(item, temp.get(item))
         } else {
           this.calculatedTasks.delete(item)
         }
@@ -1095,9 +1092,8 @@ export default {
 
     setUserRemark(entity, user_remark) {
       if (this.calculatedTasks.has(entity.kitsu_task_ref_id)) {
-        this.calculatedTasks.get(
-          entity.kitsu_task_ref_id
-        ).computing_time.user_remark = user_remark
+        this.calculatedTasks.get(entity.kitsu_task_ref_id).user_remark =
+          user_remark
       }
     },
 
@@ -1128,13 +1124,18 @@ export default {
           month,
           day
         }
+        const allPerson = []
         for (const p of this.selectPersons) {
+          if (!allPerson.includes(p)) allPerson.push(p)
+        }
+
+        for (const p of allPerson) {
           const sheet = {}
           const entries = []
           l_params.user_id = p.id
           const tasks = await this.$store.dispatch('getTaskTime', l_params)
-          if (tasks && tasks.data.length > 0) {
-            tasks.data.forEach(t => {
+          if (tasks && tasks.length > 0) {
+            tasks.forEach(t => {
               const line = this.exportLine(p, t)
               entries.push(line)
             })

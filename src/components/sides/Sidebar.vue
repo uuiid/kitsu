@@ -191,7 +191,7 @@
                 {{ $t('asset_types.title') }}
               </router-link>
             </p>
-            <p @click="toggleSidebar()">
+            <p @click="toggleSidebar()" v-if="false">
               <router-link :to="{ name: 'salary-scale' }">
                 <rows-4-icon class="nav-icon" />
                 {{ $t('budget.salary_scale_title') }}

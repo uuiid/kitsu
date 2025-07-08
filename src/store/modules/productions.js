@@ -661,10 +661,10 @@ const mutations = {
   },
 
   [ADD_PRODUCTION](state, production) {
-    const productionStatus = state.productionStatusMap.get(
-      production.project_status_id
-    )
-    production.project_status_name = productionStatus.name
+    // const productionStatus = state.productionStatusMap.get(
+    //   production.project_status_id
+    // )
+    production.project_status_name = production.name
     state.productions.push(production)
     state.productionMap.set(production.id, production)
     state.openProductions.push(production)

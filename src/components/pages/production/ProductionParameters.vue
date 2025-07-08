@@ -21,6 +21,16 @@
           @enter="form.code?.length > 1 ? runConfirmation : null"
           v-model="form.code"
         />
+        <text-field
+          :label="$t('doodle_productions.fields.short_name')"
+          :errored="form.short_name?.length < 2 || form.short_name?.length > 3"
+          @enter="
+            form.short_name?.length > 1 || form.short_name?.length < 4
+              ? runConfirmation
+              : null
+          "
+          v-model="form.short_name"
+        />
         <div class="columns">
           <div class="mr1">
             <date-field
@@ -53,6 +63,14 @@
           :options="productionTypeOptions"
           @enter="runConfirmation"
           v-model="form.production_type"
+        />
+        <combobox-styled
+          class="mb2"
+          locale-key-prefix="productions.category."
+          :label="$t('productions.fields.category')"
+          :options="productionCustomTypeOptions"
+          @enter="runConfirmation"
+          v-model="form.production_category"
         />
 
         <combobox-styled
@@ -179,7 +197,11 @@
 import { mapGetters, mapActions } from 'vuex'
 
 import { formatSimpleDate, parseSimpleDate } from '@/lib/time'
-import { PRODUCTION_TYPE_OPTIONS, HOME_PAGE_OPTIONS } from '@/lib/productions'
+import {
+  PRODUCTION_CUSTOM_TYPE_OPTIONS,
+  PRODUCTION_TYPE_OPTIONS,
+  HOME_PAGE_OPTIONS
+} from '@/lib/productions'
 
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
 import ComboboxBoolean from '@/components/widgets/ComboboxBoolean.vue'
@@ -209,6 +231,7 @@ export default {
       isError: false,
       isLocalTVShow: false,
       productionTypeOptions: PRODUCTION_TYPE_OPTIONS,
+      productionCustomTypeOptions: PRODUCTION_CUSTOM_TYPE_OPTIONS,
       homepageOptions: HOME_PAGE_OPTIONS,
       form: {
         name: '',
@@ -217,6 +240,8 @@ export default {
         start_date: new Date(),
         end_date: new Date(),
         nb_episodes: 0,
+        production_category: 'short',
+        short_name: '',
         episode_span: 0,
         fps: '',
         max_retakes: 0,
@@ -296,6 +321,8 @@ export default {
           name: this.currentProduction.name,
           en_str: this.currentProduction.en_str,
           code: this.currentProduction.code,
+          production_category: this.currentProduction.production_category,
+          short_name: this.currentProduction.short_name,
           start_date: parseSimpleDate(
             this.currentProduction.start_date
           ).toDate(),
@@ -333,6 +360,8 @@ export default {
           start_date: new Date(),
           end_date: new Date(),
           production_type: 'short',
+          production_category: 'short',
+          short_name: '',
           nb_episodes: 0,
           episode_span: 0,
           max_retakes: 0,

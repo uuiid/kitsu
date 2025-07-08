@@ -120,14 +120,14 @@ const onActions = async (action_name, task) => {
 
 function pathRule() {
   const pin_yin_ming_cheng =
-    updateTaskFiles.state.selectedTask.entity.data.pin_yin_ming_cheng
-  const bian_hao = updateTaskFiles.state.selectedTask.entity.data.bian_hao
+    updateTaskFiles.state.selectedTask.entity.pin_yin_ming_cheng
+  const bian_hao = updateTaskFiles.state.selectedTask.entity.bian_hao
   let final_file_name = pin_yin_ming_cheng
   if (
-    updateTaskFiles.state.selectedTask.entity.data.ban_ben !== undefined &&
-    updateTaskFiles.state.selectedTask.entity.data.ban_ben !== ''
+    updateTaskFiles.state.selectedTask.entity.ban_ben !== undefined &&
+    updateTaskFiles.state.selectedTask.entity.ban_ben !== ''
   )
-    final_file_name = `${final_file_name}_${updateTaskFiles.state.selectedTask.entity.data.ban_ben}`
+    final_file_name = `${final_file_name}_${updateTaskFiles.state.selectedTask.entity.ban_ben}`
   const file_path = {
     pin_yin_ming_cheng: pin_yin_ming_cheng,
     root_path: '',

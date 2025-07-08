@@ -1,5 +1,5 @@
 <script setup>
-import productions from '@/store/modules/productions.js'
+//import productions from '@/store/modules/productions.js'
 import { ref, reactive, onMounted, watch } from 'vue'
 import { zhCn } from 'element-plus/es/locale/index'
 import { CircleX } from 'lucide-vue-next'
@@ -63,7 +63,7 @@ const confirmInputs = () => {
 }
 
 onMounted(() => {
-  console.log(productions.state.openProductions)
+  //console.log(productions.state.openProductions)
 })
 
 watch(

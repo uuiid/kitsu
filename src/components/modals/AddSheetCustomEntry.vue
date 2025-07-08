@@ -10,19 +10,34 @@ defineProps({
 const isInitInputs = ref(false)
 const isShowProjectIcon = ref(false)
 const inputs = reactive({
-  project_id: {
+  project_uuid: {
     value: '',
     type: 'list',
     option: productions.state.openProductions,
     required: true
   },
-  season: { value: null, type: 'number', placeholder: '', required: true },
-  episode: { value: null, type: 'number', placeholder: '', required: true },
-  name: { value: '', type: '', placeholder: '', required: true },
-  grade: { value: '', type: '', placeholder: '选填', required: false },
-  user_remark: { value: '', type: '', required: false, placeholder: '选填' },
-  start_time: { value: '', type: 'date', required: true },
-  end_time: { value: '', type: 'date', required: true }
+  entity_ji_du: {
+    value: null,
+    type: 'number',
+    placeholder: '',
+    required: true
+  },
+  entity_ji_shu_lie: {
+    value: null,
+    type: 'number',
+    placeholder: '',
+    required: true
+  },
+  task_name: { value: '', type: '', placeholder: '', required: true },
+  entity_deng_ji: { value: '', type: '', placeholder: '选填', required: false },
+  work_user_remark: {
+    value: '',
+    type: '',
+    required: false,
+    placeholder: '选填'
+  },
+  work_start_time: { value: '', type: 'date', required: true },
+  work_end_time: { value: '', type: 'date', required: true }
 })
 const emit = defineEmits(['cancel', 'on-confirm'])
 const formatDate = date => {
@@ -44,7 +59,7 @@ const inspectInputs = () => {
         outputs[input] = formatDate(inputs[input].value)
       } else if (inputs[input].type === 'number') {
         outputs[input] = Number(inputs[input].value)
-      } else if (input === 'project_id' && inputs[input].type === '') {
+      } else if (input === 'project_uuid' && inputs[input].type === '') {
         outputs['project_name'] = inputs[input].value
       } else outputs[input] = inputs[input].value
     } else {
@@ -69,34 +84,36 @@ const confirmInputs = () => {
 }
 
 onMounted(() => {
-  console.log(productions.state.openProductions)
+  //console.log(productions.state.openProductions)
 })
 
 watch(
-  () => inputs.start_time.value, // 监视整个 start_time 对象
+  () => inputs.work_start_time.value, // 监视整个 work_start_time 对象
   () => {
     if (!isInitInputs.value) {
-      if (inputs.end_time.value) {
-        inputs.start_time.error =
-          inputs.end_time.value < inputs.start_time.value
-        inputs.end_time.error = inputs.end_time.value < inputs.start_time.value
+      if (inputs.work_end_time.value) {
+        inputs.work_start_time.error =
+          inputs.work_end_time.value < inputs.work_start_time.value
+        inputs.work_end_time.error =
+          inputs.work_end_time.value < inputs.work_start_time.value
       }
-      inputs.start_time.error = !inputs.start_time.value
+      inputs.work_start_time.error = !inputs.work_start_time.value
     }
     // 在这里执行你的逻辑
   },
   { deep: true } // 启用深层监视
 )
 watch(
-  () => inputs.end_time.value, // 监视整个 start_time 对象
+  () => inputs.work_end_time.value, // 监视整个 work_start_time 对象
   () => {
     if (!isInitInputs.value) {
-      if (inputs.end_time.value) {
-        inputs.start_time.error =
-          inputs.end_time.value < inputs.start_time.value
-        inputs.end_time.error = inputs.end_time.value < inputs.start_time.value
+      if (inputs.work_end_time.value) {
+        inputs.work_start_time.error =
+          inputs.work_end_time.value < inputs.work_start_time.value
+        inputs.work_end_time.error =
+          inputs.work_end_time.value < inputs.work_start_time.value
       } else {
-        inputs.end_time.error = true
+        inputs.work_end_time.error = true
       }
     } else {
       isInitInputs.value = false
@@ -130,10 +147,10 @@ watch(
             :label-width="120"
             v-for="(input, key) in inputs"
             @mouseenter="
-              key === 'project_id' ? (isShowProjectIcon = true) : false
+              key === 'project_uuid' ? (isShowProjectIcon = true) : false
             "
             @mouseleave="
-              key === 'project_id' ? (isShowProjectIcon = false) : false
+              key === 'project_uuid' ? (isShowProjectIcon = false) : false
             "
           >
             <el-select
@@ -184,7 +201,7 @@ watch(
               @click="
                 input.type === '' ? (input.type = 'list') : (input.type = '')
               "
-              v-if="key === 'project_id'"
+              v-if="key === 'project_uuid'"
               v-show="isShowProjectIcon"
             >
               <arrow-up-down class="arrow-up-down" size="15" />
@@ -234,6 +251,7 @@ watch(
 
 .arrow-up-down {
   cursor: pointer;
+
   &:hover {
     color: #6bacea;
   }

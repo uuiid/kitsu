@@ -10,6 +10,7 @@
     <div class="modal-content wide">
       <div class="box content">
         <div class="flexrow">
+          <span class="flexrow-item"> 开始时间 </span>
           <combobox
             class="flexrow-item"
             :label="$t('timesheets.year')"
@@ -25,7 +26,22 @@
             v-model="monthString"
             @change="onDateChange"
           />
+          <span class="flexrow-item"> 结束时间 </span>
+          <combobox
+            class="flexrow-item"
+            :label="$t('timesheets.year')"
+            :options="yearOptions"
+            v-model="endYearString"
+            @change="onDateChange"
+          />
 
+          <combobox
+            class="flexrow-item"
+            :label="$t('timesheets.month')"
+            :options="monthOptions"
+            v-model="endMonthString"
+            @change="onDateChange"
+          />
           <button
             class="button"
             :text="$t('doodle.unselect_all_month')"
@@ -126,7 +142,9 @@ export default {
   data() {
     return {
       yearString: `${moment().year()}`,
-      monthString: `${moment().month() + 1}`,
+      monthString: `${moment().month()}`,
+      endYearString: `${moment().year()}`,
+      endMonthString: `${moment().month() + 1}`,
       sortedTasks: []
     }
   },
@@ -196,7 +214,13 @@ export default {
     },
 
     onDateChange(event) {
-      this.$emit('on-time-changed', this.yearString, this.monthString)
+      this.$emit(
+        'on-time-changed',
+        this.yearString,
+        this.monthString,
+        this.endYearString,
+        this.endMonthString
+      )
     },
 
     unselectAllMonthClick() {

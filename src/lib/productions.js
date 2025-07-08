@@ -21,6 +21,21 @@ export const PRODUCTION_TYPE_OPTIONS = [
   }
 ]
 
+export const PRODUCTION_CUSTOM_TYPE_OPTIONS = [
+  {
+    label: 'short',
+    value: 'short'
+  },
+  {
+    label: 'series',
+    value: 'series'
+  },
+  {
+    label: 'ova',
+    value: 'ova'
+  }
+]
+
 export const PRODUCTION_STYLE_OPTIONS = [
   { label: '2d', value: '2d' },
   { label: '2dpaper', value: '2dpaper' },

@@ -224,7 +224,8 @@ const helpers = {
     )
   },
   buildTreeFilterResult(state) {
-    cache.result = assetFilterStore().actions.filteringAssets(cache.assets)
+    if (cache.assets.length > 0)
+      cache.result = assetFilterStore().actions.filteringAssets(cache.assets)
 
     const limit =
       state.displayedAssets.length > PAGE_SIZE

@@ -899,7 +899,7 @@ export default {
         })
       }
       return this.loadScheduleItems(this.currentProduction).then(items => {
-        this.currentScheduleItem = items.find(
+        this.currentScheduleItem = items?.find(
           item => item.task_type_id === this.currentTaskType.id
         )
         return this.currentScheduleItem

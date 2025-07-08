@@ -173,7 +173,7 @@ export const descriptorMixin = {
       ) {
         return entity.entity_data[descriptor.field_name]
       } else {
-        return ''
+        return entity[descriptor.field_name]
       }
     },
 

@@ -118,6 +118,7 @@ watch(
           @check="onCheck"
           @check-change="onCheckChange"
           node-key="id"
+          @mouseleave="currentNode = null"
           :default-expanded-keys="[...assetFilter.state.expanded_keys.values()]"
           @node-expand="data => assetFilter.state.expanded_keys.add(data.id)"
           @node-collapse="
