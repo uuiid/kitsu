@@ -20,6 +20,7 @@ import router from '@/router/index.js'
 import VideoModal from '@/components/modals/VideoModal.vue'
 import AiVideo from '@/components/widgets/AiVideo.vue'
 import { AiScriptStore } from '@/store/modules/AiScript.js'
+import AutoLightSearchModal from '@/components/modals/AutoLightSearchModal.vue'
 
 useHead({
   title: i18n.global.t('doodle_work.doodle_work')
@@ -621,6 +622,7 @@ const onSetOutPath = () => {
       />
       <video-modal v-if="doodleWork.state.isShowDemonstrateVideo" />
       <doodle-work-setting-modal />
+      <auto-light-search-modal></auto-light-search-modal>
     </div>
   </div>
   <el-dialog

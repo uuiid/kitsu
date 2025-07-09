@@ -12,7 +12,6 @@ doodleWork.state.currentDoodleWorkType = props.name
 //const isDragOver = ref(false)
 const inputValue = ref('')
 const inputValueModel = ref('')
-
 const statusNum = computed(() => {
   let temp = 0
   doodleWork.currentDoodleWorkState.workList.forEach((value, key) => {
@@ -235,6 +234,15 @@ onUnmounted(() => {
             {{ `重新执行错误任务` }}
           </a>
         </div>
+        <a
+          :class="{
+            button: true
+          }"
+          @click="doodleWork.state.isShowAutoLightSearch = true"
+          v-if="props.name === 'auto_light'"
+        >
+          查找
+        </a>
       </div>
     </div>
   </div>

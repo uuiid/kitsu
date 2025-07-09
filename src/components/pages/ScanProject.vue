@@ -233,7 +233,7 @@ export default {
           type: 'path'
         },
         {
-          id: 'solve_file',
+          id: 'solve_file_',
           name: '解算路径',
           type: 'path'
         }

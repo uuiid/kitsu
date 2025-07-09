@@ -64,5 +64,9 @@ export default {
   getVideoThumbnail(task, localPath = '') {
     const path = localPath + `/api/doodle/video/thumbnail`
     return client.ppostThumbnail(path, task)
+  },
+  getDoodleFlags(id) {
+    const path = `api/doodle/file_association/${id}`
+    return client.pget(path)
   }
 }

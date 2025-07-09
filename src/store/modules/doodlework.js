@@ -441,6 +441,7 @@ function initState() {
     isActiveSettingModal: false,
     isActiveHistoryModal: false,
     isShowDemonstrateVideo: false,
+    isShowAutoLightSearch: false,
     isReload: true,
     isVisitor: false,
     isPullProcessed: false,
@@ -459,7 +460,8 @@ function initState() {
     versions: [],
     doodleSocket: null,
     port: 0,
-    DemonstrateVideoName: ''
+    DemonstrateVideoName: '',
+    autoLightSearchTasks: []
   }
 }
 
@@ -859,6 +861,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           fs.copyFileSync(sourceFilePath, destFilePath)
         }
       }
+    },
+    getDoodleFlags: async task_id => {
+      return await doodlework.getDoodleFlags(task_id)
     }
   }
   actions.getToolVersions()
