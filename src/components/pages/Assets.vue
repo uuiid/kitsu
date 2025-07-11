@@ -340,6 +340,7 @@ import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 import TaskUpdateFilesModal from '@/components/modals/TaskUpdateFilesModal.vue'
 import TreeFilterView from '@/components/widgets/TreeFilterView.vue'
 import { assetFilterStore } from '@/store/modules/assetfilter.js'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'assets',
@@ -603,12 +604,13 @@ export default {
     },
 
     dataMatchers() {
-      return this.isTVShow ? ['Episode', 'Type', 'Name'] : ['Type', 'Name']
+      return this.isTVShow
+        ? ['Episode', 'asset_type_name', 'name']
+        : ['asset_type_name', 'name']
     },
 
     renderColumns() {
       const collection = [...this.dataMatchers, ...this.optionalColumns]
-
       this.productionAssetTaskTypes.forEach(item => {
         collection.push(item.name)
         collection.push(`${item.name} comment`)
@@ -676,7 +678,7 @@ export default {
           this.success.edit = true
         })
         .catch(err => {
-          console.error(err)
+          ElMessage.error(err)
           this.loading.stay = false
           this.loading.edit = false
           this.success.edit = false
@@ -804,12 +806,11 @@ export default {
     },
 
     resetLightEditModal() {
-      const form = {
+      this.assetToEdit = {
         name: '',
         entity_type_id: this.assetToEdit.entity_type_id,
         production_id: this.currentProduction.id
       }
-      this.assetToEdit = form
     },
 
     resetEditModal() {
@@ -850,48 +851,61 @@ export default {
       return ''
     },
 
-    renderImport(data, mode) {
+    async renderImport(data, mode) {
       this.loading.importing = true
       this.errors.importing = false
       this.formData = data
+      const results = []
       if (mode === 'file') {
         data = data.get('file')
+        results.push(...(await csv.processCSV(data)))
+      } else {
+        for (const task of data.split('\n')) {
+          if (task !== '') {
+            results.push(task.split('\t'))
+          }
+        }
       }
-      csv.processCSV(data).then(results => {
-        this.parsedCSV = results
-        this.hideImportModal()
-        this.loading.importing = false
-        this.showImportRenderModal()
-      })
+      this.parsedCSV = results
+      this.hideImportModal()
+      this.loading.importing = false
+      this.showImportRenderModal()
     },
+    async uploadImportFile(data, toUpdate) {
+      // const formData = new FormData()
+      // const filename = 'import.csv'
+      // const csvContent = csv.turnEntriesToCsvString(data)
+      // const file = new File([csvContent], filename, { type: 'text/csv' })
+      //
+      // formData.append('file', file)
+      //
+      // this.loading.importing = true
+      // this.errors.importing = false
+      // this.$store.commit('ASSET_CSV_FILE_SELECTED', formData)
 
-    uploadImportFile(data, toUpdate) {
-      const formData = new FormData()
-      const filename = 'import.csv'
-      const csvContent = csv.turnEntriesToCsvString(data)
-      const file = new File([csvContent], filename, { type: 'text/csv' })
+      for (const task of data) {
+        try {
+          await this.newAsset(task)
+        } catch (err) {
+          ElMessage.error(err.message)
+        }
+      }
 
-      formData.append('file', file)
-
-      this.loading.importing = true
-      this.errors.importing = false
-      this.$store.commit('ASSET_CSV_FILE_SELECTED', formData)
-
-      this.uploadAssetFile(toUpdate)
-        .then(() => {
-          this.hideImportRenderModal()
-          this.loadEpisodes().catch(console.error)
-          this.loadAssets()
-        })
-        .catch(err => {
-          this.errors.importing = true
-          this.errors.importingError = err
-        })
-        .finally(() => {
-          this.loading.importing = false
-        })
+      this.loading.importing = false
+      // this.uploadAssetFile(toUpdate)
+      //   .then(() => {
+      //     this.hideImportRenderModal()
+      //     this.loadEpisodes().catch(console.error)
+      //     this.loadAssets()
+      //   })
+      //   .catch(err => {
+      //     this.errors.importing = true
+      //     this.errors.importingError = err
+      //   })
+      //   .finally(() => {
+      //     this.loading.importing = false
+      //   })
     },
-
     resetImport() {
       this.errors.importing = false
       this.hideImportRenderModal()
@@ -899,7 +913,6 @@ export default {
       this.$refs['import-modal'].reset()
       this.showImportModal()
     },
-
     saveSearchQuery(searchQuery) {
       if (this.loading.savingSearch) {
         return
@@ -911,24 +924,20 @@ export default {
           this.loading.savingSearch = false
         })
     },
-
     removeSearchQuery(searchQuery) {
       this.removeAssetSearch(searchQuery).catch(err => {
         if (err) console.error(err)
       })
     },
-
     saveScrollPosition(scrollPosition) {
       this.$store.commit('SET_ASSET_LIST_SCROLL_POSITION', scrollPosition)
     },
-
     onDeleteAllTasksClicked(taskTypeId) {
       const taskType = this.taskTypeMap.get(taskTypeId)
       this.taskTypeForTaskDeletion = taskType
       this.deleteAllTasksLockText = taskType.name
       this.modals.isDeleteAllTasksDisplayed = true
     },
-
     confirmAddMetadata(form) {
       this.loading.addMetadata = true
       form.entity_type = 'Asset'
@@ -943,7 +952,6 @@ export default {
           this.errors.addMetadata = true
         })
     },
-
     confirmAddThumbnails(forms) {
       const addPreview = form => {
         this.addThumbnailsModal.markLoading(form.task.entity_id)
@@ -972,24 +980,20 @@ export default {
         this.modals.isAddThumbnailsDisplayed = false
       })
     },
-
     onAddMetadataClicked() {
       this.descriptorToEdit = {}
       this.modals.isAddMetadataDisplayed = true
     },
-
     onDeleteMetadataClicked(descriptorId) {
       this.descriptorIdToDelete = descriptorId
       this.modals.isDeleteMetadataDisplayed = true
     },
-
     onEditMetadataClicked(descriptorId) {
       this.descriptorToEdit = this.currentProduction.descriptors.find(
         d => d.id === descriptorId
       )
       this.modals.isAddMetadataDisplayed = true
     },
-
     onExportClick() {
       this.getAssetsCsvLines().then(assetLines => {
         const nameData = [
@@ -1027,16 +1031,13 @@ export default {
         csv.buildCsvFile(name, [headers].concat(assetLines))
       })
     },
-
     onAssetTypeClicked(assetType) {
       this.searchField.setValue(`${this.assetSearchText} type=[${assetType}]`)
       this.onSearchChange()
     },
-
     onChangeSortClicked(sortInfo) {
       this.changeAssetSort(sortInfo)
     },
-
     async onFieldChanged({ entry, fieldName, value }) {
       const data = {
         id: entry.id,
@@ -1045,7 +1046,6 @@ export default {
       await this.editAsset(data)
       this.applySearchFromUrl()
     },
-
     async onMetadataChanged({ entry, descriptor, value }) {
       const data = {
         id: entry.id,
@@ -1056,12 +1056,10 @@ export default {
       await this.editAsset(data)
       this.applySearchFromUrl()
     },
-
     async onAssetChanged(asset) {
       await this.editAsset(asset)
       this.applySearchFromUrl()
     },
-
     reset() {
       this.initialLoading = true
       this.loadAssets().then(() => {

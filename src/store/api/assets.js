@@ -37,12 +37,7 @@ export default {
   },
 
   newAsset(asset) {
-    const data = {
-      name: asset.name,
-      description: asset.description,
-      data: asset.data,
-      is_shared: asset.is_shared
-    }
+    const data = asset
     if (asset.source_id !== 'null') {
       data.episode_id = asset.source_id
     }

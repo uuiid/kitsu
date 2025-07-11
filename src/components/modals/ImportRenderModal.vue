@@ -107,7 +107,11 @@
                       @update:model-value="checkForDuplicate"
                     />
                   </div>
-                  {{ cell || '-' }}
+                  {{
+                    columnsAllowed.find(item => item.value === cell)?.label ||
+                    cell ||
+                    '-'
+                  }}
                 </th>
                 <th
                   class="optional-header"
@@ -241,14 +245,15 @@ export default {
     ...mapGetters([
       'assetMetadataDescriptors',
       'shotMetadataDescriptors',
-      'editMetadataDescriptors'
+      'editMetadataDescriptors',
+      'productionAssetTypeOptions',
+      'currentProduction'
     ]),
-
     columnsRequired() {
       if (this.parsedCsv.length !== 0) {
         return this.columns.filter(item => {
           return (
-            !this.parsedCsv[0].includes(item) &&
+            !this.columnSelect.includes(item) &&
             this.dataMatchers.includes(item)
           )
         })
@@ -261,7 +266,7 @@ export default {
       if (this.parsedCsv.length !== 0) {
         return this.columns.filter(item => {
           return (
-            !this.parsedCsv[0].includes(item) &&
+            !this.columnSelect.includes(item) &&
             !this.dataMatchers.includes(item)
           )
         })
@@ -284,10 +289,23 @@ export default {
     },
 
     columnsAllowed() {
-      const list = [...this.columns]
+      const list = [
+        {
+          label: '类型',
+          value: 'asset_type_name'
+        },
+        {
+          label: '名称',
+          value: 'name'
+        },
+        {
+          label: '说明',
+          value: 'description'
+        }
+      ]
       this.metadataDescriptors.forEach(item => {
         if (!list.includes(item.name)) {
-          list.push(item.name)
+          list.push({ label: item.name, value: item.field_name })
         }
       })
       return list
@@ -301,13 +319,24 @@ export default {
         }
       ]
       this.columnsAllowed.forEach(item => {
-        options.push({ label: item, value: item })
+        options.push({ label: item.label, value: item.value })
       })
       return options
     },
 
     columnSelect() {
-      return this.parsedCsv[0]
+      const list = []
+      this.parsedCsv[0].forEach(item => {
+        const val = this.columnsAllowed.find(
+          item_ => item_.value === item || item_.label === item
+        )
+        if (val) {
+          list.push(val.value)
+        } else {
+          list.push(this.$t('main.csv.unknown'))
+        }
+      })
+      return list
     },
 
     indexMatchers() {
@@ -330,7 +359,37 @@ export default {
 
   methods: {
     onConfirmClicked() {
-      this.$emit('confirm', this.parsedCsv, this.updateData)
+      const all_data = []
+      const error_data = []
+      for (let i = 1; i < this.parsedCsv.length; i++) {
+        const data = {}
+        let isError = false
+        for (let j = 0; j < this.columnSelect.length; j++) {
+          if (this.columnSelect[j] !== this.$t('main.csv.unknown')) {
+            if (this.columnSelect[j] === 'asset_type_name') {
+              const value = this.productionAssetTypeOptions.find(
+                item => item.label === this.parsedCsv[i][j]
+              )
+              if (value) {
+                data['entity_type_id'] = value.value
+              } else {
+                isError = true
+                data['entity_type_id'] = ''
+              }
+            } else {
+              data[this.columnSelect[j]] = this.parsedCsv[i][j]
+            }
+          }
+        }
+        data['project_id'] = this.currentProduction.id
+        data['is_shared'] = false
+        if (isError) {
+          error_data.push(data)
+        } else {
+          all_data.push(data)
+        }
+      }
+      this.$emit('confirm', all_data, this.updateData)
     },
 
     onReupload() {
@@ -338,13 +397,18 @@ export default {
     },
 
     stateColumn(data) {
-      if (!this.columnsAllowed.includes(data)) {
+      if (
+        !this.columnsAllowed.find(
+          item => item.value === data || item.label === data
+        )
+      ) {
         return 'ignored'
       }
     },
 
     checkForDuplicate() {
       const ignoredItem = this.$t('main.csv.unknown')
+
       this.duplicates = this.columnSelect
         .filter((item, index) => this.columnSelect.indexOf(item) !== index)
         .filter(item => item !== ignoredItem)
@@ -379,20 +443,25 @@ export default {
         border: 1px solid $dark-grey-lightest;
         color: $white;
       }
+
       tr:not(.render-headers):hover {
         background-color: $dark-grey-lightmore;
       }
     }
   }
+
   .render-select {
     border-color: $dark-grey-lightest;
   }
+
   .legend-term {
     border: 1px solid $dark-grey-lightest;
   }
+
   .ignored {
     background-color: $dark-grey;
   }
+
   .disabled {
     background: repeating-linear-gradient(
       -45deg,
@@ -403,45 +472,56 @@ export default {
     );
   }
 }
+
 .modal-content {
   margin: 6rem auto 1.4rem;
   max-width: calc(100vw - 4rem);
   max-height: calc(100% - 6rem);
   width: auto;
 }
+
 .modal-content .box p.text {
   margin-bottom: 1em;
 }
+
 .error {
   margin-top: 1em;
 }
+
 .description {
   margin-bottom: 1em;
   margin-top: 2em;
+
   .flex-item {
     flex: 1 1 50%;
   }
 }
+
 .render-container {
   max-height: 300px;
   overflow: auto;
+
   .render-headers {
     .field {
       margin: 0;
     }
   }
+
   .render {
     width: 100%;
     border: 1px solid $light-grey-light;
+
     th,
     td {
       color: $dark-grey;
       border: 1px solid $light-grey-light;
       padding: 0.75rem;
     }
+
     tr:hover {
       background: none;
     }
+
     tr:not(.render-headers):hover {
       background-color: $white-grey-light;
     }
@@ -494,6 +574,7 @@ export default {
   height: 1.5rem;
   border: 1px solid $light-grey-light;
 }
+
 .legend-definition {
   width: 100%;
   display: flex;
@@ -537,6 +618,7 @@ col.missing {
     transparent 10px
   );
 }
+
 .overwrite {
   background-color: rgba($blue, 0.2);
 

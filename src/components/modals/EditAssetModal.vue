@@ -45,7 +45,7 @@
           <text-field
             ref="resolutionField"
             :label="$t('shots.fields.resolution')"
-            v-model="form.data.resolution"
+            v-model="form.resolution"
             @enter="runConfirmation"
           />
           <template v-if="assetToEdit">
@@ -54,7 +54,7 @@
               :descriptor="descriptor"
               :entity="assetToEdit"
               @enter="runConfirmation"
-              v-model="form.data[descriptor.field_name]"
+              v-model="form[descriptor.field_name]"
               v-for="descriptor in assetMetadataDescriptors"
             />
           </template>
@@ -165,9 +165,7 @@ export default {
         name: '',
         description: '',
         source_id: null,
-        data: {
-          resolution: ''
-        },
+        resolution: '',
         is_shared: 'false'
       },
       assetSuccessText: ''
@@ -275,22 +273,16 @@ export default {
         this.form.source_id = this.currentEpisode
           ? this.currentEpisode.id
           : null
-        this.form.data = {}
         this.form.is_shared = 'false'
       } else {
         const entityTypeId = this.getEntityTypeIdDefaultValue()
         this.form = {
           entity_type_id: entityTypeId,
-          project_id: this.assetToEdit.project_id,
-          name: this.assetToEdit.name,
-          description: this.assetToEdit.description,
-          source_id: this.assetToEdit.source_id || this.assetToEdit.episode_id,
-          data:
-            {
-              ...this.assetToEdit.data,
-              resolution: this.assetToEdit.data.resolution || ''
-            } || {},
           is_shared: String(this.assetToEdit.is_shared === true)
+        }
+        this.form = {
+          ...this.form,
+          ...this.assetToEdit
         }
       }
     }
