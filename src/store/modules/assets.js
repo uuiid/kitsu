@@ -258,9 +258,12 @@ const helpers = {
       persons,
       query
     })
-    let result = cache.assets.filter(asset => {
-      return asset.name.indexOf(keywords) !== -1
-    }) //indexSearch(cache.assetIndex, keywords) || cache.assets
+    let result =
+      sorting.length > 0
+        ? cache.result
+        : cache.assets.filter(asset => {
+            return asset.name.indexOf(keywords) !== -1
+          }) //indexSearch(cache.assetIndex, keywords) || cache.assets
     result = applyFilters(result, filters, taskMap)
     result = sortAssetResult(result, sorting, taskTypeMap, taskMap)
     cache.result = result

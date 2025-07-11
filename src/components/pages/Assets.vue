@@ -1049,9 +1049,7 @@ export default {
     async onMetadataChanged({ entry, descriptor, value }) {
       const data = {
         id: entry.id,
-        data: {
-          [descriptor.field_name]: value
-        }
+        [descriptor.field_name]: value
       }
       await this.editAsset(data)
       this.applySearchFromUrl()
