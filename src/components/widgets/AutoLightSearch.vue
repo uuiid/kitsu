@@ -43,7 +43,6 @@ const props = defineProps({
 const emit = defineEmits(['submit', 'add-data'])
 const isDragOver = ref(false)
 const displayWorkList = computed(() => {
-  console.log(props.bodyList)
   return props.bodyList
 })
 const isShowPrompt = computed(() => {
@@ -56,7 +55,7 @@ const isActiveSubmit = computed(() => {
 
 function formatTbodyData(asset, key) {
   if (['ue_file', 'maya_file', 'solve_file_'].includes(key))
-    return asset[key].length > 1 ? asset[key] : `未找到路径`
+    return asset[key]?.length > 1 ? asset[key] : `未找到路径`
   else if (key === 'assets_type')
     return (
       this.openProductions.filter(product => {
@@ -98,7 +97,7 @@ const onClipboard = async event => {
     let ue_file = ''
     if (doodle_flag !== '') {
       maya_file = doodle_flag.maya_file
-      solve_file = doodle_flag.solve_file
+      solve_file = doodle_flag.solve_file_
       ue_file = doodle_flag.ue_file
     }
     let is_error = false
