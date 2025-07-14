@@ -11,7 +11,7 @@ const isOnlyShowErrorTask = ref(false)
 
 const displayWorkList = computed(() => {
   return doodleWork.state.autoLightSearchTasks.filter(task =>
-    isOnlyShowErrorTask.value ? true : !task.isError
+    isOnlyShowErrorTask.value ? true : task.is_error
   )
 })
 

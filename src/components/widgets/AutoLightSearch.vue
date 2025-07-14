@@ -95,13 +95,20 @@ const onClipboard = async event => {
     let maya_file = ''
     let solve_file = ''
     let ue_file = ''
+    let is_error = false
     if (doodle_flag !== '') {
       maya_file = doodle_flag.maya_file
       solve_file = doodle_flag.solve_file_
       ue_file = doodle_flag.ue_file
+      if (
+        maya_file?.length === 0 ||
+        solve_file?.length === 0 ||
+        ue_file?.length === 0
+      )
+        is_error = true
+    } else {
+      is_error = true
     }
-    let is_error = false
-    if (maya_file === '' || solve_file === '' || ue_file === '') is_error = true
     data.push({
       is_error: is_error,
       base_path: item,
