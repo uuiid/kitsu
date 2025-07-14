@@ -121,9 +121,7 @@
                   <td class="field-label">{{ descriptor.name }}</td>
                   <td>
                     {{
-                      currentAsset.data
-                        ? currentAsset.data[descriptor.field_name]
-                        : ''
+                      currentAsset ? currentAsset[descriptor.field_name] : ''
                     }}
                   </td>
                 </tr>
@@ -837,6 +835,7 @@ h2.subtitle {
   margin-bottom: 0.8em;
   margin-left: 1em;
   margin-right: 1em;
+
   .entity-title {
     font-weight: 500;
   }
@@ -1041,6 +1040,7 @@ h2.subtitle {
   border: 5px solid transparent;
   cursor: pointer;
   transition: border 0.2s linear;
+
   &:hover {
     border: 5px solid var(--background-selectable);
   }

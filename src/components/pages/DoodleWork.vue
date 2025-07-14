@@ -622,7 +622,9 @@ const onSetOutPath = () => {
       />
       <video-modal v-if="doodleWork.state.isShowDemonstrateVideo" />
       <doodle-work-setting-modal />
-      <auto-light-search-modal></auto-light-search-modal>
+      <auto-light-search-modal
+        v-if="currentPage.name === 'auto_light'"
+      ></auto-light-search-modal>
     </div>
   </div>
   <el-dialog

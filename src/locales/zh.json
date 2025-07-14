@@ -493,7 +493,17 @@
       "no_results": "无结果",
       "link": "链接",
       "hours_spent": "花费的小时数",
-      "hours_estimated": "估计小时数"
+      "hours_estimated": "估计小时数",
+      "label": {
+        "info": "信息",
+        "chat": "聊天",
+        "concepts": "概念",
+        "casting": "制作者",
+        "schedule": "周期",
+        "timelog": "时间记录",
+        "output_files": "输出文件",
+        "preview_files": "预览文件"
+      }
     },
     "menu": {
       "assign_tasks": "分配任务",
