@@ -251,7 +251,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       state.value.treeFilterData[1]?.children.sort((a, b) => {
         return a.label - b.label
       })
-      state.value.treeFilterData[2].children.sort((a, b) => {
+      state.value.treeFilterData[2]?.children.sort((a, b) => {
         return a.label - b.label
       })
       const temp_filters = []
