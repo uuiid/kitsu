@@ -80,7 +80,95 @@ const initialState = {
   episodeStatsPath: { name: 'open-productions' },
   breakdownPath: { name: 'open-productions' },
   playlistsPath: { name: 'open-productions' },
-  teamPath: { name: 'open-productions' }
+  teamPath: { name: 'open-productions' },
+  productionDescriptors: {
+    Asset: [
+      {
+        choices: null,
+        data_type: 'string',
+        departments: [],
+        entity_type: 'Asset',
+        field_name: 'ban_ben',
+        for_client: false,
+        id: '059b2279-91d0-4c49-849c-2deebb7de5a6',
+        name: '版本'
+      },
+      {
+        choices: null,
+        data_type: 'string',
+        departments: [],
+        entity_type: 'Asset',
+        field_name: 'bian_hao',
+        for_client: false,
+        id: '3b9c1e57-9009-450e-a6e6-b233be91f2ce',
+        name: '编号'
+      },
+      {
+        choices: null,
+        data_type: 'string',
+        departments: [],
+        entity_type: 'Asset',
+        field_name: 'deng_ji',
+        for_client: false,
+        id: 'b7448141-0600-42dc-a0f9-89f21e1a6d3e',
+        name: '等级'
+      },
+      {
+        choices: null,
+        data_type: 'string',
+        departments: [],
+        entity_type: 'Asset',
+        field_name: 'ji_shu_lie',
+        for_client: false,
+        id: 'ff99e94f-6abb-4a89-abae - 9b5a571ddf8f',
+        name: '集数列'
+      },
+      {
+        choices: null,
+        data_type: 'string',
+        departments: [],
+        entity_type: 'Asset',
+        field_name: 'gui_dang',
+        for_client: false,
+        id: '0e42c283-196c-4b50-a94a-79e77d08148d',
+        name: '归档'
+      },
+      {
+        choices: null,
+        data_type: 'string',
+        departments: [],
+        entity_type: 'Asset',
+        field_name: 'kai_shi_ji_shu',
+        for_client: false,
+        id: 'e29b4f8f-27c5-4916-9bd5-3b4a439b7fcf',
+        name: '开始集数'
+      },
+      {
+        choices: null,
+        data_type: 'number',
+        departments: [],
+        entity_type: 'Asset',
+        field_name: 'ji_du',
+        for_client: true,
+        id: '0105a5a4-0b7c-4972-a2eb-6762d001f3d6',
+        name: '季度'
+      },
+      {
+        choices: null,
+        data_type: 'string',
+        departments: ['0a6ad006-3d02-4c6b-8dd9-51b7c1f83af5'],
+        entity_type: 'Asset',
+        field_name: 'pin_yin_ming_cheng',
+        for_client: true,
+        id: '3856c94d-4479-49a0-999a-168b295ae836',
+        name: '拼音名称'
+      }
+    ],
+    Shot: [],
+    Sequence: [],
+    Episode: [],
+    Edit: []
+  }
 }
 
 const state = { ...initialState }
@@ -133,11 +221,7 @@ const entityMetadataDescriptors = entityType => (state, getters) => {
   if (!state.currentProduction || !state.currentProduction.descriptors) {
     return []
   } else {
-    return sortByName(
-      state.currentProduction.descriptors.filter(
-        d => d.entity_type === entityType
-      )
-    )
+    return sortByName(state.productionDescriptors[entityType])
   }
 }
 

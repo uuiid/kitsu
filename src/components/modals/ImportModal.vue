@@ -106,11 +106,11 @@ export default {
         {
           id: 'file',
           name: this.$t('main.csv.tab_select_file')
-        },
+        } /*,
         {
           id: 'text',
           name: this.$t('main.csv.tab_paste_code')
-        }
+        }*/
       ]
     }
   },

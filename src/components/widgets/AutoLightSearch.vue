@@ -79,6 +79,9 @@ const onClipboard = async event => {
 
   const data = []
   for (const item of texts) {
+    if (item && !fs.existsSync(item)) {
+      continue
+    }
     const dirs = fs.readdirSync(item)
     let doodle_flag = ''
     for (const dir of dirs) {

@@ -247,7 +247,8 @@ export default {
       'shotMetadataDescriptors',
       'editMetadataDescriptors',
       'productionAssetTypeOptions',
-      'currentProduction'
+      'currentProduction',
+      'productionAssetTaskTypes'
     ]),
     columnsRequired() {
       if (this.parsedCsv.length !== 0) {
@@ -308,6 +309,11 @@ export default {
           list.push({ label: item.name, value: item.field_name })
         }
       })
+      this.productionAssetTaskTypes.forEach(item => {
+        if (!list.includes(item.name)) {
+          list.push({ label: item.name, value: item.id, task: 'task' })
+        }
+      })
       return list
     },
 
@@ -363,39 +369,54 @@ export default {
       const error_data = []
       for (let i = 1; i < this.parsedCsv.length; i++) {
         const data = {}
+        data['project_id'] = this.currentProduction.id
+        data['is_shared'] = false
         let isError = false
         for (let j = 0; j < this.columnSelect.length; j++) {
           if (this.columnSelect[j] !== this.$t('main.csv.unknown')) {
-            if (this.columnSelect[j] === 'asset_type_name') {
-              const value = this.productionAssetTypeOptions.find(
-                item => item.label === this.parsedCsv[i][j]
+            if (
+              this.columnSelect[j]?.length === 36 &&
+              this.productionAssetTaskTypes.find(
+                item => item.id === this.columnSelect[j]
               )
-              if (value) {
-                data['entity_type_id'] = value.value
-              } else {
-                isError = true
-                data['entity_type_id'] = ''
+            ) {
+              if (data.asset_task_type_ids === undefined) {
+                data['asset_task_type_ids'] = []
               }
+              data['asset_task_type_ids'].push(this.columnSelect[j])
             } else {
-              data[this.columnSelect[j]] = this.parsedCsv[i][j]
+              if (this.columnSelect[j] === 'asset_type_name') {
+                const value = this.productionAssetTypeOptions.find(
+                  item => item.label === this.parsedCsv[i][j]
+                )
+                if (value) {
+                  data['entity_type_id'] = value.value || ''
+                } else {
+                  isError = true
+                  data['entity_type_id'] = ''
+                }
+              } else {
+                if (this.columnSelect[j] === 'description') {
+                  data[this.columnSelect[j]] = this.parsedCsv[i][j] || ''
+                } else if (this.parsedCsv[i][j] !== undefined) {
+                  data[this.columnSelect[j]] = this.parsedCsv[i][j]
+                }
+              }
             }
           }
         }
-        data['project_id'] = this.currentProduction.id
-        data['is_shared'] = false
         if (isError) {
           error_data.push(data)
         } else {
           all_data.push(data)
         }
       }
+      //console.log('all_data', all_data)
       this.$emit('confirm', all_data, this.updateData)
     },
-
     onReupload() {
       this.$emit('reupload')
     },
-
     stateColumn(data) {
       if (
         !this.columnsAllowed.find(
@@ -405,7 +426,6 @@ export default {
         return 'ignored'
       }
     },
-
     checkForDuplicate() {
       const ignoredItem = this.$t('main.csv.unknown')
 
@@ -413,13 +433,11 @@ export default {
         .filter((item, index) => this.columnSelect.indexOf(item) !== index)
         .filter(item => item !== ignoredItem)
     },
-
     isDuplicated(index) {
       if (this.duplicates.includes(this.columnSelect[index])) {
         return true
       }
     },
-
     existingData(index) {
       const csv = this.parsedCsv[index + 1]
       const db = this.database
