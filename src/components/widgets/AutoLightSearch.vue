@@ -76,9 +76,8 @@ const onClipboard = async event => {
   try {
     const clipboardData = event.clipboardData || window.clipboardData
     const text = clipboardData.getData('text')
-    const texts = text.split('\n').filter(item => item !== '\r')
+    const texts = text.split('\r\n').filter(item => item !== '\r')
     const fs = require('fs')
-
     const data = []
     for (const item of texts) {
       if (
@@ -133,6 +132,7 @@ const onClipboard = async event => {
 
     emit('add-data', data)
   } catch (error) {
+    console.error(error)
     ElMessage.error('添加失败')
   }
 }
