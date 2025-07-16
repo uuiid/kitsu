@@ -1,6 +1,7 @@
 <script setup>
 import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
+import { ElMessage } from 'element-plus'
 
 const tableHeadFiled = [
   {
@@ -72,57 +73,68 @@ function formatTbodyData(asset, key) {
 const onClipboard = async event => {
   event.preventDefault()
   isDragOver.value = false
-  const clipboardData = event.clipboardData || window.clipboardData
-  const text = clipboardData.getData('text')
-  const texts = text.split('\n')
-  const fs = require('fs')
+  try {
+    const clipboardData = event.clipboardData || window.clipboardData
+    const text = clipboardData.getData('text')
+    const texts = text.split('\n').filter(item => item !== '\r')
+    const fs = require('fs')
 
-  const data = []
-  for (const item of texts) {
-    if (item && !fs.existsSync(item)) {
-      continue
-    }
-    const dirs = fs.readdirSync(item)
-    let doodle_flag = ''
-    for (const dir of dirs) {
-      if (dir.endsWith('.doodle_flag')) {
-        const filePath = `${item}\\${dir}`
-        const task_id = fs.readFileSync(filePath).toString()
-        try {
-          doodle_flag = await doodleWorkStore().actions.getDoodleFlags(task_id)
-        } catch (error) {
-          doodle_flag = ''
+    const data = []
+    for (const item of texts) {
+      if (
+        item === '' ||
+        item === ' ' ||
+        item === '暂无' ||
+        item === '\r' ||
+        !fs.existsSync(item)
+      ) {
+        continue
+      }
+      const dirs = fs.readdirSync(item)
+      let doodle_flag = ''
+      for (const dir of dirs) {
+        if (dir.endsWith('.doodle_flag')) {
+          const filePath = `${item}\\${dir}`
+          const task_id = fs.readFileSync(filePath).toString()
+          try {
+            doodle_flag =
+              await doodleWorkStore().actions.getDoodleFlags(task_id)
+          } catch (error) {
+            doodle_flag = ''
+          }
         }
       }
-    }
-    let maya_file = ''
-    let solve_file = ''
-    let ue_file = ''
-    let is_error = false
-    if (doodle_flag !== '') {
-      maya_file = doodle_flag.maya_file
-      solve_file = doodle_flag.solve_file_
-      ue_file = doodle_flag.ue_file
-      if (
-        maya_file?.length === 0 ||
-        solve_file?.length === 0 ||
-        ue_file?.length === 0
-      )
+      let maya_file = ''
+      let solve_file = ''
+      let ue_file = ''
+      let is_error = false
+      if (doodle_flag !== '') {
+        maya_file = doodle_flag.maya_file
+        solve_file = doodle_flag.solve_file_
+        ue_file = doodle_flag.ue_file
+        if (
+          maya_file?.length === 0 ||
+          solve_file?.length === 0 ||
+          ue_file?.length === 0
+        )
+          is_error = true
+      } else {
         is_error = true
-    } else {
-      is_error = true
+      }
+      data.push({
+        is_error: is_error,
+        base_path: item,
+        maya_file: maya_file,
+        name: '',
+        solve_file_: solve_file,
+        ue_file: ue_file
+      })
     }
-    data.push({
-      is_error: is_error,
-      base_path: item,
-      maya_file: maya_file,
-      name: '',
-      solve_file_: solve_file,
-      ue_file: ue_file
-    })
-  }
 
-  emit('add-data', data)
+    emit('add-data', data)
+  } catch (error) {
+    ElMessage.error('添加失败')
+  }
 }
 onMounted(() => {
   document.addEventListener('paste', onClipboard)
