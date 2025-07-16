@@ -115,7 +115,7 @@ const initialState = {
       },
       {
         choices: null,
-        data_type: 'string',
+        data_type: 'number',
         departments: [],
         entity_type: 'Asset',
         field_name: 'ji_shu_lie',
@@ -125,7 +125,7 @@ const initialState = {
       },
       {
         choices: null,
-        data_type: 'string',
+        data_type: 'number',
         departments: [],
         entity_type: 'Asset',
         field_name: 'gui_dang',
@@ -135,7 +135,7 @@ const initialState = {
       },
       {
         choices: null,
-        data_type: 'string',
+        data_type: 'number',
         departments: [],
         entity_type: 'Asset',
         field_name: 'kai_shi_ji_shu',
@@ -365,8 +365,14 @@ const getters = {
 
   currentProduction: state => {
     if (state.currentProduction) {
+      state.currentProduction.descriptors = sortByName(
+        state.productionDescriptors['Asset']
+      )
       return state.currentProduction
     } else if (state.openProductions.length > 0) {
+      state.openProductions[0].descriptors = sortByName(
+        state.productionDescriptors['Asset']
+      )
       return state.openProductions[0]
     } else {
       return null

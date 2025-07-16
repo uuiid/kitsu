@@ -13,12 +13,12 @@
                 @save="saveSearchQuery"
                 placeholder="ex: props modeling=wip"
               />
-              <button-simple
+              <!--button-simple
                 class="flexrow-item"
                 :title="$t('entities.build_filter.title')"
                 icon="filter"
                 @click="modals.isBuildFilterDisplayed = true"
-              />
+              /-->
               <button-simple
                 class="flexrow-item"
                 icon="assets"
