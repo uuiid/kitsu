@@ -175,6 +175,7 @@ import Combobox from '@/components/widgets/Combobox.vue'
 import Checkbox from '@/components/widgets/Checkbox.vue'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
 import ModalFooter from '@/components/modals/ModalFooter.vue'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'import-render-modal',
@@ -309,6 +310,7 @@ export default {
           list.push({ label: item.name, value: item.field_name })
         }
       })
+      console.log(this.productionAssetTypeOptions)
       this.productionAssetTaskTypes.forEach(item => {
         if (!list.includes(item.name)) {
           list.push({ label: item.name, value: item.id, task: 'task' })
@@ -380,10 +382,12 @@ export default {
                 item => item.id === this.columnSelect[j]
               )
             ) {
-              if (data.asset_task_type_ids === undefined) {
-                data['asset_task_type_ids'] = []
+              if (this.parsedCsv[i][j] === 'todo') {
+                if (data.asset_task_type_ids === undefined) {
+                  data['asset_task_type_ids'] = []
+                }
+                data['asset_task_type_ids'].push(this.columnSelect[j])
               }
-              data['asset_task_type_ids'].push(this.columnSelect[j])
             } else {
               if (this.columnSelect[j] === 'asset_type_name') {
                 const value = this.productionAssetTypeOptions.find(
@@ -394,6 +398,7 @@ export default {
                 } else {
                   isError = true
                   data['entity_type_id'] = ''
+                  data['error'] = '未找到类型' + this.parsedCsv[i][j]
                 }
               } else {
                 if (this.columnSelect[j] === 'description') {
@@ -407,6 +412,7 @@ export default {
         }
         if (isError) {
           error_data.push(data)
+          ElMessage.error(data.name + (data.error || '未知错误'))
         } else {
           all_data.push(data)
         }

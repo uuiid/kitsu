@@ -1825,7 +1825,8 @@
       "task_name": "名称",
       "work_user_remark": "备注",
       "work_start_time": "开始时间",
-      "work_end_time": "结束时间"
+      "work_end_time": "结束时间",
+      "refresh": "刷新"
     },
     "doodle_productions": {
       "fields": {

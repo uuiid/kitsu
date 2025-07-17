@@ -8,6 +8,7 @@ const defaultProps = {
   children: 'children',
   label: 'label'
 }
+const filterText = ref('')
 const currentNode = ref(null)
 const isOpen = ref(true)
 const assetFilter = assetFilterStore()
@@ -88,7 +89,11 @@ watchEffect(() => {
     removeEvents()
   }
 })
-
+const filterNode = (value, data) => {
+  console.log('filterNode', value, data)
+  if (!value) return true
+  return String(data.label)?.includes(value)
+}
 watch(
   () => assetFilter.state.filters,
   () => {
@@ -96,6 +101,9 @@ watch(
   },
   { deep: true }
 )
+watch(filterText, val => {
+  treeRef.value?.filter(val)
+})
 </script>
 
 <template>
@@ -106,6 +114,7 @@ watch(
       :style="`min-width: ${isOpen ? extendWidth.width : 0}px;max-width: ${isOpen ? extendWidth.width : 0}px`"
     >
       <div class="update-file-boxes">
+        <el-input v-model="filterText" class="w-60 mb-2" placeholder="名称" />
         <el-tree
           ref="treeRef"
           style="max-width: 600px; height: 100%"
@@ -118,6 +127,7 @@ watch(
           @check="onCheck"
           @check-change="onCheckChange"
           node-key="id"
+          :filter-node-method="filterNode"
           @mouseleave="currentNode = null"
           :default-expanded-keys="[...assetFilter.state.expanded_keys.values()]"
           @node-expand="data => assetFilter.state.expanded_keys.add(data.id)"

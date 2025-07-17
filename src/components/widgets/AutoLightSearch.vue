@@ -92,8 +92,11 @@ const onClipboard = async event => {
       const dirs = fs.readdirSync(item)
       let doodle_flag = ''
       for (const dir of dirs) {
-        if (dir.endsWith('.doodle_flag')) {
-          const filePath = `${item}\\${dir}`
+        if (dir.endsWith('.ma')) {
+          const filePath = `${item}\\${dir.replace('.ma', '.doodle_flag')}`
+          if (!fs.existsSync(filePath)) {
+            continue
+          }
           const task_id = fs.readFileSync(filePath).toString()
           try {
             doodle_flag =

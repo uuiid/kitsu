@@ -86,6 +86,12 @@
                 />
                 <button-simple
                   class="flexrow-item"
+                  icon="refresh"
+                  :title="$t('doodle.refresh')"
+                  @click="reset()"
+                />
+                <button-simple
+                  class="flexrow-item"
                   :text="$t('assets.new_asset')"
                   icon="plus"
                   @click="showNewModal"
@@ -879,10 +885,9 @@ export default {
       //
       // formData.append('file', file)
       //
-      // this.loading.importing = true
-      // this.errors.importing = false
+      this.loading.importing = true
+      //this.errors.importing = false
       // this.$store.commit('ASSET_CSV_FILE_SELECTED', formData)
-
       for (const task of data) {
         try {
           await this.newAsset(task)
@@ -890,7 +895,9 @@ export default {
           ElMessage.error(err.message)
         }
       }
-
+      await this.reset()
+      await this.loadEpisodes()
+      this.hideImportRenderModal()
       this.loading.importing = false
       // this.uploadAssetFile(toUpdate)
       //   .then(() => {
