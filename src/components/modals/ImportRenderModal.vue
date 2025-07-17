@@ -195,7 +195,8 @@ export default {
     return {
       duplicates: [],
       formData: null,
-      updateData: false
+      updateData: false,
+      columnSelect: []
     }
   },
 
@@ -265,6 +266,7 @@ export default {
     },
 
     columnsOptional() {
+      console.log(this.columnSelect)
       if (this.parsedCsv.length !== 0) {
         return this.columns.filter(item => {
           return (
@@ -310,7 +312,6 @@ export default {
           list.push({ label: item.name, value: item.field_name })
         }
       })
-      console.log(this.productionAssetTypeOptions)
       this.productionAssetTaskTypes.forEach(item => {
         if (!list.includes(item.name)) {
           list.push({ label: item.name, value: item.id, task: 'task' })
@@ -329,22 +330,8 @@ export default {
       this.columnsAllowed.forEach(item => {
         options.push({ label: item.label, value: item.value })
       })
+      console.log(options)
       return options
-    },
-
-    columnSelect() {
-      const list = []
-      this.parsedCsv[0].forEach(item => {
-        const val = this.columnsAllowed.find(
-          item_ => item_.value === item || item_.label === item
-        )
-        if (val) {
-          list.push(val.value)
-        } else {
-          list.push(this.$t('main.csv.unknown'))
-        }
-      })
-      return list
     },
 
     indexMatchers() {
@@ -453,6 +440,22 @@ export default {
         itemName += csv[col]
       })
       return db[itemName]
+    }
+  },
+  watch: {
+    parsedCsv() {
+      const list = []
+      this.parsedCsv[0].forEach(item => {
+        const val = this.columnsAllowed.find(
+          item_ => item_.value === item || item_.label === item
+        )
+        if (val) {
+          list.push(val.value)
+        } else {
+          list.push(this.$t('main.csv.unknown'))
+        }
+      })
+      this.columnSelect = list
     }
   }
 }
