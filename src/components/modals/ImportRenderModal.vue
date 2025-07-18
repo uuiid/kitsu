@@ -77,7 +77,7 @@
               <col
                 :key="`col-${index}`"
                 :class="stateColumn(cell)"
-                v-for="(cell, index) in parsedCsv[0]"
+                v-for="(cell, index) in columnSelect"
               />
               <col
                 :key="`col-missing-${item}`"
@@ -92,7 +92,11 @@
                   :key="`header-${cell}`"
                   v-for="cell in columnsRequired"
                 >
-                  {{ cell }}
+                  {{
+                    columnsAllowed.find(
+                      item => item.value === cell || item.label === cell
+                    )?.label
+                  }}
                 </th>
                 <th
                   :key="`header-${index}`"
@@ -108,17 +112,12 @@
                     />
                   </div>
                   {{
-                    columnsAllowed.find(item => item.value === cell)?.label ||
+                    columnsAllowed.find(
+                      item => item.value === cell || item.label === cell
+                    )?.label ||
                     cell ||
                     '-'
                   }}
-                </th>
-                <th
-                  class="optional-header"
-                  :key="`header-${cell}`"
-                  v-for="cell in columnsOptional"
-                >
-                  {{ cell }}
                 </th>
               </tr>
             </thead>
@@ -138,9 +137,6 @@
                 </td>
                 <td v-for="(cell, index) in line" :key="`cell-${index}`">
                   {{ cell || '-' }}
-                </td>
-                <td v-for="cell in columnsOptional" :key="`cell-${cell}`">
-                  {{ '-' }}
                 </td>
               </tr>
             </tbody>
