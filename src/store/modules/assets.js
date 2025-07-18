@@ -766,7 +766,7 @@ const actions = {
         asset.asset_type_name,
         asset.name,
         asset.description,
-        asset.ready_for !== 'None' ? taskTypeMap.get(asset.ready_for).name : ''
+        asset.ready_for !== 'None' ? taskTypeMap.get(asset.ready_for)?.name : ''
       ])
       asset.data = asset.data || {}
       sortByName([...production.descriptors])

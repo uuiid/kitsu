@@ -478,7 +478,6 @@ export default {
         })
       }
     }
-
     if (
       this.assetMap.size < 2 ||
       this.assetValidationColumns.length === 0 ||
@@ -561,7 +560,6 @@ export default {
         type.filter(asset => !asset.shared)
       )
     },
-
     filteredAssets() {
       const assets = {}
       this.displayedAssetsByType.forEach(type => {
@@ -869,6 +867,9 @@ export default {
         for (const task of data.split('\n')) {
           if (task !== '') {
             results.push(task.split('\t'))
+            if (task.split('\t').length < results[0].length) {
+              results.push(' ')
+            }
           }
         }
       }

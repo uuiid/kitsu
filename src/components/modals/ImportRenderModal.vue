@@ -12,25 +12,8 @@
         <h1 class="title">
           {{ $t('main.csv.preview_title') }}
         </h1>
-
-        <p>
-          {{ $t('main.csv.preview_required') }}
-        </p>
         <div class="description">
-          <div v-show="!disableUpdate">
-            <h2 class="legend-title">
-              {{ $t('main.csv.options.title') }}
-            </h2>
-            <checkbox
-              :toggle="true"
-              :label="$t('main.csv.options.update')"
-              v-model="updateData"
-            />
-          </div>
-          <h3 class="legend-title">
-            {{ $t('main.csv.legend') }}
-          </h3>
-          <div class="flexrow legends">
+          <div class="legends">
             <ul class="legend flexrow-item">
               <li class="legend-definition">
                 <span class="legend-term"></span>
@@ -48,8 +31,6 @@
                 <span class="legend-term missing-optional"></span>
                 {{ $t('main.csv.legend_missing_optional') }}
               </li>
-            </ul>
-            <ul class="legend flexrow-item">
               <li class="legend-definition">
                 <span class="legend-term"></span>
                 {{ $t('main.csv.legend_line_ok') }}
@@ -112,9 +93,7 @@
                     />
                   </div>
                   {{
-                    columnsAllowed.find(
-                      item => item.value === cell || item.label === cell
-                    )?.label ||
+                    columnsAllowed.find(item => item.value === cell)?.label ||
                     cell ||
                     '-'
                   }}
@@ -123,20 +102,27 @@
             </thead>
             <tbody>
               <tr
+                class="render-line"
                 :class="{
                   overwrite: updateData && existingData(index),
-                  disabled: !updateData && existingData(index)
+                  disabled: !updateData && existingData(index),
+                  'render-error': line.error
                 }"
                 :key="`line-${index}`"
-                v-for="(line, index) in parsedCsv
-                  .slice(1)
-                  .filter(line => line.length > 1)"
+                v-for="(line, index) in displayParsedCsv"
               >
                 <td v-for="cell in columnsRequired" :key="`cell-${cell}`">
                   {{ '-' }}
                 </td>
-                <td v-for="(cell, index) in line" :key="`cell-${index}`">
-                  {{ cell || '-' }}
+                <td
+                  v-for="(cell, index) in line.data.length < columnSelect.length
+                    ? line.data.push('-')
+                    : line.data"
+                  :key="`cell-${index}`"
+                >
+                  <div class="render-cell" :title="cell">
+                    {{ cell || '-' }}
+                  </div>
                 </td>
               </tr>
             </tbody>
@@ -151,9 +137,9 @@
           <modal-footer
             :error-text="errorText"
             :is-loading="isLoading"
-            :is-disabled="formData === undefined"
+            :is-disabled="displayParsedCsv[0]?.error"
             :is-error="isError"
-            @confirm="onConfirmClicked"
+            @confirm="displayParsedCsv[0]?.error ? null : onConfirmClicked"
             @cancel="$emit('cancel')"
           />
         </div>
@@ -163,15 +149,15 @@
 </template>
 
 <script>
-import { mapGetters } from 'vuex'
+import { mapActions, mapGetters } from 'vuex'
 
 import { modalMixin } from '@/components/modals/base_modal'
 
 import Combobox from '@/components/widgets/Combobox.vue'
-import Checkbox from '@/components/widgets/Checkbox.vue'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
 import ModalFooter from '@/components/modals/ModalFooter.vue'
 import { ElMessage } from 'element-plus'
+import assets from '@/store/modules/assets.js'
 
 export default {
   name: 'import-render-modal',
@@ -181,7 +167,6 @@ export default {
   components: {
     ButtonSimple,
     Combobox,
-    Checkbox,
     ModalFooter
   },
 
@@ -248,6 +233,23 @@ export default {
       'currentProduction',
       'productionAssetTaskTypes'
     ]),
+    displayParsedCsv() {
+      if (this.parsedCsv.length !== 0) {
+        const index = this.columnSelect.indexOf('name')
+        const result = []
+        const error = []
+        this.parsedCsv.slice(1).forEach(item => {
+          assets.cache.assets.find(asset => {
+            return asset.name === item[index]
+          })
+            ? error.push({ data: item, error: true }) //result.push(item)
+            : result.push({ data: item, error: false })
+        })
+        return [...error, ...result]
+      } else {
+        return []
+      }
+    },
     columnsRequired() {
       if (this.parsedCsv.length !== 0) {
         return this.columns.filter(item => {
@@ -262,7 +264,6 @@ export default {
     },
 
     columnsOptional() {
-      console.log(this.columnSelect)
       if (this.parsedCsv.length !== 0) {
         return this.columns.filter(item => {
           return (
@@ -326,7 +327,6 @@ export default {
       this.columnsAllowed.forEach(item => {
         options.push({ label: item.label, value: item.value })
       })
-      console.log(options)
       return options
     },
 
@@ -349,6 +349,7 @@ export default {
   },
 
   methods: {
+    ...mapActions(['getAllAssets']),
     onConfirmClicked() {
       const all_data = []
       const error_data = []
@@ -521,7 +522,7 @@ export default {
 }
 
 .render-container {
-  max-height: 300px;
+  max-height: 50vh;
   overflow: auto;
 
   .render-headers {
@@ -532,6 +533,7 @@ export default {
 
   .render {
     width: 100%;
+    max-height: 1px;
     border: 1px solid $light-grey-light;
 
     th,
@@ -578,7 +580,7 @@ export default {
 }
 
 .legends {
-  align-items: flex-start;
+  display: flex;
 }
 
 .legend {
@@ -586,7 +588,6 @@ export default {
   padding: 0;
   list-style: none;
   display: flex;
-  align-items: center;
   flex-wrap: wrap;
 }
 
@@ -599,7 +600,6 @@ export default {
 }
 
 .legend-definition {
-  width: 100%;
   display: flex;
   align-items: center;
   margin: 0 1rem 0.5rem 0;
@@ -647,6 +647,21 @@ col.missing {
 
   &:hover td {
     background-color: rgba($blue, 0.3);
+  }
+}
+
+.render-cell {
+  max-width: 150px;
+  white-space: nowrap;
+  text-overflow: ellipsis;
+  overflow: hidden;
+}
+
+.render-error {
+  background-color: rgba($red, 0.8);
+
+  &:hover td {
+    background-color: rgba($red, 0.5);
   }
 }
 </style>
