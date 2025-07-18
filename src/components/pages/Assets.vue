@@ -896,7 +896,6 @@ export default {
         }
       }
       await this.reset()
-      await this.loadEpisodes()
       this.hideImportRenderModal()
       this.loading.importing = false
       // this.uploadAssetFile(toUpdate)
