@@ -120,7 +120,8 @@ export const updateTaskFilesStore = defineStore(
     const actions = {
       checkEntity: entity => {
         let message = ''
-        if (!entity.bian_hao) message += '编号 '
+        if (entity.asset_type_id !== '8c02b76a-6be6-4959-af58-5c31a85fe072')
+          if (!entity.bian_hao) message += '编号 '
         if (!entity.pin_yin_ming_cheng) message += '拼音名称 '
         if (!entity.gui_dang) message += '归档 '
         if (!entity.kai_shi_ji_shu) message += '开始集数'
