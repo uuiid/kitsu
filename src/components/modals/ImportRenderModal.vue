@@ -139,7 +139,7 @@
             :is-loading="isLoading"
             :is-disabled="displayParsedCsv[0]?.error"
             :is-error="isError"
-            @confirm="displayParsedCsv[0]?.error ? null : onConfirmClicked"
+            @confirm="onConfirmClicked"
             @cancel="$emit('cancel')"
           />
         </div>
@@ -351,6 +351,7 @@ export default {
   methods: {
     ...mapActions(['getAllAssets']),
     onConfirmClicked() {
+      if (this.displayParsedCsv[0]?.error) return
       const all_data = []
       const error_data = []
       for (let i = 1; i < this.parsedCsv.length; i++) {

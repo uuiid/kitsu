@@ -8,10 +8,10 @@
               <search-field
                 ref="asset-search-field"
                 class="flexrow-item"
-                :can-save="true"
+                :can-save="false"
                 @change="onSearchChange"
                 @save="saveSearchQuery"
-                placeholder="ex: props modeling=wip"
+                placeholder="名称"
               />
               <!--button-simple
                 class="flexrow-item"
