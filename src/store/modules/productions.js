@@ -156,7 +156,7 @@ const initialState = {
       {
         choices: null,
         data_type: 'string',
-        departments: ['0a6ad006-3d02-4c6b-8dd9-51b7c1f83af5'],
+        departments: [],
         entity_type: 'Asset',
         field_name: 'pin_yin_ming_cheng',
         for_client: true,
