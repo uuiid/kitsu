@@ -119,7 +119,6 @@ const onActions = async (action_name, task) => {
 }
 
 function pathRule() {
-  console.log(updateTaskFiles.state.selectedTask)
   const pin_yin_ming_cheng =
     updateTaskFiles.state.selectedTask.entity.pin_yin_ming_cheng
   const bian_hao = updateTaskFiles.state.selectedTask.entity.bian_hao
@@ -181,7 +180,6 @@ const onAddData = files => {
   const fs = require('fs')
   const files_ = []
   const file_path = pathRule()
-  console.log(file_path)
   for (const file of files) {
     if (
       updateTaskFiles.state.currentUpdateType === 0 &&
