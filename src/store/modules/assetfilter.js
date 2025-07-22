@@ -3,6 +3,7 @@ import { ref } from 'vue'
 import i18n from '@/lib/i18n.js'
 import people from '@/store/modules/people.js'
 import tasks from '@/store/modules/tasks.js'
+import departments from '@/store/modules/departments.js'
 
 function initState() {
   return {
@@ -34,10 +35,16 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
     parent: null,
     isChecked: true
   })
+  state.value.assetFilters.set('task_status_id', {
+    id: 'task_status_id',
+    values: [],
+    parent: 'tasks',
+    isChecked: true
+  })
   state.value.assetFilters.set('assignees', {
     id: 'assignees',
     values: [],
-    parent: 'task',
+    parent: 'tasks',
     isChecked: true
   })
   const getters = {}
@@ -48,7 +55,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
         for (let i = 0; i < state.value.assetFilters.size; i++) {
           const item = state.value.assetFilters.get(keys[i])
           const key = keys[i]
-          if (item.parent !== 'task') {
+          if (item.parent !== 'tasks') {
             const ch = {
               id: '',
               label: '',
@@ -151,6 +158,19 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
                     ) {
                       if (item.isChecked) has = true
                       else if (item.values.includes(ch.value)) has = true
+                    } else {
+                      if (
+                        item.values.length === 0 &&
+                        i === state.value.assetFilters.size - 1
+                      ) {
+                        const last_item = state.value.assetFilters.get(
+                          keys[i - 1]
+                        )
+                        if (last_item.values.includes(task[last_item.id])) {
+                          has = true
+                          break
+                        }
+                      }
                     }
                   } else {
                     for (const assignee of task.assignees) {
@@ -158,7 +178,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
                         id: `${key}:${assignee}`,
                         label: '',
                         num: 1,
-                        parent: key,
+                        parent: 'assignees',
                         value: assignee
                       }
                       ch.label = people.getters
@@ -168,10 +188,13 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
                         key,
                         asset,
                         i,
-                        keys
+                        keys,
+                        task
                       )
-                      if (filter_value)
+                      if (filter_value) {
                         actions.addTreeFilterItem(temp, ch, item)
+                      }
+
                       if (
                         i === state.value.assetFilters.size - 1 &&
                         filter_value &&
@@ -182,6 +205,33 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
                       }
                     }
                   }
+                } else if (item.id === 'task_status_id') {
+                  const ch = {
+                    id: `${key}:${task.task_status_id}`,
+                    label: task.task_status_short_name,
+                    num: 1,
+                    parent: 'task_status_id',
+                    value: task.task_status_id
+                  }
+                  const filter_value = actions.filterTree(
+                    key,
+                    asset,
+                    i,
+                    keys,
+                    task
+                  )
+                  if (filter_value) {
+                    actions.addTreeFilterItem(temp, ch, item)
+                  }
+
+                  if (
+                    i === state.value.assetFilters.size - 1 &&
+                    filter_value &&
+                    !has
+                  ) {
+                    if (item.isChecked) has = true
+                    else if (item.values.includes(ch.value)) has = true
+                  }
                 }
               }
             }
@@ -191,15 +241,26 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       }
       return value
     },
-    filterTree: (key, asset, i, keys) => {
+    filterTaskStatus: task => {},
+    filterTree: (key, asset, i, keys, task = null) => {
       let filter_value = false
       for (let j = 0; j < i; j++) {
         const last_item = state.value.assetFilters.get(keys[j])
         const last_key = keys[j]
         let asset_value = asset[last_key]
         if (last_item.parent) {
-          asset_value = asset[last_item.parent][last_key]
-          if (asset[key] === '') asset_value = undefined
+          if (last_item.parent === 'tasks') {
+            if (task) {
+              if (task[last_key]) {
+                asset_value = task[last_key]
+              } else {
+                asset_value = undefined
+              }
+            }
+          } else {
+            asset_value = asset[last_item.parent][last_key]
+            if (asset[key] === '') asset_value = undefined
+          }
         }
         if (last_item.isChecked) filter_value = true
         else {
@@ -213,7 +274,33 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       }
       return filter_value
     },
-
+    addTreeAssigneesGroup: assignees => {
+      const temp = new Map()
+      assignees.children.forEach(child => {
+        if (child.value !== undefined) {
+          const person = people.getters.personMap().get(child.value)
+          if (person) {
+            if (temp.has(person.departments[0])) {
+              temp.get(person.departments[0]).num += child.num
+              temp.get(person.departments[0]).children.push(child)
+            } else {
+              temp.set(person.departments[0], {
+                id: person.departments[0],
+                label:
+                  departments.getters.departmentMap().get(person.departments[0])
+                    ?.name || '未知部门',
+                num: child.num,
+                value: person.departments[0],
+                children: [child],
+                parent: 'assignees',
+                group: true
+              })
+            }
+          }
+        }
+      })
+      return [...temp.values()] //temp
+    },
     addTreeFilterItem: (temp, ch, item) => {
       if (temp.has(item.id)) {
         temp.get(item.id).num += 1
@@ -247,6 +334,14 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       const result = assets.filter(asset => {
         return actions.filteringAsset(asset, temp, keys)
       })
+      if (temp.has('assignees'))
+        temp.get('assignees').children = [
+          ...actions.addTreeAssigneesGroup(temp.get('assignees')),
+          ...temp.get('assignees').children.filter(child => {
+            return child.value === undefined
+          })
+        ]
+
       state.value.treeFilterData = [...temp.values()]
       state.value.treeFilterData[1]?.children.sort((a, b) => {
         return a.label - b.label

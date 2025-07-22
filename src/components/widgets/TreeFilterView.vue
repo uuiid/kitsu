@@ -77,7 +77,12 @@ const removeEvents = () => {
 }
 
 function onClickFilter(node, data) {
-  treeRef.value.setChecked(node.parent, false, true)
+  if (node.parent.data.group) {
+    treeRef.value.setChecked(node.parent.parent, false, true)
+  } else {
+    treeRef.value.setChecked(node.parent, false, true)
+  }
+
   treeRef.value.setChecked(data, true)
   onCheck(data, { checkedNodes: treeRef.value.getCheckedNodes() })
 }
@@ -90,7 +95,6 @@ watchEffect(() => {
   }
 })
 const filterNode = (value, data) => {
-  console.log('filterNode', value, data)
   if (!value) return true
   return String(data.label)?.includes(value)
 }
@@ -148,7 +152,7 @@ watch(filterText, val => {
               <span
                 class="filter-tag"
                 @click.stop="onClickFilter(node, data)"
-                v-if="node === currentNode"
+                v-if="currentNode?.data.group ? false : currentNode === node"
                 >仅筛选此项</span
               >
             </div>
