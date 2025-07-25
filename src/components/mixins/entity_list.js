@@ -66,11 +66,16 @@ export const entityListMixin = {
     },
 
     nonStickedDisplayedValidationColumns() {
-      return this.displayedValidationColumns.filter(
+      const columns = this.displayedValidationColumns.filter(
         columnId =>
           !this.stickedColumns[columnId] &&
           this.validationColumnsIsInDepartmentFilter(columnId)
       )
+      const name = this.taskTypeMap.get(this.displayedValidationColumns[0]).name
+      if (name === '角色') {
+        this.swap(columns, 0, 1)
+      }
+      return columns
     },
 
     stickedDisplayedValidationColumns() {
@@ -590,6 +595,10 @@ export const entityListMixin = {
     onMouseMove(event) {
       if (this.isBrowsingX) this.scrollTableLeft(event)
       if (this.isBrowsingY) this.scrollTableTop(event)
+    },
+
+    swap(arr, i, j) {
+      ;[arr[i], arr[j]] = [arr[j], arr[i]]
     },
 
     scrollTableLeft(event) {
