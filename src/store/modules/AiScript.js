@@ -225,7 +225,7 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       return res
     },
     getTxt2video: async (data, startDate) => {
-      if (Date.now() - startDate > 60000) {
+      if (Date.now() - startDate > 1200000) {
         clearInterval(state.value.receiveTxt2ImageTimer)
       }
       const keys = await AiScript.getJiMengKey()
