@@ -72,7 +72,7 @@ export const entityListMixin = {
           this.validationColumnsIsInDepartmentFilter(columnId)
       )
       const name = this.taskTypeMap.get(this.displayedValidationColumns[0]).name
-      if (name === '角色') {
+      if (name === '角色' && columns.length > 1) {
         this.swap(columns, 0, 1)
       }
       return columns
