@@ -93,6 +93,7 @@ const txt2PInput = reactive({
     aspect_ratio: {
       value: '288*512',
       options: [
+        { value: '1194*512', label: '21:9', resolution: '1194*512' },
         { value: '512*512', label: '1:1', resolution: '512*512' },
         { value: '512*384', label: '4:3', resolution: '512*384' },
         { value: '384*512', label: '3:4', resolution: '384*512' },
