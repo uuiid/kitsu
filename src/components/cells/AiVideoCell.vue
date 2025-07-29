@@ -4,7 +4,7 @@ import { ref, computed } from 'vue'
 const videoRef = ref()
 const emits = defineEmits(['on-click'])
 const isShowControls = ref(false)
-defineProps(['src'])
+defineProps(['src', 'imageSrc'])
 const currentTime = ref()
 const videoTime = computed(() => {
   if (videoRef.value && currentTime.value) {
@@ -55,14 +55,17 @@ function enterFullscreen() {
 </script>
 
 <template>
-  <div class="video-preview" @click="onClick">
+  <div
+    class="video-preview"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
+  >
     <video
       ref="videoRef"
       class="auto-resize"
       muted
       loop
-      @mouseenter="onMouseEnter"
-      @mouseleave="onMouseLeave"
+      @click="onClick"
       @timeupdate="currentTime = videoRef.currentTime"
       :src="src"
     ></video>

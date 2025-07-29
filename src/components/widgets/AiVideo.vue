@@ -34,31 +34,27 @@ const currentTab = ref(tabs[0])
 const imageInputRef = ref()
 const currentLoading = computed(() => {
   const loadingStates = {
-    txt2Picture: AiScript.state.txt2ImageIsLoading,
+    txt2Image: AiScript.state.txt2ImageIsLoading,
     txt2Video: AiScript.state.txt2VideoIsLoading,
     image2Video: AiScript.state.image2VideoIsLoading
   }
   return loadingStates[currentTab.value]
 })
+const currentTaskList = computed(() => {
+  return AiScript.state.aiHistory[currentTab.value]
+})
 const currentSrcList = computed(() => {
-  let temp = []
-  switch (currentTab.value) {
-    case 'txt2Picture':
-      temp = AiScript.state.receiveImageList
-      break
-    case 'txt2Video':
-      temp = AiScript.state.receiveVideoList
-      break
-    case 'image2Video':
-      temp = AiScript.state.receiveImage2VideoList
-      break
-  }
+  const temp = []
+  AiScript.state.aiHistory[currentTab.value].forEach(item => {
+    temp.push(createURLFromFilePath(formatSrcPath(item.task_id, 'png')))
+  })
+
   return temp
 })
 const currentTabContent = computed(() => {
   let temp = null
   switch (currentTab.value) {
-    case 'txt2Picture':
+    case 'txt2Image':
       temp = txt2PInput
       break
     case 'txt2Video':
@@ -74,7 +70,7 @@ const currentTabContent = computed(() => {
 const isGenerate = computed(() => {
   let temp = false
   switch (currentTab.value) {
-    case 'txt2Picture':
+    case 'txt2Image':
       temp = currentTabContent.value.input === ''
       break
     case 'txt2Video':
@@ -185,7 +181,11 @@ const image2VInput = reactive({
   }
 })
 
-onMounted(() => {
+onMounted(async () => {
+  const aiHistory = await AiScript.action.readAiHistory()
+  if (aiHistory !== null) {
+    AiScript.state.aiHistory = aiHistory
+  }
   window.addEventListener('resize', handleResize)
 })
 onUnmounted(() => {
@@ -199,6 +199,19 @@ function handleResize() {
 function onInput() {}
 
 function handleInputKeyDown() {}
+
+function formatSrcPath(task_id, type = 'png') {
+  const path = require('path')
+  const rootPath = AiScript.action.aiGenerateFileRootPath()
+  return path.join(rootPath, currentTab.value, task_id + '.' + type)
+}
+
+function createURLFromFilePath(filePath, type = 'video/mp4') {
+  const fs = require('fs')
+  const buffer = fs.readFileSync(filePath)
+  const blob = new Blob([buffer], { type: type })
+  return URL.createObjectURL(blob)
+}
 
 function onMouseDown(event) {
   document.addEventListener('mousemove', onMouseMove)
@@ -228,7 +241,7 @@ async function onGenerate() {
     return
   }
   switch (currentTab.value) {
-    case 'txt2Picture':
+    case 'txt2Image':
       AiScript.state.txt2ImageIsLoading = true
       await AiScript.action.txt2image({
         prompt: txt2PInput.input,
@@ -245,7 +258,6 @@ async function onGenerate() {
       break
     case 'image2Video':
       AiScript.state.image2VideoIsLoading = true
-      //console.log(imageInputRef.value.imagePreview.naturalWidth)
       await AiScript.action.image2video({
         prompt: image2VInput.input,
         binary_data_base64: [imageInputRef.value.previewSrc.split(',')[1]],
@@ -327,7 +339,7 @@ async function onGenerate() {
                 />
               </div>
             </div>
-            <!--div class="ai-video-describe" v-if="currentTab !== 'txt2Picture'">
+            <!--div class="ai-video-describe" v-if="currentTab !== 'txt2Image'">
               <div class="ai-video-negative-describe-title">
                 <div>
                   <span> 不希望呈现的内容 </span>
@@ -348,7 +360,7 @@ async function onGenerate() {
               </div>
               <div
                 class="ai-video-describe-content"
-                v-if="!isOpenNegative && currentTab !== 'txt2Picture'"
+                v-if="!isOpenNegative && currentTab !== 'txt2Image'"
               >
                 <textarea
                   ref="inputRef"
@@ -417,10 +429,15 @@ async function onGenerate() {
               <div
                 class="video-item"
                 :key="src"
-                v-for="(src, index) in currentSrcList"
+                v-for="(src, index) in currentTaskList"
               >
                 <div class="video-preview" v-if="props.isVideo">
-                  <ai-video-cell :src="src" />
+                  <ai-video-cell
+                    :src="
+                      createURLFromFilePath(formatSrcPath(src.task_id, 'mp4'))
+                    "
+                    :image-src="currentSrcList[index]"
+                  />
                 </div>
                 <div class="video-preview" v-else>
                   <ai-image-cell

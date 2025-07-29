@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import AiScript from '@/store/api/AiScript.js'
+import { doodleWorkStore } from '@/store/modules/doodlework.js'
 
 function sign(params) {
   const {
@@ -165,7 +166,12 @@ const initState = {
   receiveImage2ImageTimer: null,
   txt2ImageIsLoading: false,
   image2VideoIsLoading: false,
-  txt2VideoIsLoading: false
+  txt2VideoIsLoading: false,
+  aiHistory: {
+    txt2Image: [],
+    txt2Video: [],
+    image2Video: []
+  }
 }
 export const AiScriptStore = defineStore('AiScriptStore', () => {
   const state = ref(initState)
@@ -193,12 +199,23 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
         data
       )
       // await sleep(10000)
-      console.log(signParams)
       const res = await AiScript.txt2image(data, signParams, authorization)
-      if (res.data.image_urls.length > 0)
+      if (res.data.image_urls.length > 0) {
+        const path = require('path')
+        const filePath = path.join(
+          action.aiGenerateFileRootPath(),
+          'txt2Video',
+          data.task_id + '.png'
+        )
+        await action.saveObjectFromUrl(res.data.image_urls[0], filePath)
+        const nativeData = data
+        nativeData['task_id'] = data.task_id
+        state.value.aiHistory.txt2Image.push(nativeData)
+        await action.writeAiHistory()
         state.value.receiveImageList.push(...res.data.image_urls)
-      state.value.txt2ImageIsLoading = false
-      return res
+        state.value.txt2ImageIsLoading = false
+        return res
+      }
     },
     txt2video: async data => {
       data.req_key = 'jimeng_vgfm_t2v_l20'
@@ -218,13 +235,14 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
               req_key: data.req_key,
               task_id: res.data.task_id
             },
-            startDate
+            startDate,
+            data
           )
         }, 2000)
       }
       return res
     },
-    getTxt2video: async (data, startDate) => {
+    getTxt2video: async (data, startDate, nativeData) => {
       if (Date.now() - startDate > 1200000) {
         clearInterval(state.value.receiveTxt2ImageTimer)
       }
@@ -238,6 +256,16 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       const res = await AiScript.getTxt2video(data, signParams, authorization)
       if (res.message === 'Success' && res.data.video_url !== '') {
         clearTimeout(state.value.receiveTxt2ImageTimer)
+        const path = require('path')
+        const filePath = path.join(
+          action.aiGenerateFileRootPath(),
+          'txt2Video',
+          data.task_id + '.mp4'
+        )
+        await action.saveVideo(res.data.video_url, filePath)
+        nativeData['task_id'] = data.task_id
+        state.value.aiHistory.txt2Video.push(nativeData)
+        await action.writeAiHistory()
         state.value.txt2VideoIsLoading = false
         state.value.receiveVideoList.push(res.data.video_url)
       }
@@ -261,16 +289,17 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
               req_key: data.req_key,
               task_id: res.data.task_id
             },
-            startDate
+            startDate,
+            data
           )
         }, 2000)
       }
       return res
     },
-    getImage2Video: async (data, startDate) => {
-      // if (Date.now() - startDate > 60000) {
-      //   clearInterval(state.value.receiveImage2ImageTimer)
-      // }
+    getImage2Video: async (data, startDate, nativeData) => {
+      if (Date.now() - startDate > 1200000) {
+        clearInterval(state.value.receiveImage2ImageTimer)
+      }
       const keys = await AiScript.getJiMengKey()
       const { authorization, signParams } = action.createAuthorization(
         'CVSync2AsyncGetResult',
@@ -281,6 +310,17 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       const res = await AiScript.getTxt2video(data, signParams, authorization)
       if (res.message === 'Success' && res.data.video_url !== '') {
         clearTimeout(state.value.receiveImage2ImageTimer)
+        const path = require('path')
+        const filePath = path.join(
+          action.aiGenerateFileRootPath(),
+          'txt2Video',
+          data.task_id + '.mp4'
+        )
+        await action.saveVideo(res.data.video_url, filePath)
+        nativeData['task_id'] = data.task_id
+        delete nativeData['binary_data_base64']
+        state.value.aiHistory.image2Video.push(nativeData)
+        await action.writeAiHistory()
         state.value.image2VideoIsLoading = false
         state.value.receiveImage2VideoList.push(res.data.video_url)
       }
@@ -312,6 +352,80 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
         }
       }
       return { authorization: sign(signParams), signParams: params }
+    },
+    async saveObjectFromUrl(url, filename) {
+      const fs = require('fs')
+      const https = require('https')
+      const path = require('path')
+      if (!fs.existsSync(path.dirname(filename))) {
+        fs.mkdirSync(path.dirname(filename), { recursive: true })
+      }
+      return new Promise((resolve, reject) => {
+        const file = fs.createWriteStream(filename)
+        https
+          .get(url, response => {
+            if (response.statusCode !== 200) {
+              reject(
+                new Error(`Request Failed. Status Code: ${response.statusCode}`)
+              )
+              return
+            }
+
+            response.pipe(file)
+            file.on('finish', () => {
+              file.close(resolve) // 下载完成后 resolve
+            })
+          })
+          .on('error', err => {
+            fs.unlink(filename, () => reject(err)) // 删除未完成的文件
+          })
+      })
+    },
+    async saveVideo(url, filename) {
+      try {
+        await action.saveObjectFromUrl(url, filename)
+        const fs = require('fs')
+        const task = {
+          video_path: filename,
+          time: 0.0
+        }
+        const data = await doodleWorkStore().actions.getVideoThumbnail(task)
+        const arrayBuffer = await data.arrayBuffer()
+        const buffer = Buffer.from(arrayBuffer)
+        fs.writeFileSync(filename.replace('.mp4', '.png'), buffer)
+      } catch (error) {
+        console.error('下载失败:', error)
+      }
+    },
+    aiGenerateFileRootPath() {
+      const os = require('os')
+      return `${os.homedir()}/AppData/Local/DoodleAi`
+    },
+    async readAiHistory() {
+      try {
+        const fs = require('fs')
+        const path = require('path')
+        const filePath = path.join(
+          action.aiGenerateFileRootPath(),
+          'aiHistory.json'
+        )
+        const raw = fs.readFileSync(filePath, 'utf-8')
+        return JSON.parse(raw)
+      } catch (err) {
+        console.error('❌ 加载 JSON 文件失败:', err)
+        return null
+      }
+    },
+    async writeAiHistory() {
+      const fs = require('fs')
+      const path = require('path')
+      const filePath = path.join(
+        action.aiGenerateFileRootPath(),
+        'aiHistory.json'
+      )
+      if (state.value.aiHistory !== null) {
+        fs.writeFileSync(filePath, JSON.stringify(state.value.aiHistory))
+      }
     }
   }
   return { state, action }

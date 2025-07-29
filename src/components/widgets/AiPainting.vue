@@ -10,7 +10,7 @@ const aiScript = AiScriptStore()
     <div class="ai-painting-layout">
       <el-container class="ai-painting-layout">
         <ai-video
-          :tabs="['txt2Picture']"
+          :tabs="['txt2Image']"
           :is-video="false"
           :src-list="aiScript.state.receiveImageList"
         ></ai-video>
