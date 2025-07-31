@@ -684,7 +684,7 @@ const mutations = {
       if (!isTime && sequence.timeSpent > 0) isTime = true
       if (!isEstimation && sequence.estimation > 0) isEstimation = true
       if (!isDescription && sequence.description) isDescription = true
-      if (!isResolution && sequence.data.resolution) isResolution = true
+      if (!isResolution && sequence.data?.resolution) isResolution = true
 
       cache.sequenceMap.set(sequence.id, sequence)
     })
