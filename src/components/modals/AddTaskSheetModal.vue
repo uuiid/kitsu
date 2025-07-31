@@ -163,10 +163,7 @@ export default {
     ]),
 
     notPendingTasks() {
-      return this.tasks.filter(task => {
-        const month = new Date(task.start_date).getMonth() + 1
-        return this.monthString === month.toString()
-      })
+      return this.tasks
     },
 
     yearOptions() {

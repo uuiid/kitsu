@@ -747,9 +747,10 @@ export default {
 
     async timeLoadOpenTasks(year, month, end_year, end_month) {
       this.pageNumber = 1
+      const end_date = new Date(year, end_month + 1, 0).getDate()
       await this.reload(
         `${year}-${month}-01`,
-        `${end_year}-${end_month}-01`,
+        `${end_year}-${end_month}-${end_date}`,
         this.pageNumber
       )
     },
