@@ -671,7 +671,36 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       currentDoodleWorkState.value.uncommittedWorkList = new Map()
       currentDoodleWorkState.value.isReload = true
     },
+    async downloadWithProgress(url, onProgress) {
+      return new Promise((resolve, reject) => {
+        let downloaded = 0
+        let total = 0
+        const chunks = []
+        console.log(url)
+        const http = require('http')
+        http.get(url, res => {
+          console.log(res)
+          total = parseInt(res.headers['content-length'], 10) || 0
 
+          res.on('data', chunk => {
+            chunks.push(chunk)
+            downloaded += chunk.length
+            if (typeof onProgress === 'function' && total) {
+              const percent = ((downloaded / total) * 100).toFixed(2)
+              onProgress({ percent })
+            }
+          })
+          res.on('end', () => {
+            const buffer = Buffer.concat(chunks)
+            resolve(buffer)
+          })
+          res.on('error', err => {
+            console.error('Download failed:', err)
+            reject(err)
+          })
+        })
+      })
+    },
     downloadDoodleWorkExe: async url => {
       try {
         const response = await superagent.get(url).responseType('arraybuffer')
@@ -699,11 +728,14 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       }
     },
 
-    zipFile: async (zipData, outputPath) => {
+    zipFile: async (zipData, outputPath, onProgress = null) => {
       const fs = require('fs')
       const path = require('path')
       const zip = await JSZip.loadAsync(zipData)
-      for (const [filename, file] of Object.entries(zip.files)) {
+      const entries = Object.entries(zip.files)
+      let downloaded = 0
+      const total = entries.length
+      for (const [filename, file] of entries) {
         const filePath = path.join(outputPath, filename)
 
         if (file.dir) {
@@ -715,7 +747,16 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           fs.mkdirSync(path.dirname(filePath), { recursive: true }) // 确保目录存在
           fs.writeFileSync(filePath, content)
         }
+        downloaded++
+        if (onProgress && typeof onProgress === 'function' && total) {
+          const percent = ((downloaded / total) * 100).toFixed(2)
+          onProgress({ downloaded, total, percent })
+        }
       }
+    },
+    downloadUEPlugin: async (url, path, onProgress) => {
+      const buffer = await actions.downloadWithProgress(url, onProgress)
+      await actions.zipFile(buffer, path)
     },
     formatDiffTime: diffTime => {
       const hours = Math.floor(diffTime / (1000 * 60 * 60))

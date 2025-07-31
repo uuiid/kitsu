@@ -21,6 +21,7 @@ import VideoModal from '@/components/modals/VideoModal.vue'
 import AiVideo from '@/components/widgets/AiVideo.vue'
 import { AiScriptStore } from '@/store/modules/AiScript.js'
 import AutoLightSearchModal from '@/components/modals/AutoLightSearchModal.vue'
+import DownloadMessage from '@/components/widgets/DownloadMessage.vue'
 
 useHead({
   title: i18n.global.t('doodle_work.doodle_work')
@@ -31,6 +32,9 @@ onMounted(() => {
   doodleWork.actions.getVisitorContext()
 })
 
+const DownloadProgress = ref(0)
+const showMessage = ref(false)
+const messagePrefix = ref('')
 // createHead(() => ({
 //   title: i18n.global.t('doodle_work.doodle_work')
 // }))
@@ -337,6 +341,7 @@ const pluginAssets = ref([
     installState: false
   }
 ])
+
 const installPlugin = async plugin => {
   plugin.installState = true
   try {
@@ -367,24 +372,77 @@ PYTHONPATH+:= scripts`
             doodleSourceName = 'ue54_Plug'
           }
           if (
-            !fs.existsSync(
-              `${doodleWork.doodleWorkFilePath}\\${doodleSourceName}`
+            !(
+              fs.existsSync(
+                `${doodleWork.doodleWorkFilePath}\\${doodleSourceName}`
+              ) || fs.existsSync(`${doodleWork.doodleWorkFilePath}\\Doodle`)
             )
           ) {
-            ElNotification({
-              title: i18n.global.t('doodle_work.install_fail'),
-              message:
-                '找不到ue源路径:' +
-                `${doodleWork.doodleWorkFilePath}\\${doodleSourceName}`,
-              type: 'error'
-            })
+            let downloadSuccess = true
+            try {
+              showMessage.value = true
+              messagePrefix.value = '正在下载文件1 '
+              const url = `Plugins/Doodle_${doodleWork.state.doodleWorkZipFileVision}.${doodleWork.state.doodleWorkSetting.UE_version}.zip` //`${doodleWork.state.doodleWorkSetting.UE_url}/${doodleSourceName}.zip`
+              const buffer = await doodleWork.actions.downloadWithProgress(
+                url,
+                ({ percent }) => {
+                  if (percent) {
+                    DownloadProgress.value = percent
+                  }
+                }
+              )
+              messagePrefix.value = '正在下载文件2 '
+              const SideFX_url = 'Plugins/SideFX_Labs.zip' //`${doodleWork.state.doodleWorkSetting.UE_url}/${doodleSourceName}.zip`
+              const SideFX_buffer =
+                await doodleWork.actions.downloadWithProgress(
+                  SideFX_url,
+                  ({ percent }) => {
+                    if (percent) {
+                      DownloadProgress.value = percent
+                    }
+                  }
+                )
+              messagePrefix.value = '正在解压文件1 '
+              await doodleWork.actions.zipFile(
+                buffer,
+                doodleWork.doodleWorkFilePath,
+                ({ percent }) => {
+                  if (percent) {
+                    DownloadProgress.value = percent
+                  }
+                }
+              )
+              messagePrefix.value = '正在解压文件2 '
+              await doodleWork.actions.zipFile(
+                SideFX_buffer,
+                doodleWork.doodleWorkFilePath,
+                ({ percent }) => {
+                  if (percent) {
+                    DownloadProgress.value = percent
+                  }
+                }
+              )
+            } catch (err) {
+              downloadSuccess = false
+              ElNotification({
+                title: i18n.global.t('doodle_work.install_fail'),
+                message:
+                  '找不到ue源路径:' +
+                  `${doodleWork.doodleWorkFilePath}\\${doodleSourceName}`,
+                type: 'error'
+              })
+            }
+            showMessage.value = false
+            DownloadMessage.value = 0
+            messagePrefix.value = ''
             plugin.installState = false
-            return
+            if (!downloadSuccess) return
           }
+          if (fs.existsSync(`${doodleWork.doodleWorkFilePath}\\Doodle`))
+            doodleSourceName = 'Doodle'
           const subPlugins = [
             { sourceName: 'SideFX_Labs', destName: 'SideFX_Labs' },
-            { sourceName: doodleSourceName, destName: 'Doodle' },
-            { sourceName: 'UnrealEngine5VLC', destName: 'UnrealEngine5VLC' }
+            { sourceName: doodleSourceName, destName: 'Doodle' }
           ]
           for (const subPlugin of subPlugins) {
             const sourcePath = `${doodleWork.doodleWorkFilePath}\\${subPlugin.sourceName}`
@@ -644,6 +702,12 @@ const onSetOutPath = () => {
       </div>
     </template>
   </el-dialog>
+  <download-message
+    v-model="showMessage"
+    :progress="DownloadProgress"
+    :message-prefix="messagePrefix"
+    type="warning"
+  />
 </template>
 
 <style lang="scss" scoped>
