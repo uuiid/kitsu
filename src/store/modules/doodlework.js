@@ -673,32 +673,18 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     async downloadWithProgress(url, onProgress) {
       return new Promise((resolve, reject) => {
-        let downloaded = 0
-        let total = 0
-        const chunks = []
-        console.log(url)
-        const http = require('http')
-        http.get(url, res => {
-          console.log(res)
-          total = parseInt(res.headers['content-length'], 10) || 0
-
-          res.on('data', chunk => {
-            chunks.push(chunk)
-            downloaded += chunk.length
-            if (typeof onProgress === 'function' && total) {
-              const percent = ((downloaded / total) * 100).toFixed(2)
+        superagent
+          .get(url)
+          .responseType('arraybuffer')
+          .on('progress', res => {
+            if (typeof onProgress === 'function' && res.total) {
+              const percent = res.percent.toFixed(2)
               onProgress({ percent })
             }
           })
-          res.on('end', () => {
-            const buffer = Buffer.concat(chunks)
-            resolve(buffer)
+          .end((err, res) => {
+            resolve(Buffer.from(res.body))
           })
-          res.on('error', err => {
-            console.error('Download failed:', err)
-            reject(err)
-          })
-        })
       })
     },
     downloadDoodleWorkExe: async url => {
