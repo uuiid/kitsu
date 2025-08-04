@@ -85,10 +85,7 @@
           >
             下一页
           </button>
-          <button
-            class="button is-primary flexrow-item"
-            @click="addSelectedTask"
-          >
+          <button class="button is-primary flexrow-item" @click="onAddClicked">
             {{ $t('doodle.add_select_task') }}
           </button>
           <button class="button is-link flexrow-item" @click="$emit('cancel')">
@@ -98,6 +95,26 @@
       </div>
     </div>
   </div>
+  <el-dialog
+    v-model="centerDialogVisible"
+    title="Warning"
+    width="30%"
+    align-center
+  >
+    <span>{{
+      `${errorNum}个任务未设置开始或结束时间，这些任务将不能被添加，是否继续？`
+    }}</span>
+    <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="centerDialogVisible = false">{{
+          $t('main.cancel')
+        }}</el-button>
+        <el-button type="primary" @click="addSelectedTask">
+          {{ $t('main.confirmation') }}
+        </el-button>
+      </span>
+    </template>
+  </el-dialog>
 </template>
 >
 
@@ -145,7 +162,8 @@ export default {
       monthString: `${moment().month()}`,
       endYearString: `${moment().year()}`,
       endMonthString: `${moment().month() + 1}`,
-      sortedTasks: []
+      sortedTasks: [],
+      centerDialogVisible: false
     }
   },
 
@@ -165,7 +183,10 @@ export default {
     notPendingTasks() {
       return this.tasks
     },
-
+    errorNum() {
+      return this.tasks.filter(task => !(task.start_date && task.due_date))
+        .length
+    },
     yearOptions() {
       const year = 2018
       const currentYear = moment().year()
@@ -235,9 +256,14 @@ export default {
       //const month = this.monthString.padStart(2, '0')
       //const year_month = `${year}-${month}`
       this.$refs['todo-list'].tasks.forEach(t => {
-        t.checked = true
+        if (t.start_date && t.due_date) t.checked = true
       })
       this.$refs['todo-list'].$forceUpdate()
+    },
+    onAddClicked() {
+      if (this.errorNum > 0) {
+        this.centerDialogVisible = true
+      } else this.addSelectedTask()
     },
     addSelectedTask() {
       const data = []

@@ -120,9 +120,10 @@
             <task-type-cell
               class="type datatable-row-header datatable-row-header--nobd"
               :production-id="task.project?.id"
-              :task-type="task.task_type"
+              :task-type="taskTypeMap.get(task.task_type_id)"
+              :task-id="task.task_id"
               :style="{ left: colTypePosX }"
-              v-if="task.task_type"
+              v-if="task.task_type_id"
             />
 
             <td
@@ -408,7 +409,8 @@ export default {
       'personMap',
       'productionMap',
       'taskTypeMap',
-      'user'
+      'user',
+      'taskMap'
     ]),
 
     allDuration() {
@@ -752,7 +754,6 @@ export default {
       }
     },
     getEpisodes(task) {
-      console.log(task)
       let episodes = ''
       if (task.entity) {
         //const theTaskType = this.taskTypeMap.get(entry.entity_type_id)

@@ -53,9 +53,10 @@
             :key="entry + '-' + i"
             :class="{
               'datatable-row': true,
-              'datatable-row--selectable': true,
+              'datatable-row--selectable': entry.due_date && entry.start_date,
               selected:
-                selectionGrid && selectionGrid[i] ? selectionGrid[i][0] : false
+                selectionGrid && selectionGrid[i] ? selectionGrid[i][0] : false,
+              'datatable-row--error': !(entry.due_date && entry.start_date)
             }"
             @click="onLineClicked(entry)"
           >
@@ -66,6 +67,7 @@
                   class="mr1"
                   v-model="entry.checked"
                   @click.stop
+                  :disabled="!(entry.due_date && entry.start_date)"
                 />
                 <production-name-cell
                   :is-tooltip="true"
@@ -147,7 +149,6 @@ import { selectionListMixin } from '@/components/mixins/selection'
 import { formatListMixin } from '@/components/mixins/format'
 import { descriptorMixin } from '@/components/mixins/descriptors'
 
-import { PAGE_SIZE } from '@/lib/pagination'
 import { sortPeople } from '@/lib/sorting'
 import { formatSimpleDate } from '@/lib/time'
 
@@ -228,10 +229,7 @@ export default {
     ]),
 
     displayedTasks() {
-      return this.tasks.slice(
-        (this.page - 1) * PAGE_SIZE,
-        this.page * PAGE_SIZE
-      )
+      return this.tasks
     },
 
     isDescriptionPresent() {
@@ -359,6 +357,19 @@ export default {
 .datatable-body tr:first-child th,
 .datatable-body tr:first-child td {
   border-top: 0;
+}
+
+.datatable-row--error {
+  background: $dark-red;
+
+  .datatable-row-header {
+    background: $dark-red;
+  }
+
+  &:hover,
+  &:hover .datatable-row-header {
+    background: $red;
+  }
 }
 
 .datatable .datatable-row {

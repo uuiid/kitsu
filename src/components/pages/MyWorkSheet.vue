@@ -634,7 +634,12 @@ export default {
       this.clearSelectedTasks()
       this.tasks = []
       const start_date = `${this.$refs['add-task-sheet-modal'].yearString}-${this.$refs['add-task-sheet-modal'].monthString}-01`
-      const end_date = `${this.$refs['add-task-sheet-modal'].endYearString}-${this.$refs['add-task-sheet-modal'].endMonthString}-01`
+      const end_day = new Date(
+        this.$refs['add-task-sheet-modal'].endYearString,
+        this.$refs['add-task-sheet-modal'].endMonthString,
+        0
+      ).getDate()
+      const end_date = `${this.$refs['add-task-sheet-modal'].endYearString}-${this.$refs['add-task-sheet-modal'].endMonthString}-${end_day}`
       this.reload(start_date, end_date).then(() => {
         this.isLoading = false
         this.modals.edit = true
@@ -854,14 +859,14 @@ export default {
       const data_list = []
       this.prepareCalculateTasks = [...this.prepareCalculateTasks]
       this.prepareCalculateTasks.forEach(task => {
-        console.log(task)
         const data = {}
         if (task.assignees) {
-          data.work_start_time = task.start_date || task.created_at
-          data.work_end_time = task.due_date || task.updated_at
-          data.task_id = task.id
-
-          data_list.push(data)
+          if (task.start_date && task.due_date) {
+            data.work_start_time = task.start_date || task.created_at
+            data.work_end_time = task.due_date || task.updated_at
+            data.task_id = task.id
+            data_list.push(data)
+          }
         }
       })
       const year = this.yearString
@@ -1074,7 +1079,7 @@ export default {
     addSortTask(data) {
       this.prepareCalculateTasks = data
       this.countTaskTime(this.person.id)
-      this.modals.edit = false
+      //this.modals.edit = false
     },
     removeSortTask(ent) {
       const temp = new Map(
