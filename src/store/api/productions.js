@@ -53,7 +53,8 @@ export default {
       homepage: production.homepage,
       path: production.path,
       auto_upload_path: production.auto_upload_path,
-      en_str: production.en_str
+      en_str: production.en_str,
+      asset_root_path: production.asset_root_path
     }
     return client.pput(`/api/data/projects/${production.id}`, data)
   },

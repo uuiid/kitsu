@@ -85,7 +85,11 @@
           >
             下一页
           </button>
-          <button class="button is-primary flexrow-item" @click="onAddClicked">
+          <button
+            class="button is-primary flexrow-item"
+            :class="{ 'is-loading': confirming }"
+            @click="onAddClicked"
+          >
             {{ $t('doodle.add_select_task') }}
           </button>
           <button class="button is-link flexrow-item" @click="$emit('cancel')">
@@ -152,6 +156,10 @@ export default {
     pageNumber: {
       type: Number,
       default: 1
+    },
+    confirming: {
+      type: Boolean,
+      default: false
     }
   },
   emits: ['add-sort-task', 'cancel', 'switch-page', 'on-time-changed'],

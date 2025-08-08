@@ -1834,7 +1834,8 @@
         "path": "项目路径",
         "auto_upload_path": "自动上传路径",
         "category": "类别",
-        "short_name": "中文简称"
+        "short_name": "中文简称",
+        "asset_root_path": "资产根路径"
       }
     },
     "doodle_asset_tree": {

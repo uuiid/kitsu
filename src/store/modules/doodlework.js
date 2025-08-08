@@ -598,7 +598,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           if (state.value.doodleSocket) {
             state.value.doodleSocket.disconnect()
           }
-          state.value.doodleSocket = io(`http://127.0.0.1:${port}/socket.io/`)
+          state.value.doodleSocket = io(`http://127.0.0.1:${port}/events`)
           await actions.setSocketEvent()
           break
         }
@@ -618,6 +618,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       task.end_time = data.end_time
       task.submit_time = data.submit_time
       task.last_line_log = data.last_line_log
+      task.run_time_info = data.run_time_info
     },
     getToolVersions: async () => {
       state.value.versions = await doodlework.getToolVersion()

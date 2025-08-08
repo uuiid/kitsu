@@ -240,6 +240,7 @@
       :tasks="notPendingTasks"
       :is-more="isMore"
       :page-number="pageNumber"
+      :confirming="modals.confirming"
       @cancel="modals.edit = false"
       @add-sort-task="addSortTask"
       @switch-page="pageLoadOpenTasks"
@@ -268,7 +269,7 @@ import stringHelpers from '@/lib/string'
 import csv from '@/lib/csv'
 import { range } from '@/lib/time'
 import { formatFullDate } from '@/lib/time'
-
+import { ElMessage } from 'element-plus'
 import AddTaskSheetModal from '@/components/modals/AddTaskSheetModal.vue'
 
 import Combobox from '@/components/widgets/Combobox.vue'
@@ -320,7 +321,8 @@ export default {
         del: false,
         edit: false,
         add: false,
-        addDuty: false
+        addDuty: false,
+        confirming: false
       },
       person: null,
       tasks: [],
@@ -1076,9 +1078,18 @@ export default {
       })
       return l_tasks
     },
-    addSortTask(data) {
-      this.prepareCalculateTasks = data
-      this.countTaskTime(this.person.id)
+    async addSortTask(data) {
+      try {
+        this.modals.confirming = true
+        this.prepareCalculateTasks = data
+        await this.countTaskTime(this.person.id)
+        ElMessage.success('添加成功')
+      } catch (e) {
+        ElMessage.error('添加失败')
+      }
+      this.modals.confirming = false
+      this.modals.edit = false
+
       //this.modals.edit = false
     },
     removeSortTask(ent) {

@@ -134,6 +134,13 @@
           v-model="form.auto_upload_path"
           v-if="currentProduction && currentProduction.id"
         />
+        <text-field
+          ref="resolutionField"
+          :label="$t('doodle_productions.fields.asset_root_path')"
+          @enter="runConfirmation"
+          v-model="form.asset_root_path"
+          v-if="currentProduction && currentProduction.id"
+        />
         <combobox-boolean
           :label="$t('productions.fields.is_clients_isolated')"
           @enter="runConfirmation"
@@ -253,7 +260,8 @@ export default {
         resolution: '',
         path: '',
         auto_upload_path: '',
-        production_type: 'short'
+        production_type: 'short',
+        asset_root_path: ''
       }
     }
   },
@@ -351,7 +359,8 @@ export default {
           resolution: this.currentProduction.resolution,
           homepage: this.currentProduction.homepage,
           path: this.currentProduction.path,
-          auto_upload_path: this.currentProduction.auto_upload_path
+          auto_upload_path: this.currentProduction.auto_upload_path,
+          asset_root_path: this.currentProduction.asset_root_path
         }
       } else {
         this.form = {
@@ -372,7 +381,8 @@ export default {
           fps: '',
           ratio: '',
           resolution: '',
-          homepage: HOME_PAGE_OPTIONS[0].value
+          homepage: HOME_PAGE_OPTIONS[0].value,
+          asset_root_path: ''
         }
       }
     },
