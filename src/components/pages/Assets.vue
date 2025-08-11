@@ -1053,13 +1053,27 @@ export default {
       await this.editAsset(data)
       this.applySearchFromUrl()
     },
-    async onMetadataChanged({ entry, descriptor, value }) {
-      const data = {
-        id: entry.id,
-        [descriptor.field_name]: value
+    async onMetadataChanged({ entry, descriptor, value }, selected_task_ids) {
+      const all_data = []
+      if (selected_task_ids && selected_task_ids.length > 0) {
+        for (const task_id of selected_task_ids) {
+          all_data.push({
+            id: task_id,
+            [descriptor.field_name]: value
+          })
+        }
+      } else {
+        all_data.push({
+          id: entry.id,
+          [descriptor.field_name]: value
+        })
       }
-      await this.editAsset(data)
+      for (const data of all_data) {
+        await this.editAsset(data)
+      }
+
       this.applySearchFromUrl()
+      this.$refs['asset-list'].selected_task_ids = []
     },
     async onAssetChanged(asset) {
       await this.editAsset(asset)

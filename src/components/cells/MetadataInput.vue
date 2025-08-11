@@ -3,8 +3,8 @@
   <input
     class="input-editor"
     :readonly="!isEditable"
-    @input="event => onMetadataFieldChanged(entity, descriptor, event)"
     @keyup.ctrl="event => onInputKeyUp(event, indexes.i, indexes.j)"
+    @keydown.enter="event => onMetadataFieldChanged(entity, descriptor, event)"
     :value="getMetadataFieldValue(descriptor, entity)"
     v-if="!descriptor.data_type || descriptor.data_type === 'string'"
   />
@@ -15,7 +15,7 @@
     type="number"
     step="any"
     @keydown="onNumberFieldKeyDown"
-    @input="event => onMetadataFieldChanged(entity, descriptor, event)"
+    @keydown.enter="event => onMetadataFieldChanged(entity, descriptor, event)"
     @keyup.ctrl="event => onInputKeyUp(event, indexes.i, indexes.j)"
     :value="getMetadataFieldValue(descriptor, entity)"
     v-else-if="descriptor.data_type === 'number'"

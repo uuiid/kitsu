@@ -477,10 +477,15 @@
                   ) in nonStickedVisibleMetadataDescriptors"
                 >
                   <metadata-input
+                    :class="{
+                      selected: isSelectedAsset(asset, j)
+                    }"
                     :entity="asset"
                     :descriptor="descriptor"
                     :indexes="{ i, j, k }"
-                    @metadata-changed="$emit('metadata-changed', $event)"
+                    @click="onAssetSelected($event, i, j, k)"
+                    @metadata-changed="onMetadataChange($event)"
+                    @mousedown="handleMouseDown"
                   />
                 </td>
               </template>
@@ -738,7 +743,11 @@ export default {
         ['keyup', this.stopBrowsing]
       ],
       offsets: {},
-      lastSelectedAsset: null
+      lastSelectedAsset: null,
+      selected_task_ids: [],
+      indexes: null,
+      start_selected_group_index: null,
+      start_selected_task_index: null
     }
   },
 
@@ -929,12 +938,19 @@ export default {
       }
       return this.isSelectable[key]
     },
-
+    onMetadataChange(event) {
+      this.$emit('metadata-changed', event, this.selected_task_ids)
+    },
+    handleMouseDown(e) {
+      if (e.shiftKey) {
+        e.preventDefault() // 阻止默认非聚焦行为
+        e.target.focus() // 聚焦当前点击的 input
+      }
+    },
     isSelected(indexInGroup, groupIndex, columnIndex) {
       const lineIndex = this.getIndex(indexInGroup, groupIndex)
       return this.assetSelectionGrid[lineIndex][columnIndex]
     },
-
     toggleLine(asset, event) {
       const selected = event.target.checked
       const assetsToSelect = [asset]
@@ -973,7 +989,42 @@ export default {
         this.loadMoreAssets()
       }
     },
+    isSelectedAsset(asset, j) {
+      return this.selected_task_ids.includes(asset.id) && this.indexes === j
+    },
+    onAssetSelected(event, i, j, k) {
+      if (!this.shiftKeyPressed) {
+        this.start_selected_task_index = i
+        this.start_selected_group_index = k
+        this.selected_task_ids = []
+        return
+      }
+      this.indexes = j
+      if (k === this.start_selected_group_index) {
+        this.displayedAssets[k]
+          .slice(this.start_selected_task_index, i + 1)
+          .forEach(asset => {
+            this.selected_task_ids.push(asset.id)
+          })
+        return
+      }
 
+      for (
+        let index = this.start_selected_group_index;
+        index < k + 1;
+        index++
+      ) {
+        if (index < k) {
+          this.displayedAssets[index].forEach(asset => {
+            this.selected_task_ids.push(asset.id)
+          })
+        } else {
+          this.displayedAssets[index].slice(0, i + 1).forEach(asset => {
+            this.selected_task_ids.push(asset.id)
+          })
+        }
+      }
+    },
     onReadyForChanged(asset, taskTypeId) {
       if (this.selectedAssets.has(asset.id)) {
         this.selectedAssets.forEach(asset => {
@@ -1279,5 +1330,9 @@ td.metadata-descriptor {
 .text-item {
   overflow: hidden;
   max-width: 150px;
+}
+
+.selected {
+  background: var(--background-selected);
 }
 </style>
