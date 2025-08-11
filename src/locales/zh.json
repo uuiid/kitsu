@@ -1735,7 +1735,8 @@
         "UE_path": "UE路径",
         "maya_path": "maya路径",
         "maya_parallel_quantity": "并行数量",
-        "UE_version": "UE版本"
+        "UE_version": "UE版本",
+        "timeout": "超时时间"
       },
       "task_state": {
         "waiting": "等待",
