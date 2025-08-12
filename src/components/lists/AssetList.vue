@@ -1001,17 +1001,27 @@ export default {
       }
       this.indexes = j
       if (k === this.start_selected_group_index) {
-        this.displayedAssets[k]
-          .slice(this.start_selected_task_index, i + 1)
-          .forEach(asset => {
-            this.selected_task_ids.push(asset.id)
-          })
+        if (i >= this.start_selected_task_index)
+          this.displayedAssets[k]
+            .slice(this.start_selected_task_index, i + 1)
+            .forEach(asset => {
+              this.selected_task_ids.push(asset.id)
+            })
+        else
+          this.displayedAssets[k]
+            .slice(i, this.start_selected_task_index + 1)
+            .forEach(asset => {
+              this.selected_task_ids.push(asset.id)
+            })
         return
       }
-
+      let is_reverse = false
+      if (k < this.start_selected_group_index) {
+        is_reverse = true
+      }
       for (
-        let index = this.start_selected_group_index;
-        index < k + 1;
+        let index = is_reverse ? k : this.start_selected_group_index;
+        index < (is_reverse ? this.start_selected_group_index : k) + 1;
         index++
       ) {
         if (index < k) {
@@ -1019,9 +1029,16 @@ export default {
             this.selected_task_ids.push(asset.id)
           })
         } else {
-          this.displayedAssets[index].slice(0, i + 1).forEach(asset => {
-            this.selected_task_ids.push(asset.id)
-          })
+          if (is_reverse)
+            this.displayedAssets[index]
+              .slice(i, this.displayedAssets[index].length)
+              .forEach(asset => {
+                this.selected_task_ids.push(asset.id)
+              })
+          else
+            this.displayedAssets[index].slice(0, i + 1).forEach(asset => {
+              this.selected_task_ids.push(asset.id)
+            })
         }
       }
     },
