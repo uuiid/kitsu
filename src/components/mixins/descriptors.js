@@ -160,8 +160,21 @@ export const descriptorMixin = {
     },
 
     getMetadataFieldValue(descriptor, entity) {
-      console.log(entity, descriptor)
-      return entity[descriptor]
+      if (
+        entity.data &&
+        descriptor.field_name in entity.data &&
+        entity.data[descriptor.field_name] != null
+      ) {
+        return entity.data[descriptor.field_name]
+      } else if (
+        entity.entity_data &&
+        descriptor.field_name in entity.entity_data &&
+        entity.entity_data[descriptor.field_name] != null
+      ) {
+        return entity.entity_data[descriptor.field_name]
+      } else {
+        return entity[descriptor.field_name]
+      }
     },
 
     getDescriptorChecklistValues(descriptor) {

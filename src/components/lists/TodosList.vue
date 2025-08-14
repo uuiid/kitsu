@@ -194,45 +194,50 @@
             >
               <div v-if="entry">
                 <!--div
-              v-if="
-                getDescriptorChecklistValues(
-                  getMetadataDescriptor(fieldName, entry)
-                ).length > 0
-              "
+            v-if="
+              getDescriptorChecklistValues(
+                getMetadataDescriptor(fieldName, entry)
+              ).length > 0
+            "
+          >
+            <p
+              :key="`${entry.id}-
+              ${getMetadataDescriptor(fieldName, entry).id}
+              -${i}-${option.text}-div`"
+              v-for="(option, i) in getDescriptorChecklistValues(
+                getMetadataDescriptor(fieldName, entry)
+              )"
             >
-              <p
-                :key="`${entry.id}-
-                ${getMetadataDescriptor(fieldName, entry).id}
-                -${i}-${option.text}-div`"
-                v-for="(option, i) in getDescriptorChecklistValues(
-                  getMetadataDescriptor(fieldName, entry)
-                )"
+              <input
+                type="checkbox"
+                disabled
+                :id="`${entry.id}
+                -${getMetadataDescriptor(fieldName, entry).id}
+                -${i}-${option.text}-input`"
+                :checked="
+                  getMetadataChecklistValues(
+                    getMetadataDescriptor(fieldName, entry),
+                    entry
+                  )[option.text]
+                "
+              />
+              <label
+                style="cursor: pointer"
+                :for="`${entry.id}
+                -${getMetadataDescriptor(fieldName, entry).id}
+                -${i}-${option.text}-input`"
               >
-                <input
-                  type="checkbox"
-                  disabled
-                  :id="`${entry.id}
-                  -${getMetadataDescriptor(fieldName, entry).id}
-                  -${i}-${option.text}-input`"
-                  :checked="
-                    getMetadataChecklistValues(
-                      getMetadataDescriptor(fieldName, entry),
-                      entry
-                    )[option.text]
-                  "
-                />
-                <label
-                  style="cursor: pointer"
-                  :for="`${entry.id}
-                  -${getMetadataDescriptor(fieldName, entry).id}
-                  -${i}-${option.text}-input`"
-                >
-                  {{ option.text }}
-                </label>
-              </p>
-            </div-->
+                {{ option.text }}
+              </label>
+            </p>
+          </div-->
                 <p>
-                  {{ getMetadataFieldValue(fieldName, entry) }}
+                  {{
+                    getMetadataFieldValue(
+                      metadataDescriptorsMap[fieldName],
+                      entry
+                    )
+                  }}
                 </p>
               </div>
             </td>
