@@ -55,9 +55,7 @@
             </th>
             <metadata-header
               :key="'desc-header' + field_name"
-              :descriptor="
-                mergeMetadataDescriptors(metadataDescriptorsMap[field_name])
-              "
+              :descriptor="metadataDescriptorsMap[field_name]"
               :no-menu="true"
               v-for="field_name in Object.keys(metadataDescriptorsMap)"
             />
@@ -194,56 +192,47 @@
               :key="'desc-' + entry.id + '-' + fieldName"
               v-for="fieldName in Object.keys(metadataDescriptorsMap)"
             >
-              <div
-                v-if="
-                  entry.entity_data && getMetadataDescriptor(fieldName, entry)
-                "
+              <div v-if="entry">
+                <!--div
+              v-if="
+                getDescriptorChecklistValues(
+                  getMetadataDescriptor(fieldName, entry)
+                ).length > 0
+              "
+            >
+              <p
+                :key="`${entry.id}-
+                ${getMetadataDescriptor(fieldName, entry).id}
+                -${i}-${option.text}-div`"
+                v-for="(option, i) in getDescriptorChecklistValues(
+                  getMetadataDescriptor(fieldName, entry)
+                )"
               >
-                <div
-                  v-if="
-                    getDescriptorChecklistValues(
-                      getMetadataDescriptor(fieldName, entry)
-                    ).length > 0
-                  "
-                >
-                  <p
-                    :key="`${entry.id}-
-                    ${getMetadataDescriptor(fieldName, entry).id}
-                    -${i}-${option.text}-div`"
-                    v-for="(option, i) in getDescriptorChecklistValues(
-                      getMetadataDescriptor(fieldName, entry)
-                    )"
-                  >
-                    <input
-                      type="checkbox"
-                      disabled
-                      :id="`${entry.id}
-                      -${getMetadataDescriptor(fieldName, entry).id}
-                      -${i}-${option.text}-input`"
-                      :checked="
-                        getMetadataChecklistValues(
-                          getMetadataDescriptor(fieldName, entry),
-                          entry
-                        )[option.text]
-                      "
-                    />
-                    <label
-                      style="cursor: pointer"
-                      :for="`${entry.id}
-                      -${getMetadataDescriptor(fieldName, entry).id}
-                      -${i}-${option.text}-input`"
-                    >
-                      {{ option.text }}
-                    </label>
-                  </p>
-                </div>
-                <p v-else>
-                  {{
-                    getMetadataFieldValue(
+                <input
+                  type="checkbox"
+                  disabled
+                  :id="`${entry.id}
+                  -${getMetadataDescriptor(fieldName, entry).id}
+                  -${i}-${option.text}-input`"
+                  :checked="
+                    getMetadataChecklistValues(
                       getMetadataDescriptor(fieldName, entry),
                       entry
-                    )
-                  }}
+                    )[option.text]
+                  "
+                />
+                <label
+                  style="cursor: pointer"
+                  :for="`${entry.id}
+                  -${getMetadataDescriptor(fieldName, entry).id}
+                  -${i}-${option.text}-input`"
+                >
+                  {{ option.text }}
+                </label>
+              </p>
+            </div-->
+                <p>
+                  {{ getMetadataFieldValue(fieldName, entry) }}
                 </p>
               </div>
             </td>
@@ -415,7 +404,8 @@ export default {
       'taskMap',
       'taskTypeMap',
       'user',
-      'isCurrentUserManager'
+      'isCurrentUserManager',
+      'productionDescriptors'
     ]),
 
     displayedTasks() {
@@ -430,29 +420,32 @@ export default {
 
     metadataDescriptorsMap() {
       const metadataDescriptorsMap = {}
-      if (!this.isToCheck) {
-        this.openProductions.forEach(project => {
-          project.descriptors.forEach(descriptor => {
-            const isUserDepartment = this.user.departments.some(department =>
-              descriptor.departments.includes(department)
-            )
-            if (isUserDepartment) {
-              // group them by field_name if they have the same field_name
-              if (!(descriptor.field_name in metadataDescriptorsMap)) {
-                metadataDescriptorsMap[descriptor.field_name] = {}
-              }
-              const descriptorFieldNameEntry =
-                metadataDescriptorsMap[descriptor.field_name]
-              // group them by entity_type if the have the same entity_type
-              if (!(descriptor.entity_type in descriptorFieldNameEntry)) {
-                descriptorFieldNameEntry[descriptor.entity_type] = {}
-              }
-              descriptorFieldNameEntry[descriptor.entity_type][project.id] =
-                descriptor
-            }
-          })
-        })
-      }
+      // if (!this.isToCheck) {
+      //   this.openProductions.forEach(project => {
+      //     project.descriptors.forEach(descriptor => {
+      //       const isUserDepartment = this.user.departments.some(department =>
+      //         descriptor.departments.includes(department)
+      //       )
+      //       if (isUserDepartment) {
+      //         // group them by field_name if they have the same field_name
+      //         if (!(descriptor.field_name in metadataDescriptorsMap)) {
+      //           metadataDescriptorsMap[descriptor.field_name] = {}
+      //         }
+      //         const descriptorFieldNameEntry =
+      //           metadataDescriptorsMap[descriptor.field_name]
+      //         // group them by entity_type if the have the same entity_type
+      //         if (!(descriptor.entity_type in descriptorFieldNameEntry)) {
+      //           descriptorFieldNameEntry[descriptor.entity_type] = {}
+      //         }
+      //         descriptorFieldNameEntry[descriptor.entity_type][project.id] =
+      //           descriptor
+      //       }
+      //     })
+      //   })
+      // }
+      this.productionDescriptors.Asset.forEach(descriptor => {
+        metadataDescriptorsMap[descriptor.field_name] = descriptor
+      })
       return metadataDescriptorsMap
     },
 
@@ -683,6 +676,7 @@ export default {
     },
 
     getMetadataDescriptor(fieldName, entry) {
+      console.log('getMetadataDescriptor', fieldName, entry)
       const entityType = entry.task_type_for_entity
       const projectId = entry.project_id
       return this.metadataDescriptorsMap[fieldName] &&

@@ -84,8 +84,8 @@ const initialState = {
   productionDescriptors: {
     Asset: [
       {
-        choices: null,
         data_type: 'string',
+        choices: null,
         departments: [],
         entity_type: 'Asset',
         field_name: 'ban_ben',
@@ -94,8 +94,8 @@ const initialState = {
         name: '版本'
       },
       {
-        choices: null,
         data_type: 'string',
+        choices: null,
         departments: [],
         entity_type: 'Asset',
         field_name: 'bian_hao',
@@ -104,8 +104,8 @@ const initialState = {
         name: '编号'
       },
       {
-        choices: null,
         data_type: 'string',
+        choices: null,
         departments: [],
         entity_type: 'Asset',
         field_name: 'deng_ji',
@@ -114,8 +114,8 @@ const initialState = {
         name: '等级'
       },
       {
-        choices: null,
         data_type: 'number',
+        choices: null,
         departments: [],
         entity_type: 'Asset',
         field_name: 'ji_shu_lie',
@@ -231,6 +231,7 @@ const getters = {
   productionStatusMap: state => state.productionStatusMap,
   openProductions: state => state.openProductions,
   productionStatus: state => state.productionStatus,
+  productionDescriptors: state => state.productionDescriptors,
 
   productionAvatarFormData: state => state.productionAvatarFormData,
 
