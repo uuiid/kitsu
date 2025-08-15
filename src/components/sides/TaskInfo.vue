@@ -19,6 +19,7 @@
         :is-set-frame-thumbnail-loading="loading.setFrameThumbnail"
         :production-id="currentProductionId"
         :team="currentTeam"
+        :working-files="task?.working_files"
         @export-task="onExportClick"
         @set-frame-thumbnail="onSetCurrentFrameAsThumbnail"
         @open-folder="onOpenFolder"
@@ -359,6 +360,7 @@ import PreviewPlayer from '@/components/previews/PreviewPlayer.vue'
 import Spinner from '@/components/widgets/Spinner.vue'
 import TaskTypeName from '@/components/widgets/TaskTypeName.vue'
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
+import { ElMessage } from 'element-plus'
 
 const DEFAULT_PANEL_WIDTH = 400
 
@@ -1250,12 +1252,19 @@ export default {
       return files
     },
 
-    onOpenFolder() {
-      if (this.task.file_path) {
-        window.api.showItemInFolder(this.task.file_path)
+    onOpenFolder(filepath) {
+      const path = require('path')
+      const fs = require('fs')
+      filepath = path.join(this.currentProduction.path, filepath)
+      if (fs.existsSync(filepath)) {
+        window.api.showItemInFolder(filepath)
       } else {
-        window.api.openPath('::{F874310E-B6B7-47DC-BC84-B9E6B38F5903}')
+        ElMessage.error({
+          message: '文件不存在'
+        })
       }
+
+      //window.api.openPath('::{F874310E-B6B7-47DC-BC84-B9E6B38F5903}')
     },
     executeDoodleWork() {
       console.log(this.taskTypeMap)

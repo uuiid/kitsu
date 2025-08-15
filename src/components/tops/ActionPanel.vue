@@ -158,11 +158,23 @@
         </div>
         <div
           class="menu-item"
-          :title="$t('doodle.open_folder')"
-          @click="$emit('open-folder')"
+          :class="{ disabled: workingFiles.length === 0 }"
+          :title="workingFiles.length === 0 ? '' : $t('menu.openFolder')"
           v-if="isElectron"
         >
-          <folder-open :title="$t('menu.openFolder')" />
+          <el-popover style="padding: 0" :width="50" trigger="hover">
+            <template #reference>
+              <folder-open />
+            </template>
+            <div
+              class="menu-item path-menu-item"
+              :key="index"
+              @click="$emit('open-folder', workingFile.path)"
+              v-for="(workingFile, index) in workingFiles"
+            >
+              {{ workingFile.description }}
+            </div>
+          </el-popover>
         </div>
         <div
           class="menu-item"
@@ -867,6 +879,10 @@ export default {
       default: null
     },
     team: {
+      type: Array,
+      default: () => []
+    },
+    workingFiles: {
       type: Array,
       default: () => []
     }
@@ -1992,5 +2008,20 @@ export default {
       }
     }
   }
+}
+
+.path-menu-item {
+  text-align: center;
+  font-size: 1.2em;
+  padding: 0.1em;
+
+  &hover {
+    background: $light-grey;
+  }
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.5;
 }
 </style>
