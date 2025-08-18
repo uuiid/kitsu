@@ -46,6 +46,7 @@ const currentTaskList = computed(() => {
 const currentSrcList = computed(() => {
   const temp = []
   AiScript.state.aiHistory[currentTab.value].forEach(item => {
+    console.log(item)
     temp.push(createURLFromFilePath(formatSrcPath(item.task_id, 'png')))
   })
 

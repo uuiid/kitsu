@@ -204,12 +204,12 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
         const path = require('path')
         const filePath = path.join(
           action.aiGenerateFileRootPath(),
-          'txt2Video',
-          data.task_id + '.png'
+          'txt2Image',
+          res.data.request_id + '.png'
         )
         await action.saveObjectFromUrl(res.data.image_urls[0], filePath)
         const nativeData = data
-        nativeData['task_id'] = data.task_id
+        nativeData['task_id'] = res.data.request_id
         state.value.aiHistory.txt2Image.push(nativeData)
         await action.writeAiHistory()
         state.value.receiveImageList.push(...res.data.image_urls)

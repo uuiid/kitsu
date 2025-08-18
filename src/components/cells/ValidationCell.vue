@@ -74,12 +74,7 @@
               />
               <template v-else>{{ person.initials }}</template>
             </span>
-            <span
-              class="dot"
-              v-if="
-                typeof task?.file_exist === 'boolean' ? !task.file_exist : false
-              "
-            ></span>
+            <span class="dot" v-if="task?.working_files.length === 0"></span>
           </template>
           <span class="subscribed" v-if="task?.is_subscribed">
             <eye-icon :size="12" />
