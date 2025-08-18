@@ -42,7 +42,7 @@ const onExtendMove = event => {
 onMounted(() => {
   nextTick(() => {
     const rect = myElement.value?.getBoundingClientRect()
-    selfPosition.value = rect.x
+    selfPosition.value = rect?.x
   })
 })
 
