@@ -74,7 +74,14 @@
               />
               <template v-else>{{ person.initials }}</template>
             </span>
-            <span class="dot" v-if="task?.working_files.length === 0"></span>
+            <span class="dot-content" v-if="task?.working_files.length > 0">
+              <span
+                class="dot"
+                :style="`right: ${(index + 1) * 5 + index * 5}px;`"
+                v-for="(work, index) in task.working_files"
+                :key="work.id"
+              ></span>
+            </span>
           </template>
           <span class="subscribed" v-if="task?.is_subscribed">
             <eye-icon :size="12" />
@@ -521,10 +528,10 @@ export default {
 
 .dot {
   position: absolute;
-  right: 5px;
   border: 4px solid;
   color: red;
   border-radius: 4px;
+  max-height: 4px;
 }
 
 .custom-input {
