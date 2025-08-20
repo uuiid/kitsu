@@ -1208,7 +1208,7 @@ export default {
           [
             '13ddf60c-ed8e-4e65-85bb-57dc4207aeca',
             '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
-          ].includes(task.task_type_id)
+          ].includes(task?.task_type_id)
         ) {
           return true
         }
