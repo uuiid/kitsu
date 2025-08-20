@@ -80,7 +80,7 @@
                 :style="`right: ${(index + 1) * 5 + index * 5}px;`"
                 v-for="(work, index) in task.working_files"
                 :key="work.id"
-                v-show="work.path"
+                v-show="work.path === ''"
               ></span>
             </span>
           </template>
