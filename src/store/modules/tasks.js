@@ -663,7 +663,30 @@ const actions = {
       return comment
     })
   },
-
+  scanWorkFile({ commit }, taskId) {
+    return tasksApi.scanWorkFile(taskId).then(comment => {
+      if (comment.length === 0) return
+      const data = {
+        working_files: [...comment]
+      }
+      commit(EDIT_TASK_DATES, {
+        taskId,
+        data
+      })
+      return comment
+    })
+  },
+  scanWorkFiles({ commit }, { productionId, taskIds }) {
+    return tasksApi.scanWorkFiles(productionId, taskIds).then(comments => {
+      taskIds.forEach(task_id => {
+        commit(EDIT_TASK_DATES, {
+          taskId: task_id,
+          data: comments.get(task_id)
+        })
+      })
+      return comments
+    })
+  },
   commentTaskWithPreview(
     { commit, state },
     {

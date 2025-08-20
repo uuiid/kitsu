@@ -48,6 +48,7 @@
     <codepen-icon class="icon" v-else-if="icon === 'codepen'" />
     <link-icon class="icon" v-else-if="icon === 'link'" />
     <clock-icon class="icon" v-else-if="icon === 'clock'" />
+    <scan-search class="icon" v-else-if="icon === 'scan'" />
     <refresh-ccw-icon
       class="icon"
       :stroke-width="1.2"
@@ -107,6 +108,7 @@ import {
   PlusIcon,
   RefreshCcwIcon,
   SaveIcon,
+  ScanSearch,
   SendIcon,
   SkipBackIcon,
   SkipForwardIcon,
@@ -152,6 +154,7 @@ export default {
     PlusIcon,
     RefreshCcwIcon,
     SaveIcon,
+    ScanSearch,
     SendIcon,
     SkipBackIcon,
     SkipForwardIcon,

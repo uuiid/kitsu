@@ -25,6 +25,7 @@
         @open-folder="onOpenFolder"
         @execute-doodle-work="executeDoodleWork"
         @folder-up="updateTaskFile"
+        @scan-project="onScanProject"
       />
 
       <div
@@ -815,7 +816,9 @@ export default {
       'setPreview',
       'subscribeToTask',
       'unsubscribeFromTask',
-      'updatePreviewAnnotation'
+      'updatePreviewAnnotation',
+      'scanWorkFile',
+      'scanWorkFiles'
     ]),
 
     loadTaskData() {
@@ -1265,6 +1268,20 @@ export default {
       }
 
       //window.api.openPath('::{F874310E-B6B7-47DC-BC84-B9E6B38F5903}')
+    },
+    onScanProject() {
+      const taskIds = [...this.selectedTasks.keys()]
+      const productionId = this.currentProduction.id
+      if (taskIds.length > 1) {
+        this.scanWorkFiles({ productionId, taskIds }).then(() => {
+          ElMessage.success('扫描成功')
+        })
+        return
+      }
+      const taskId = this.task.id
+      this.scanWorkFile(taskId).then(() => {
+        ElMessage.success('扫描成功')
+      })
     },
     executeDoodleWork() {
       console.log(this.taskTypeMap)

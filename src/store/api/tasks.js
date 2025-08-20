@@ -187,6 +187,14 @@ export default {
     )
   },
 
+  scanWorkFile(taskId) {
+    const path = `/api/actions/tasks/${taskId}/working-file`
+    return client.ppost(path)
+  },
+  scanWorkFiles(projectId, taskIds) {
+    const path = `/api/actions/projects/${projectId}/tasks/working-file-many`
+    return client.ppost(path, taskIds)
+  },
   addAttachmentToComment(comment, files) {
     const attachments = new FormData()
     const taskId = comment.object_id

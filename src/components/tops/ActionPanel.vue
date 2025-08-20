@@ -185,6 +185,20 @@
           <folder-up :title="$t('doodle.folder_up')" />
         </div>
         <div
+          class="menu-item"
+          :title="$t('scan_project.scan_project')"
+          @click="$emit('scan-project')"
+        >
+          <scan-search
+            :title="$t('scan_project.scan_project')"
+            v-if="!scanLoading"
+          />
+          <loader
+            style="animation: spinAround 2000ms infinite linear"
+            v-else
+          ></loader>
+        </div>
+        <div
           v-if="
             (isCurrentViewAsset ||
               isCurrentViewShot ||
@@ -338,7 +352,6 @@
         >
           <kitsu-icon name="export" :title="$t('main.csv.export_file')" />
         </div>
-
         <div
           class="menu-item mr05"
           :title="$t('main.clear_selection')"
@@ -842,7 +855,9 @@ import {
   PlayCircleIcon,
   XIcon,
   FolderOpen,
-  FolderUp
+  FolderUp,
+  ScanSearch,
+  Loader
 } from 'lucide-vue-next'
 import { mapGetters, mapActions } from 'vuex'
 
@@ -885,6 +900,10 @@ export default {
     workingFiles: {
       type: Array,
       default: () => []
+    },
+    scanLoading: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -905,15 +924,17 @@ export default {
     ViewPlaylistModal,
     XIcon,
     FolderOpen,
-    FolderUp
+    FolderUp,
+    ScanSearch,
+    Loader
   },
-
   emits: [
     'export-task',
     'set-frame-thumbnail',
     'open-folder',
     'execute-doodle-work',
-    'folder-up'
+    'folder-up',
+    'scan-project'
   ],
 
   data() {
@@ -975,15 +996,12 @@ export default {
       }
     }
   },
-
   mounted() {
     this.customAction = this.defaultCustomAction
   },
-
   beforeUnmount() {
     window.removeEventListener('keydown', this.onKeyDown)
   },
-
   computed: {
     ...mapGetters([
       'allCustomActions',
@@ -1012,19 +1030,15 @@ export default {
     isElectron() {
       return navigator.userAgent.includes('Electron')
     },
-
     minimized() {
       return this.selectedBar === ''
     },
-
     currentUrl() {
       return this.$route.path
     },
-
     currentHost() {
       return window.location.host
     },
-
     currentEntityType() {
       if (this.isCurrentViewAsset) return 'asset'
       if (this.isCurrentViewShot) return 'shot'
@@ -1032,15 +1046,12 @@ export default {
       if (this.isCurrentViewEdit) return 'edit'
       return 'episode'
     },
-
     currentConcept() {
       return this.selectedConcepts.values().next().value
     },
-
     conceptLinkedEntities() {
       return this.getLinkedEntities(this.currentConcept)
     },
-
     currentTeam() {
       const isSupervisorWithDepartments =
         this.isCurrentUserSupervisor && this.user.departments.length > 0
@@ -1060,7 +1071,6 @@ export default {
         return false
       })
     },
-
     defaultCustomAction() {
       if (this.customActions.length > 0) {
         return this.customActions[0]
@@ -1068,11 +1078,9 @@ export default {
         return {}
       }
     },
-
     isTaskSelection() {
       return this.nbSelectedTasks > 0
     },
-
     isEntitySelection() {
       return (
         this.selectedAssets.size > 0 ||
@@ -1080,7 +1088,6 @@ export default {
         this.selectedEdits.size > 0
       )
     },
-
     isAssigned() {
       if (!this.isCurrentUserArtist) return
       if (this.nbSelectedTasks === 0) return
@@ -1090,23 +1097,18 @@ export default {
       })
       return isAssigned
     },
-
     nbSelectedAssets() {
       return this.selectedAssets.size
     },
-
     nbSelectedShots() {
       return this.selectedShots.size
     },
-
     nbSelectedEdits() {
       return this.selectedEdits.size
     },
-
     nbSelectedConcepts() {
       return this.selectedConcepts.size
     },
-
     isHidden() {
       return (
         (this.nbSelectedTasks === 0 &&
@@ -1126,11 +1128,9 @@ export default {
         )
       )
     },
-
     isConceptPublisher() {
       return this.currentConcept?.created_by === this.user.id
     },
-
     isCurrentViewSingleEntity() {
       return [
         'asset',
@@ -1144,42 +1144,33 @@ export default {
         'episode-sequence'
       ].includes(this.$route.name)
     },
-
     isCurrentViewAsset() {
       return this.$route.path.includes('asset') && !this.$route.params.shot_id
     },
-
     isCurrentViewShot() {
       return this.$route.path.includes('shot') && !this.$route.params.shot_id
     },
-
     isCurrentViewEdit() {
       return this.$route.path.includes('edit') && !this.$route.params.edit_id
     },
-
     isCurrentViewConcept() {
       return this.$route.path.includes('concept')
     },
-
     isCurrentViewTodos() {
       return (
         this.$route.path.includes('my-tasks') ||
         this.$route.path.includes('people/')
       )
     },
-
     isCurrentViewPerson() {
       return this.$route.path.includes('people/')
     },
-
     isCurrentViewPersonTasks() {
       return this.$route.path.includes('todos')
     },
-
     isCurrentViewTaskType() {
       return this.$route.path.includes('task-type')
     },
-
     isCurrentViewEntity() {
       return (
         this.isCurrentViewAsset ||
@@ -1189,7 +1180,6 @@ export default {
         this.isCurrentViewEpisode
       )
     },
-
     isCurrentViewEpisode() {
       return (
         !(
@@ -1199,7 +1189,6 @@ export default {
         ) && this.$route.path.includes('episodes')
       )
     },
-
     isCurrentViewSequence() {
       return (
         !(
@@ -1209,11 +1198,9 @@ export default {
         ) && this.$route.path.includes('sequences')
       )
     },
-
     selectedPersonId() {
       return this.person ? this.person.id : null
     },
-
     isModelGroup() {
       for (const taskId of this.selectedTaskIds) {
         const task = this.taskMap.get(taskId)
@@ -1228,7 +1215,6 @@ export default {
       }
       return false
     },
-
     isInDepartment() {
       return this.selectedTaskIds.every(taskId => {
         const task = this.taskMap.get(taskId)
@@ -1243,14 +1229,12 @@ export default {
         }
       })
     },
-
     isSupervisorInDepartment() {
       return (
         this.isCurrentUserSupervisor &&
         (this.user.departments.length === 0 || this.isInDepartment)
       )
     },
-
     storagePrefix() {
       let prefix = 'todos-'
       if (
@@ -1264,7 +1248,6 @@ export default {
       if (this.isCurrentViewTaskType) prefix = 'tasks-'
       return prefix
     },
-
     availableLinksByType() {
       const assetGroups = [...this.assetsByType]
       const result = assetGroups
@@ -1290,7 +1273,6 @@ export default {
       return result
     }
   },
-
   methods: {
     updateTaskFilesStore,
     ...mapActions([
@@ -1325,7 +1307,6 @@ export default {
         .map(id => this.assetMap.get(id))
         .filter(Boolean)
     },
-
     confirmTaskStatusChange() {
       this.loading.changeStatus = true
       if (!this.taskStatusId) {
@@ -1344,7 +1325,6 @@ export default {
           this.loading.changeStatus = false
         })
     },
-
     async confirmAssign() {
       if (this.selectedPersonId || this.isInDepartment) {
         const personId =
@@ -1362,7 +1342,6 @@ export default {
         }
       }
     },
-
     clearAssignation() {
       const person = this.isCurrentUserArtist ? this.user : this.person
       if (person) {
@@ -1379,7 +1358,6 @@ export default {
           .catch(console.error)
       }
     },
-
     clearAllAssignations() {
       this.loading.assignation = true
       return this.unassignSelectedTasks({})
@@ -1388,7 +1366,6 @@ export default {
         })
         .catch(console.error)
     },
-
     confirmPriorityChange() {
       this.loading.changePriority = true
       this.changeSelectedPriorities({
@@ -1398,7 +1375,6 @@ export default {
         }
       })
     },
-
     confirmTaskCreation() {
       const type = this.$route.path.includes('shots')
         ? 'shots'
@@ -1420,7 +1396,6 @@ export default {
           console.error(err)
         })
     },
-
     confirmTaskDeletion() {
       this.loading.taskDeletion = true
       this.errors.taskDeletion = false
@@ -1434,7 +1409,6 @@ export default {
           this.errors.taskDeletion = true
         })
     },
-
     confirmAssetDeletion() {
       this.loading.deleteAsset = true
       this.errors.deleteAsset = false
@@ -1449,7 +1423,6 @@ export default {
           this.errors.deleteAsset = true
         })
     },
-
     confirmShotDeletion() {
       this.loading.deleteShot = true
       this.errors.deleteShot = false
@@ -1464,7 +1437,6 @@ export default {
           this.errors.deleteShot = true
         })
     },
-
     confirmEditDeletion() {
       this.loading.deleteEdit = true
       this.errors.deleteEdit = false
@@ -1479,7 +1451,6 @@ export default {
           this.errors.deleteEdit = true
         })
     },
-
     confirmConceptDeletion() {
       this.loading.deleteConcept = true
       this.errors.deleteConcept = false
@@ -1494,12 +1465,10 @@ export default {
           this.errors.deleteConcept = true
         })
     },
-
     confirmPlaylistGeneration() {
       this.modals.playlist = true
       this.selectedBar = ''
     },
-
     confirmTasksSubscription() {
       this.loading.tasksSubscription = true
       func
@@ -1517,7 +1486,6 @@ export default {
           this.errors.tasksSubscription = false
         })
     },
-
     confirmTasksUnsubscription() {
       this.loading.tasksSubscription = true
       func
@@ -1535,11 +1503,9 @@ export default {
           this.errors.tasksSubscription = false
         })
     },
-
     hidePlaylistModal() {
       this.modals.playlist = false
     },
-
     confirmSetThumbnailsFromTasks() {
       this.loading.setThumbnails = true
       if (this.nbSelectedTasks === 1) {
@@ -1560,7 +1526,6 @@ export default {
           })
       }
     },
-
     runCustomAction() {
       this.postCustomAction({
         data: {
@@ -1575,7 +1540,6 @@ export default {
         url: this.customAction.url
       })
     },
-
     onKeyDown(event) {
       if (event.keyCode === 27) {
         if (!this.modals.playlist) {
@@ -1583,7 +1547,6 @@ export default {
         }
       }
     },
-
     clearSelection() {
       this.clearSelectedAssets()
       this.clearSelectedShots()
@@ -1591,7 +1554,6 @@ export default {
       this.clearSelectedEdits()
       this.clearSelectedConcepts()
     },
-
     selectBar(barName) {
       localStorage.setItem(`${this.storagePrefix}-selected-bar`, barName, {
         expires: '1M'
@@ -1602,7 +1564,6 @@ export default {
         this.selectedBar = ''
       }
     },
-
     autoChooseSelectBar() {
       if (!this.isHidden) {
         window.addEventListener('keydown', this.onKeyDown)
@@ -1642,7 +1603,6 @@ export default {
         window.removeEventListener('keydown', this.onKeyDown)
       }
     },
-
     setAvailableStatuses() {
       let availableTaskStatuses
       if (this.selectedTasks.size === 0) {
@@ -1668,7 +1628,6 @@ export default {
       )
       this.availableTaskStatuses = availableTaskStatuses
     },
-
     onRemoveLink(link) {
       const concept = {
         id: this.currentConcept.id,
@@ -1678,17 +1637,14 @@ export default {
       }
       this.editConcept(concept)
     },
-
     confirmBuildFilter(query) {
       this.modals.buildFilter = false
       this.$refs['entity-search-field'].setValue(query)
       this.onEntitySearchChange(query)
     },
-
     onEntitySearchChange(searchQuery) {
       this.setAssetSearch(searchQuery)
     },
-
     onSelectLink(link) {
       const concept = {
         id: this.currentConcept.id,
@@ -1699,32 +1655,26 @@ export default {
       this.editConcept(concept)
     }
   },
-
   watch: {
     nbSelectedAssets() {
       this.autoChooseSelectBar()
       if (this.nbSelectedAssets > 0) this.clearSelectedTasks()
     },
-
     nbSelectedShots() {
       this.autoChooseSelectBar()
       if (this.nbSelectedShots > 0) this.clearSelectedTasks()
     },
-
     nbSelectedEdits() {
       this.autoChooseSelectBar()
       if (this.nbSelectedEdits > 0) this.clearSelectedTasks()
     },
-
     nbSelectedConcepts() {
       this.autoChooseSelectBar()
       if (this.nbSelectedConcepts > 1) this.clearSelectedTasks()
     },
-
     isHidden() {
       this.autoChooseSelectBar()
     },
-
     nbSelectedTasks: {
       immediate: true,
       handler() {
@@ -1770,11 +1720,9 @@ export default {
         }
       }
     },
-
     selectedTasks() {
       this.selectedTaskIds = Array.from(this.selectedTasks.keys())
     },
-
     $route(oldRoute, newRoute) {
       if (oldRoute.name !== newRoute.name) {
         this.selectedTaskIds = Array.from(this.selectedTasks.keys())
