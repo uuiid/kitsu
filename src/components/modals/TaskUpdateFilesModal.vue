@@ -189,21 +189,22 @@ const onAddData = files => {
       files_.push(file)
     else if (
       updateTaskFiles.state.currentUpdateType === 3 &&
-      file.name.endsWith('.uproject') &&
-      file_path.ue_file_name
-        ? file_path.ue_file_name === file.name
-        : true
+      file.name.endsWith('.uproject')
     ) {
-      const root_path = path.dirname(file.path)
-      const sk_path = path.join(root_path, file_path.root_path)
-      if (fs.existsSync(sk_path)) {
-        const task = updateTaskFiles.doodleWorkCheckFiles.formatData(file)
-        task.status = 'waiting'
-        task.run_time = new Date().toISOString()
-        task.submit_time = new Date().toISOString()
-        task.updateType = updateTaskFiles.state.currentUpdateType
-        updateTaskFiles.state.allFiles.set(task.id, task)
-        notNeedInspections.set(task.id, task)
+      if (
+        file_path.ue_file_name ? file_path.ue_file_name === file.name : true
+      ) {
+        const root_path = path.dirname(file.path)
+        const sk_path = path.join(root_path, file_path.root_path)
+        if (fs.existsSync(sk_path)) {
+          const task = updateTaskFiles.doodleWorkCheckFiles.formatData(file)
+          task.status = 'waiting'
+          task.run_time = new Date().toISOString()
+          task.submit_time = new Date().toISOString()
+          task.updateType = updateTaskFiles.state.currentUpdateType
+          updateTaskFiles.state.allFiles.set(task.id, task)
+          notNeedInspections.set(task.id, task)
+        }
       } else {
         messages.push(`${file.name}:请检查文件路径`)
       }
