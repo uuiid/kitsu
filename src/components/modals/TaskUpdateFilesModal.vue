@@ -147,7 +147,7 @@ function pathRule() {
   ) {
     file_path.root_path = `Content/Prop/${pin_yin_ming_cheng}/Mesh/SK_${final_file_name}.uasset`
     file_path.maya_file_name = `${final_file_name}.ma`
-    file_path.ue_file_name = `${pin_yin_ming_cheng}.uproject`
+    file_path.ue_file_name = null //`${pin_yin_ming_cheng}.uproject`
   } else if (
     updateTaskFiles.state.selectedTask.entity.asset_type_id ===
       '21b3f5aa-cdd6-4fca-ace4-65077494df4b' ||
@@ -190,7 +190,9 @@ const onAddData = files => {
     else if (
       updateTaskFiles.state.currentUpdateType === 3 &&
       file.name.endsWith('.uproject') &&
-      file_path.ue_file_name === file.name
+      file_path.ue_file_name
+        ? file_path.ue_file_name === file.name
+        : true
     ) {
       const root_path = path.dirname(file.path)
       const sk_path = path.join(root_path, file_path.root_path)

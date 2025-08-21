@@ -27,7 +27,22 @@
         @folder-up="updateTaskFile"
         @scan-project="onScanProject"
       />
-
+      <div class="pa1" v-if="task?.working_files?.length > 0">
+        <div :key="workingFile.id" v-for="workingFile in task?.working_files">
+          <span style="width: 120px; display: inline-block">
+            {{ workingFile.description }}
+          </span>
+          <span
+            class="clickable-text"
+            :class="{ errorText: workingFile.path === '' }"
+            @click="
+              workingFile.path === '' ? null : onOpenFolder(workingFile.path)
+            "
+          >
+            {{ workingFile.path || `未知路径` }}</span
+          >
+        </div>
+      </div>
       <div
         class="multi-selection-info pa1"
         v-if="
@@ -362,6 +377,7 @@ import Spinner from '@/components/widgets/Spinner.vue'
 import TaskTypeName from '@/components/widgets/TaskTypeName.vue'
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 import { ElMessage } from 'element-plus'
+import errorText from '@/components/widgets/ErrorText.vue'
 
 const DEFAULT_PANEL_WIDTH = 400
 
@@ -522,6 +538,9 @@ export default {
   },
 
   computed: {
+    errorText() {
+      return errorText
+    },
     ...mapGetters([
       'currentEpisode',
       'currentProduction',
@@ -1788,5 +1807,24 @@ export default {
 .no-selection-separator {
   background-color: var(--border-alt);
   margin: 1em;
+}
+
+.clickable-text {
+  cursor: pointer;
+  transition: all 0.2s ease;
+  padding: 4px 8px;
+  border-radius: 4px;
+  text-decoration: underline;
+  color: #6098df;
+}
+
+.errorText {
+  color: red;
+  cursor: default;
+}
+
+.working-file-description {
+  min-width: 200px;
+  max-width: 200px;
 }
 </style>
