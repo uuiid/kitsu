@@ -85,7 +85,7 @@ const initialState = {
     Asset: [
       {
         data_type: 'string',
-        choices: null,
+        choices: [],
         departments: [],
         entity_type: 'Asset',
         field_name: 'ban_ben',
@@ -95,7 +95,7 @@ const initialState = {
       },
       {
         data_type: 'string',
-        choices: null,
+        choices: [],
         departments: [],
         entity_type: 'Asset',
         field_name: 'bian_hao',
@@ -105,7 +105,7 @@ const initialState = {
       },
       {
         data_type: 'string',
-        choices: null,
+        choices: [],
         departments: [],
         entity_type: 'Asset',
         field_name: 'deng_ji',
@@ -115,7 +115,7 @@ const initialState = {
       },
       {
         data_type: 'number',
-        choices: null,
+        choices: [],
         departments: [],
         entity_type: 'Asset',
         field_name: 'ji_shu_lie',
@@ -124,7 +124,7 @@ const initialState = {
         name: '集数列'
       },
       {
-        choices: null,
+        choices: [],
         data_type: 'number',
         departments: [],
         entity_type: 'Asset',
@@ -134,7 +134,7 @@ const initialState = {
         name: '归档'
       },
       {
-        choices: null,
+        choices: [],
         data_type: 'number',
         departments: [],
         entity_type: 'Asset',
@@ -144,7 +144,7 @@ const initialState = {
         name: '开始集数'
       },
       {
-        choices: null,
+        choices: [],
         data_type: 'number',
         departments: [],
         entity_type: 'Asset',
@@ -154,7 +154,7 @@ const initialState = {
         name: '季度'
       },
       {
-        choices: null,
+        choices: [],
         data_type: 'string',
         departments: [],
         entity_type: 'Asset',
