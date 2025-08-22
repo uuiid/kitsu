@@ -10,6 +10,7 @@
       <combobox
         class="mb0 flexrow-item"
         :label="$t('statistics.display_mode')"
+        style="margin-bottom: 8px"
         locale-key-prefix="statistics."
         :options="displayModeOptions"
         v-model="displayMode"
@@ -27,14 +28,31 @@
         @click="exportStatisticsToCsv"
       />
     </div>
-
+    <div class="flex gap-2 mt-4">
+      <span
+        class="tag"
+        :key="episode"
+        :class="{
+          'tag-checked': selectedEpisodes.includes(episode)
+        }"
+        style="width: 50px"
+        v-for="episode in episodeList"
+        @click="
+          selectedEpisodes.includes(episode)
+            ? selectedEpisodes.splice(selectedEpisodes.indexOf(episode), 1)
+            : selectedEpisodes.push(episode)
+        "
+      >
+        {{ episode }}
+      </span>
+    </div>
     <production-asset-type-list
       ref="asset-type-list"
       :entries="displayedAssetTypes"
       :is-loading="isAssetsLoading || initialLoading"
       :is-error="isAssetsLoadingError"
       :validation-columns="assetValidationColumns"
-      :asset-type-stats="assetTypeStats"
+      :asset-type-stats="computedAssetTypeStats"
       :display-mode="displayMode"
       :show-all="assetTypeSearchText.length === 0"
       @scroll="saveScrollPosition"
@@ -45,7 +63,7 @@
 <script>
 import moment from 'moment'
 import { mapGetters, mapActions } from 'vuex'
-
+import { computeStats } from '@/lib/stats'
 import csv from '@/lib/csv'
 import stringHelpers from '@/lib/string'
 
@@ -75,7 +93,8 @@ export default {
       displayModeOptions: [
         { label: 'pie', value: 'pie' },
         { label: 'count', value: 'count' }
-      ]
+      ],
+      selectedEpisodes: []
     }
   },
 
@@ -93,11 +112,35 @@ export default {
       'isAssetsLoadingError',
       'isTVShow',
       'taskStatusMap',
-      'taskTypeMap'
+      'taskTypeMap',
+      'taskMap',
+      'assets'
     ]),
 
     searchField() {
       return this.$refs['asset-type-search-field']
+    },
+    episodeList() {
+      const temp = []
+      this.assets.forEach(asset => {
+        if (!temp.includes(asset.ji_shu_lie)) {
+          temp.push(asset.ji_shu_lie)
+        }
+      })
+      temp.sort()
+      return temp
+    },
+    computedAssetTypeStats() {
+      return computeStats(
+        this.assets.filter(asset =>
+          this.selectedEpisodes.length === 0
+            ? true
+            : this.selectedEpisodes.includes(asset.ji_shu_lie)
+        ),
+        'asset_type_id',
+        this.taskStatusMap,
+        this.taskMap
+      )
     }
   },
 
@@ -118,7 +161,6 @@ export default {
       'setAssetTypeListScrollPosition',
       'setLastProductionScreen'
     ]),
-
     setDefaultSearchText() {
       if (this.assetTypeSearchText.length > 0) {
         this.$refs['asset-type-search-field'].setValue(this.assetTypeSearchText)
@@ -154,7 +196,7 @@ export default {
       const name = stringHelpers.slugify(nameData.join('_'))
       csv.generateStatReports(
         name,
-        this.assetTypeStats,
+        this.computedAssetTypeStats,
         this.taskTypeMap,
         this.taskStatusMap,
         this.assetTypeMap,
@@ -194,3 +236,24 @@ export default {
   }
 }
 </script>
+
+<style lang="scss" scoped>
+.tag {
+  background: transparent;
+  color: var(--text);
+  cursor: pointer;
+  border-radius: 3px;
+  padding: 1px;
+  margin: 0 4px 4px 0;
+  font-size: 0.9em;
+
+  &:hover {
+    background: var(--background-selectable);
+  }
+}
+
+.tag-checked {
+  background: var(--background-selectable);
+  color: rgba(100, 255, 100, 1);
+}
+</style>

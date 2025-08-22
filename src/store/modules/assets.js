@@ -305,7 +305,8 @@ const cache = {
 const initialState = {
   assetValidationColumns: [],
   nbValidationColumns: 0,
-
+  assets: cache.assets,
+  assetMap: cache.assetMap,
   filteredAssets: [],
   displayedAssets: [],
   displayedAssetsCount: 0,
@@ -350,8 +351,8 @@ const state = {
 }
 
 const getters = {
-  assets: state => cache.assets,
-  assetMap: state => cache.assetMap,
+  assets: state => state.assets,
+  assetMap: state => state.assetMap,
   assetSearchText: state => state.assetSearchText,
   assetSearchQueries: state => state.assetSearchQueries,
   assetSearchFilterGroups: state => state.assetSearchFilterGroups,
@@ -978,6 +979,7 @@ const mutations = {
     let isResolution = false
     assets = sortAssets(assets)
     cache.assets = assets
+    state.assets = assets
     cache.result = assets
     cache.assetIndex = buildAssetIndex(cache.result)
     cache.assetMap = new Map()
@@ -998,7 +1000,7 @@ const mutations = {
       if (!isDescription && asset.description) isDescription = true
       if (!isResolution && asset.data?.resolution) isResolution = true
     })
-
+    state.assetMap = cache.assetMap
     const assetTypes = Array.from(assetTypeMap.values())
     cache.assetTypeIndex = buildNameIndex(assetTypes)
 
