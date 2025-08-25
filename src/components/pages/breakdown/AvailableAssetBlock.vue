@@ -10,20 +10,17 @@
     :title="asset.name"
     v-if="!textMode"
   >
-    <div class="asset-add" @click="addOneAsset">+ 1</div>
-    <div class="asset-add-10" @click="addTenAssets">+ 10</div>
-    <div class="asset-picture" v-if="asset.preview_file_id">
-      <img
-        loading="lazy"
-        alt=""
-        :src="`/api/pictures/thumbnails-square/preview-files/${asset.preview_file_id}.png`"
-      />
-    </div>
-    <div class="asset-picture" v-else>
-      <span class="empty-picture">
-        {{ asset.name }}
-      </span>
-    </div>
+    <asset-image-cell
+      :src="`/api/pictures/thumbnails-square/preview-files/${asset.preview_file_id}.png`"
+      @add-one-asset="addOneAsset"
+      @add-ten-asset="addTenAssets"
+      @show-info="$emit('show-info', asset)"
+    ></asset-image-cell>
+    <span
+      class="asset-name"
+      style="top: 3px; left: 5px; text-align: center; max-width: 90px"
+      >{{ asset.name }}</span
+    >
   </div>
   <div
     class="asset-text flexrow-item flexrow"
@@ -40,8 +37,11 @@
 </template>
 
 <script>
+import AssetImageCell from '@/components/cells/AssetImageCell.vue'
+
 export default {
   name: 'available-asset-block',
+  components: { AssetImageCell },
 
   props: {
     asset: {
@@ -65,7 +65,7 @@ export default {
     }
   },
 
-  emits: ['add-one', 'add-ten'],
+  emits: ['add-one', 'add-ten', 'show-info'],
 
   methods: {
     addOneAsset(event) {
@@ -91,6 +91,10 @@ export default {
 .dark .asset .asset-add,
 .dark .asset .asset-add-10 {
   background-color: #8f91eb;
+}
+
+.empty-name {
+  z-index: 100;
 }
 
 .asset-add {
@@ -136,8 +140,8 @@ export default {
 }
 
 .asset {
-  width: 60px;
-  height: 60px;
+  width: 90px;
+  height: 120px;
   margin-right: 1em;
   margin-bottom: 1em;
   font-size: 0.8em;
@@ -177,8 +181,8 @@ export default {
   justify-content: center;
   align-items: center;
   z-index: 2;
-  width: 60px;
-  height: 60px;
+  width: 80px;
+  height: 80px;
   word-break: break-all;
   font-size: 0.8em;
 
@@ -209,5 +213,8 @@ export default {
   &.shared {
     box-shadow: 0 0 0 2px var(--shared-color);
   }
+}
+
+.asset-add-hover {
 }
 </style>

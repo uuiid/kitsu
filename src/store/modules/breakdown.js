@@ -89,6 +89,7 @@ const actions = {
     return breakdownApi
       .getProductionEpisodesCasting(production.id, episodeId)
       .then(casting => {
+        if (!casting) return
         commit(CASTING_SET_CASTING, { casting, production })
       })
   },

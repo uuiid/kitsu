@@ -336,6 +336,7 @@
                 :big-mode="isBigMode"
                 @add-one="addOneAsset"
                 @add-ten="addTenAssets"
+                @show-info="showAssetInfo"
                 v-for="asset in typeAssets"
                 v-show="libraryDisplayed || !asset.shared"
               />
@@ -394,7 +395,7 @@
     <edit-asset-modal
       ref="edit-asset-modal"
       :active="modals.isNewDisplayed"
-      :asset-to-edit="{}"
+      :asset-to-edit="assetToEdit"
       :is-error="errors.edit"
       :is-loading="loading.edit"
       :is-loading-stay="loading.stay"
@@ -531,7 +532,8 @@ export default {
       success: {
         edit: false
       },
-      columnWidth: {}
+      columnWidth: {},
+      assetToEdit: {}
     }
   },
 
@@ -798,7 +800,10 @@ export default {
         this.reloadEntities()
       }, 100)
     },
-
+    showAssetInfo(asset) {
+      this.assetToEdit = asset
+      this.modals.isNewDisplayed = true
+    },
     async reloadEntities() {
       this.isLoading = true
       await this.loadSequences()
@@ -1714,6 +1719,7 @@ export default {
   .breakdown {
     background: $dark-grey-2;
   }
+
   .breakdown-column {
     background: $dark-grey-light;
     border: 1px solid #222;
