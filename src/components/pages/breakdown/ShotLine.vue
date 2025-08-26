@@ -272,6 +272,27 @@
         {{ $t('breakdown.empty') }}
       </div>
     </div>
+    <div class="asset-list-end flexrow-item">
+      <div class="actions">
+        <button
+          class="button action"
+          title="复制"
+          tabindex="-1"
+          @click.stop="$emit('copy', entity)"
+        >
+          <copy class="icon is-small only-icon" />
+        </button>
+        <button
+          class="button action"
+          title="粘贴"
+          tabindex="-1"
+          @click.stop="$emit('paste')"
+          v-if="copyEntity !== null"
+        >
+          <clipboard-paste class="icon is-small only-icon" />
+        </button>
+      </div>
+    </div>
   </div>
 </template>
 
@@ -284,6 +305,7 @@ import { descriptorMixin } from '@/components/mixins/descriptors'
 
 import AssetBlock from '@/components/pages/breakdown/AssetBlock.vue'
 import EntityThumbnail from '@/components/widgets/EntityThumbnail.vue'
+import { Copy, ClipboardPaste } from 'lucide-vue-next'
 
 export default {
   name: 'shot-line',
@@ -291,6 +313,8 @@ export default {
   mixins: [entityListMixin, descriptorMixin],
 
   components: {
+    Copy,
+    ClipboardPaste,
     AssetBlock,
     EntityThumbnail
   },
@@ -351,6 +375,10 @@ export default {
     columnWidth: {
       default: () => {},
       type: Object
+    },
+    copyEntity: {
+      default: () => {},
+      type: Object
     }
   },
 
@@ -360,7 +388,9 @@ export default {
     'description-changed',
     'edit-label',
     'remove-one',
-    'standby-changed'
+    'standby-changed',
+    'copy',
+    'paste'
   ],
 
   computed: {
@@ -470,6 +500,16 @@ export default {
   }
 }
 
+.asset-list-end {
+  align-self: stretch;
+  border-left: 1px solid $light-grey;
+  margin-right: 0;
+  min-width: 150px;
+  max-width: 150px;
+  padding-left: 1em;
+  color: var(--text);
+}
+
 .text-mode .asset-list {
   padding-top: 0;
 }
@@ -478,6 +518,7 @@ export default {
   padding-bottom: 0.5em;
   padding-top: 0.5em;
 }
+
 .asset-type-line:not(:first-child) {
   margin-top: 0.5em;
 }
@@ -528,6 +569,7 @@ export default {
 
 .shot:hover {
   background: var(--background-selectable);
+
   .sticky {
     background: var(--background-selectable);
   }
@@ -535,6 +577,7 @@ export default {
 
 .shot.selected {
   background: var(--background-selected);
+
   .sticky {
     background: var(--background-selected);
   }
@@ -576,10 +619,12 @@ export default {
 
 .frames-column {
   justify-content: right;
+
   .metadata-value {
     padding-right: 0.5em;
     padding-top: 0.5em;
   }
+
   input {
     text-align: right;
   }
@@ -708,6 +753,7 @@ div .tooltip-editor {
 
 .stdby {
   background: var(--background-disabled);
+
   .sticky {
     background: var(--background-disabled);
   }
@@ -725,5 +771,15 @@ input::-webkit-inner-spin-button {
 
 input[type='number'] {
   -moz-appearance: textfield; /* Firefox */
+}
+
+.action {
+  margin-top: 20px;
+}
+
+.actions {
+  display: flex;
+  flex-direction: row;
+  gap: 10px;
 }
 </style>

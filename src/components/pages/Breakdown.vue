@@ -243,6 +243,7 @@
               :is-description="isDescription"
               :is-save-error="saveErrors[entity.id]"
               :column-width="columnWidth"
+              :copy-entity="copyEntity"
               @add-one="addOneAsset"
               @click="selectEntity"
               @description-changed="onDescriptionChanged"
@@ -250,6 +251,8 @@
               @metadata-changed="onMetadataChanged"
               @remove-one="removeOneAssetFromSelection"
               @standby-changed="onStandbyChanged"
+              @paste="onPaste"
+              @copy="onCopy"
               v-for="entity in castingEntities"
             />
           </div>
@@ -447,6 +450,7 @@ import ShotLine from '@/components/pages/breakdown/ShotLine.vue'
 import ShowInfosButton from '@/components/widgets/ShowInfosButton.vue'
 import Spinner from '@/components/widgets/Spinner.vue'
 import TableMetadataSelectorMenu from '@/components/widgets/TableMetadataSelectorMenu.vue'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'breakdown',
@@ -533,7 +537,8 @@ export default {
         edit: false
       },
       columnWidth: {},
-      assetToEdit: {}
+      assetToEdit: {},
+      copyEntity: null
     }
   },
 
@@ -1316,7 +1321,18 @@ export default {
         this.editAsset(data)
       }
     },
-
+    onCopy(entity) {
+      this.copyEntity = entity
+      ElMessage.success('Asset copied')
+    },
+    async onPaste() {
+      const assets_list = this.castingByType[this.copyEntity.id]
+      for (const assets of assets_list) {
+        for (const asset of assets) {
+          await this.addOneAsset(asset.asset_id, asset.nb_occurences)
+        }
+      }
+    },
     descriptorCurrentDepartments(descriptor) {
       const departemts = descriptor.departments || []
       return departemts.map(departmentId =>
