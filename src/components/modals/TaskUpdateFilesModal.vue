@@ -119,6 +119,7 @@ const onActions = async (action_name, task) => {
 }
 
 function pathRule() {
+  console.log(updateTaskFiles.state.selectedTask.entity.bian_hao)
   const pin_yin_ming_cheng =
     updateTaskFiles.state.selectedTask.entity.pin_yin_ming_cheng
   const bian_hao = updateTaskFiles.state.selectedTask.entity.bian_hao
@@ -145,7 +146,7 @@ function pathRule() {
     updateTaskFiles.state.selectedTask.entity.asset_type_id ===
     '8c02b76a-6be6-4959-af58-5c31a85fe072'
   ) {
-    file_path.root_path = `Content/Prop/${pin_yin_ming_cheng}/Mesh/SK_${final_file_name}.uasset`
+    file_path.root_path = `Content/Prop/${pin_yin_ming_cheng}/Mesh/${final_file_name}.uasset`
     file_path.maya_file_name = `${final_file_name}.ma`
     file_path.ue_file_name = null //`${pin_yin_ming_cheng}.uproject`
   } else if (
@@ -204,6 +205,8 @@ const onAddData = files => {
           task.updateType = updateTaskFiles.state.currentUpdateType
           updateTaskFiles.state.allFiles.set(task.id, task)
           notNeedInspections.set(task.id, task)
+        } else {
+          messages.push(`${file.name}:缺少${sk_path}文件`)
         }
       } else {
         messages.push(`${file.name}:请检查文件路径`)

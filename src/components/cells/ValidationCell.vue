@@ -74,7 +74,7 @@
               />
               <template v-else>{{ person.initials }}</template>
             </span>
-            <span class="dot-content" v-if="task?.working_files.length > 0">
+            <span class="dot-content" v-if="task?.working_files?.length > 0">
               <span
                 class="dot"
                 :style="`right: ${(index + 1) * 5 + index * 5}px;`"

@@ -1091,7 +1091,7 @@
         "name": "名称",
         "description": "说明",
         "person": "个人",
-        "placeholder": "SQ01"
+        "placeholder": "001"
       },
       "no_casting": "序列的角色分配为空",
       "stats_title": "序列状态",

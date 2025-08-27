@@ -1325,8 +1325,9 @@ export default {
       this.copyEntity = entity
       ElMessage.success('Asset copied')
     },
-    async onPaste() {
+    async onPaste(entity) {
       const assets_list = this.castingByType[this.copyEntity.id]
+      this.selection[entity.id] = true
       for (const assets of assets_list) {
         for (const asset of assets) {
           await this.addOneAsset(asset.asset_id, asset.nb_occurences)

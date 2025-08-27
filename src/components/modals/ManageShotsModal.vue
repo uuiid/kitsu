@@ -82,14 +82,24 @@
               </div>
             </div>
             <div class="field">
-              <input
-                class="input"
-                ref="addSequenceInput"
-                :placeholder="$t('sequences.fields.placeholder')"
-                type="text"
-                @keyup.enter="addSequence"
-                v-model="names.sequence"
-              />
+              <div class="field-input-root">
+                <span>EP</span>
+                <input
+                  class="field-input"
+                  ref="addSequenceInput"
+                  placeholder="001"
+                  type="text"
+                  @keyup.enter="addSequence"
+                  @input="
+                    e =>
+                      (names.sequence = e.target.value
+                        .replace(/\D/g, '')
+                        .slice(0, 3))
+                  "
+                  v-model="names.sequence"
+                />
+              </div>
+
               <button
                 :class="{
                   button: true,
@@ -116,14 +126,34 @@
               </div>
             </div>
             <div class="field">
-              <input
-                class="input"
-                :placeholder="$t('shots.fields.placeholder')"
-                ref="addShotInput"
-                type="text"
-                @keyup.enter="addShot"
-                v-model="names.shot"
-              />
+              <div class="field-input-root">
+                <span>SC</span>
+                <input
+                  class="field-input"
+                  placeholder="001"
+                  ref="addShotInput"
+                  type="text"
+                  @keyup.enter="addShot"
+                  @input="
+                    e =>
+                      (names.shot = e.target.value
+                        .replace(/\D/g, '')
+                        .slice(0, 3))
+                  "
+                  v-model="names.shot"
+                />
+                <select style="height: 100%">
+                  <option></option>
+                  <option
+                    v-for="i in Array.from({ length: 26 }, (_, i) =>
+                      String.fromCharCode(65 + i)
+                    )"
+                    :key="i"
+                  >
+                    {{ i }}
+                  </option>
+                </select>
+              </div>
             </div>
             <div class="flexrow">
               <button
@@ -138,18 +168,32 @@
               >
                 {{ $t('doodle.add1') }}
               </button>
-              <button
+              <div
+                class="field-input-root-2"
                 :class="{
-                  button: true,
                   'is-fullwidth': true,
-                  'is-success': true,
-                  'is-loading': loading.addShot
+                  disabled: !isAddShotAllowed || loading.addShot
                 }"
-                :disabled="!isAddShotAllowed || loading.addShot"
-                @click="addShot10"
               >
-                {{ $t('doodle.add10') }}
-              </button>
+                <input
+                  class="field-input-2"
+                  type="number"
+                  :disabled="!isAddShotAllowed || loading.addShot"
+                  v-model="names.shot_number"
+                />
+                <button
+                  class="button-text"
+                  :disabled="!isAddShotAllowed || loading.addShot"
+                  :class="{
+                    'is-fullwidth': true,
+                    'is-success': true,
+                    'is-loading': loading.addShot
+                  }"
+                  @click="addShot10"
+                >
+                  添加
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -201,7 +245,8 @@ export default {
       names: {
         episode: '',
         sequence: '',
-        shot: ''
+        shot: '',
+        shot_number: 10
       },
       loading: {
         addEpisode: false,
@@ -226,7 +271,8 @@ export default {
           value: '10'
         }
       ],
-      shotPadding: '1'
+      shotPadding: '1',
+      shotNameSuffix: ''
     }
   },
 
@@ -257,7 +303,7 @@ export default {
     isAddShotAllowed() {
       const isEmpty = this.names.shot === ''
       const isExist = this.displayedShots.find(shot => {
-        return this.names.shot === shot.name
+        return this.names.shot === shot.name.replace('SC', '')
       })
       return !isEmpty && !isExist && this.selectedSequenceId
     },
@@ -321,14 +367,14 @@ export default {
 
     addSequence() {
       if (this.isAddSequenceAllowed) {
-        const sequenceName = this.names.sequence
+        const sequenceName = `EP${this.names.sequence}`
         if (
           sequenceName.length > 0 &&
           (this.selectedEpisodeId || !this.isTVShow)
         ) {
           this.loading.addSequence = true
           const sequence = {
-            name: this.names.sequence,
+            name: sequenceName,
             episode_id: this.selectedEpisodeId,
             project_id: this.currentProduction.id
           }
@@ -344,20 +390,20 @@ export default {
 
     addShot() {
       if (this.isAddShotAllowed && !this.loading.addShot) {
-        const shotName = this.names.shot
+        const shotName = `SC${this.names.shot}`
         this.loading.addShot = true
         if (shotName.length > 0 && this.selectedSequenceId) {
           const shot = {
-            name: this.names.shot,
+            name: shotName + this.shotNameSuffix,
             sequence_id: this.selectedSequenceId,
             project_id: this.currentProduction.id
           }
           this.$emit('add-shot', shot, shot => {
             this.loading.addShot = false
             this.selectSequence(this.selectedSequenceId)
-            this.names.shot = stringHelpers.generateNextName(
-              shot.name,
-              parseInt(this.shotPadding)
+            this.names.shot = String(Number(this.names.shot) + 1).padStart(
+              3,
+              '0'
             )
           })
         }
@@ -366,13 +412,13 @@ export default {
 
     addShot10() {
       if (this.isAddShotAllowed && !this.loading.addShot) {
-        const shotName = this.names.shot
+        const shotName = `SC${this.names.shot}`
         const number = shotName.replace(/\D/g, '')
         if (number.length > 0) {
           const val = parseInt(number)
           if (val) {
             let i
-            for (i = 0; i < 10; i++) {
+            for (i = 0; i < this.names.shot_number; i++) {
               this.loading.addShot = true
               const names_shot = stringHelpers.generateNextName(
                 shotName,
@@ -380,17 +426,16 @@ export default {
               )
               if (this.selectedSequenceId) {
                 const shot = {
-                  name: names_shot,
+                  name: names_shot + this.shotNameSuffix,
                   sequence_id: this.selectedSequenceId,
                   project_id: this.currentProduction.id
                 }
                 this.$emit('add-shot', shot, shot => {
                   this.loading.addShot = false
                   this.selectSequence(this.selectedSequenceId)
-                  this.names.shot = stringHelpers.generateNextName(
-                    shotName,
-                    parseInt(10)
-                  )
+                  this.names.shot = String(
+                    Number(this.names.shot) + 1
+                  ).padStart(3, '0')
                 })
               }
             }
@@ -517,5 +562,72 @@ input::placeholder {
   align-items: center;
   margin-bottom: 0;
   margin-right: 10px;
+}
+
+.field-input-root {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  height: 2.5em;
+  padding: 0.1em 0.5em;
+  border-radius: 5px;
+  margin-top: 2px;
+  margin-bottom: 2px;
+  border: 1px solid var(--border);
+}
+
+.field-input-root-focus {
+  border-color: green;
+}
+
+.field-input {
+  padding-left: 0.1em;
+  height: 2.5em;
+  font-size: 1em;
+  width: 100%;
+  background: transparent;
+}
+
+input[type='number']::-webkit-inner-spin-button,
+input[type='number']::-webkit-outer-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+.field-input-root-2 {
+  display: flex;
+  background: var(--background-tag-button);
+  align-items: center;
+  height: 2.3em;
+  gap: 5px;
+  width: 100%;
+  border-radius: 0 0 10px 10px;
+  border: 1px solid var(--border);
+}
+
+.field-input-2 {
+  background: transparent;
+  border-bottom: 1px solid var(--border);
+  height: 2em;
+  text-indent: 10px;
+  margin-right: 10px;
+  margin-left: 10px;
+  max-width: 60px;
+  text-align: center;
+
+  &:focus {
+    border-color: green;
+  }
+}
+
+.button-text {
+  border-radius: 5px;
+  border-bottom: 1px solid var(--border);
+  padding: 0.1em 0.5em;
+  height: 100%;
+
+  &:hover {
+    background: $light-green;
+  }
 }
 </style>
