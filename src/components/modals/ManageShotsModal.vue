@@ -142,7 +142,7 @@
                   "
                   v-model="names.shot"
                 />
-                <select style="height: 100%">
+                <select style="height: 100%" v-model="shotNameSuffix">
                   <option></option>
                   <option
                     v-for="i in Array.from({ length: 26 }, (_, i) =>
@@ -303,7 +303,7 @@ export default {
     isAddShotAllowed() {
       const isEmpty = this.names.shot === ''
       const isExist = this.displayedShots.find(shot => {
-        return this.names.shot === shot.name.replace('SC', '')
+        return `SC${this.names.shot}${this.shotNameSuffix}` === shot.name
       })
       return !isEmpty && !isExist && this.selectedSequenceId
     },
