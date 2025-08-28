@@ -2,6 +2,9 @@
 import { ref, watchEffect, onMounted, nextTick, watch } from 'vue'
 import { assetFilterStore } from '@/store/modules/assetfilter.js'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
+import DepartmentName from '@/components/widgets/DepartmentName.vue'
+import departments from '@/store/modules/departments.js'
+import taskType from '@/store/modules/tasktypes.js'
 
 const treeRef = ref()
 const defaultProps = {
@@ -76,6 +79,12 @@ const removeEvents = () => {
   document.removeEventListener('mouseup', onExtendUp)
 }
 
+function getDepartmentId(taskTypeId) {
+  return departments.cache.departmentMap.get(
+    taskType.cache.taskTypeMap.get(taskTypeId).department_id
+  )
+}
+
 function onClickFilter(node, data) {
   if (node.parent.data.group) {
     treeRef.value.setChecked(node.parent.parent, false, true)
@@ -144,6 +153,18 @@ watch(filterText, val => {
         >
           <template #default="{ node, data }">
             <div class="custom-tree-node" @mouseenter="currentNode = node">
+              <div v-if="node.data.task_type_ids?.size > 0">
+                <department-name
+                  class="department-dot"
+                  :department="getDepartmentId(task_type_id)"
+                  no-padding
+                  only-dot
+                  :key="task_type_id"
+                  v-for="task_type_id in Array.from(
+                    node.data.all_task_type_ids
+                  ).filter(id => !node.data.task_type_ids.has(id))"
+                />
+              </div>
               <div class="tag-container">
                 <span>{{ node.data.label }}</span>
                 <span>({{ node.data.num }})</span>

@@ -4,6 +4,7 @@ import i18n from '@/lib/i18n.js'
 import people from '@/store/modules/people.js'
 import tasks from '@/store/modules/tasks.js'
 import departments from '@/store/modules/departments.js'
+import tasksStore from '@/store/modules/tasks.js'
 
 function initState() {
   return {
@@ -115,7 +116,10 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
             }
 
             if (filter_value) {
-              actions.addTreeFilterItem(temp, ch, item)
+              //"4ffc748e-4e58-4336-ba83-51910253514e" task_type_id
+              if (key === 'ji_shu_lie') {
+                actions.addTreeFilterItem(temp, ch, item, asset)
+              } else actions.addTreeFilterItem(temp, ch, item)
             }
           } else {
             let has = false
@@ -128,7 +132,9 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
                 value: undefined
               }
               const filter_value = actions.filterTree(key, asset, i, keys)
-              if (filter_value) actions.addTreeFilterItem(temp, ch, item)
+              if (filter_value) {
+                actions.addTreeFilterItem(temp, ch, item)
+              }
               if (
                 i === state.value.assetFilters.size - 1 &&
                 filter_value &&
@@ -301,7 +307,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       })
       return [...temp.values()] //temp
     },
-    addTreeFilterItem: (temp, ch, item) => {
+    addTreeFilterItem: (temp, ch, item, asset = null) => {
       if (temp.has(item.id)) {
         temp.get(item.id).num += 1
         let children = null
@@ -311,20 +317,37 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
           }
         })
         if (children === null) {
+          actions.addTaskType(ch, asset)
           temp.get(item.id).children.push(ch)
           temp.get(item.id).children.sort((a, b) => {
             return String(a.label).localeCompare(String(b.label))
           })
         } else {
+          actions.addTaskType(children, asset)
           children.num += 1
         }
       } else {
+        actions.addTaskType(ch, asset)
         temp.set(item.id, {
           id: item.id,
           label: i18n.global.t('doodle_asset_tree.fields.' + item.id),
           num: 1,
           value: item.id,
           children: [ch]
+        })
+      }
+    },
+    addTaskType: (ch, asset) => {
+      if (asset) {
+        asset.tasks.forEach(task_id => {
+          const task = tasksStore.state.taskMap.get(task_id)
+          if (task.task_status_id !== '4ffc748e-4e58-4336-ba83-51910253514e') {
+            if (ch['task_type_ids']) ch['task_type_ids'].add(task.task_type_id)
+            else ch['task_type_ids'] = new Set([task.task_type_id])
+          }
+          if (ch['all_task_type_ids'])
+            ch['all_task_type_ids'].add(task.task_type_id)
+          else ch['all_task_type_ids'] = new Set([task.task_type_id])
         })
       }
     },
