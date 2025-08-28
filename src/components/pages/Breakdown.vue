@@ -128,10 +128,7 @@
           <div class="standby-header" v-if="isShowInfosBreakdown">
             {{ $t('breakdown.fields.standby') }}
           </div>
-          <div
-            class="description-header"
-            v-if="isShowInfosBreakdown && isDescription"
-          >
+          <div class="description-header" v-if="isShowInfosBreakdown">
             {{ $t('shots.fields.description') }}
           </div>
           <div

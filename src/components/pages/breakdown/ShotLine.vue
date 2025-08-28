@@ -46,10 +46,8 @@
         @input="event => onStandbyChanged(entity, event)"
       />
     </div>
-    <div
-      class="description-column flexrow-item"
-      v-if="isShowInfosBreakdown && isDescription"
-    >
+
+    <div class="description-column flexrow-item" v-if="isShowInfosBreakdown">
       <div
         class="tooltip-text"
         v-html="renderMarkdown(entity.description)"
@@ -131,7 +129,6 @@
         {{ getMetadataFieldValue({ field_name: 'frame_out' }, entity) }}
       </span>
     </div>
-
     <template v-if="isShowInfosBreakdown">
       <div
         class="metadata-descriptor flexrow-item"
@@ -424,6 +421,7 @@ export default {
 
   methods: {
     onClicked(event) {
+      console.log(this.entity)
       this.$emit('click', this.entity.id, event)
     },
 
