@@ -15,7 +15,10 @@
         <h1 class="title" v-else>
           {{ $t('assets.new_asset') }}
         </h1>
-
+        <el-image
+          :src="`/api/pictures/originals/preview-files/${assetToEdit.preview_file_id}.png`"
+          style="width: auto; height: auto"
+        />
         <form @submit.prevent>
           <combobox
             :label="$t('assets.fields.type')"
