@@ -23,7 +23,10 @@ export default {
     const path = `/api/data/projects/${productionId}/entities/${entityId}/casting`
     return client.pput(path, casting)
   },
-
+  replaceCasting(productionId, data_list, callback) {
+    const path = `/api/actions/projects/${productionId}/casting/replace`
+    return client.ppost(path, data_list)
+  },
   postCastingCsv(production, formData) {
     const path = `/api/import/csv/projects/${production.id}/casting`
     return client.ppost(path, formData)

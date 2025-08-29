@@ -1827,7 +1827,8 @@
       "work_user_remark": "备注",
       "work_start_time": "开始时间",
       "work_end_time": "结束时间",
-      "refresh": "刷新"
+      "refresh": "刷新",
+      "replace_asset": "替换资产"
     },
     "doodle_productions": {
       "fields": {

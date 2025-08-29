@@ -71,6 +71,13 @@
             :path="exportUrlPath"
             v-if="isCurrentUserManager"
           />
+          <button-simple
+            class="flexrow-item"
+            icon="replace"
+            :is-responsive="true"
+            :title="$t('doodle.replace_asset')"
+            @click="isReplaceAsset = !isReplaceAsset"
+          />
         </div>
 
         <spinner class="mt1" v-if="isLoading" />
@@ -255,7 +262,38 @@
           </div>
         </div>
       </div>
-
+      <div class="breakdown-column assets-column" v-show="isReplaceAsset">
+        <div class="replace-asset">
+          <replace-asset-cell
+            class="replace-asset-cell"
+            :entry="dropEntry"
+            :casting="casting"
+            :selected-assets="selectedAsset"
+            :is-source="true"
+            @drag-end="entry => (sourceAsset = entry)"
+          ></replace-asset-cell>
+          <span>>></span>
+          <replace-asset-cell
+            class="replace-asset-cell"
+            :entry="dropEntry"
+            @drag-end="entry => (targetAsset = entry)"
+          ></replace-asset-cell>
+        </div>
+        <div class="replace_asset-button">
+          <button-simple
+            :text="$t('doodle.replace_asset')"
+            class="mt1"
+            :loading="isReplacingAsset"
+            @click="replaceAsset"
+            :disabled="
+              sourceAsset === null ||
+              targetAsset === null ||
+              selectedAsset.length === 0
+            "
+          >
+          </button-simple>
+        </div>
+      </div>
       <div
         ref="asset-list"
         @scroll.passive="onAssetListScroll"
@@ -316,7 +354,6 @@
             @remove-search="removeSearchQuery"
           />
         </div>
-
         <spinner v-if="isAssetsLoading" />
         <template v-else>
           <div
@@ -331,12 +368,14 @@
               <available-asset-block
                 :key="asset.id"
                 :asset="asset"
+                :draggable="true"
                 :active="Object.keys(selection).length > 0"
                 :text-mode="isTextMode"
                 :big-mode="isBigMode"
                 @add-one="addOneAsset"
                 @add-ten="addTenAssets"
                 @show-info="showAssetInfo"
+                @dragstart="onDragStart(asset)"
                 v-for="asset in typeAssets"
                 v-show="libraryDisplayed || !asset.shared"
               />
@@ -448,6 +487,7 @@ import ShowInfosButton from '@/components/widgets/ShowInfosButton.vue'
 import Spinner from '@/components/widgets/Spinner.vue'
 import TableMetadataSelectorMenu from '@/components/widgets/TableMetadataSelectorMenu.vue'
 import { ElMessage } from 'element-plus'
+import ReplaceAssetCell from '@/components/cells/ReplaceAssetCell.vue'
 
 export default {
   name: 'breakdown',
@@ -455,6 +495,7 @@ export default {
   mixins: [entityListMixin, searchMixin],
 
   components: {
+    ReplaceAssetCell,
     AvailableAssetBlock,
     BuildFilterModal,
     ButtonHrefLink,
@@ -535,7 +576,12 @@ export default {
       },
       columnWidth: {},
       assetToEdit: {},
-      copyEntity: null
+      copyEntity: null,
+      isReplaceAsset: false,
+      dropEntry: null,
+      sourceAsset: null,
+      targetAsset: null,
+      isReplacingAsset: false
     }
   },
 
@@ -619,7 +665,9 @@ export default {
       }
       return options
     },
-
+    selectedAsset() {
+      return Object.keys(this.selection).filter(key => this.selection[key])
+    },
     availableAssetsByType() {
       const result = []
       this.assetsByType.forEach(typeGroup => {
@@ -787,7 +835,8 @@ export default {
       'setCurrentEpisode',
       'setEntityCasting',
       'setLastProductionScreen',
-      'uploadCastingFile'
+      'uploadCastingFile',
+      'replaceCasting'
     ]),
 
     reset() {
@@ -808,6 +857,11 @@ export default {
       this.assetToEdit = asset
       this.modals.isNewDisplayed = true
     },
+
+    onDragStart(entry) {
+      this.dropEntry = entry
+    },
+
     async reloadEntities() {
       this.isLoading = true
       await this.loadSequences()
@@ -1331,20 +1385,47 @@ export default {
         }
       }
     },
+    async replaceAsset() {
+      this.isReplacingAsset = true
+      const entityIds = Object.keys(this.selection).filter(
+        key => this.selection[key]
+      )
+      const data_list = []
+      for (const entityId of entityIds) {
+        if (this.casting[entityId]) {
+          if (
+            this.casting[entityId].find(
+              cast => cast.asset_id === this.sourceAsset.id
+            )
+          )
+            data_list.push({
+              entity_id: entityId,
+              asset_from_id: this.sourceAsset.id,
+              asset_to_id: this.targetAsset.id
+            })
+        }
+      }
+      const res = await this.replaceCasting(data_list)
+      if (res) {
+        Object.keys(res).forEach(key => {
+          this.setEntityCasting({ entityId: key, casting: res[key] })
+        })
+        ElMessage.success('替换资产成功')
+      }
+      this.isReplacingAsset = false
+    },
     descriptorCurrentDepartments(descriptor) {
       const departemts = descriptor.departments || []
       return departemts.map(departmentId =>
         this.departmentMap.get(departmentId)
       )
     },
-
     getEntityName(entity) {
       return this.sequenceId === 'all' &&
         (!this.isTVShow || (this.isTVShow && this.currentEpisode.id !== 'all'))
         ? entity.sequence_name + ' / ' + entity.name
         : entity.name
     },
-
     getCsvFileName() {
       const nameData = [
         moment().format('YYYY-MM-DD'),
@@ -1390,7 +1471,6 @@ export default {
       }
       return stringHelpers.slugify(nameData.join('_'))
     },
-
     getCsvFileHeaders() {
       const headers = [
         this.$t('shots.fields.name'),
@@ -1410,7 +1490,6 @@ export default {
       })
       return headers.concat(this.castingAssetTypes)
     },
-
     getCsvEntries() {
       const entries = this.castingEntities.map(entity => {
         const entry = [entity.name, entity.is_casting_standby ? 'X' : '']
@@ -1455,18 +1534,15 @@ export default {
       })
       return entries
     },
-
     exportViewToCsv() {
       const entries = this.getCsvEntries()
       const name = this.getCsvFileName()
       const headers = this.getCsvFileHeaders()
       csv.buildCsvFile(name, [headers].concat(entries))
     },
-
     removeSearchQuery(searchQuery) {
       this.removeBreakdownSearch(searchQuery).catch(console.error)
     },
-
     saveSearchQuery(searchQuery) {
       if (this.loading.savingSearch) {
         return
@@ -1478,7 +1554,6 @@ export default {
           this.loading.savingSearch = false
         })
     },
-
     initResize(knobRefName, refName, descriptorId) {
       this.resizedKnobRefName = knobRefName + (descriptorId ? descriptorId : '')
       this.resizedRefName = refName + (descriptorId ? descriptorId : '')
@@ -1486,7 +1561,6 @@ export default {
       window.addEventListener('mousemove', this.startResizing)
       window.addEventListener('mouseup', this.stopResizing)
     },
-
     startResizing(event) {
       const knobRef = this.resizedKnobRefName
       const headerRef = this.resizedRefName
@@ -1513,7 +1587,6 @@ export default {
         preferences.setPreference(preferenceKey, newWidth)
       }
     },
-
     stopResizing() {
       window.removeEventListener('mousemove', this.startResizing)
       window.removeEventListener('mouseup', this.stopResizing)
@@ -1521,7 +1594,6 @@ export default {
       this.resizedRefName = null
       this.resizedDescriptorId = null
     },
-
     resetDisplayHeaders() {
       if (this.isEpisodeCasting) {
         this.metadataDisplayHeaders = {}
@@ -1545,7 +1617,6 @@ export default {
         }
       }
     },
-
     resetColumnWidth() {
       const namePreferenceKey =
         'breakdown:column-width-name-' +
@@ -1564,12 +1635,10 @@ export default {
         }
       })
     },
-
     onCastingHeaderScroll(event) {
       const position = event.target
       this.$refs['casting-list'].scrollLeft = position.scrollLeft
     },
-
     onCastingScroll(event) {
       const position = event.target
       this.$refs['casting-header'].scrollLeft = position.scrollLeft
@@ -1951,5 +2020,24 @@ export default {
 
 .query-list {
   margin-bottom: 0.5em;
+}
+
+.replace-asset {
+  display: flex;
+  height: 150px;
+  flex-direction: row;
+  justify-content: center;
+  align-items: center;
+  gap: 10px;
+  margin-left: 20px;
+  margin-top: 20px;
+}
+
+.replace-asset-cell {
+}
+
+.replace_asset-button {
+  display: flex;
+  justify-content: end;
 }
 </style>

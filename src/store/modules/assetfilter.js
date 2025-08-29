@@ -338,7 +338,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       }
     },
     addTaskType: (ch, asset) => {
-      if (asset) {
+      if (asset && !asset.canceled) {
         asset.tasks.forEach(task_id => {
           const task = tasksStore.state.taskMap.get(task_id)
           if (task.task_status_id !== '4ffc748e-4e58-4336-ba83-51910253514e') {

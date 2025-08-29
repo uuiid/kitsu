@@ -175,7 +175,10 @@ const actions = {
   setEntityCasting({ commit, rootState }, { entityId, casting }) {
     commit(CASTING_SET_ENTITY_CASTING, { entityId, casting })
   },
-
+  replaceCasting({ commit, rootGetters }, data_list) {
+    const production = rootGetters.currentProduction
+    return breakdownApi.replaceCasting(production.id, data_list)
+  },
   saveCasting({ commit, rootGetters }, entityId) {
     if (!entityId) {
       return console.error('ShotId is undefined, no casting can be saved.')

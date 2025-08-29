@@ -49,6 +49,7 @@
     <link-icon class="icon" v-else-if="icon === 'link'" />
     <clock-icon class="icon" v-else-if="icon === 'clock'" />
     <scan-search class="icon" v-else-if="icon === 'scan'" />
+    <replace-icon class="icon" v-else-if="icon === 'replace'" />
     <refresh-ccw-icon
       class="icon"
       :stroke-width="1.2"
@@ -107,6 +108,7 @@ import {
   PauseIcon,
   PlusIcon,
   RefreshCcwIcon,
+  ReplaceIcon,
   SaveIcon,
   ScanSearch,
   SendIcon,
@@ -153,6 +155,7 @@ export default {
     PauseIcon,
     PlusIcon,
     RefreshCcwIcon,
+    ReplaceIcon,
     SaveIcon,
     ScanSearch,
     SendIcon,

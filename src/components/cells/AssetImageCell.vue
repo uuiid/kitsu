@@ -9,6 +9,18 @@ defineProps({
   src: {
     type: String,
     default: ''
+  },
+  isShow: {
+    type: Boolean,
+    default: true
+  },
+  imageWidth: {
+    type: Number,
+    default: 93
+  },
+  imageHeight: {
+    type: Number,
+    default: 93
   }
 })
 const isShowActon = ref(false)
@@ -19,11 +31,12 @@ const isShowActon = ref(false)
     class="image-cell"
     @mouseenter="src !== '' ? (isShowActon = true) : false"
     @mouseleave="isShowActon = false"
+    :style="`max-height: ${imageHeight}px;min-height: ${imageWidth}px;`"
   >
     <ai-image-action
-      v-if="isShowActon && src !== ''"
+      v-if="isShowActon && src !== '' && isShow"
       @remove="src === ''"
-      :style="`width:80px;height:80px;border-radius: 5px;`"
+      :style="`width:${imageWidth}px;height:${imageHeight}px;border-radius: 5px;`"
     >
       <template #action>
         <el-icon
@@ -73,8 +86,6 @@ const isShowActon = ref(false)
   position: relative;
   align-items: center;
   justify-content: center;
-  max-height: 95px;
-  min-height: 95px;
   width: 100%;
   border-radius: 5px 5px 0 0;
   background: var(--background-alt-3);

@@ -25,6 +25,7 @@ const extendWidth = ref({
 })
 
 const selfPosition = ref(0)
+
 const onExtendDown = event => {
   extendWidth.value.isStartHandle = true
   extendWidth.value.startWidth = event.clientX
@@ -160,9 +161,13 @@ watch(filterText, val => {
                   no-padding
                   only-dot
                   :key="task_type_id"
-                  v-for="task_type_id in Array.from(
-                    node.data.all_task_type_ids
-                  ).filter(id => !node.data.task_type_ids.has(id))"
+                  v-for="task_type_id in Array.from(node.data.all_task_type_ids)
+                    .filter(id => !node.data.task_type_ids.has(id))
+                    .sort(
+                      (a, b) =>
+                        taskType.cache.taskTypeMap.get(a).priority -
+                        taskType.cache.taskTypeMap.get(b).priority
+                    )"
                 />
               </div>
               <div class="tag-container">
