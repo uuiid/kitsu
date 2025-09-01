@@ -6,6 +6,7 @@ const emit = defineEmits(['drag-end'])
 const assetEntry = ref(null)
 const isEnterShow = ref(false)
 const isError = ref(false)
+const dragCounter = ref(0)
 const props = defineProps({
   entry: {
     type: Object,
@@ -40,6 +41,8 @@ function onDragOver(event) {
 }
 
 function onDragEnter(event) {
+  event.preventDefault()
+  dragCounter.value++
   isEnterShow.value = true
   if (props.isSource) {
     isError.value = true
@@ -56,8 +59,11 @@ function onDragEnter(event) {
 }
 
 function onDragLeave(e) {
-  isEnterShow.value = false
-  isError.value = false
+  dragCounter.value--
+  if (dragCounter.value === 0) {
+    isEnterShow.value = false
+    isError.value = false
+  }
 }
 </script>
 
