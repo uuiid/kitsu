@@ -294,12 +294,7 @@
           </button-simple>
         </div>
       </div>
-      <div
-        ref="asset-list"
-        @scroll.passive="onAssetListScroll"
-        class="breakdown-column assets-column"
-        v-if="isCurrentUserManager"
-      >
+      <div class="breakdown-column assets-column" v-if="isCurrentUserManager">
         <h2 class="subtitle">
           {{ $t('breakdown.all_assets') }}
         </h2>
@@ -312,7 +307,6 @@
             v-if="!isOnlyCurrentEpisode"
           />
           <span class="filler"></span>
-
           <button-simple
             class="flexrow-item"
             :text="$t('breakdown.show_library')"
@@ -327,6 +321,13 @@
             :is-on="isOnlyCurrentEpisode"
             @click="isOnlyCurrentEpisode = !isOnlyCurrentEpisode"
             v-if="sequenceId !== 'all'"
+          />
+          <combobox
+            class="flexrow-item"
+            :options="assetTypeOptions"
+            v-model="assetTypeFilters.value"
+            @change="onAssetTypeChange"
+            style="max-height: 0.5rem"
           />
         </div>
 
@@ -357,28 +358,47 @@
         <spinner v-if="isAssetsLoading" />
         <template v-else>
           <div
-            class="type-assets"
-            :key="typeAssets.length > 0 ? typeAssets[0].asset_type_name : ''"
-            v-for="typeAssets in availableAssetsByType"
+            ref="asset-list"
+            class="asset-list-root"
+            @scroll.passive="onAssetListScroll"
           >
-            <div class="asset-type">
-              {{ typeAssets.length > 0 ? typeAssets[0].asset_type_name : '' }}
-            </div>
-            <div class="asset-list">
-              <available-asset-block
-                :key="asset.id"
-                :asset="asset"
-                :draggable="true"
-                :active="Object.keys(selection).length > 0"
-                :text-mode="isTextMode"
-                :big-mode="isBigMode"
-                @add-one="addOneAsset"
-                @add-ten="addTenAssets"
-                @show-info="showAssetInfo"
-                @dragstart="onDragStart(asset)"
-                v-for="asset in typeAssets"
-                v-show="libraryDisplayed || !asset.shared"
-              />
+            <div
+              class="type-assets"
+              :key="typeAssets.length > 0 ? typeAssets[0].asset_type_name : ''"
+              v-for="typeAssets in availableAssetsByType"
+            >
+              <div class="asset-type">
+                <span>
+                  {{
+                    typeAssets.length > 0 ? typeAssets[0].asset_type_name : ''
+                  }}
+                </span>
+                <chevron-right v-if="false"></chevron-right>
+                <chevron-down v-if="false"></chevron-down>
+              </div>
+              <div
+                class="asset-list"
+                v-show="
+                  !assetTypeExpanded.has(
+                    typeAssets.length > 0 ? typeAssets[0].asset_type_name : ''
+                  )
+                "
+              >
+                <available-asset-block
+                  :key="asset.id"
+                  :asset="asset"
+                  :draggable="true"
+                  :active="Object.keys(selection).length > 0"
+                  :text-mode="isTextMode"
+                  :big-mode="isBigMode"
+                  @add-one="addOneAsset"
+                  @add-ten="addTenAssets"
+                  @show-info="showAssetInfo"
+                  @dragstart="onDragStart(asset)"
+                  v-for="asset in typeAssets"
+                  v-show="libraryDisplayed || !asset.shared"
+                />
+              </div>
             </div>
           </div>
         </template>
@@ -460,6 +480,7 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import moment from 'moment'
+import { ChevronRight, ChevronDown } from 'lucide-vue-next'
 
 import csv from '@/lib/csv'
 import clipboard from '@/lib/clipboard'
@@ -488,6 +509,7 @@ import Spinner from '@/components/widgets/Spinner.vue'
 import TableMetadataSelectorMenu from '@/components/widgets/TableMetadataSelectorMenu.vue'
 import { ElMessage } from 'element-plus'
 import ReplaceAssetCell from '@/components/cells/ReplaceAssetCell.vue'
+import Combobox from '@/components/widgets/Combobox.vue'
 
 export default {
   name: 'breakdown',
@@ -495,11 +517,13 @@ export default {
   mixins: [entityListMixin, searchMixin],
 
   components: {
-    ReplaceAssetCell,
+    Combobox,
     AvailableAssetBlock,
     BuildFilterModal,
     ButtonHrefLink,
     ButtonSimple,
+    ChevronDown,
+    ChevronRight,
     ComboboxStyled,
     DeleteModal,
     DepartmentName,
@@ -507,6 +531,7 @@ export default {
     EditLabelModal,
     ImportModal,
     ImportRenderModal,
+    ReplaceAssetCell,
     SearchField,
     SearchQueryList,
     ShotLine,
@@ -581,7 +606,12 @@ export default {
       dropEntry: null,
       sourceAsset: null,
       targetAsset: null,
-      isReplacingAsset: false
+      isReplacingAsset: false,
+      assetTypeExpanded: new Set(),
+      assetTypeFilters: {
+        operator: '=',
+        value: ''
+      }
     }
   },
 
@@ -636,7 +666,9 @@ export default {
       'isTVShow',
       'sequenceMap',
       'shotMap',
-      'shotMetadataDescriptors'
+      'shotMetadataDescriptors',
+      'productionAssetTypes',
+      'assetTypeMap'
     ]),
 
     searchField() {
@@ -793,6 +825,17 @@ export default {
         : ['Name', 'Asset Type', 'Asset']
     },
 
+    assetTypeOptions() {
+      return [
+        { label: this.$t('entities.build_filter.all_types'), value: '-' },
+        ...this.productionAssetTypes
+          .filter(assetType => assetType !== undefined)
+          .map(assetType => ({
+            label: assetType.name,
+            value: assetType.id
+          }))
+      ]
+    },
     metadataDescriptors() {
       if (this.isEpisodeCasting) {
         return []
@@ -857,11 +900,18 @@ export default {
       this.assetToEdit = asset
       this.modals.isNewDisplayed = true
     },
-
+    onAssetTypeChange() {
+      let searchQuery = ''
+      this.setAssetSearch(searchQuery)
+      if (this.assetTypeFilters.value !== '-') {
+        const assetType = this.assetTypeMap.get(this.assetTypeFilters.value)
+        searchQuery = `type=[${assetType.name}]`
+      }
+      this.confirmBuildFilter(searchQuery)
+    },
     onDragStart(entry) {
       this.dropEntry = entry
     },
-
     async reloadEntities() {
       this.isLoading = true
       await this.loadSequences()
@@ -1858,6 +1908,7 @@ export default {
 
 .assets-column {
   max-width: 460px;
+  overflow: hidden;
 }
 
 .asset-type,
@@ -2033,11 +2084,18 @@ export default {
   margin-top: 20px;
 }
 
-.replace-asset-cell {
-}
-
 .replace_asset-button {
   display: flex;
   justify-content: end;
+}
+
+.asset-list-root {
+  overflow-y: auto;
+}
+
+.asset-type {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
 }
 </style>
