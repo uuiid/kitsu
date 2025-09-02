@@ -231,7 +231,8 @@ export default {
       'editMetadataDescriptors',
       'productionAssetTypeOptions',
       'currentProduction',
-      'productionAssetTaskTypes'
+      'productionAssetTaskTypes',
+      'assetTypes'
     ]),
     displayParsedCsv() {
       if (this.parsedCsv.length !== 0) {
@@ -316,7 +317,6 @@ export default {
       })
       return list
     },
-
     columnOptions() {
       const options = [
         {

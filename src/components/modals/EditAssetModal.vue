@@ -18,6 +18,7 @@
         <el-image
           :src="`/api/pictures/originals/preview-files/${assetToEdit.preview_file_id}.png`"
           style="width: auto; height: auto"
+          v-if="assetToEdit && assetToEdit.preview_file_id"
         />
         <form @submit.prevent>
           <combobox

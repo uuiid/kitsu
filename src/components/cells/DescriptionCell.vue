@@ -35,12 +35,25 @@
           <textarea
             class="tooltip-editor"
             ref="text"
-            :value="entry.description"
+            :value="stripHtml"
             @keyup.esc="onClick"
             @keyup.ctrl.enter="onDoubleClick"
+            @mouseup="onMouseup"
+            @mousedown="showPopover = false"
             v-else
           >
           </textarea>
+          <div
+            class="popover"
+            :style="`top:${popoverPosition.top}px;left:${popoverPosition.left}px`"
+            v-show="showPopover && isEditing"
+            @blur="showPopover = false"
+          >
+            <span>添加选择为标记</span>
+            <div class="popover-action">
+              <button class="button" @click="addMark">添加</button>
+            </div>
+          </div>
         </div>
       </teleport>
     </template>
@@ -60,7 +73,10 @@ export default {
     return {
       isEditing: false,
       isOpen: false,
-      tooltipPosition: { top: 0, left: 0 }
+      tooltipPosition: { top: 0, left: 0 },
+      showPopover: false,
+      popoverPosition: { top: 0, left: 0 },
+      selectedText: ''
     }
   },
 
@@ -83,7 +99,11 @@ export default {
 
   computed: {
     ...mapGetters(['isDarkTheme']),
-
+    stripHtml() {
+      const div = document.createElement('div')
+      div.innerHTML = this.entry.description
+      return div.textContent || div.innerText || ''
+    },
     tooltipStyle() {
       return {
         top: this.tooltipPosition.top + 'px',
@@ -118,11 +138,10 @@ export default {
         } else if (this.isEditing) {
           this.isEditing = false
           const val = this.$refs.text.value
-          this.$emit('description-changed', val)
+          if (val !== this.stripHtml) this.$emit('description-changed', val)
         }
       }
     },
-
     onDoubleClick() {
       if (this.editable) {
         if (this.isEditing) {
@@ -136,6 +155,35 @@ export default {
           })
         }
       }
+    },
+    onMouseup(event) {
+      this.popoverPosition.top = event.layerY - 40
+      this.popoverPosition.left = event.layerX + 10
+      this.$nextTick(() => {
+        const start = this.$refs.text.selectionStart
+        const end = this.$refs.text.selectionEnd
+        if (start !== end) {
+          this.selectedText = this.$refs.text.value.substring(start, end)
+          if (this.selectedText) this.showPopover = true
+        }
+      })
+    },
+    addMark() {
+      const newDescription =
+        this.$refs.text.value.substring(0, this.$refs.text.selectionStart) +
+        `<span>` +
+        this.$refs.text.value.substring(
+          this.$refs.text.selectionStart,
+          this.$refs.text.selectionEnd
+        ) +
+        `</span>` +
+        this.$refs.text.value.substring(
+          this.$refs.text.selectionEnd,
+          this.$refs.text.textLength
+        )
+      this.showPopover = false
+      this.isEditing = false
+      this.$emit('description-changed', newDescription)
     }
   }
 }
@@ -182,6 +230,10 @@ export default {
     padding: 0.5em;
     overflow-y: auto;
     height: 80px;
+
+    :deep(span) {
+      color: red;
+    }
   }
 
   .tooltip-editor {
@@ -215,5 +267,23 @@ export default {
 .c-mask {
   width: 100%;
   height: 100%;
+}
+
+.popover {
+  z-index: 1000;
+  position: absolute;
+  background: var(--background);
+  border-radius: 5px;
+  padding: 5px;
+  box-shadow: 0 0 3px 0 $grey;
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+}
+
+.popover-action {
+  display: flex;
+  flex-direction: row;
+  gap: 5px;
 }
 </style>
