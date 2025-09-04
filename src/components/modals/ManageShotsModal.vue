@@ -390,7 +390,7 @@ export default {
 
     addShot() {
       if (this.isAddShotAllowed && !this.loading.addShot) {
-        const shotName = `SC${this.names.shot}`
+        const shotName = `SC${String(Number(this.names.shot)).padStart(3, '0')}`
         this.loading.addShot = true
         if (shotName.length > 0 && this.selectedSequenceId) {
           const shot = {
@@ -412,7 +412,7 @@ export default {
 
     addShot10() {
       if (this.isAddShotAllowed && !this.loading.addShot) {
-        const shotName = `SC${this.names.shot}`
+        const shotName = `SC${String(Number(this.names.shot)).padStart(3, '0')}`
         const number = shotName.replace(/\D/g, '')
         if (number.length > 0) {
           const val = parseInt(number)
@@ -430,6 +430,7 @@ export default {
                   sequence_id: this.selectedSequenceId,
                   project_id: this.currentProduction.id
                 }
+                console.log(shot)
                 this.$emit('add-shot', shot, shot => {
                   this.loading.addShot = false
                   this.selectSequence(this.selectedSequenceId)
