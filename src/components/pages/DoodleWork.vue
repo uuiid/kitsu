@@ -167,6 +167,18 @@ const pagedAssets = ref([
     hidden: false
   },
   {
+    id: 12,
+    name: 'ai_3D_model',
+    label: 'AI3D模型',
+    textIcon: 'M',
+    disabled: true,
+    description: '',
+    color: '#0087b8',
+    isVisible: true,
+    isBaseTemplate: false,
+    hidden: false
+  },
+  {
     id: 1,
     name: 'export_fbx',
     label: '自动动画',
