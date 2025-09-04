@@ -158,7 +158,7 @@ const pagedAssets = ref([
     id: 12,
     name: 'ai_video',
     label: 'AI视频创作',
-    textIcon: 'Y',
+    textIcon: 'V',
     disabled: true,
     description: '',
     color: '#00b865',
