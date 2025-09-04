@@ -313,7 +313,7 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
         const path = require('path')
         const filePath = path.join(
           action.aiGenerateFileRootPath(),
-          'txt2Video',
+          'image2Video',
           data.task_id + '.mp4'
         )
         await action.saveVideo(res.data.video_url, filePath)
@@ -354,6 +354,7 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       return { authorization: sign(signParams), signParams: params }
     },
     async saveObjectFromUrl(url, filename) {
+      console.log(url, filename)
       const fs = require('fs')
       const https = require('https')
       const path = require('path')

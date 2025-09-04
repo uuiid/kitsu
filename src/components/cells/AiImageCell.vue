@@ -69,6 +69,7 @@ const isShow = ref(false)
 
 const download = async index => {
   const url = props.srcList[index]
+  console.log(url)
   if (!url) return
   const response = await fetch(url)
   const contentLength = +response.headers.get('Content-Length')
