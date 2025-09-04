@@ -295,7 +295,7 @@ export default {
 
   head() {
     return {
-      title: `${this.$t('settings.title')} - Kitsu`
+      title: `${this.$t('settings.title')}`
     }
   }
 }

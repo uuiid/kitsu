@@ -1839,11 +1839,11 @@ export default {
         title:
           `${this.currentProduction?.name || ''}` +
           ` - ${this.currentEpisode?.name || ''}` +
-          ` | ${this.$t('breakdown.title')} - Kitsu`
+          ` | ${this.$t('breakdown.title')}`
       }
     }
     return {
-      title: `${this.currentProduction.name} | ${this.$t('breakdown.title')} - Kitsu`
+      title: `${this.currentProduction.name} | ${this.$t('breakdown.title')}`
     }
   }
 }

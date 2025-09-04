@@ -190,7 +190,7 @@ export default {
 
   head() {
     return {
-      title: `${this.$t('productions.title')} - Kitsu`
+      title: `${this.$t('productions.title')}`
     }
   }
 }

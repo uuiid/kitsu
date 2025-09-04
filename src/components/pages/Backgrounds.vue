@@ -178,7 +178,7 @@ export default {
 
   head() {
     return {
-      title: `${this.$t('backgrounds.title')} - Kitsu`
+      title: `${this.$t('backgrounds.title')}`
     }
   }
 }

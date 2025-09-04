@@ -565,7 +565,7 @@ export default {
 
   head() {
     return {
-      title: `${this.$t('timesheets.title')} - Kitsu`
+      title: `${this.$t('timesheets.title')}`
     }
   }
 }

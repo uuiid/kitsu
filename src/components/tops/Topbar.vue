@@ -169,7 +169,7 @@
           }}
         </li>
         <li>
-          <a href="/doodle.exe" download="doodle.exe" v-if="!isElectron">
+          <a href="/索以魔盒.exe" download="索以魔盒.exe" v-if="!isElectron">
             {{ $t('doodle.download') }}
           </a>
         </li>

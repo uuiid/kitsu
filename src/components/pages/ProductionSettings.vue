@@ -349,9 +349,7 @@ export default {
 
   head() {
     return {
-      title: `${this.currentProduction.name} | ${this.$t(
-        'settings.title'
-      )} - Kitsu`
+      title: `${this.currentProduction.name} | ${this.$t('settings.title')}`
     }
   }
 }
@@ -361,9 +359,11 @@ export default {
 .datatable th {
   color: var(--text);
 }
+
 p {
   color: var(--text);
 }
+
 .fixed-page {
   display: flex;
 }

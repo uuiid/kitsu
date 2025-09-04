@@ -300,13 +300,13 @@ export default {
         title:
           `${this.currentProduction ? this.currentProduction.name : ''}` +
           ` - ${this.currentEpisode ? this.currentEpisode.name : ''}` +
-          ` | ${this.$t('sequences.title')} - Kitsu`
+          ` | ${this.$t('sequences.title')}`
       }
     } else {
       return {
         title:
           `${this.currentProduction ? this.currentProduction.name : ''}` +
-          ` | ${this.$t('sequences.title')} - Kitsu`
+          ` | ${this.$t('sequences.title')}`
       }
     }
   }

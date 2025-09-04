@@ -203,7 +203,7 @@ export default {
 
   head() {
     return {
-      title: `${this.$t('schedule.title_main')} - Kitsu`
+      title: `${this.$t('schedule.title_main')}`
     }
   }
 }

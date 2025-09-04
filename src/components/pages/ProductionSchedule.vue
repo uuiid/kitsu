@@ -1309,8 +1309,7 @@ export default {
   head() {
     return {
       title:
-        `${this.currentProduction.name} ` +
-        `| ${this.$t('schedule.title')} - Kitsu`
+        `${this.currentProduction.name} ` + `| ${this.$t('schedule.title')}`
     }
   }
 }
@@ -1452,9 +1451,11 @@ export default {
         opacity: 1;
       }
     }
+
     td {
       padding: 0.5em;
     }
+
     tbody {
       background: var(--background);
 
@@ -1462,11 +1463,13 @@ export default {
         border: 1px solid var(--border);
       }
     }
+
     .assignee {
       display: flex;
       justify-content: space-between;
       align-items: center;
     }
+
     .person {
       display: flex;
       align-items: center;
@@ -1477,6 +1480,7 @@ export default {
   .daily-quotas {
     width: 50px;
   }
+
   .reset-quotas {
     opacity: 0.5;
 

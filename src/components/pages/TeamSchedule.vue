@@ -746,7 +746,7 @@ export default {
 
   head() {
     return {
-      title: `${this.$t('team_schedule.title_main')} - Kitsu`
+      title: `${this.$t('team_schedule.title_main')}`
     }
   }
 }

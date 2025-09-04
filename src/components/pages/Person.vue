@@ -811,7 +811,7 @@ export default {
 
   head() {
     return {
-      title: `${this.person?.name || '...'} - Kitsu`
+      title: `${this.person?.name || '...'}`
     }
   },
 

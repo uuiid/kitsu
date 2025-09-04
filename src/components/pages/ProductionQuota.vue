@@ -570,7 +570,7 @@ export default {
   head() {
     const prodName = this.currentProduction.name
     return {
-      title: `${prodName} | ${this.$t('quota.title')} - Kitsu`
+      title: `${prodName} | ${this.$t('quota.title')}`
     }
   }
 }

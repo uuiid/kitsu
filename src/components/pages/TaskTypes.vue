@@ -265,7 +265,7 @@ export default {
 
   head() {
     return {
-      title: `${this.$t('task_types.title')} - Kitsu`
+      title: `${this.$t('task_types.title')}`
     }
   }
 }

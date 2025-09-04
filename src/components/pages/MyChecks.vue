@@ -391,7 +391,7 @@ export default {
 
   head() {
     return {
-      title: `${this.$t('tasks.my_checks')} - Kitsu`
+      title: `${this.$t('tasks.my_checks')}`
     }
   }
 }

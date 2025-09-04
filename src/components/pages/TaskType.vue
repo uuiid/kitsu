@@ -1659,7 +1659,7 @@ export default {
 
   head() {
     return {
-      title: `${this.title} - Kitsu`
+      title: `${this.title}`
     }
   }
 }

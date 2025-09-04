@@ -222,7 +222,7 @@ export default {
 
   head() {
     return {
-      title: `${this.$t('asset_types.title')} - Kitsu`
+      title: `${this.$t('asset_types.title')}`
     }
   }
 }

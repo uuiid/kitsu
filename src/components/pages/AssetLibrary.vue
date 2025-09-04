@@ -256,7 +256,7 @@ export default {
 
   head() {
     return {
-      title: `${this.$t('library.asset_library')} - Kitsu`
+      title: `${this.$t('library.asset_library')}`
     }
   }
 }

@@ -231,7 +231,7 @@ export default {
     return {
       title: `${this.currentProduction.name} | ${this.$t(
         'asset_types.production_title'
-      )} - Kitsu`
+      )}`
     }
   }
 }

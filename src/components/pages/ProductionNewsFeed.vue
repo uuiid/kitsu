@@ -752,11 +752,11 @@ export default {
   head() {
     if (this.currentProduction) {
       return {
-        title: `${this.currentProduction.name} | ${this.$t('news.title')} - Kitsu`
+        title: `${this.currentProduction.name} | ${this.$t('news.title')}`
       }
     } else {
       return {
-        title: `${this.$t('news.title')} - Kitsu`
+        title: `${this.$t('news.title')}`
       }
     }
   }

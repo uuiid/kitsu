@@ -243,7 +243,7 @@ export default {
 
   head() {
     return {
-      title: `${this.$t('status_automations.title')} - Kitsu`
+      title: `${this.$t('status_automations.title')}`
     }
   }
 }

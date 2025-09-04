@@ -1471,10 +1471,10 @@ export default {
   },
 
   head() {
-    let title = 'Loading task... - Kitsu'
+    let title = 'Loading task...'
     if (this.task) {
       const taskTypeName = this.taskTypeMap.get(this.task.task_type_id).name
-      title = `${this.title} / ${taskTypeName} - Kitsu`
+      title = `${this.title} / ${taskTypeName}`
     }
     return { title }
   }

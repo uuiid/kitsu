@@ -1230,16 +1230,16 @@ export default {
         title:
           `${this.currentProduction?.name || ''}` +
           ` - ${this.currentEpisode?.name || ''}` +
-          ` | ${this.$t('shots.title')} - Kitsu`
+          ` | ${this.$t('shots.title')}`
       }
     }
     if (!this.currentProduction) {
       return {
-        title: `${this.$t('shots.title')} - Kitsu`
+        title: `${this.$t('shots.title')}`
       }
     }
     return {
-      title: `${this.currentProduction.name} | ${this.$t('shots.title')} - Kitsu`
+      title: `${this.currentProduction.name} | ${this.$t('shots.title')}`
     }
   }
 }

@@ -448,7 +448,7 @@ export default {
 
   head() {
     return {
-      title: `${this.currentProduction.name} | ${this.$t('concepts.title')} - Kitsu`
+      title: `${this.currentProduction.name} | ${this.$t('concepts.title')}`
     }
   }
 }

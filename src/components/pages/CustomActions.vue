@@ -190,7 +190,7 @@ export default {
 
   head() {
     return {
-      title: `${this.$t('custom_actions.title')} - Kitsu`
+      title: `${this.$t('custom_actions.title')}`
     }
   }
 }

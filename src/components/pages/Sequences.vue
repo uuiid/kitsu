@@ -716,11 +716,11 @@ export default {
         title:
           `${this.currentProduction?.name || ''}` +
           ` - ${this.currentEpisode?.name || ''}` +
-          ` | ${this.$t('sequences.title')} - Kitsu`
+          ` | ${this.$t('sequences.title')}`
       }
     }
     return {
-      title: `${this.currentProduction.name} | ${this.$t('sequences.title')} - Kitsu`
+      title: `${this.currentProduction.name} | ${this.$t('sequences.title')}`
     }
   }
 }
