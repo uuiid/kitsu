@@ -364,8 +364,8 @@ export const sortEditResult = (result, sorting, taskTypeMap, taskMap) => {
 }
 
 const getMetadataValues = (sortInfo, a, b, defaultValue = '') => {
-  let dataA = a.data?.[sortInfo.column] ?? defaultValue
-  let dataB = b.data?.[sortInfo.column] ?? defaultValue
+  let dataA = a?.[sortInfo.column] ?? defaultValue
+  let dataB = b?.[sortInfo.column] ?? defaultValue
 
   if (typeof dataA === 'number') dataA = String(dataA)
   if (typeof dataB === 'number') dataB = String(dataB)
