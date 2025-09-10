@@ -7,7 +7,9 @@ import i18n from '@/lib/i18n.js'
 import Combobox from '@/components/widgets/Combobox.vue'
 
 const doodleWork = doodleWorkStore()
-doodleWork.actions.getToolVersions()
+doodleWork.actions.getToolVersions().then(() => {
+  doodleWork.state.isVisitor ? doodleWork.actions.pullProcess() : null
+})
 const readonlyFields = ['UE_version']
 
 const displayFields = computed(() => {
