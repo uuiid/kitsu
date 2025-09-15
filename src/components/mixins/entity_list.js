@@ -53,7 +53,8 @@ export const entityListMixin = {
       return this.visibleMetadataDescriptors.filter(
         descriptor =>
           !this.stickedColumns[descriptor.id] &&
-          this.metadataDescriptorIsInDepartmentFilter(descriptor)
+          this.metadataDescriptorIsInDepartmentFilter(descriptor) &&
+          this.filterMetadataDescriptors(descriptor)
       )
     },
 
@@ -97,7 +98,16 @@ export const entityListMixin = {
       const position = event.target
       this.$emit('scroll', position.scrollTop)
     },
-
+    filterMetadataDescriptors(descriptor) {
+      if (descriptor.field_name === 'chang_ci') {
+        if (
+          this.currentProduction.id !== 'a69c8061-a88c-4bd8-8060-b35704f5efad'
+        ) {
+          return false
+        }
+      }
+      return true
+    },
     updateOffsets() {
       if (this.isLoading) {
         return

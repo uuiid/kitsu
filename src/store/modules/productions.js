@@ -118,6 +118,16 @@ const initialState = {
         choices: [],
         departments: [],
         entity_type: 'Asset',
+        field_name: 'chang_ci',
+        for_client: false,
+        id: 'b79078f2-5103-44d6-9322-86b1234424f6',
+        name: '场次'
+      },
+      {
+        data_type: 'number',
+        choices: [],
+        departments: [],
+        entity_type: 'Asset',
         field_name: 'ji_shu_lie',
         for_client: false,
         id: 'ff99e94f-6abb-4a89-abae - 9b5a571ddf8f',
