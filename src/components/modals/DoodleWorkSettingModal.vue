@@ -114,7 +114,6 @@ const onConfirm = async () => {
           v-for="(value, key) in displayFields"
           :model-value="value"
           v-model="displayFields[key]"
-          v-show="key !== 'authorize' && value !== 'true'"
           @change="val => onTextChange(val, key)"
         />
         <text-field
