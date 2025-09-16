@@ -387,7 +387,10 @@ PYTHONPATH+:= scripts`
             !(
               fs.existsSync(
                 `${doodleWork.doodleWorkFilePath}\\${doodleSourceName}`
-              ) || fs.existsSync(`${doodleWork.doodleWorkFilePath}\\Doodle`)
+              ) ||
+              fs.existsSync(
+                `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}\\Doodle`
+              )
             )
           ) {
             let downloadSuccess = true
@@ -417,7 +420,7 @@ PYTHONPATH+:= scripts`
               messagePrefix.value = '正在解压文件1 '
               await doodleWork.actions.zipFile(
                 buffer,
-                doodleWork.doodleWorkFilePath,
+                `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}`,
                 ({ percent }) => {
                   if (percent) {
                     DownloadProgress.value = percent
@@ -427,7 +430,7 @@ PYTHONPATH+:= scripts`
               messagePrefix.value = '正在解压文件2 '
               await doodleWork.actions.zipFile(
                 SideFX_buffer,
-                doodleWork.doodleWorkFilePath,
+                `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}`,
                 ({ percent }) => {
                   if (percent) {
                     DownloadProgress.value = percent
@@ -440,7 +443,7 @@ PYTHONPATH+:= scripts`
                 title: i18n.global.t('doodle_work.install_fail'),
                 message:
                   '找不到ue源路径:' +
-                  `${doodleWork.doodleWorkFilePath}\\${doodleSourceName}`,
+                  `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}\\${doodleSourceName}`,
                 type: 'error'
               })
             }
@@ -450,14 +453,18 @@ PYTHONPATH+:= scripts`
             plugin.installState = false
             if (!downloadSuccess) return
           }
-          if (fs.existsSync(`${doodleWork.doodleWorkFilePath}\\Doodle`))
+          if (
+            fs.existsSync(
+              `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}\\Doodle`
+            )
+          )
             doodleSourceName = 'Doodle'
           const subPlugins = [
             { sourceName: 'SideFX_Labs', destName: 'SideFX_Labs' },
             { sourceName: doodleSourceName, destName: 'Doodle' }
           ]
           for (const subPlugin of subPlugins) {
-            const sourcePath = `${doodleWork.doodleWorkFilePath}\\${subPlugin.sourceName}`
+            const sourcePath = `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}\\${subPlugin.sourceName}`
             const destPath = `${doodleWork.state.doodleWorkSetting.UE_path}\\Engine\\Plugins\\${subPlugin.destName}`
             doodleWork.actions.copyFolder(sourcePath, destPath)
           }
