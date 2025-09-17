@@ -1,10 +1,11 @@
 <script setup>
-import { ref, watchEffect, onMounted, nextTick, watch } from 'vue'
+import { ref, watchEffect, onMounted, nextTick, watch, computed } from 'vue'
 import { assetFilterStore } from '@/store/modules/assetfilter.js'
 import { ChevronLeft, ChevronRight } from 'lucide-vue-next'
 import DepartmentName from '@/components/widgets/DepartmentName.vue'
 import departments from '@/store/modules/departments.js'
 import taskType from '@/store/modules/tasktypes.js'
+import productions from '@/store/modules/productions.js'
 
 const treeRef = ref()
 const defaultProps = {
@@ -25,6 +26,16 @@ const extendWidth = ref({
 })
 
 const selfPosition = ref(0)
+const displayTreeData = computed(() => {
+  return assetFilter.state.treeFilterData.filter(
+    item =>
+      !(
+        item.id === 'chang_ci' &&
+        productions.state.currentProduction.id !==
+          'a69c8061-a88c-4bd8-8060-b35704f5efad'
+      )
+  )
+})
 
 const onExtendDown = event => {
   extendWidth.value.isStartHandle = true
@@ -133,7 +144,7 @@ watch(filterText, val => {
           ref="treeRef"
           style="max-width: 600px; height: 100%"
           class="filter-tree"
-          :data="assetFilter.state.treeFilterData"
+          :data="displayTreeData"
           :props="defaultProps"
           :show-checkbox="true"
           :check-on-click-node="true"

@@ -36,6 +36,12 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
     parent: null,
     isChecked: true
   })
+  state.value.assetFilters.set('chang_ci', {
+    id: 'chang_ci',
+    values: [],
+    parent: null,
+    isChecked: true
+  })
   state.value.assetFilters.set('task_status_id', {
     id: 'task_status_id',
     values: [],

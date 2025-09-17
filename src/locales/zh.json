@@ -1851,7 +1851,8 @@
         "gui_dang": "归档",
         "kai_shi_ji_shu": "开始集数",
         "assignees": "制作者",
-        "task_status_id": "任务状态"
+        "task_status_id": "任务状态",
+        "chang_ci": "场次"
       }
     },
     "ai_painting": {
