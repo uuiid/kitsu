@@ -22,9 +22,7 @@ const tests = computed(() => {
 })
 const disPlayTaskDataFiled = computed(() => {
   if (updateTaskFiles.doodleWorkCheckFiles) {
-    if (updateTaskFiles.doodleWorkCheckFiles.task_data_filed) {
-      return updateTaskFiles.doodleWorkCheckFiles.task_data_filed
-    }
+    return updateTaskFiles.doodleWorkCheckFiles.task_data_filed
   }
   return []
 })
@@ -34,6 +32,14 @@ const displayAllFiles = computed(() => {
   )
 })
 onMounted(() => {
+  if (
+    updateTaskFiles.state.selectedTask.task.task_type_id ===
+    '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
+  ) {
+    updateTaskFiles.doodleWorkCheckFiles.isShowFiled = true
+  } else {
+    updateTaskFiles.doodleWorkCheckFiles.isShowFiled = false
+  }
   if (doodleWorkStore().state.doodleSocket) {
     doodleWorkStore().state.doodleSocket.on(
       'doodle:task_info:update',
@@ -120,12 +126,10 @@ const onActions = async (action_name, task) => {
 }
 
 function getTargetPath(task, software_type = 'unreal_engine') {
-  console.log(task)
   return task.working_files.find(w => w.software_type === software_type)
 }
 
 function pathRule() {
-  console.log(updateTaskFiles.state.selectedTask)
   const pin_yin_ming_cheng =
     updateTaskFiles.state.selectedTask.entity.pin_yin_ming_cheng
   const bian_hao = updateTaskFiles.state.selectedTask.entity.bian_hao
@@ -397,7 +401,7 @@ function test() {
             v-for="type in updateTypes"
           />
         </el-radio-group>
-        <div class="task-data-filed" v-if="false">
+        <div class="task-data-filed">
           <div
             class="interval"
             v-if="

@@ -24,9 +24,15 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
       checked: true,
       type: Boolean
     })
+    this.task_data_filed.set('multi_uv_inspection', {
+      id: 'multi_uv_inspection',
+      name: '是否检查名称长度',
+      checked: true,
+      type: Boolean
+    })
     this.task_data_filed.set('name_length_check', {
       id: 'name_length_check',
-      name: '是否检查名称长度',
+      name: '检查是否有多uv的情况(默认勾选)',
       checked: true,
       type: Boolean
     })
@@ -41,8 +47,10 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
   }
 
   formatDataState(data) {
-    for (const [key, value] of this.task_data_filed) {
-      data.task_data[key] = value.checked
+    if (this.isShowFiled) {
+      for (const [key, value] of this.task_data_filed) {
+        data.task_data[key] = value.checked
+      }
     }
   }
 
