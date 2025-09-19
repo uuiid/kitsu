@@ -378,6 +378,7 @@ import TaskTypeName from '@/components/widgets/TaskTypeName.vue'
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 import { ElMessage } from 'element-plus'
 import errorText from '@/components/widgets/ErrorText.vue'
+import doodlework from '@/store/api/doodlework.js'
 
 const DEFAULT_PANEL_WIDTH = 400
 
@@ -893,6 +894,21 @@ export default {
         this.$store
           .dispatch(action, params)
           .then(() => {
+            if (navigator.userAgent.includes('Electron')) {
+              const mayaFilePath = doodlework.getMayaFilePath(this.task.id)
+              if (mayaFilePath) {
+                const path = require('path')
+                const dirName = path.dirname(
+                  path.join(this.production.path, mayaFilePath)
+                )
+                attachment.forEach(a => {
+                  updateTaskFilesStore().actions.copyFileWithProgress(
+                    a.get('file').path,
+                    path.join(dirName, path.basename(a.get('file').name))
+                  )
+                })
+              }
+            }
             drafts.clearTaskDraft(this.task.id)
             this.$refs['add-comment']?.reset()
             this.reset()

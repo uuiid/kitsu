@@ -68,5 +68,17 @@ export default {
   getDoodleFlags(id) {
     const path = `api/doodle/file_association/${id}`
     return client.pget(path)
+  },
+  getMayaFilePath(id) {
+    const path = `api/doodle/data/asset/${id}/file/maya`
+    return client.pget(path)
+  },
+  getUeFilePath(id) {
+    const path = `api/doodle/data/asset/${id}/file/ue`
+    return client.pget(path)
+  },
+  getImageFilePath(id) {
+    const path = `api/doodle/data/asset/${id}/file/image`
+    return client.pget(path)
   }
 }

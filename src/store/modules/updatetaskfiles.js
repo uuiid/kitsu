@@ -55,10 +55,7 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
       source_computer: '本机',
       submitter: user.state.user?.id || 'CB3b915c-2F16-cE9d-c2cE-b45B5ebb583a',
       run_computer_id: 'CB3b915c-2F16-cE9d-c2cE-b45B5ebb583C',
-      task_data: {
-        path: file.path,
-        category: 'model_maya'
-      },
+      task_data: file.task_data,
       type: this.name
     }
   }
@@ -139,23 +136,79 @@ export const updateTaskFilesStore = defineStore(
           }
         }
       },
+      handleCopyCompletion(task) {
+        task.status = 'updated'
+        task.end_time = new Date().toISOString()
+        state.value.loadingNum -= 1
+      },
       updateTaskFile: async task => {
         try {
+          const path = require('path')
+          const fs = require('fs')
+          let target_path = ''
           if (task.updateType === 3) {
-            await actions.updateDir(task)
+            //await actions.updateDir(task)
+            target_path = await doodlework.getUeFilePath(
+              state.value.selectedTask.task.id
+            )
           } else if (task.updateType === 2) {
             await actions.updateFile(task.file.path, task, 'image')
-          } else {
-            await actions.updateFile(task.file.path, task)
+            target_path = await doodlework.getImageFilePath(
+              state.value.selectedTask.task.id
+            )
+          } else if (task.updateType === 0) {
+            // const ue_path = await doodlework.getUeFilePath(task.id)
+            // const maya_path = await doodlework.getMayaFilePath(task.id)
+            // console.log(ue_path, maya_path)
+            //await actions.copyFoldersWithProgress([])
+          } else if (task.updateType === 1) {
+            target_path = await doodlework.getMayaFilePath(
+              state.value.selectedTask.task.id
+            )
+            //await actions.updateFile(task.file.path, task)
           }
-          task.status = 'updated'
-          task.end_time = new Date().toISOString()
-          state.value.loadingNum -= 1
+
+          target_path = path.join(
+            productions.state.currentProduction.path,
+            target_path
+          )
+          const stats = fs.statSync(target_path)
+          if (stats.isFile()) {
+            actions
+              .copyFileWithProgress(
+                task.file.path,
+                target_path,
+                (percent, file, relPath, srcDir, totalSize) => {
+                  task.progress = percent
+                  task.totalSize = totalSize
+                }
+              )
+              .then(() => {
+                actions.handleCopyCompletion(task)
+              })
+          } else if (stats.isDirectory()) {
+            actions
+              .copyFoldersWithProgress(
+                task.file.path,
+                target_path,
+                (percent, file, relPath, srcDir, totalSize) => {
+                  task.progress = percent
+                  task.totalSize = totalSize
+                }
+              )
+              .then(() => {
+                actions.handleCopyCompletion(task)
+              })
+          }
+          // task.status = 'updated'
+          // task.end_time = new Date().toISOString()
+          // state.value.loadingNum -= 1
         } catch (e) {
           task.status = 'failed'
           task.last_line_log = e.message
+          task.end_time = new Date().toISOString()
         }
-        task.end_time = new Date().toISOString()
+        //task.end_time = new Date().toISOString()
       },
       updateDir: async task => {
         const fs = require('fs/promises')
@@ -164,6 +217,14 @@ export const updateTaskFilesStore = defineStore(
         const files = []
         const config_dir = path.join(root_path, 'Config')
         const content_dir = path.join(root_path, 'Content')
+        // await actions.copyFoldersWithProgress(
+        //   [config_dir, content_dir],
+        //   '',
+        //   (percent, file, relPath, srcDir, totalSize) => {
+        //     task.totalSize = totalSize
+        //     task.progress = percent
+        //   }
+        // )
         await actions.walkDir(config_dir, files)
         await actions.walkDir(content_dir, files)
         files.push(task.file.path)
@@ -212,6 +273,104 @@ export const updateTaskFilesStore = defineStore(
           await doodlework.updateFile(task, file_data, type, () => {})
         }
       },
+      copyFileWithProgress(src, dest, callback) {
+        const fs = require('fs')
+        const totalSize = fs.statSync(src).size
+        let copiedSize = 0
+
+        return new Promise((resolve, reject) => {
+          const readStream = fs.createReadStream(src)
+          const writeStream = fs.createWriteStream(dest)
+
+          readStream.on('data', chunk => {
+            copiedSize += chunk.length
+            const percent = ((copiedSize / totalSize) * 100).toFixed(2)
+            if (callback) callback(percent)
+          })
+
+          readStream.on('error', reject)
+          writeStream.on('error', reject)
+
+          writeStream.on('close', () => {
+            if (callback) callback(100)
+            resolve()
+          })
+
+          readStream.pipe(writeStream)
+        })
+      },
+      getAllFiles(dir) {
+        const fs = require('fs')
+        const path = require('path')
+        let results = []
+        const list = fs.readdirSync(dir)
+        list.forEach(file => {
+          const filePath = path.join(dir, file)
+          const stat = fs.statSync(filePath)
+          if (stat && stat.isDirectory()) {
+            results = results.concat(actions.getAllFiles(filePath))
+          } else {
+            results.push(filePath)
+          }
+        })
+        return results
+      },
+      async copyFoldersWithProgress(
+        srcDirs,
+        destDir,
+        callback,
+        includeRoot = true
+      ) {
+        const fs = require('fs')
+        const path = require('path')
+        // 收集所有文件
+        let files = []
+        for (const srcDir of srcDirs) {
+          const dirFiles = actions
+            .getAllFiles(srcDir)
+            .map(f => ({ srcDir, file: f }))
+          files = files.concat(dirFiles)
+        }
+
+        // 计算总大小
+        let totalSize = 0
+        files.forEach(({ file }) => {
+          totalSize += fs.statSync(file).size
+        })
+
+        let copiedSize = 0
+
+        // 逐个文件复制
+        for (const { srcDir, file } of files) {
+          const relPath = path.relative(srcDir, file)
+          const baseTarget = includeRoot
+            ? path.join(destDir, path.basename(srcDir))
+            : destDir
+          const destPath = path.join(baseTarget, relPath)
+
+          fs.mkdirSync(path.dirname(destPath), { recursive: true })
+
+          await new Promise((resolve, reject) => {
+            const readStream = fs.createReadStream(file)
+            const writeStream = fs.createWriteStream(destPath)
+
+            readStream.on('data', chunk => {
+              copiedSize += chunk.length
+              const percent = ((copiedSize / totalSize) * 100).toFixed(2)
+              if (callback) callback(percent, file, relPath, srcDir, totalSize)
+            })
+
+            readStream.on('error', reject)
+            writeStream.on('error', reject)
+
+            writeStream.on('close', resolve)
+
+            readStream.pipe(writeStream)
+          })
+        }
+
+        if (callback) callback(100, null, null, null, 0) // 完成
+      },
       isReloadDoodleWork() {
         const temp = [...state.value.allFiles.values()].filter(item => {
           return ['submitted', 'assigned', 'running', 'updating'].includes(
@@ -232,14 +391,13 @@ export const updateTaskFilesStore = defineStore(
           })
         })
       },
-
       submitLocalDoodleWork: async () => {
         const port = window.api.DoodleExePort()
+        const path = require('path')
         if (port) state.value.localHttpPath = `http://127.0.0.1:${port}`
         // await fetch(state.value.localHttpPath + `/api/doodle/local_setting`, {
         //   mode: 'no-cors'
         // })
-        console.log(state.value.selectedTask.task.task_type_id)
         for (const item of [
           ...doodleWorkCheckFiles.uncommittedWorkList.values()
         ].filter(task => {
@@ -249,7 +407,30 @@ export const updateTaskFilesStore = defineStore(
             state.value.selectedTask.task.task_type_id !==
             '13ddf60c-ed8e-4e65-85bb-57dc4207aeca'
           ) {
-            doodleWorkCheckFiles.formatDataState(item)
+            if (
+              state.value.currentUpdateType === 0 &&
+              item.task_data.target_path !== ''
+            ) {
+              try {
+                const index = item.task_data.target_path.lastIndexOf('/')
+                const target_path = path.join(
+                  productions.state.currentProduction.path,
+                  item.task_data.target_path.substring(0, index) +
+                    '/temp/' +
+                    item.task_data.target_path.substring(index)
+                )
+                await actions.copyFileWithProgress(item.file.path, target_path)
+              } catch (e) {
+                state.value.allFiles.get(item.id).status = 'failed'
+                state.value.allFiles.get(item.id).last_line_log = '文件拷贝失败'
+                continue
+              }
+            }
+            if (
+              state.value.selectedTask.task.task_type_id !==
+              '32504e3e-381c-4f36-bdeb-f73328f96f9c'
+            )
+              doodleWorkCheckFiles.formatDataState(item)
             const data = Object.assign({}, item)
             data.file = ''
 
@@ -265,12 +446,12 @@ export const updateTaskFilesStore = defineStore(
           } else {
             const task = Object.assign({}, state.value.allFiles.get(item.id))
             state.value.allFiles.delete(item.id)
-            task.status = 'updating'
-            state.value.updateTaskQueue.enqueue(task)
+            // task.status = 'updating'
+            // state.value.updateTaskQueue.enqueue(task)
             state.value.allFiles.set(task.id, task)
           }
+          doodleWorkCheckFiles.uncommittedWorkList.delete(item.id)
         }
-        doodleWorkCheckFiles.uncommittedWorkList = new Map()
       }
       // loadLocalDoodleWork: async task => {
       //   const data = await doodlework.getWorkTask(
