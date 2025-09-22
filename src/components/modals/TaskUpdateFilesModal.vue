@@ -265,6 +265,8 @@ const onAddData = files => {
             ban_ben: updateTaskFiles.state.selectedTask.entity.ban_ben
           }
           files_.push(file_data)
+        } else {
+          messages.push(`${file.name}:Maya文件名不正确`)
         }
       }
     } else if (
@@ -345,31 +347,6 @@ const onSubmit = async () => {
     }
   })
   updateTaskFiles.doodleWorkCheckFiles.isReload = true
-}
-
-function test() {
-  // updateTaskFiles.actions.copyFolderWithProgress(
-  //   'D:\\bx\\CGTAssetImport',
-  //   'D:\\bx\\test',
-  //   (percent, file, relPath) => {
-  //     if (file) {
-  //       console.log(`复制中: ${relPath} -> ${percent}%`)
-  //     } else {
-  //       console.log('✅ 文件夹复制完成！')
-  //     }
-  //   }
-  // )
-  updateTaskFiles.actions
-    .copyFileWithProgress(
-      'D:\\out\\TEXT.mov',
-      'D:\\out\\TEXT_copy.mov',
-      percent => {
-        console.log(`进度: ${percent}%`)
-      }
-    )
-    .then(() => {
-      console.log('复制完成 ✅')
-    })
 }
 </script>
 
@@ -471,7 +448,6 @@ function test() {
           @view-log="onViewLog"
           @handle-action="onActions"
         ></table-list>
-        <button class="button" @click="test">测试</button>
       </div>
     </div>
   </div>

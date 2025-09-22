@@ -1323,7 +1323,13 @@ export default {
       console.log(this.selectedTasks)
     },
     updateTaskFile() {
-      updateTaskFilesStore().state.isShowUpdateModal = true
+      updateTaskFilesStore()
+        .actions.getLocalSetting()
+        .then(res => {
+          if (res.UE_path !== '' && res.maya_path !== '')
+            updateTaskFilesStore().state.isShowUpdateModal = true
+          else ElMessage.error('请先到自动工作台设置Maya和Unreal的路径')
+        })
     },
     onExportClick() {
       const nameData = [

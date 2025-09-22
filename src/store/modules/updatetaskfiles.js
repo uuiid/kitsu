@@ -283,9 +283,13 @@ export const updateTaskFilesStore = defineStore(
       },
       copyFileWithProgress(src, dest, callback) {
         const fs = require('fs')
+        const path = require('path')
         const totalSize = fs.statSync(src).size
         let copiedSize = 0
-
+        const baseDir = path.dirname(dest)
+        if (!fs.existsSync(baseDir)) {
+          fs.mkdirSync(baseDir)
+        }
         return new Promise((resolve, reject) => {
           const readStream = fs.createReadStream(src)
           const writeStream = fs.createWriteStream(dest)
@@ -398,6 +402,10 @@ export const updateTaskFilesStore = defineStore(
             return resolve(data)
           })
         })
+      },
+      getLocalSetting: async () => {
+        await doodleWorkStore().actions.getWorkSetting()
+        return doodleWorkStore().state.doodleWorkSetting
       },
       submitLocalDoodleWork: async () => {
         const port = window.api.DoodleExePort()
