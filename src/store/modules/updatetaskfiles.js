@@ -288,7 +288,7 @@ export const updateTaskFilesStore = defineStore(
         let copiedSize = 0
         const baseDir = path.dirname(dest)
         if (!fs.existsSync(baseDir)) {
-          fs.mkdirSync(baseDir)
+          fs.mkdirSync(baseDir, { recursive: true })
         }
         return new Promise((resolve, reject) => {
           const readStream = fs.createReadStream(src)
@@ -435,6 +435,8 @@ export const updateTaskFilesStore = defineStore(
                     '/temp/' +
                     item.task_data.target_path.substring(index)
                 )
+                console.log(item)
+                item.task_data.path = target_path
                 await actions.copyFileWithProgress(item.file.path, target_path)
               } catch (e) {
                 state.value.allFiles.get(item.id).status = 'failed'

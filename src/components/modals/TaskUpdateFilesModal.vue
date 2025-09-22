@@ -44,14 +44,14 @@ onMounted(() => {
     doodleWorkStore().state.doodleSocket.on(
       'doodle:task_info:update',
       async data => {
-        // if (data.type === 'check_maya') {
-        //   const task = updateTaskFiles.state.allFiles.get(data.id)
-        //   await doodleWorkStore().actions.formatTask(task, data)
-        //   if (data.status === 'completed') {
-        //     task.status = 'updating'
-        //     updateTaskFiles.state.updateTaskQueue.enqueue(task)
-        //   }
-        // }
+        if (data.type === 'check_maya') {
+          const task = updateTaskFiles.state.allFiles.get(data.id)
+          await doodleWorkStore().actions.formatTask(task, data)
+          // if (data.status === 'completed') {
+          //   task.status = 'updating'
+          //   updateTaskFiles.state.updateTaskQueue.enqueue(task)
+          // }
+        }
       }
     )
   }
@@ -276,7 +276,8 @@ const onAddData = files => {
     ) {
       file_data['task_data'] = {
         path: file.path,
-        category: 'model_maya'
+        category: 'model_maya',
+        target_path: file_path.target_path
       }
       files_.push(file_data)
     } else if (
