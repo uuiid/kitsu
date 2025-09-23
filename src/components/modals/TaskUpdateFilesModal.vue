@@ -379,6 +379,7 @@ const onSubmit = async () => {
   notNeedInspections.forEach(task => {
     if (task.updateType === updateTaskFiles.state.currentUpdateType) {
       task.status = 'updating'
+      task.run_time = new Date().toISOString()
       updateTaskFiles.state.updateTaskQueue.enqueue(task)
       notNeedInspections.delete(task.id)
     }

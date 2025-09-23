@@ -48,12 +48,12 @@ const time_info = computed(() => {
 // 开始计时器
 const start = () => {
   interval = setInterval(() => {
-    if (props.task.status === 'running') {
+    if (props.task.status === 'running' || props.task.status === 'updating') {
       const currentTime = new Date()
       const date = new Date(props.task.run_time)
       time.value = doodleWork.actions.formatDiffTime(currentTime - date)
     } else if (
-      ['completed', 'failed', 'canceled'].includes(props.task.status)
+      ['completed', 'failed', 'canceled', 'updated'].includes(props.task.status)
     ) {
       clearInterval(interval)
       if (props.task.run_time_info?.length > 0) {

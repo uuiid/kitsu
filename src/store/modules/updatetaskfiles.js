@@ -181,7 +181,6 @@ export const updateTaskFilesStore = defineStore(
           )
           //const stats = path.extname(target_path)
           if (path.extname(task.file.path) !== '') {
-            console.log(path.join(target_path, path.basename(task.file.path)))
             actions
               .copyFileWithProgress(
                 task.file.path,
