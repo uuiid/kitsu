@@ -59,9 +59,11 @@ const start = () => {
       if (props.task.run_time_info?.length > 0) {
         let all_time = 0
         props.task.run_time_info.forEach(item => {
-          const start_time = new Date(item.run_time_info.start_time)
-          const end_time = new Date(item.run_time_info.end_time)
-          all_time += end_time - start_time
+          if (item) {
+            const start_time = new Date(item.start_time)
+            const end_time = new Date(item.end_time)
+            all_time += end_time - start_time
+          }
         })
         time.value = doodleWork.actions.formatDiffTime(all_time)
       }

@@ -134,9 +134,9 @@ const onAction = async (action_name, task) => {
     doodleWork.currentDoodleWorkState.workList.delete(task.id)
   } else if (action_name === 'view-log') {
     //onViewLog(task)
-    const os = require('os')
     const fs = require('fs')
-    const logPath = `${os.tmpdir()}/doodle/server_task/${task.id}.log`
+    const logPath = `D:/sy_maigc/server_task/${task.id}.log`
+    console.log(logPath)
     if (fs.existsSync(logPath)) {
       window.api.openPath(logPath)
     } else ElMessage.error('文件不存在，请稍后尝试')
