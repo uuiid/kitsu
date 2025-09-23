@@ -419,10 +419,7 @@ export const updateTaskFilesStore = defineStore(
         ].filter(task => {
           return task.updateType === state.value.currentUpdateType
         })) {
-          if (
-            state.value.selectedTask.task.task_type_id !==
-            '13ddf60c-ed8e-4e65-85bb-57dc4207aeca'
-          ) {
+          if (state.value.selectedTask.task.task_type_id !== '') {
             if (
               state.value.currentUpdateType === 0 &&
               item.task_data.target_path !== ''
@@ -435,7 +432,6 @@ export const updateTaskFilesStore = defineStore(
                     '/temp/' +
                     item.task_data.target_path.substring(index)
                 )
-                console.log(item)
                 item.task_data.path = target_path
                 await actions.copyFileWithProgress(item.file.path, target_path)
               } catch (e) {
