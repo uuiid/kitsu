@@ -138,20 +138,29 @@ function pathRule() {
     updateTaskFiles.state.selectedTask.entity.ban_ben !== undefined &&
     updateTaskFiles.state.selectedTask.entity.ban_ben !== ''
   )
-    final_file_name = `${final_file_name}_${updateTaskFiles.state.selectedTask.entity.ban_ben}`
+    final_file_name = `${final_file_name}_${updateTaskFiles.state.selectedTask.entity.ban_beSiGeChuWuDain}`
   const file_path = {
     pin_yin_ming_cheng: pin_yin_ming_cheng,
     root_path: '',
     maya_file_name: '',
     ue_file_name: '',
     ue_work_path: '',
-    target_path: ''
+    target_path: undefined
   }
-  if (updateTaskFiles.state.currentUpdateType === 0) {
-    file_path.target_path = getTargetPath(
+  if (
+    updateTaskFiles.state.currentUpdateType === 0 ||
+    updateTaskFiles.state.currentUpdateType === 1
+  ) {
+    const work_files = getTargetPath(
       updateTaskFiles.state.selectedTask.task,
       'maya'
-    ).path
+    )
+    if (work_files) {
+      file_path.target_path =
+        work_files.path === '' ? undefined : work_files.path
+    } else {
+      file_path.target_path = undefined
+    }
   }
   if (
     updateTaskFiles.state.selectedTask.task.task_type_id ===
@@ -234,6 +243,16 @@ const onAddData = files => {
   const fs = require('fs')
   const files_ = []
   const file_path = pathRule()
+  if (file_path.target_path === undefined || file_path.target_path === '') {
+    ElNotification({
+      title: '添加失败',
+      message: '请先扫描资产',
+      type: 'error',
+      duration: 5000,
+      offset: 150
+    })
+    return
+  }
   for (const file of files) {
     const file_data = {
       name: file.name,

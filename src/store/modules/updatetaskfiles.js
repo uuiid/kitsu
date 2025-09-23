@@ -422,7 +422,7 @@ export const updateTaskFilesStore = defineStore(
           if (state.value.selectedTask.task.task_type_id !== '') {
             if (
               state.value.currentUpdateType === 0 &&
-              item.task_data.target_path !== ''
+              item.task_data.target_path !== undefined
             ) {
               try {
                 const index = item.task_data.target_path.lastIndexOf('/')
