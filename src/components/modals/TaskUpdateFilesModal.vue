@@ -6,6 +6,7 @@ import { ElMessage, ElNotification } from 'element-plus'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import tasksStore from '@/store/modules/tasks.js'
+import doodlework from '@/store/api/doodlework.js'
 
 const updateTaskFiles = updateTaskFilesStore()
 const notNeedInspections = new Map()
@@ -47,10 +48,9 @@ onMounted(() => {
         if (data.type === 'check_maya') {
           const task = updateTaskFiles.state.allFiles.get(data.id)
           await doodleWorkStore().actions.formatTask(task, data)
-          // if (data.status === 'completed') {
-          //   task.status = 'updating'
-          //   updateTaskFiles.state.updateTaskQueue.enqueue(task)
-          // }
+          if (data.status === 'completed') {
+            task.progress = 1
+          }
         }
       }
     )
@@ -125,11 +125,16 @@ const onActions = async (action_name, task) => {
   }
 }
 
-function getTargetPath(task, software_type = 'unreal_engine') {
-  return task.working_files.find(w => w.software_type === software_type)
+function getTargetPath(task, software_type = 'ue') {
+  if (software_type === 'maya') {
+    return doodlework.getMayaFilePath(task.id)
+  } else if (software_type === 'ue') {
+    return doodlework.getUeFilePath(task.id)
+  } else if (software_type === 'image')
+    return doodlework.getImageFilePath(task.id)
 }
 
-function pathRule() {
+async function pathRule() {
   const pin_yin_ming_cheng =
     updateTaskFiles.state.selectedTask.entity.pin_yin_ming_cheng
   const bian_hao = updateTaskFiles.state.selectedTask.entity.bian_hao
@@ -147,21 +152,31 @@ function pathRule() {
     ue_work_path: '',
     target_path: undefined
   }
+  let work_files = null
   if (
     updateTaskFiles.state.currentUpdateType === 0 ||
     updateTaskFiles.state.currentUpdateType === 1
   ) {
-    const work_files = getTargetPath(
+    work_files = await getTargetPath(
       updateTaskFiles.state.selectedTask.task,
       'maya'
     )
-    if (work_files) {
-      file_path.target_path =
-        work_files.path === '' ? undefined : work_files.path
-    } else {
-      file_path.target_path = undefined
-    }
+  } else if (updateTaskFiles.state.currentUpdateType === 2) {
+    work_files = await getTargetPath(
+      updateTaskFiles.state.selectedTask.task,
+      'image'
+    )
+  } else
+    work_files = await getTargetPath(
+      updateTaskFiles.state.selectedTask.task,
+      'ue'
+    )
+  if (work_files) {
+    file_path.target_path = work_files.file_path
+  } else {
+    file_path.target_path = undefined
   }
+  console.log(file_path.target_path)
   if (
     updateTaskFiles.state.selectedTask.task.task_type_id ===
     '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
@@ -214,7 +229,7 @@ function pathRule() {
     for (const task of tasks) {
       const taskData = tasksStore.state.taskMap.get(task)
       if (taskData) {
-        const ue_work_path = getTargetPath(taskData)
+        const ue_work_path = await getTargetPath(taskData)
         if (ue_work_path) {
           file_path.ue_work_path = ue_work_path.path
           break
@@ -225,7 +240,7 @@ function pathRule() {
   return file_path
 }
 
-const onAddData = files => {
+const onAddData = async files => {
   const messages = []
   const result = updateTaskFiles.actions.checkEntity(
     updateTaskFiles.state.selectedTask.entity
@@ -242,7 +257,8 @@ const onAddData = files => {
   }
   const fs = require('fs')
   const files_ = []
-  const file_path = pathRule()
+  const file_path = await pathRule()
+  console.log(file_path)
   if (file_path.target_path === undefined || file_path.target_path === '') {
     ElNotification({
       title: '添加失败',
@@ -303,6 +319,7 @@ const onAddData = files => {
       updateTaskFiles.state.currentUpdateType === 3 &&
       file.name.endsWith('.uproject')
     ) {
+      console.log(file_path.ue_file_name)
       if (
         file_path.ue_file_name ? file_path.ue_file_name === file.name : true
       ) {
@@ -338,7 +355,7 @@ const onAddData = files => {
       messages.push(`${file.name}:请检查文件名称`)
     }
   }
-  messages.forEach(async message => {
+  messages.forEach(message => {
     setTimeout(() => {
       ElNotification({
         title: '添加失败',

@@ -152,7 +152,6 @@ export const updateTaskFilesStore = defineStore(
       updateTaskFile: async task => {
         try {
           const path = require('path')
-          const fs = require('fs')
           let target_path = ''
           if (task.updateType === 3) {
             //await actions.updateDir(task)
@@ -175,32 +174,46 @@ export const updateTaskFilesStore = defineStore(
             )
             //await actions.updateFile(task.file.path, task)
           }
-
+          target_path = target_path.file_path
           target_path = path.join(
             productions.state.currentProduction.path,
             target_path
           )
-          const stats = fs.statSync(target_path)
-          if (stats.isFile()) {
+          //const stats = path.extname(target_path)
+          if (path.extname(task.file.path) !== '') {
+            console.log(path.join(target_path, path.basename(task.file.path)))
             actions
               .copyFileWithProgress(
                 task.file.path,
-                target_path,
+                path.join(target_path, path.basename(task.file.path)),
                 (percent, file, relPath, srcDir, totalSize) => {
-                  task.progress = percent
+                  task.progress = task.file.path.endsWith('.uproject')
+                    ? 0
+                    : percent
                   task.totalSize = totalSize
                 }
               )
               .then(() => {
-                actions.handleCopyCompletion(task)
+                if (!task.file.path.endsWith('.uproject')) {
+                  actions.handleCopyCompletion(task)
+                }
               })
-          } else if (stats.isDirectory()) {
+          }
+          const srcDirs = []
+          if (
+            path.extname(task.file.path) !== '' &&
+            task.file.path.endsWith('.uproject')
+          ) {
+            srcDirs.push(path.join(path.dirname(task.file.path), 'Content'))
+            srcDirs.push(path.join(path.dirname(task.file.path), 'Config'))
+          }
+          if (srcDirs.length > 0) {
             actions
               .copyFoldersWithProgress(
-                task.file.path,
+                srcDirs,
                 target_path,
                 (percent, file, relPath, srcDir, totalSize) => {
-                  task.progress = percent
+                  task.progress = percent / 100
                   task.totalSize = totalSize
                 }
               )
@@ -337,6 +350,7 @@ export const updateTaskFilesStore = defineStore(
         const path = require('path')
         // 收集所有文件
         let files = []
+        console.log(srcDirs, destDir)
         for (const srcDir of srcDirs) {
           const dirFiles = actions
             .getAllFiles(srcDir)
@@ -425,12 +439,9 @@ export const updateTaskFilesStore = defineStore(
               item.task_data.target_path !== undefined
             ) {
               try {
-                const index = item.task_data.target_path.lastIndexOf('/')
                 const target_path = path.join(
                   productions.state.currentProduction.path,
-                  item.task_data.target_path.substring(0, index) +
-                    '/temp/' +
-                    item.task_data.target_path.substring(index)
+                  item.task_data.target_path + '/temp/' + item.file.name
                 )
                 item.task_data.path = target_path
                 await actions.copyFileWithProgress(item.file.path, target_path)
