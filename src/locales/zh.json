@@ -1747,7 +1747,8 @@
         "failed": "失败",
         "updating": "上传中",
         "updated": "上传完成",
-        "checking": "检查中"
+        "checking": "检查中",
+        "canceled": "已取消"
       }
     },
     "doodle": {

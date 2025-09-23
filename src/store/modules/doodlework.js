@@ -892,6 +892,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     getDoodleFlags: async task_id => {
       return await doodlework.getDoodleFlags(task_id)
+    },
+    getLocalLogPath: () => {
+      return doodlework.getLocalLogPath(state.value.localHttpPath)
     }
   }
   actions.getToolVersions()

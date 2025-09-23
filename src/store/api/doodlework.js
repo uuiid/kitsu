@@ -80,5 +80,9 @@ export default {
   getImageFilePath(id) {
     const path = `/api/doodle/data/asset/${id}/file/image`
     return client.pget(path)
+  },
+  getLocalLogPath(localPath = '') {
+    const path = localPath + `/api/doodle/local_setting/tmp_dir/server_task`
+    return client.pget(path)
   }
 }

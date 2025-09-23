@@ -7,6 +7,7 @@ import { ElMessage } from 'element-plus'
 import { SearchIcon } from 'lucide-vue-next'
 //const _this = getCurrentInstance().appContext.config.globalProperties
 const doodleWork = doodleWorkStore()
+const localLogPath = ref('')
 const props = defineProps(['name', 'isDrop', 'isSetOutPath'])
 doodleWork.state.currentDoodleWorkType = props.name
 //const isDragOver = ref(false)
@@ -51,6 +52,9 @@ onMounted(() => {
     doodleWork.state.dialogFormVisible = true
     document.addEventListener('paste', onClipboard)
   }
+  doodleWork.actions.getLocalLogPath().then(path => {
+    localLogPath.value = path.tmp_dir
+  })
   //document.addEventListener('paste', onClipboard)
 })
 // const handleDragOver = event => {
@@ -135,18 +139,23 @@ const onAction = async (action_name, task) => {
   } else if (action_name === 'view-log') {
     //onViewLog(task)
     const fs = require('fs')
-    const logPath = `D:/sy_maigc/server_task/${task.id}.log`
+    const logPath = `${localLogPath.value}/${task.id}.log`
     console.log(logPath)
     if (fs.existsSync(logPath)) {
       window.api.openPath(logPath)
     } else ElMessage.error('文件不存在，请稍后尝试')
   } else if (action_name === 'cancel-task') {
     try {
-      await doodleWork.actions.cancelDoodleWorkTask(task)
-      ElMessage({
-        message: '移除成功',
-        type: 'success'
-      })
+      const res = await doodleWork.actions.cancelDoodleWorkTask(task)
+      if (res) {
+        task.status = 'canceled'
+        ElMessage({
+          message: '移除成功',
+          type: 'success'
+        })
+      } else {
+        ElMessage.error('移除失败')
+      }
     } catch (e) {
       ElMessage.error('移除失败')
     }
