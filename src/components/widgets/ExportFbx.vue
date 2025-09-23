@@ -131,7 +131,7 @@ const reExecute = async () => {
 const onAction = async (action_name, task) => {
   if (action_name === 'remove-task') {
     doodleWork.actions.deleteDoodleWorkTask(task.id)
-    doodleWork.currentDoodleWorkState.value.workList.delete(task.id)
+    doodleWork.currentDoodleWorkState.workList.delete(task.id)
   } else if (action_name === 'view-log') {
     //onViewLog(task)
     const os = require('os')
