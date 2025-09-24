@@ -378,6 +378,9 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       state.value.treeFilterData[2]?.children.sort((a, b) => {
         return a.label - b.label
       })
+      state.value.treeFilterData[3]?.children.sort((a, b) => {
+        return a.label - b.label
+      })
       const temp_filters = []
       state.value.assetFilters.forEach((value, key) => {
         if (value.isChecked) temp_filters.push(value.id)
