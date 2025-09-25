@@ -11,7 +11,6 @@ const notNeedInspections = new Map()
 const updateTypes = [
   { id: 0, label: 'maya文件', name: 'maya' },
   { id: 1, label: 'maya贴图', name: 'maya' },
-  { id: 2, label: 'ue渲染图', name: 'ue' },
   { id: 3, label: 'ue文件', name: 'ue' }
 ]
 const tests = computed(() => {
