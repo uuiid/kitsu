@@ -175,7 +175,6 @@ async function pathRule() {
   } else {
     file_path.target_path = undefined
   }
-  console.log(file_path.target_path)
   if (
     updateTaskFiles.state.selectedTask.task.task_type_id ===
     '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
@@ -184,8 +183,10 @@ async function pathRule() {
     file_path.maya_file_name = `Ch${bian_hao}.ma`
     file_path.ue_file_name = `${pin_yin_ming_cheng}_UE5.uproject`
   } else if (
-    updateTaskFiles.state.selectedTask.entity.asset_type_id ===
-      '8c02b76a-6be6-4959-af58-5c31a85fe072' &&
+    (updateTaskFiles.state.selectedTask.entity.asset_type_id ===
+      '8c02b76a-6be6-4959-af58-5c31a85fe072' ||
+      updateTaskFiles.state.selectedTask.entity.asset_type_id ===
+        '6d9d69f0-4269-46fc-9c26-a7f7bf2f30e3') &&
     updateTaskFiles.state.selectedTask.task.task_type_id !==
       '32504e3e-381c-4f36-bdeb-f73328f96f9c'
   ) {
@@ -216,7 +217,9 @@ async function pathRule() {
       file_path.ue_file_name = `${pin_yin_ming_cheng}_UE5.uproject`
     } else if (
       updateTaskFiles.state.selectedTask.entity.asset_type_id ===
-      '8c02b76a-6be6-4959-af58-5c31a85fe072'
+        '8c02b76a-6be6-4959-af58-5c31a85fe072' ||
+      updateTaskFiles.state.selectedTask.entity.asset_type_id ===
+        '6d9d69f0-4269-46fc-9c26-a7f7bf2f30e3'
     ) {
       file_path.root_path = `Content/Character/${pin_yin_ming_cheng}/Meshs/SK_Ch${bian_hao}.uasset`
       file_path.maya_file_name = `${final_file_name}.ma`
@@ -283,7 +286,6 @@ const onAddData = async files => {
       // if (file_path.ue_work_path === '') {
       //   messages.push(`${file.name}:UE文件路径未知`)
       // } else {
-      console.log(file_path.maya_file_name)
       if (
         file.name.endsWith('.ma') &&
         file.name.startsWith(file_path.maya_file_name)
