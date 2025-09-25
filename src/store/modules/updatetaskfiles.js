@@ -49,7 +49,7 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
   formatDataState(data) {
     if (this.isShowFiled) {
       for (const [key, value] of this.task_data_filed) {
-        data.task_data[key] = value.checked
+        data[key] = value.checked
       }
     }
   }
@@ -151,82 +151,86 @@ export const updateTaskFilesStore = defineStore(
       },
       updateTaskFile: async task => {
         try {
-          const path = require('path')
-          let target_path = ''
+          // const path = require('path')
+          // let target_path = ''
           if (task.updateType === 3) {
-            //await actions.updateDir(task)
-            target_path = await doodlework.getUeFilePath(
-              state.value.selectedTask.task.id
-            )
+            await actions.updateDir(task)
+            // target_path = await doodlework.getUeFilePath(
+            //   state.value.selectedTask.task.id
+            // )
           } else if (task.updateType === 2) {
             await actions.updateFile(task.file.path, task, 'image')
-            target_path = await doodlework.getImageFilePath(
-              state.value.selectedTask.task.id
-            )
+            // target_path = await doodlework.getImageFilePath(
+            //   state.value.selectedTask.task.id
+            // )
           } else if (task.updateType === 0) {
+            await actions.updateFile(task.file.path, task)
+            await actions.submitLocalDoodleWork(task.id)
+
             // const ue_path = await doodlework.getUeFilePath(task.id)
             // const maya_path = await doodlework.getMayaFilePath(task.id)
             // console.log(ue_path, maya_path)
             //await actions.copyFoldersWithProgress([])
           } else if (task.updateType === 1) {
-            target_path = await doodlework.getMayaFilePath(
-              state.value.selectedTask.task.id
-            )
-            //await actions.updateFile(task.file.path, task)
+            // target_path = await doodlework.getMayaFilePath(
+            //   state.value.selectedTask.task.id
+            // )
+            await actions.updateFile(task.file.path, task)
           }
-          target_path = target_path.file_path
-          target_path = path.join(
-            productions.state.currentProduction.path,
-            target_path
-          )
-          //const stats = path.extname(target_path)
-          if (path.extname(task.file.path) !== '') {
-            actions
-              .copyFileWithProgress(
-                task.file.path,
-                path.join(target_path, path.basename(task.file.path)),
-                (percent, file, relPath, srcDir, totalSize) => {
-                  task.progress = task.file.path.endsWith('.uproject')
-                    ? 0
-                    : percent
-                  task.totalSize = totalSize
-                }
-              )
-              .then(() => {
-                if (!task.file.path.endsWith('.uproject')) {
-                  actions.handleCopyCompletion(task)
-                }
-              })
-          }
-          const srcDirs = []
-          if (
-            path.extname(task.file.path) !== '' &&
-            task.file.path.endsWith('.uproject')
-          ) {
-            srcDirs.push(path.join(path.dirname(task.file.path), 'Content'))
-            srcDirs.push(path.join(path.dirname(task.file.path), 'Config'))
-          }
-          if (srcDirs.length > 0) {
-            actions
-              .copyFoldersWithProgress(
-                srcDirs,
-                target_path,
-                (percent, file, relPath, srcDir, totalSize) => {
-                  task.progress = percent / 100
-                  task.totalSize = totalSize
-                }
-              )
-              .then(() => {
-                actions.handleCopyCompletion(task)
-              })
-          }
-          // task.status = 'updated'
-          // task.end_time = new Date().toISOString()
-          // state.value.loadingNum -= 1
+          // target_path = target_path.file_path
+          // target_path = path.join(
+          //   productions.state.currentProduction.path,
+          //   target_path
+          // )
+          // //const stats = path.extname(target_path)
+          // if (path.extname(task.file.path) !== '') {
+          //   actions
+          //     .copyFileWithProgress(
+          //       task.file.path,
+          //       path.join(target_path, path.basename(task.file.path)),
+          //       (percent, file, relPath, srcDir, totalSize) => {
+          //         task.progress = task.file.path.endsWith('.uproject')
+          //           ? 0
+          //           : percent
+          //         task.totalSize = totalSize
+          //       }
+          //     )
+          //     .then(() => {
+          //       if (!task.file.path.endsWith('.uproject')) {
+          //         actions.handleCopyCompletion(task)
+          //       }
+          //     })
+          //}
+          // const srcDirs = []
+          // if (
+          //   path.extname(task.file.path) !== '' &&
+          //   task.file.path.endsWith('.uproject')
+          // ) {
+          //   srcDirs.push(path.join(path.dirname(task.file.path), 'Content'))
+          //   srcDirs.push(path.join(path.dirname(task.file.path), 'Config'))
+          // }
+          // if (srcDirs.length > 0) {
+          //   actions
+          //     .copyFoldersWithProgress(
+          //       srcDirs,
+          //       target_path,
+          //       (percent, file, relPath, srcDir, totalSize) => {
+          //         task.progress = percent / 100
+          //         task.totalSize = totalSize
+          //       }
+          //     )
+          //     .then(() => {
+          //       actions.handleCopyCompletion(task)
+          //     })
+          // }
+          task.status = 'updated'
+          task.end_time = new Date().toISOString()
+          state.value.loadingNum -= 1
         } catch (e) {
           task.status = 'failed'
           task.last_line_log = e.message
           task.end_time = new Date().toISOString()
+          task.progress = 0
         }
         //task.end_time = new Date().toISOString()
       },
@@ -282,12 +286,12 @@ export const updateTaskFilesStore = defineStore(
             file_data,
             type,
             (loaded, total) => {
-              task.progress = loaded / total
+              type === 'maya' ? null : (task.progress = loaded / total)
             }
           )
         else {
           file_data.disposition = file_path.replace(
-            path.dirname(task.task_data.path) + `\\`,
+            path.dirname(task.file.path) + `\\`,
             ''
           )
           await doodlework.updateFile(task, file_data, type, () => {})
@@ -420,63 +424,73 @@ export const updateTaskFilesStore = defineStore(
         await doodleWorkStore().actions.getWorkSetting()
         return doodleWorkStore().state.doodleWorkSetting
       },
-      submitLocalDoodleWork: async () => {
+      submitLocalDoodleWork: async task_id => {
         const port = window.api.DoodleExePort()
-        const path = require('path')
+        //const path = require('path')
         if (port) state.value.localHttpPath = `http://127.0.0.1:${port}`
         // await fetch(state.value.localHttpPath + `/api/doodle/local_setting`, {
         //   mode: 'no-cors'
         // })
-        for (const item of [
-          ...doodleWorkCheckFiles.uncommittedWorkList.values()
-        ].filter(task => {
-          return task.updateType === state.value.currentUpdateType
-        })) {
-          if (state.value.selectedTask.task.task_type_id !== '') {
-            if (
-              state.value.currentUpdateType === 0 &&
-              item.task_data.target_path !== undefined
-            ) {
-              try {
-                const target_path = path.join(
-                  productions.state.currentProduction.path,
-                  item.task_data.target_path + '/temp/' + item.file.name
-                )
-                item.task_data.path = target_path
-                await actions.copyFileWithProgress(item.file.path, target_path)
-              } catch (e) {
-                state.value.allFiles.get(item.id).status = 'failed'
-                state.value.allFiles.get(item.id).last_line_log = '文件拷贝失败'
-                continue
-              }
-            }
-            if (
-              state.value.selectedTask.task.task_type_id !==
-              '32504e3e-381c-4f36-bdeb-f73328f96f9c'
-            )
-              doodleWorkCheckFiles.formatDataState(item)
-            const data = Object.assign({}, item)
-            data.file = ''
+        const item = state.value.allFiles.get(task_id)
 
-            const result = await doodlework.submitWorkTask(
+        if (state.value.selectedTask.task.task_type_id !== '') {
+          // if (
+          //   state.value.currentUpdateType === 0 &&
+          //   item.task_data.target_path !== undefined
+          // ) {
+          //   try {
+          //     const target_path = path.join(
+          //       productions.state.currentProduction.path,
+          //       item.task_data.target_path + '/temp/' + item.file.name
+          //     )
+          //     item.task_data.path = target_path
+          //     await actions.copyFileWithProgress(item.file.path, target_path)
+          //   } catch (e) {
+          //     state.value.allFiles.get(item.id).status = 'failed'
+          //     state.value.allFiles.get(item.id).last_line_log = '文件拷贝失败'
+          //
+          //   }
+          // }
+          if (
+            state.value.selectedTask.task.task_type_id !==
+            '32504e3e-381c-4f36-bdeb-f73328f96f9c'
+          )
+            doodleWorkCheckFiles.formatDataState(item)
+          const data = Object.assign({}, item)
+          data.file = ''
+          let result = null
+          if (
+            state.value.selectedTask.task.task_type_id ===
+            '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
+          ) {
+            result = await doodlework.submitInspectTask(
               data,
               state.value.localHttpPath
             )
-            const task = Object.assign({}, state.value.allFiles.get(item.id))
-            state.value.allFiles.delete(item.id)
-            task.id = result.id
-            await doodleWork.actions.formatTask(task, result)
-            state.value.allFiles.set(task.id, task)
-          } else {
-            const task = Object.assign({}, state.value.allFiles.get(item.id))
-            state.value.allFiles.delete(item.id)
-            // task.status = 'updating'
-            // state.value.updateTaskQueue.enqueue(task)
-            state.value.allFiles.set(task.id, task)
+          } else if (
+            state.value.selectedTask.task.task_type_id ===
+            '32504e3e-381c-4f36-bdeb-f73328f96f9c'
+          ) {
+            result = await doodlework.submitGenerateUeskTask(
+              data,
+              state.value.localHttpPath
+            )
           }
-          doodleWorkCheckFiles.uncommittedWorkList.delete(item.id)
+          const task = Object.assign({}, state.value.allFiles.get(item.id))
+          state.value.allFiles.delete(item.id)
+          task.id = result.id
+          await doodleWork.actions.formatTask(task, result)
+          state.value.allFiles.set(task.id, task)
+        } else {
+          const task = Object.assign({}, state.value.allFiles.get(item.id))
+          state.value.allFiles.delete(item.id)
+          // task.status = 'updating'
+          // state.value.updateTaskQueue.enqueue(task)
+          state.value.allFiles.set(task.id, task)
         }
+        doodleWorkCheckFiles.uncommittedWorkList.delete(item.id)
       }
+
       // loadLocalDoodleWork: async task => {
       //   const data = await doodlework.getWorkTask(
       //     task.id,

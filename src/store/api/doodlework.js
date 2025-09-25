@@ -84,5 +84,14 @@ export default {
   getLocalLogPath(localPath = '') {
     const path = localPath + `/api/doodle/local_setting/tmp_dir/server_task`
     return client.pget(path)
+  },
+  submitInspectTask(task, localPath = '') {
+    const path = localPath + `/api/doodle/task/${task.task_id}/inspect`
+    return client.ppost(path, task)
+  },
+  submitGenerateUeskTask(task, localPath = '') {
+    const path =
+      localPath + `/api/doodle/task/${task.task_id}/generate_uesk_file`
+    return client.ppost(path, task)
   }
 }

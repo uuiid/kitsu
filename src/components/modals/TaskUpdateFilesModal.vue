@@ -5,7 +5,6 @@ import { onUnmounted, onMounted, computed } from 'vue'
 import { ElMessage, ElNotification } from 'element-plus'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
-import tasksStore from '@/store/modules/tasks.js'
 import doodlework from '@/store/api/doodlework.js'
 
 const updateTaskFiles = updateTaskFilesStore()
@@ -223,19 +222,19 @@ async function pathRule() {
       file_path.maya_file_name = `${final_file_name}.ma`
       file_path.ue_file_name = `${pin_yin_ming_cheng}_UE5.uproject`
     }
-    const tasks = updateTaskFiles.state.selectedTask.entity.tasks.filter(
-      task => task !== updateTaskFiles.state.selectedTask.task.id
-    )
-    for (const task of tasks) {
-      const taskData = tasksStore.state.taskMap.get(task)
-      if (taskData) {
-        const ue_work_path = await getTargetPath(taskData)
-        if (ue_work_path) {
-          file_path.ue_work_path = ue_work_path.path
-          break
-        }
-      }
-    }
+    // const tasks = updateTaskFiles.state.selectedTask.entity.tasks.filter(
+    //   task => task !== updateTaskFiles.state.selectedTask.task.id
+    // )
+    // for (const task of tasks) {
+    //   const taskData = tasksStore.state.taskMap.get(task)
+    //   if (taskData) {
+    //     const ue_work_path = await getTargetPath(taskData)
+    //     if (ue_work_path) {
+    //       file_path.ue_work_path = ue_work_path.path
+    //       break
+    //     }
+    //   }
+    // }
   }
   return file_path
 }
@@ -258,52 +257,55 @@ const onAddData = async files => {
   const fs = require('fs')
   const files_ = []
   const file_path = await pathRule()
-  console.log(file_path)
-  if (file_path.target_path === undefined || file_path.target_path === '') {
-    ElNotification({
-      title: '添加失败',
-      message: '请先扫描资产',
-      type: 'error',
-      duration: 5000,
-      offset: 150
-    })
-    return
-  }
+  // if (file_path.target_path === undefined || file_path.target_path === '') {
+  //   ElNotification({
+  //     title: '添加失败',
+  //     message: '请先扫描资产',
+  //     type: 'error',
+  //     duration: 5000,
+  //     offset: 150
+  //   })
+  //   return
+  // }
   for (const file of files) {
     const file_data = {
       name: file.name,
       path: file.path,
       target_path: file_path.target_path
     }
+    if (updateTaskFiles.state.currentUpdateType === 0)
+      file_data['task_id'] = updateTaskFiles.state.selectedTask.task.id
     if (
       updateTaskFiles.state.currentUpdateType === 0 &&
       updateTaskFiles.state.selectedTask.task.task_type_id ===
         '32504e3e-381c-4f36-bdeb-f73328f96f9c'
     ) {
-      if (file_path.ue_work_path === '') {
-        messages.push(`${file.name}:UE文件路径未知`)
-      } else {
-        if (
-          file.name.endsWith('.ma') &&
-          file.name.startsWith(file_path.maya_file_name)
-        ) {
-          file_data['task_data'] = {
-            create_rig_sk: true,
-            maya_file: file.path,
-            ue_path: file_path.ue_work_path,
-            target_path: file_path.target_path,
-            asset_type_id:
-              updateTaskFiles.state.selectedTask.entity.asset_type_id,
-            bian_hao: updateTaskFiles.state.selectedTask.entity.bian_hao,
-            pin_yin_ming_cheng:
-              updateTaskFiles.state.selectedTask.entity.pin_yin_ming_cheng,
-            ban_ben: updateTaskFiles.state.selectedTask.entity.ban_ben
-          }
-          files_.push(file_data)
-        } else {
-          messages.push(`${file.name}:Maya文件名不正确`)
+      // if (file_path.ue_work_path === '') {
+      //   messages.push(`${file.name}:UE文件路径未知`)
+      // } else {
+      console.log(file_path.maya_file_name)
+      if (
+        file.name.endsWith('.ma') &&
+        file.name.startsWith(file_path.maya_file_name)
+      ) {
+        file_data['task_data'] = {
+          create_rig_sk: true,
+          maya_file: file.path,
+          ue_path: file_path.ue_work_path,
+          target_path: file_path.target_path,
+          asset_type_id:
+            updateTaskFiles.state.selectedTask.entity.asset_type_id,
+          bian_hao: updateTaskFiles.state.selectedTask.entity.bian_hao,
+          pin_yin_ming_cheng:
+            updateTaskFiles.state.selectedTask.entity.pin_yin_ming_cheng,
+          ban_ben: updateTaskFiles.state.selectedTask.entity.ban_ben
         }
+        files_.push(file_data)
+      } else {
+        messages.push(`${file.name}:Maya文件名不正确`)
+        continue
       }
+      //}
     } else if (
       updateTaskFiles.state.currentUpdateType === 0 &&
       file.name.endsWith('.ma') &&
@@ -319,41 +321,42 @@ const onAddData = async files => {
       updateTaskFiles.state.currentUpdateType === 3 &&
       file.name.endsWith('.uproject')
     ) {
-      console.log(file_path.ue_file_name)
       if (
         file_path.ue_file_name ? file_path.ue_file_name === file.name : true
       ) {
         //const root_path = path.dirname(file.path)
         //const sk_path = path.join(root_path, file_path.root_path)
-
-        const task = updateTaskFiles.doodleWorkCheckFiles.formatData(file)
-        task.status = 'waiting'
-        task.run_time = new Date().toISOString()
-        task.submit_time = new Date().toISOString()
-        task.updateType = updateTaskFiles.state.currentUpdateType
-        updateTaskFiles.state.allFiles.set(task.id, task)
-        notNeedInspections.set(task.id, task)
+        // messages.push(`${file.name}:请检查文件路径`)
+        // const task = updateTaskFiles.doodleWorkCheckFiles.formatData(file)
+        // task.status = 'waiting'
+        // task.run_time = new Date().toISOString()
+        // task.submit_time = new Date().toISOString()
+        // task.updateType = updateTaskFiles.state.currentUpdateType
+        // updateTaskFiles.state.allFiles.set(task.id, task)
+        // notNeedInspections.set(task.id, task)
       } else {
         messages.push(`${file.name}:请检查文件路径`)
+        continue
       }
     } else if (
       updateTaskFiles.state.currentUpdateType === 1 ||
       updateTaskFiles.state.currentUpdateType === 2
     ) {
-      if (!fs.lstatSync(file.path).isDirectory()) {
-        const task = updateTaskFiles.doodleWorkCheckFiles.formatData(file)
-        task.status = 'waiting'
-        task.run_time = new Date().toISOString()
-        task.submit_time = new Date().toISOString()
-        task.updateType = updateTaskFiles.state.currentUpdateType
-        updateTaskFiles.state.allFiles.set(task.id, task)
-        notNeedInspections.set(task.id, task)
-      } else {
+      if (fs.lstatSync(file.path).isDirectory()) {
         messages.push(`${file.name}:请拖入图片文件`)
+        continue
       }
     } else {
       messages.push(`${file.name}:请检查文件名称`)
+      continue
     }
+    const task = updateTaskFiles.doodleWorkCheckFiles.formatData(file)
+    task.status = 'waiting'
+    task.run_time = new Date().toISOString()
+    task.submit_time = new Date().toISOString()
+    task.updateType = updateTaskFiles.state.currentUpdateType
+    updateTaskFiles.state.allFiles.set(task.id, task)
+    notNeedInspections.set(task.id, task)
   }
   messages.forEach(message => {
     setTimeout(() => {
@@ -368,14 +371,13 @@ const onAddData = async files => {
   })
 
   updateTaskFiles.doodleWorkCheckFiles.addFilesData(files_)
-  updateTaskFiles.doodleWorkCheckFiles.uncommittedWorkList.forEach(
-    (task, id) => {
-      updateTaskFiles.state.allFiles.set(id, task)
-    }
-  )
+  // updateTaskFiles.doodleWorkCheckFiles.uncommittedWorkList.forEach(
+  //   (task, id) => {
+  //     updateTaskFiles.state.allFiles.set(id, task)
+  //   }
+  // )
 }
 const onSubmit = async () => {
-  await updateTaskFiles.actions.submitLocalDoodleWork()
   notNeedInspections.forEach(task => {
     if (task.updateType === updateTaskFiles.state.currentUpdateType) {
       task.status = 'updating'
@@ -384,7 +386,8 @@ const onSubmit = async () => {
       notNeedInspections.delete(task.id)
     }
   })
-  updateTaskFiles.doodleWorkCheckFiles.isReload = true
+  //await updateTaskFiles.actions.submitLocalDoodleWork()
+  //updateTaskFiles.doodleWorkCheckFiles.isReload = true
 }
 </script>
 
