@@ -5,7 +5,6 @@ import { onUnmounted, onMounted, computed } from 'vue'
 import { ElMessage, ElNotification } from 'element-plus'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
-import doodlework from '@/store/api/doodlework.js'
 
 const updateTaskFiles = updateTaskFilesStore()
 const notNeedInspections = new Map()
@@ -124,14 +123,14 @@ const onActions = async (action_name, task) => {
   }
 }
 
-function getTargetPath(task, software_type = 'ue') {
-  if (software_type === 'maya') {
-    return doodlework.getMayaFilePath(task.id)
-  } else if (software_type === 'ue') {
-    return doodlework.getUeFilePath(task.id)
-  } else if (software_type === 'image')
-    return doodlework.getImageFilePath(task.id)
-}
+// function getTargetPath(task, software_type = 'ue') {
+//   if (software_type === 'maya') {
+//     return doodlework.getMayaFilePath(task.id)
+//   } else if (software_type === 'ue') {
+//     return doodlework.getUeFilePath(task.id)
+//   } else if (software_type === 'image')
+//     return doodlework.getImageFilePath(task.id)
+// }
 
 async function pathRule() {
   const pin_yin_ming_cheng =
@@ -151,30 +150,30 @@ async function pathRule() {
     ue_work_path: '',
     target_path: undefined
   }
-  let work_files = null
-  if (
-    updateTaskFiles.state.currentUpdateType === 0 ||
-    updateTaskFiles.state.currentUpdateType === 1
-  ) {
-    work_files = await getTargetPath(
-      updateTaskFiles.state.selectedTask.task,
-      'maya'
-    )
-  } else if (updateTaskFiles.state.currentUpdateType === 2) {
-    work_files = await getTargetPath(
-      updateTaskFiles.state.selectedTask.task,
-      'image'
-    )
-  } else
-    work_files = await getTargetPath(
-      updateTaskFiles.state.selectedTask.task,
-      'ue'
-    )
-  if (work_files) {
-    file_path.target_path = work_files.file_path
-  } else {
-    file_path.target_path = undefined
-  }
+  // let work_files = null
+  // if (
+  //   updateTaskFiles.state.currentUpdateType === 0 ||
+  //   updateTaskFiles.state.currentUpdateType === 1
+  // ) {
+  //   work_files = await getTargetPath(
+  //     updateTaskFiles.state.selectedTask.task,
+  //     'maya'
+  //   )
+  // } else if (updateTaskFiles.state.currentUpdateType === 2) {
+  //   work_files = await getTargetPath(
+  //     updateTaskFiles.state.selectedTask.task,
+  //     'image'
+  //   )
+  // } else
+  //   work_files = await getTargetPath(
+  //     updateTaskFiles.state.selectedTask.task,
+  //     'ue'
+  //   )
+  // if (work_files) {
+  //   file_path.target_path = work_files.file_path
+  // } else {
+  //   file_path.target_path = undefined
+  // }
   if (
     updateTaskFiles.state.selectedTask.task.task_type_id ===
     '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
