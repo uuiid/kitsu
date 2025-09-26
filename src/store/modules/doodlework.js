@@ -841,8 +841,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         }
       } else {
         const fs = require('fs')
-        const os = require('os')
-        const filePath = `${os.tmpdir()}\\doodle\\server_task\\${task_id}.log`
+        const local_log_path = await actions.getLocalLogPath()
+        const filePath = `${local_log_path}\\${task_id}.log`
         logs_str = fs.readFileSync(filePath).toString()
       }
       return new Promise(resolve => {
