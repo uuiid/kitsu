@@ -78,6 +78,12 @@
             :title="$t('doodle.replace_asset')"
             @click="isReplaceAsset = !isReplaceAsset"
           />
+          <button-simple
+            class="flexrow-item"
+            :text="$t('shots.manage')"
+            icon="plus"
+            @click="showManageShots"
+          />
         </div>
 
         <spinner class="mt1" v-if="isLoading" />
@@ -443,7 +449,14 @@
       @cancel="modals.isEditLabelDisplayed = false"
       @confirm="confirmEditLabel"
     />
-
+    <manage-shots-modal
+      :active="modals.isManageDisplayed"
+      :is-loading="loading.manage"
+      @add-episode="addEpisode"
+      @add-sequence="addSequence"
+      @add-shot="addShot"
+      @cancel="hideManageShots"
+    />
     <build-filter-modal
       ref="build-filter-modal"
       :active="modals.isBuildFilterDisplayed"
@@ -510,6 +523,7 @@ import TableMetadataSelectorMenu from '@/components/widgets/TableMetadataSelecto
 import { ElMessage } from 'element-plus'
 import ReplaceAssetCell from '@/components/cells/ReplaceAssetCell.vue'
 import Combobox from '@/components/widgets/Combobox.vue'
+import ManageShotsModal from '@/components/modals/ManageShotsModal.vue'
 
 export default {
   name: 'breakdown',
@@ -517,6 +531,7 @@ export default {
   mixins: [entityListMixin, searchMixin],
 
   components: {
+    ManageShotsModal,
     Combobox,
     AvailableAssetBlock,
     BuildFilterModal,
@@ -575,7 +590,8 @@ export default {
         editLabel: false,
         importing: false,
         remove: false,
-        stay: false
+        stay: false,
+        manage: false
       },
       metadataDisplayHeaders: {
         stdby: true,
@@ -594,7 +610,8 @@ export default {
         isNewDisplayed: false,
         isImportRenderDisplayed: false,
         isRemoveConfirmationDisplayed: false,
-        importing: false
+        importing: false,
+        isManageDisplayed: false
       },
       success: {
         edit: false
@@ -879,7 +896,10 @@ export default {
       'setEntityCasting',
       'setLastProductionScreen',
       'uploadCastingFile',
-      'replaceCasting'
+      'replaceCasting',
+      'newEpisode',
+      'newSequence',
+      'newShot'
     ]),
 
     reset() {
@@ -1283,7 +1303,21 @@ export default {
           this.loading.editLabel = false
         })
     },
-
+    addEpisode(episode, callback) {
+      this.newEpisode(episode).then(callback).catch(console.error)
+    },
+    addSequence(sequence, callback) {
+      this.newSequence(sequence).then(callback).catch(console.error)
+    },
+    addShot(shot, callback) {
+      this.newShot(shot).then(callback).catch(console.error)
+    },
+    hideManageShots() {
+      this.modals.isManageDisplayed = false
+    },
+    showManageShots() {
+      this.modals.isManageDisplayed = true
+    },
     toggleTextMode() {
       this.isTextMode = !this.isTextMode
       localStorage.setItem('breakdown:text-mode', this.isTextMode)
