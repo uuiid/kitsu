@@ -138,11 +138,8 @@
               "
             ></div>
           </div>
-          <div class="standby-header" v-if="isShowInfosBreakdown">
+          <div class="standby-header" v-if="false">
             {{ $t('breakdown.fields.standby') }}
-          </div>
-          <div class="description-header" v-if="isShowInfosBreakdown">
-            {{ $t('shots.fields.description') }}
           </div>
           <div
             class="frames-header"
@@ -226,7 +223,9 @@
           >
             {{ assetType }}
           </div>
-
+          <div class="description-header" v-if="isShowInfosBreakdown">
+            {{ $t('shots.fields.description') }}
+          </div>
           <div class="actions filler"></div>
         </div>
 

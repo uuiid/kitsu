@@ -35,7 +35,7 @@
         </div>
       </div>
     </div>
-    <div class="standby-column flexrow-item" v-if="isShowInfosBreakdown">
+    <div class="standby-column flexrow-item" v-if="false">
       <input
         type="checkbox"
         :checked="entity ? entity.is_casting_standby : false"
@@ -45,22 +45,6 @@
         ]"
         @input="event => onStandbyChanged(entity, event)"
       />
-    </div>
-
-    <div class="description-column flexrow-item" v-if="isShowInfosBreakdown">
-      <div
-        class="tooltip-text"
-        v-html="renderMarkdown(entity.description)"
-        v-if="readOnly"
-      ></div>
-      <textarea
-        class="tooltip-editor"
-        ref="text"
-        :value="entity.description"
-        @input="event => onDescriptionChanged(entity, event)"
-        v-else
-      >
-      </textarea>
     </div>
     <div
       class="frames-column flexrow-item"
@@ -268,6 +252,21 @@
       <div class="asset-type-line flexrow empty mt05 mb05" v-else>
         {{ $t('breakdown.empty') }}
       </div>
+    </div>
+    <div class="description-column flexrow-item" v-if="isShowInfosBreakdown">
+      <div
+        class="tooltip-text"
+        v-html="renderMarkdown(entity.description)"
+        v-if="readOnly"
+      ></div>
+      <textarea
+        class="tooltip-editor"
+        ref="text"
+        :value="entity.description"
+        @input="event => onDescriptionChanged(entity, event)"
+        v-else
+      >
+      </textarea>
     </div>
     <div class="asset-list-end flexrow-item">
       <div class="actions">
