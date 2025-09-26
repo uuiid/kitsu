@@ -44,6 +44,7 @@ const client = {
     return new Promise((resolve, reject) => {
       superagent
         .post(path)
+        .withCredentials()
         .send(data)
         .end((err, res) => {
           if (res?.statusCode === 401) {
