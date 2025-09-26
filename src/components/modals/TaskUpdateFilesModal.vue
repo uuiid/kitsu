@@ -103,9 +103,9 @@ const onActions = async (action_name, task) => {
     updateTaskFiles.state.allFiles.delete(task.id)
     updateTaskFiles.doodleWorkCheckFiles.uncommittedWorkList.delete(task.id)
   } else if (action_name === 'view-log') {
-    const os = require('os')
     const fs = require('fs')
-    const logPath = `${os.tmpdir()}/doodle/server_task/${task.id}.log`
+    const localLogPath = await doodleWorkStore().actions.getLocalLogPath()
+    const logPath = `${localLogPath}/${task.id}.log`
     if (fs.existsSync(logPath)) {
       window.api.openPath(logPath)
     } else ElMessage.error('文件不存在，请稍后尝试')
