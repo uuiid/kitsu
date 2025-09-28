@@ -1480,10 +1480,18 @@ export default {
       this.copyAssets = copyAssets
     },
     async onPaste(entity) {
+      const startSelection = Object.assign({}, this.selection)
+      const selected = Object.keys(this.selection).filter(
+        k => this.selection[k]
+      )
+      if (selected.length === 1) {
+        if (selected[0] !== entity.id) this.selection[selected[0]] = false
+      }
       this.selection[entity.id] = true
       for (const asset of this.copyAssets) {
         await this.addOneAsset(asset.asset_id, asset.nb_occurences)
       }
+      this.selection = startSelection
     },
     async replaceAsset() {
       this.isReplacingAsset = true
