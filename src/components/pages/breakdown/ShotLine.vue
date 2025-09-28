@@ -250,7 +250,9 @@
             @add-one="addOneAsset"
             v-for="asset in assetsByAssetTypesMap[assetType]"
             :ref="setBoxRef(asset)"
-            :class="{ 'selected-block': selectedIds.includes(asset.asset_id) }"
+            :class="{
+              'selected-block': selectedIds.includes(asset.asset_id)
+            }"
           />
         </div>
         <div class="actions filler"></div>

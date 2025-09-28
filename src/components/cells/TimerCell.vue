@@ -7,7 +7,10 @@
       <template #reference>
         <span style="margin-right: 16px">{{ time }}</span>
       </template>
-      <el-table :data="time_info" style="width: 100%">
+      <el-table
+        :data="time_info"
+        style="width: 100%; max-height: 500px; overflow-y: auto"
+      >
         <el-table-column width="120" property="start_time" label="开始时间" />
         <el-table-column width="120" property="end_time" label="结束时间" />
         <el-table-column width="120" property="run_time" label="运行时间" />
