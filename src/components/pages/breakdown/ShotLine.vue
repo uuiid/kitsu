@@ -8,6 +8,7 @@
       'text-mode': textMode
     }"
     @click="onClicked($event)"
+    @keydown="onKeyDown($event)"
   >
     <div
       class="flexrow-item sticky"
@@ -218,10 +219,12 @@
         </span>
       </div>
     </template>
+    <div v-if="isSelecting" class="selection-box" :style="selectionStyle"></div>
     <div
       class="asset-list flexrow-item"
       :key="entity.id + '-' + assetType"
       v-for="assetType in assetTypes"
+      @mousedown="onMouseDown"
     >
       <div
         class="asset-type-line flexcolumn"
@@ -233,7 +236,7 @@
         </div>
         <div class="asset-type-items flexrow-item">
           <asset-block
-            class="flexrow-item"
+            class="flexrow-item no-select"
             :key="asset.id"
             :asset="asset"
             :active="selected"
@@ -241,10 +244,13 @@
             :read-only="readOnly"
             :text-mode="textMode"
             :big-mode="bigMode"
+            :selected="selectedIds.includes(asset.asset_id)"
             @edit-label="onEditLabelClicked"
             @remove-one="removeOneAsset"
             @add-one="addOneAsset"
             v-for="asset in assetsByAssetTypesMap[assetType]"
+            :ref="setBoxRef(asset)"
+            :class="{ 'selected-block': selectedIds.includes(asset.asset_id) }"
           />
         </div>
         <div class="actions filler"></div>
@@ -272,18 +278,10 @@
       <div class="actions">
         <button
           class="button action"
-          title="复制"
-          tabindex="-1"
-          @click.stop="$emit('copy', entity)"
-        >
-          <copy class="icon is-small only-icon" />
-        </button>
-        <button
-          class="button action"
           title="粘贴"
           tabindex="-1"
           @click.stop="$emit('paste', entity)"
-          v-if="copyEntity !== null"
+          v-if="copyAssets?.length > 0"
         >
           <clipboard-paste class="icon is-small only-icon" />
         </button>
@@ -301,7 +299,7 @@ import { descriptorMixin } from '@/components/mixins/descriptors'
 
 import AssetBlock from '@/components/pages/breakdown/AssetBlock.vue'
 import EntityThumbnail from '@/components/widgets/EntityThumbnail.vue'
-import { Copy, ClipboardPaste } from 'lucide-vue-next'
+import { ClipboardPaste } from 'lucide-vue-next'
 
 export default {
   name: 'shot-line',
@@ -309,7 +307,6 @@ export default {
   mixins: [entityListMixin, descriptorMixin],
 
   components: {
-    Copy,
     ClipboardPaste,
     AssetBlock,
     EntityThumbnail
@@ -372,9 +369,19 @@ export default {
       default: () => {},
       type: Object
     },
-    copyEntity: {
-      default: () => {},
-      type: Object
+    copyAssets: {
+      default: () => [],
+      type: Array
+    }
+  },
+  data() {
+    return {
+      isSelecting: false,
+      start: { x: 0, y: 0 },
+      current: { x: 0, y: 0 },
+      selectedIds: [],
+      boxRefs: new Map(),
+      selectedAssets: []
     }
   },
 
@@ -386,7 +393,8 @@ export default {
     'remove-one',
     'standby-changed',
     'copy',
-    'paste'
+    'paste',
+    'remove-assets'
   ],
 
   computed: {
@@ -415,12 +423,82 @@ export default {
         }
       })
       return assetsByAssetTypes
+    },
+    selectionStyle() {
+      const left = Math.min(this.start.x, this.current.x)
+      const top = Math.min(this.start.y, this.current.y)
+      const width = Math.abs(this.current.x - this.start.x)
+      const height = Math.abs(this.current.y - this.start.y)
+      return {
+        left: left + 'px',
+        top: top + 'px',
+        width: width + 'px',
+        height: height + 'px'
+      }
     }
   },
 
   methods: {
+    setBoxRef(asset) {
+      return el => {
+        if (el) this.boxRefs.set(asset, el)
+      }
+    },
+    onMouseDown(e) {
+      this.isSelecting = true
+      this.selectedIds = []
+      this.selectedAssets = []
+      this.start.x = e.clientX
+      this.start.y = e.clientY
+      this.current.x = e.clientX
+      this.current.y = e.clientY
+      window.addEventListener('mouseup', this.onMouseUp)
+      window.addEventListener('mousemove', this.onMouseMove)
+    },
+    onMouseMove(e) {
+      if (!this.isSelecting) return
+      this.current.x = e.clientX
+      this.current.y = e.clientY
+
+      // 实时计算范围
+      const rect = {
+        left: Math.min(this.start.x, this.current.x),
+        top: Math.min(this.start.y, this.current.y),
+        right: Math.max(this.start.x, this.current.x),
+        bottom: Math.max(this.start.y, this.current.y)
+      }
+
+      // 实时判断哪些元素在框中
+      this.selectedIds = []
+      this.selectedAssets = []
+      this.boxRefs.forEach((el, asset) => {
+        const boxRect = el.$el.getBoundingClientRect()
+        const inX = boxRect.left < rect.right && boxRect.right > rect.left
+        const inY = boxRect.top < rect.bottom && boxRect.bottom > rect.top
+
+        if (inX && inY) {
+          this.selectedIds.push(asset.asset_id)
+          this.selectedAssets.push(asset)
+        }
+      })
+    },
+    onKeyDown(e) {
+      if (e.key === 'Delete') {
+        this.$emit('remove-assets', this.selectedIds)
+      }
+    },
+    onMouseUp() {
+      this.isSelecting = false
+      this.$emit('copy', this.selectedAssets)
+      if (this.selectedAssets.length > 0) {
+        window.addEventListener('keydown', this.onKeyDown)
+      } else {
+        window.removeEventListener('keydown', this.onKeyDown)
+      }
+      window.removeEventListener('mouseup', this.onMouseUp)
+      window.removeEventListener('mousemove', this.onMouseMove)
+    },
     onClicked(event) {
-      console.log(this.entity)
       this.$emit('click', this.entity.id, event)
     },
 
@@ -778,5 +856,41 @@ input[type='number'] {
   display: flex;
   flex-direction: row;
   gap: 10px;
+}
+
+.container {
+  position: relative;
+  width: 100%;
+  height: 100vh;
+  user-select: none;
+}
+
+.box {
+  width: 80px;
+  height: 80px;
+  margin: 20px;
+  background: lightgray;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.box.selected {
+  background: #ff0000;
+}
+
+.selection-box {
+  position: fixed;
+  border: 1px dashed #2fff00;
+  background: rgba(2, 31, 64, 0.2);
+  pointer-events: none;
+}
+
+.no-select {
+  border: 2px dashed transparent;
+}
+
+.selected-block {
+  border-color: #2fff00;
 }
 </style>

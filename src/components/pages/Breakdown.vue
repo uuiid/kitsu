@@ -252,7 +252,7 @@
               :is-description="isDescription"
               :is-save-error="saveErrors[entity.id]"
               :column-width="columnWidth"
-              :copy-entity="copyEntity"
+              :copy-assets="copyAssets"
               @add-one="addOneAsset"
               @click="selectEntity"
               @description-changed="onDescriptionChanged"
@@ -262,6 +262,7 @@
               @standby-changed="onStandbyChanged"
               @paste="onPaste"
               @copy="onCopy"
+              @remove-assets="removeAssetsFromSelection"
               v-for="entity in castingEntities"
             />
           </div>
@@ -617,7 +618,7 @@ export default {
       },
       columnWidth: {},
       assetToEdit: {},
-      copyEntity: null,
+      copyAssets: [],
       isReplaceAsset: false,
       dropEntry: null,
       sourceAsset: null,
@@ -1120,7 +1121,24 @@ export default {
           this.loading.remove = false
         })
     },
-
+    async removeAssetsFromSelection(assetIds) {
+      for (const assetId of assetIds) {
+        await this.removeAssetFromSelection(assetId)
+      }
+    },
+    async removeAssetFromSelection(assetId) {
+      const entityIds = Object.keys(this.selection).filter(
+        key => this.selection[key]
+      )
+      for (const entityId of entityIds) {
+        const asset = this.casting[entityId].find(
+          asset => asset.asset_id === assetId
+        )
+        if (asset) {
+          await this.removeAsset(assetId, entityId, asset.nb_occurences)
+        }
+      }
+    },
     async removeOneAssetFromSelection(assetId) {
       const entityIds = Object.keys(this.selection).filter(
         key => this.selection[key]
@@ -1145,7 +1163,10 @@ export default {
         return this.saveAssetRemoval(entityId, assetId, 1)
       }
     },
-
+    removeAsset(assetId, entityId, nbOccurences) {
+      this.isLocked = true
+      return this.saveAssetRemoval(entityId, assetId, nbOccurences)
+    },
     onAssetListScroll(event) {
       const assetList = this.$refs['asset-list']
       const maxHeight = assetList.scrollHeight - assetList.offsetHeight
@@ -1455,17 +1476,13 @@ export default {
         this.editAsset(data)
       }
     },
-    onCopy(entity) {
-      this.copyEntity = entity
-      ElMessage.success('Asset copied')
+    onCopy(copyAssets) {
+      this.copyAssets = copyAssets
     },
     async onPaste(entity) {
-      const assets_list = this.castingByType[this.copyEntity.id]
       this.selection[entity.id] = true
-      for (const assets of assets_list) {
-        for (const asset of assets) {
-          await this.addOneAsset(asset.asset_id, asset.nb_occurences)
-        }
+      for (const asset of this.copyAssets) {
+        await this.addOneAsset(asset.asset_id, asset.nb_occurences)
       }
     },
     async replaceAsset() {

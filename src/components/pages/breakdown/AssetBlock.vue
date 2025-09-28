@@ -4,7 +4,8 @@
     :class="{
       active,
       'big-asset': bigMode,
-      shared: asset.shared
+      shared: asset.shared,
+      selected: selected
     }"
     :title="`${asset.name} (${nbOccurences})`"
     v-if="!textMode"
@@ -88,6 +89,10 @@ export default {
       type: Boolean
     },
     bigMode: {
+      default: false,
+      type: Boolean
+    },
+    selected: {
       default: false,
       type: Boolean
     }
@@ -178,6 +183,10 @@ export default {
   background: $purple;
 }
 
+.selected {
+  background: $dark-purple;
+}
+
 .asset-wrapper {
   display: flex;
   flex-direction: column;
@@ -249,10 +258,9 @@ export default {
   height: 20px;
   left: 100%;
   padding-top: 5px;
-  position: absolute;
   text-align: center;
   top: 0;
-  transform: rotate(-90deg) translateX(-25%) translateY(calc(-50% - 5px));
+  transform: rotate(-90deg) translateX(-20%);
   width: 40px;
 }
 
