@@ -133,7 +133,7 @@
         >
           <router-link to="doodle-work">
             <div class="avatar has-text-centered" style="background: #3de867">
-              <span class="avatar-initials"> 台 </span>
+              <span class="avatar-initials"> AI </span>
             </div>
             <div class="production-name">
               <div v-if="isShowDoodleWorkName">
