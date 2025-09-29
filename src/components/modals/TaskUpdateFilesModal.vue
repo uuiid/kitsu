@@ -236,6 +236,11 @@ async function pathRule() {
     //     }
     //   }
     // }
+  } else if (
+    updateTaskFiles.state.selectedTask.task.task_type_id ===
+    'da050d42-4f45-40c4-9638-cc637753d3b5'
+  ) {
+    file_path.maya_file_name = `${pin_yin_ming_cheng}_cloth.ma`
   }
   return file_path
 }
@@ -274,6 +279,7 @@ const onAddData = async files => {
       path: file.path,
       target_path: file_path.target_path
     }
+    console.log(file_path)
     if (updateTaskFiles.state.currentUpdateType === 0)
       file_data['task_id'] = updateTaskFiles.state.selectedTask.task.id
     if (
