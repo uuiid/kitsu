@@ -140,7 +140,7 @@ async function pathRule() {
     updateTaskFiles.state.selectedTask.entity.ban_ben !== undefined &&
     updateTaskFiles.state.selectedTask.entity.ban_ben !== ''
   )
-    final_file_name = `${final_file_name}_${updateTaskFiles.state.selectedTask.entity.ban_beSiGeChuWuDain}`
+    final_file_name = `${final_file_name}_${updateTaskFiles.state.selectedTask.entity.ban_ben}`
   const file_path = {
     pin_yin_ming_cheng: pin_yin_ming_cheng,
     root_path: '',
@@ -240,7 +240,17 @@ async function pathRule() {
     updateTaskFiles.state.selectedTask.task.task_type_id ===
     'da050d42-4f45-40c4-9638-cc637753d3b5'
   ) {
-    file_path.maya_file_name = `Ch${bian_hao}_rig_`
+    if (
+      updateTaskFiles.state.selectedTask.entity.asset_type_id ===
+      'f9a8be37-2d05-4e20-8fae-751a61960ce4'
+    )
+      file_path.maya_file_name = `Ch${bian_hao}_rig_`
+    else if (
+      updateTaskFiles.state.selectedTask.entity.asset_type_id ===
+      '8c02b76a-6be6-4959-af58-5c31a85fe072'
+    ) {
+      file_path.maya_file_name = `${final_file_name}_rig_`
+    }
   }
   return file_path
 }
