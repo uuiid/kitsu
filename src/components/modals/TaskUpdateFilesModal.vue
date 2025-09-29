@@ -240,7 +240,7 @@ async function pathRule() {
     updateTaskFiles.state.selectedTask.task.task_type_id ===
     'da050d42-4f45-40c4-9638-cc637753d3b5'
   ) {
-    file_path.maya_file_name = `${pin_yin_ming_cheng}_cloth.ma`
+    file_path.maya_file_name = `Ch${bian_hao}_rig_`
   }
   return file_path
 }
@@ -279,7 +279,6 @@ const onAddData = async files => {
       path: file.path,
       target_path: file_path.target_path
     }
-    console.log(file_path)
     if (updateTaskFiles.state.currentUpdateType === 0)
       file_data['task_id'] = updateTaskFiles.state.selectedTask.task.id
     if (
@@ -312,6 +311,20 @@ const onAddData = async files => {
         continue
       }
       //}
+    } else if (
+      updateTaskFiles.state.selectedTask.task.task_type_id ===
+        'da050d42-4f45-40c4-9638-cc637753d3b5' &&
+      updateTaskFiles.state.currentUpdateType === 0
+    ) {
+      if (
+        file.name.startsWith(file_path.maya_file_name) &&
+        file.name.endsWith('_cloth.ma')
+      ) {
+        files_.push(file_data)
+      } else {
+        messages.push(`${file.name}:请检查文件名称`)
+        continue
+      }
     } else if (
       updateTaskFiles.state.currentUpdateType === 0 &&
       file.name.endsWith('.ma') &&
