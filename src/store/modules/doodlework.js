@@ -445,6 +445,7 @@ function initState() {
     isReload: true,
     isVisitor: false,
     isPullProcessed: false,
+    isInitialProcessed: false,
     visitorContext: null,
     doodleWorkExeLocalRootPath: '',
     doodleWorkExeDownloadPath: '',
@@ -565,6 +566,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     pullProcess: async () => {
       const fs = require('fs')
       const os = require('os')
+      if (state.value.isInitialProcessed) return
+      else state.value.isInitialProcessed = true
       state.value.isPullProcessed = false
       if (!state.value.doodleWorkZipFileVision)
         state.value.doodleWorkZipFileVision = state.value.versions[0]
@@ -856,9 +859,11 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     getWorkSetting: async () => {
       await actions.getToolVersions()
       await actions.getLocalHttpPath()
-      state.value.doodleWorkSetting = await doodlework.getLocalSetting(
-        state.value.localHttpPath
-      )
+      if (window.api.DoodleExePort() !== 0) {
+        state.value.doodleWorkSetting = await doodlework.getLocalSetting(
+          state.value.localHttpPath
+        )
+      }
     },
 
     setWorkSetting: async () => {
