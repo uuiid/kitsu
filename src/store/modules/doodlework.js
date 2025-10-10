@@ -462,7 +462,10 @@ function initState() {
     doodleSocket: null,
     port: 0,
     DemonstrateVideoName: '',
-    autoLightSearchTasks: []
+    autoLightSearchTasks: [],
+    doodleWorkExeDownloadProgressMessage: '',
+    doodleWorkExeDownloadProgress: 0,
+    isShowDoodleWorkExeDownloadProgress: false
   }
 }
 
@@ -581,7 +584,27 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         }
         if (!fs.existsSync(doodleWorkExePath.value)) {
           const zipName = `Doodle-${state.value.doodleWorkZipFileVision}-win64.zip`
-          await actions.downloadDoodleWorkExe(`/${zipName}`)
+          state.value.isShowDoodleWorkExeDownloadProgress = true
+          state.value.doodleWorkExeDownloadProgressMessage = '下载中...'
+          const buffer = await actions.downloadWithProgress(
+            `/${zipName}`,
+            ({ percent }) => {
+              if (percent) {
+                state.value.doodleWorkExeDownloadProgress = percent
+              }
+            }
+          )
+          state.value.doodleWorkExeDownloadProgressMessage = '解压中...'
+          await actions.zipFile(
+            buffer,
+            state.value.doodleWorkExeLocalRootPath,
+            ({ percent }) => {
+              if (percent) {
+                state.value.doodleWorkExeDownloadProgress = percent
+              }
+            }
+          )
+          state.value.isShowDoodleWorkExeDownloadProgress = false
         }
       }
       await window.api.doodleExeRun(doodleWorkExePath.value, ['--local'])
@@ -690,32 +713,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
             resolve(Buffer.from(res.body))
           })
       })
-    },
-    downloadDoodleWorkExe: async url => {
-      try {
-        const response = await superagent.get(url).responseType('arraybuffer')
-        const buffer = await Buffer.from(response.body)
-        if (!response.body) {
-          new Error('No data received from the URL.')
-        }
-        // const fs = require('fs')
-        // const stream = fs.createWriteStream(doodleWorkZipFilePath.value)
-        // const response = await superagent.get(url).responseType('arraybuffer')
-        // stream.write(Buffer.from(response.body))
-        // stream.end()
-        //
-        // stream.on('finish', () => {
-        //   console.log(`File saved to ${doodleWorkZipFilePath.value}`)
-        // })
-        //
-        // stream.on('error', err => {
-        //   console.error('Error writing file:', err)
-        // })
-
-        await actions.zipFile(buffer, state.value.doodleWorkExeLocalRootPath)
-      } catch (err) {
-        console.error('Download failed:', err)
-      }
     },
 
     zipFile: async (zipData, outputPath, onProgress = null) => {
