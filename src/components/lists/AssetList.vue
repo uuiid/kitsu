@@ -531,7 +531,7 @@
                 @edit-clicked="$emit('edit-clicked', asset)"
                 @delete-clicked="$emit('delete-clicked', asset)"
                 @restore-clicked="$emit('restore-clicked', asset)"
-                v-if="isCurrentUserSupervisor && !asset.shared"
+                v-if="isCurrentUserSupervisorAbove && !asset.shared"
               />
               <td class="actions" v-else></td>
             </tr>
@@ -795,7 +795,8 @@ export default {
       'selectedTasks',
       'taskMap',
       'user',
-      'isSimpleThumbnails'
+      'isSimpleThumbnails',
+      'isCurrentUserSupervisorAbove'
     ]),
 
     assetTypeMap() {

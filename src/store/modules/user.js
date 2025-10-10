@@ -140,6 +140,8 @@ const getters = {
   },
   isCurrentUserSupervisor: state =>
     state.user && state.user.role === 'supervisor',
+  isCurrentUserSupervisorAbove: state =>
+    state.user && ['supervisor', 'manager', 'admin'].includes(state.user.role),
   isCurrentUserClient: state => state.user && state.user.role === 'client',
   isCurrentUserVendor: state => state.user && state.user.role === 'vendor',
   isSaveProfileLoading: state => state.isSaveProfileLoading,
