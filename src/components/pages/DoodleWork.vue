@@ -32,7 +32,7 @@ onMounted(() => {
   doodleWork.actions.getVisitorContext()
 })
 
-const DownloadProgress = ref(0)
+const DownloadProgress = ref(0.0)
 const showMessage = ref(false)
 const messagePrefix = ref('')
 // createHead(() => ({
@@ -398,28 +398,21 @@ PYTHONPATH+:= scripts`
               showMessage.value = true
               messagePrefix.value = '正在下载文件1 '
               const url = `Plugins/Doodle_${doodleWork.state.doodleWorkZipFileVision}.${doodleWork.state.doodleWorkSetting.UE_version}.zip` //`${doodleWork.state.doodleWorkSetting.UE_url}/${doodleSourceName}.zip`
-              const buffer = await doodleWork.actions.downloadWithProgress(
+              await doodleWork.actions.downloadWithProgress(
                 url,
+                `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}`,
                 ({ percent }) => {
                   if (percent) {
-                    DownloadProgress.value = percent
+                    DownloadProgress.value = parseFloat(percent)
                   }
-                }
+                },
+                `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}`
               )
               messagePrefix.value = '正在下载文件2 '
               const SideFX_url = 'Plugins/SideFX_Labs.zip' //`${doodleWork.state.doodleWorkSetting.UE_url}/${doodleSourceName}.zip`
-              const SideFX_buffer =
-                await doodleWork.actions.downloadWithProgress(
-                  SideFX_url,
-                  ({ percent }) => {
-                    if (percent) {
-                      DownloadProgress.value = percent
-                    }
-                  }
-                )
-              messagePrefix.value = '正在解压文件1 '
-              await doodleWork.actions.zipFile(
-                buffer,
+
+              await doodleWork.actions.downloadWithProgress(
+                SideFX_url,
                 `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}`,
                 ({ percent }) => {
                   if (percent) {
@@ -427,16 +420,26 @@ PYTHONPATH+:= scripts`
                   }
                 }
               )
-              messagePrefix.value = '正在解压文件2 '
-              await doodleWork.actions.zipFile(
-                SideFX_buffer,
-                `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}`,
-                ({ percent }) => {
-                  if (percent) {
-                    DownloadProgress.value = percent
-                  }
-                }
-              )
+              // messagePrefix.value = '正在解压文件1 '
+              // await doodleWork.actions.zipFile(
+              //   buffer,
+              //   `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}`,
+              //   ({ percent }) => {
+              //     if (percent) {
+              //       DownloadProgress.value = percent
+              //     }
+              //   }
+              // )
+              // messagePrefix.value = '正在解压文件2 '
+              // await doodleWork.actions.zipFile(
+              //   SideFX_buffer,
+              //   `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}`,
+              //   ({ percent }) => {
+              //     if (percent) {
+              //       DownloadProgress.value = percent
+              //     }
+              //   }
+              // )
             } catch (err) {
               downloadSuccess = false
               ElNotification({

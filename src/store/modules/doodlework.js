@@ -1,8 +1,6 @@
 import { defineStore } from 'pinia'
 import { computed, ref } from 'vue'
 import doodlework from '@/store/api/doodlework.js'
-import superagent from 'superagent'
-import JSZip from 'jszip'
 import user from '@/store/modules/user.js'
 import productions from '@/store/modules/productions.js'
 import { v4 as uuid } from 'uuid'
@@ -586,17 +584,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           const zipName = `Doodle-${state.value.doodleWorkZipFileVision}-win64.zip`
           state.value.isShowDoodleWorkExeDownloadProgress = true
           state.value.doodleWorkExeDownloadProgressMessage = '下载中...'
-          const buffer = await actions.downloadWithProgress(
+          await actions.downloadWithProgress(
             `/${zipName}`,
-            ({ percent }) => {
-              if (percent) {
-                state.value.doodleWorkExeDownloadProgress = percent
-              }
-            }
-          )
-          state.value.doodleWorkExeDownloadProgressMessage = '解压中...'
-          await actions.zipFile(
-            buffer,
             state.value.doodleWorkExeLocalRootPath,
             ({ percent }) => {
               if (percent) {
@@ -604,6 +593,16 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
               }
             }
           )
+          //state.value.doodleWorkExeDownloadProgressMessage = '解压中...'
+          // await actions.zipFile(
+          //   buffer,
+          //   state.value.doodleWorkExeLocalRootPath,
+          //   ({ percent }) => {
+          //     if (percent) {
+          //       state.value.doodleWorkExeDownloadProgress = percent
+          //     }
+          //   }
+          // )
           state.value.isShowDoodleWorkExeDownloadProgress = false
         }
       }
@@ -698,53 +697,23 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       currentDoodleWorkState.value.uncommittedWorkList = new Map()
       currentDoodleWorkState.value.isReload = true
     },
-    async downloadWithProgress(url, onProgress) {
+    async downloadWithProgress(url, outPath, onProgress) {
       return new Promise((resolve, reject) => {
-        superagent
-          .get(url)
-          .responseType('arraybuffer')
-          .on('progress', res => {
-            if (typeof onProgress === 'function' && res.total) {
-              const percent = res.percent.toFixed(2)
-              onProgress({ percent })
+        try {
+          url = window.location.origin + '/' + url
+          window.api.downloadAndUnzip(url, outPath)
+          window.api.onProgress(percent => {
+            onProgress({ percent })
+            if (percent === 100) {
+              resolve(outPath)
             }
           })
-          .end((err, res) => {
-            resolve(Buffer.from(res.body))
-          })
+        } catch (e) {
+          reject(e)
+        }
       })
     },
 
-    zipFile: async (zipData, outputPath, onProgress = null) => {
-      const fs = require('fs')
-      const path = require('path')
-      const zip = await JSZip.loadAsync(zipData)
-      const entries = Object.entries(zip.files)
-      let downloaded = 0
-      const total = entries.length
-      for (const [filename, file] of entries) {
-        const filePath = path.join(outputPath, filename)
-
-        if (file.dir) {
-          // 创建文件夹
-          fs.mkdirSync(filePath, { recursive: true })
-        } else {
-          // 解压文件并保存
-          const content = await file.async('nodebuffer') // 读取为 Buffer
-          fs.mkdirSync(path.dirname(filePath), { recursive: true }) // 确保目录存在
-          fs.writeFileSync(filePath, content)
-        }
-        downloaded++
-        if (onProgress && typeof onProgress === 'function' && total) {
-          const percent = ((downloaded / total) * 100).toFixed(2)
-          onProgress({ downloaded, total, percent })
-        }
-      }
-    },
-    downloadUEPlugin: async (url, path, onProgress) => {
-      const buffer = await actions.downloadWithProgress(url, onProgress)
-      await actions.zipFile(buffer, path)
-    },
     formatDiffTime: diffTime => {
       const hours = Math.floor(diffTime / (1000 * 60 * 60))
       const minutes = Math.floor((diffTime % (1000 * 60 * 60)) / (1000 * 60))
