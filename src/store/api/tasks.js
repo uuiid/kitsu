@@ -16,7 +16,12 @@ export default {
     const path = '/api/data/tasks/open-tasks'
     return client.pget(buildQueryString(path, filters))
   },
-
+  modifyDateComment(taskId, data) {
+    return client.ppost(
+      `/api/actions/tasks/${taskId}/modify-date-comment`,
+      data
+    )
+  },
   updateTask(taskId, data) {
     return client.pput(`/api/data/tasks/${taskId}`, data)
   },

@@ -522,6 +522,7 @@
                   :is-show-date="true"
                   @select="onTaskSelected"
                   @unselect="onTaskUnselected"
+                  @update-task="onUpdateTask"
                   v-for="(columnId, j) in nonStickedDisplayedValidationColumns"
                 />
               </template>
@@ -617,6 +618,18 @@
       </span>
     </p>
   </div>
+  <el-dialog v-model="dialogVisible" title="添加修改日期评论" width="500">
+    <el-input
+      v-model="dateComment"
+      :autosize="{ minRows: 2, maxRows: 10 }"
+      type="textarea"
+      :placeholder="$t('comments.add_comment')"
+    />
+    <template #footer>
+      <el-button @click="dialogVisible = false">取消</el-button>
+      <el-button type="primary" @click="onModifyDateComment">确定</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script>
@@ -649,6 +662,7 @@ import ValidationHeader from '@/components/cells/ValidationHeader.vue'
 import assetTypeStore from '@/store/modules/assettypes'
 import episodeStore from '@/store/modules/episodes'
 import taskTypeStore from '@/store/modules/tasktypes'
+import moment from 'moment-timezone'
 
 export default {
   name: 'asset-list',
@@ -747,7 +761,10 @@ export default {
       selected_task_ids: [],
       indexes: null,
       start_selected_group_index: null,
-      start_selected_task_index: null
+      start_selected_task_index: null,
+      dialogVisible: false,
+      dateComment: '',
+      updateDateTask: null
     }
   },
 
@@ -897,7 +914,13 @@ export default {
   },
 
   methods: {
-    ...mapActions(['displayMoreAssets', 'editAsset', 'setAssetSelection']),
+    ...mapActions([
+      'displayMoreAssets',
+      'editAsset',
+      'setAssetSelection',
+      'updateTask',
+      'modifyDateComment'
+    ]),
 
     assetEpisodes(asset, full) {
       if (!this.episodeMap) return ''
@@ -988,6 +1011,56 @@ export default {
         this.$refs.body.scrollHeight - this.$refs.body.offsetHeight
       if (maxHeight < position.scrollTop + 100) {
         this.loadMoreAssets()
+      }
+    },
+    formatDate(date) {
+      if (date) return moment(date).format('YYYY-MM-DD')
+      return '\n'
+    },
+    onUpdateTask(task) {
+      this.updateDateTask = task
+      if (task.start_date !== null && task.due_date !== null)
+        this.dialogVisible = true
+      else this.modifyTaskDate()
+    },
+    onModifyDateComment() {
+      const taskId = this.updateDateTask.id
+      const data = {
+        checklist: [],
+        links: [],
+        task_status_id: this.updateDateTask.task_status_id,
+        start_date: this.formatDate(this.updateDateTask.dateRange[0]),
+        due_date: this.formatDate(this.updateDateTask.dateRange[1]),
+        comment: this.dateComment
+      }
+      this.modifyDateComment({ taskId, data })
+        .then(() => {
+          this.updateDateTask.start_date = data.start_date
+          this.updateDateTask.due_date = data.due_date
+          this.dialogVisible = false
+        })
+        .catch(console.error)
+    },
+    modifyTaskDate() {
+      if (this.updateDateTask) {
+        const taskId = this.updateDateTask.id
+        const data = {
+          start_date: this.formatDate(this.updateDateTask.dateRange[0]),
+          due_date: this.formatDate(this.updateDateTask.dateRange[1])
+        }
+        if (
+          !(
+            this.updateDateTask.start_date === data.start_date &&
+            this.updateDateTask.due_date === data.due_date
+          )
+        ) {
+          this.updateTask({ taskId, data })
+            .then(() => {
+              this.updateDateTask.start_date = data.start_date
+              this.updateDateTask.due_date = data.due_date
+            })
+            .catch(console.error)
+        }
       }
     },
     isSelectedAsset(asset, j) {

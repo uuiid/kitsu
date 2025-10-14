@@ -442,7 +442,10 @@ const actions = {
       }
     )
   },
-
+  modifyDateComment({ commit }, { taskId, data }) {
+    commit(EDIT_TASK_DATES, { taskId, data })
+    return tasksApi.modifyDateComment(taskId, data)
+  },
   updateTask({ commit }, { taskId, data }) {
     commit(EDIT_TASK_DATES, { taskId, data })
     return tasksApi.updateTask(taskId, data)

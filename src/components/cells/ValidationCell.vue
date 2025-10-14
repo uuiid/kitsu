@@ -138,6 +138,7 @@ export default {
   name: 'validation-cell',
 
   mixins: [formatListMixin],
+  emits: ['update-task'],
 
   data() {
     return {
@@ -363,6 +364,9 @@ export default {
       })
     },
     onEntryChange() {
+      this.$emit('update-task', this.task)
+    },
+    modifyTaskDate() {
       if (this.task) {
         const taskId = this.task.id
         const data = {
