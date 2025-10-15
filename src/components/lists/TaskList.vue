@@ -64,11 +64,11 @@
               {{ $t('tasks.fields.retake_count') }}
             </th>
             <th class="start-date" ref="th-estimation">
-              {{ $t('tasks.fields.start_date') }}
+              {{ $t('doodle.date_range') }}
             </th>
-            <th class="due-date" ref="th-estimation">
+            <!--th class="due-date" ref="th-estimation">
               {{ $t('tasks.fields.due_date') }}
-            </th>
+            </th-->
             <th class="real-start-date" ref="th-status">
               {{ $t('tasks.fields.real_start_date') }}
             </th>
@@ -220,20 +220,40 @@
                 &bull;
               </template>
             </td>
-            <td class="start-date">
-              <date-field
-                class="flexrow-item"
-                :with-margin="false"
-                :min-date="disabledDates.to"
-                :model-value="getDate(task.start_date)"
-                @update:model-value="updateStartDate"
-                v-if="isInDepartment(task) && selectionGrid[task.id]"
-              />
-              <template v-else>
-                {{ formatDate(task.start_date) }}
-              </template>
-            </td>
-            <td class="due-date">
+            <el-config-provider :locale="zhCn">
+              <td
+                class="custom-input"
+                :class="{
+                  'date-input': isInDepartment(task) && selectionGrid[task.id]
+                }"
+              >
+                <el-date-picker
+                  ref="datePicker"
+                  class="date-input custom-input"
+                  v-model="task.dateRange"
+                  type="daterange"
+                  :range-separator="
+                    task.start_date === null && task.due_date === null
+                      ? ''
+                      : '-'
+                  "
+                  unlink-panels
+                  placeholder="Select date and time"
+                  @change="onEntryChange"
+                  v-if="isInDepartment(task) && selectionGrid[task.id]"
+                  v-focus
+                />
+
+                <template v-else>
+                  {{
+                    task.start_date === null && task.due_date === null
+                      ? ''
+                      : `${formatDate(task.start_date)}-${formatDate(task.due_date)}`
+                  }}
+                </template>
+              </td>
+            </el-config-provider>
+            <!--td class="due-date">
               <date-field
                 class="flexrow-item"
                 :with-margin="false"
@@ -245,7 +265,7 @@
               <template v-else>
                 {{ formatDate(task.due_date) }}
               </template>
-            </td>
+            </td-->
             <td class="real-start-date">
               {{ formatDate(task.real_start_date) }}
             </td>
@@ -354,6 +374,18 @@
     </div>
     <task-list-numbers :is-shots="isShots" :tasks="tasks" v-if="!isLoading" />
   </div>
+  <el-dialog v-model="dialogVisible" title="添加修改日期评论" width="500">
+    <el-input
+      v-model="dateComment"
+      :autosize="{ minRows: 2, maxRows: 10 }"
+      type="textarea"
+      :placeholder="$t('comments.add_comment')"
+    />
+    <template #footer>
+      <el-button @click="dialogVisible = false">取消</el-button>
+      <el-button type="primary" @click="onModifyDateComment">确定</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script>
@@ -361,10 +393,7 @@ import { mapGetters, mapActions } from 'vuex'
 import moment from 'moment-timezone'
 import {
   daysToMinutes,
-  formatSimpleDate,
   getDatesFromStartDate,
-  getDatesFromEndDate,
-  parseSimpleDate,
   minutesToDays,
   range
 } from '@/lib/time'
@@ -372,7 +401,6 @@ import { formatListMixin } from '@/components/mixins/format'
 import { domMixin } from '@/components/mixins/dom'
 
 import Combobox from '@/components/widgets/Combobox.vue'
-import DateField from '@/components/widgets/DateField.vue'
 import EntityPreview from '@/components/widgets/EntityPreview.vue'
 import EntityThumbnail from '@/components/widgets/EntityThumbnail.vue'
 import PeopleAvatarWithMenu from '@/components/widgets/PeopleAvatarWithMenu.vue'
@@ -396,7 +424,6 @@ export default {
   components: {
     Combobox,
     DescriptionCell,
-    DateField,
     EntityPreview,
     EntityThumbnail,
     PeopleAvatarWithMenu,
@@ -420,7 +447,9 @@ export default {
       lastSelection: null,
       page: 1,
       selectionGrid: {},
-      selectedDate: moment().toDate() // By default current day.
+      selectedDate: moment().toDate(), // By default current day.
+      dialogVisible: false,
+      dateComment: ''
     }
   },
 
@@ -579,7 +608,8 @@ export default {
       'clearSelectedTasks',
       'updateTask',
       'unassignPersonFromTask',
-      'removeSelectedTask'
+      'removeSelectedTask',
+      'modifyDateComment'
     ]),
 
     getTaskName(task) {
@@ -624,77 +654,58 @@ export default {
       }
       this.unassignPersonFromTask({ task, person })
     },
-
-    updateStartDate(date) {
-      Object.keys(this.selectionGrid).forEach(taskId => {
-        let data = {
-          start_date: null,
-          due_date: null,
-          difficulty: null
-        }
-        const task = this.taskMap.get(taskId)
-        const dueDate = task.due_date ? parseSimpleDate(task.due_date) : null
-        if (date) {
-          const startDate = moment(date)
-          if (
-            task.start_date &&
-            task.start_date.substring(0, 10) === formatSimpleDate(startDate)
-          )
-            return
-          data = getDatesFromStartDate(
-            this.organisation,
-            startDate,
-            dueDate,
-            minutesToDays(this.organisation, task.estimation)
-          )
-        } else {
-          data = {
-            start_date: null,
-            due_date: dueDate
-          }
-        }
-        if (task.difficulty) {
-          data.difficulty = task.difficulty
-        }
-        if (this.isTaskChanged(task, data)) {
-          this.updateTask({ taskId, data }).catch(console.error)
-        }
-      })
+    onEntryChange() {
+      const taskId = Object.keys(this.selectionGrid)[0]
+      const task = this.taskMap.get(taskId)
+      if (task.start_date !== null && task.due_date !== null) {
+        this.dialogVisible = true
+      } else this.modifyTaskDate()
     },
-
-    updateDueDate(date) {
-      Object.keys(this.selectionGrid).forEach(taskId => {
-        let data = {
-          start_date: null,
-          due_date: null
+    modifyTaskDate() {
+      const taskId = Object.keys(this.selectionGrid)[0]
+      const task = this.taskMap.get(taskId)
+      if (task) {
+        const taskId = task.id
+        const data = {
+          start_date: this.formatDate(task.dateRange[0]),
+          due_date: this.formatDate(task.dateRange[1])
         }
-        const task = this.taskMap.get(taskId)
-        const startDate = task.start_date
-          ? parseSimpleDate(task.start_date)
-          : null
-        if (date) {
-          const dueDate = moment(date)
-          if (
-            task.due_date &&
-            task.due_date.substring(0, 10) === formatSimpleDate(dueDate)
+        if (
+          !(
+            task.start_date === data.start_date &&
+            task.due_date === data.due_date
           )
-            return
-          data = getDatesFromEndDate(
-            this.organisation,
-            startDate,
-            dueDate,
-            minutesToDays(this.organisation, task.estimation)
-          )
-        } else {
-          data = {
-            start_date: startDate,
-            due_date: null
-          }
+        ) {
+          this.updateTask({ taskId, data })
+            .then(() => {
+              task.start_date = data.start_date
+              task.due_date = data.due_date
+            })
+            .catch(console.error)
         }
-        if (this.isTaskChanged(task, data)) {
-          this.updateTask({ taskId, data }).catch(console.error)
-        }
-      })
+      }
+    },
+    onModifyDateComment() {
+      const taskId = Object.keys(this.selectionGrid)[0]
+      const task = this.taskMap.get(taskId)
+      const data = {
+        checklist: [],
+        links: [],
+        task_status_id: task.task_status_id,
+        start_date: this.formatDate(task.dateRange[0]),
+        due_date: this.formatDate(task.dateRange[1]),
+        comment: this.dateComment
+      }
+      this.modifyDateComment({ taskId, data })
+        .then(() => {
+          task.start_date = data.start_date
+          task.due_date = data.due_date
+          this.dialogVisible = false
+          this.$nextTick(() => {
+            this.$refs.datePicker[0].blur()
+          })
+        })
+        .catch(console.error)
     },
 
     updateTasksEstimation({ estimation }) {
@@ -1204,5 +1215,66 @@ input[type='number'] {
 
 .frames {
   padding-right: 10px;
+}
+
+.custom-input {
+  min-height: 21px;
+  min-width: 190px;
+}
+
+:deep(.el-range-editor.el-input__wrapper) {
+  box-shadow: none !important;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  width: 100%;
+  max-height: 21px !important;
+}
+
+:deep(.el-date-editor .el-range-separator) {
+  max-width: 2px !important;
+  font-style: inherit !important;
+  //padding: 0 5px !important;
+}
+
+:deep(.el-input__inner) {
+  color: var(--text) !important;
+  cursor: pointer !important;
+
+  &:focus {
+    cursor: text !important;
+  }
+}
+
+:deep(.el-input__prefix) {
+  width: 0 !important;
+}
+
+:deep(.el-input .el-input__icon) {
+  max-width: 0 !important;
+  max-height: 0 !important;
+}
+
+.date-input {
+  font-style: inherit !important;
+  border: 1px solid transparent;
+  border-radius: 5px;
+
+  &:hover {
+    border: 1px solid #6bacea;
+  }
+}
+
+:deep(.el-icon) {
+  width: 2px !important;
+  //max-height: 2xp !important;
+  //margin-bottom: 5px;
+}
+
+:deep(.el-range-input) {
+  //height: 30px !important;
+  width: 100% !important;
+  text-align: left !important;
 }
 </style>

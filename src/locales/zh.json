@@ -1720,6 +1720,7 @@
       "set_success": "设置成功",
       "install_success": "安装成功",
       "install_fail": "安装失败",
+      "share": "分享",
       "filed": {
         "name": "文件名",
         "status": "状态",
@@ -1829,7 +1830,8 @@
       "work_start_time": "开始时间",
       "work_end_time": "结束时间",
       "refresh": "刷新",
-      "replace_asset": "替换资产"
+      "replace_asset": "替换资产",
+      "date_range": "日期范围"
     },
     "doodle_productions": {
       "fields": {

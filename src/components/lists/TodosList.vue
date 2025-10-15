@@ -50,9 +50,9 @@
             <th scope="col" class="start-date" v-if="!isToCheck">
               {{ $t('tasks.fields.start_date_short') }}
             </th>
-            <th scope="col" class="due-date">
+            <!--th scope="col" class="due-date">
               {{ $t('tasks.fields.due_date') }}
-            </th>
+            </th-->
             <metadata-header
               :key="'desc-header' + field_name"
               :descriptor="metadataDescriptorsMap[field_name]"
@@ -161,20 +161,40 @@
             >
               {{ formatDuration(entry.duration) }}
             </td>
-            <td class="start-date" v-if="!isToCheck">
-              <date-field
-                class="flexrow-item"
-                :min-date="disabledDates"
-                :model-value="getDate(entry.start_date)"
-                :with-margin="false"
-                @update:model-value="updateStartDate"
-                v-if="isCurrentUserManager && selectionGrid[entry.id]"
-              />
-              <template v-else>
-                {{ formatDate(entry.start_date) }}
-              </template>
-            </td>
-            <td class="due-date">
+            <el-config-provider :locale="zhCn">
+              <td
+                class="custom-input"
+                :class="{
+                  'date-input': isInDepartment(entry) && selectionGrid[entry.id]
+                }"
+              >
+                <el-date-picker
+                  ref="datePicker"
+                  class="date-input custom-input"
+                  v-model="entry.dateRange"
+                  type="daterange"
+                  :range-separator="
+                    entry.start_date === null && entry.due_date === null
+                      ? ''
+                      : '-'
+                  "
+                  unlink-panels
+                  placeholder="Select date and time"
+                  @change="onEntryChange"
+                  v-if="isInDepartment(entry) && selectionGrid[entry.id]"
+                  v-focus
+                />
+
+                <template v-else>
+                  {{
+                    entry.start_date === null && entry.due_date === null
+                      ? ''
+                      : `${formatDate(entry.start_date)}-${formatDate(entry.due_date)}`
+                  }}
+                </template>
+              </td>
+            </el-config-provider>
+            <!--td class="due-date">
               <date-field
                 class="flexrow-item"
                 :min-date="disabledDates"
@@ -186,7 +206,7 @@
               <template v-else>
                 {{ formatDate(entry.due_date) }}
               </template>
-            </td>
+            </td-->
             <td
               class="metadata-descriptor"
               :key="'desc-' + entry.id + '-' + fieldName"
@@ -292,6 +312,18 @@
       {{ $tc('main.days_spent', isTimeSpentPlural) }})
     </p>
   </div>
+  <el-dialog v-model="dialogVisible" title="添加修改日期评论" width="500">
+    <el-input
+      v-model="dateComment"
+      :autosize="{ minRows: 2, maxRows: 10 }"
+      type="textarea"
+      :placeholder="$t('comments.add_comment')"
+    />
+    <template #footer>
+      <el-button @click="dialogVisible = false">取消</el-button>
+      <el-button type="primary" @click="onModifyDateComment">确定</el-button>
+    </template>
+  </el-dialog>
 </template>
 
 <script>
@@ -322,7 +354,6 @@ import TableInfo from '@/components/widgets/TableInfo.vue'
 import ValidationCell from '@/components/cells/ValidationCell.vue'
 import MetadataHeader from '@/components/cells/MetadataHeader.vue'
 import moment from 'moment-timezone'
-import DateField from '@/components/widgets/DateField.vue'
 
 export default {
   name: 'todos-list',
@@ -331,7 +362,6 @@ export default {
 
   components: {
     EntityThumbnail,
-    DateField,
     DescriptionCell,
     LastCommentCell,
     MetadataHeader,
@@ -381,7 +411,9 @@ export default {
       colNamePosX: '',
       lastSelection: null,
       selectionGrid: {},
-      selectedDate: moment().toDate() // By default current day.
+      selectedDate: moment().toDate(), // By default current day.
+      dialogVisible: false,
+      dateComment: ''
     }
   },
 
@@ -485,7 +517,8 @@ export default {
       'addSelectedTasks',
       'clearSelectedTasks',
       'removeSelectedTask',
-      'updateTask'
+      'updateTask',
+      'modifyDateComment'
     ]),
 
     assetEpisodes(entry, full) {
@@ -512,6 +545,74 @@ export default {
         : mainEpisodeName
     },
 
+    onEntryChange() {
+      const taskId = Object.keys(this.selectionGrid)[0]
+      const task = this.taskMap.get(taskId)
+      if (task.start_date !== null && task.due_date !== null) {
+        this.dialogVisible = true
+      } else this.modifyTaskDate()
+    },
+    modifyTaskDate() {
+      const taskId = Object.keys(this.selectionGrid)[0]
+      const task = this.taskMap.get(taskId)
+      if (task) {
+        const taskId = task.id
+        const data = {
+          start_date: this.formatDate(task.dateRange[0]),
+          due_date: this.formatDate(task.dateRange[1])
+        }
+        if (
+          !(
+            task.start_date === data.start_date &&
+            task.due_date === data.due_date
+          )
+        ) {
+          this.updateTask({ taskId, data })
+            .then(() => {
+              task.start_date = data.start_date
+              task.due_date = data.due_date
+            })
+            .catch(console.error)
+        }
+      }
+    },
+    onModifyDateComment() {
+      const taskId = Object.keys(this.selectionGrid)[0]
+      const task = this.taskMap.get(taskId)
+      const data = {
+        checklist: [],
+        links: [],
+        task_status_id: task.task_status_id,
+        start_date: this.formatDate(task.dateRange[0]),
+        due_date: this.formatDate(task.dateRange[1]),
+        comment: this.dateComment
+      }
+      this.modifyDateComment({ taskId, data })
+        .then(() => {
+          task.start_date = data.start_date
+          task.due_date = data.due_date
+          this.dialogVisible = false
+          this.$nextTick(() => {
+            this.$refs.datePicker[0].blur()
+          })
+        })
+        .catch(console.error)
+    },
+    isInDepartment(task) {
+      if (this.isCurrentUserManager) {
+        return true
+      } else if (this.isCurrentUserSupervisor) {
+        if (this.user.departments.length === 0) {
+          return true
+        }
+        const taskType = this.taskTypeMap.get(task.task_type_id)
+        return (
+          taskType.department_id &&
+          this.user.departments.includes(taskType.department_id)
+        )
+      }
+      return false
+    },
     getSortedPeople(personIds) {
       const people = personIds.map(id => this.personMap.get(id))
       return sortPeople(people)
@@ -1028,5 +1129,66 @@ input[type='number'] {
 
 .error {
   color: $red;
+}
+
+.custom-input {
+  min-height: 21px;
+  min-width: 190px;
+}
+
+:deep(.el-range-editor.el-input__wrapper) {
+  box-shadow: none !important;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  padding: 0;
+  width: 100%;
+  max-height: 21px !important;
+}
+
+:deep(.el-date-editor .el-range-separator) {
+  max-width: 2px !important;
+  font-style: inherit !important;
+  //padding: 0 5px !important;
+}
+
+:deep(.el-input__inner) {
+  color: var(--text) !important;
+  cursor: pointer !important;
+
+  &:focus {
+    cursor: text !important;
+  }
+}
+
+:deep(.el-input__prefix) {
+  width: 0 !important;
+}
+
+:deep(.el-input .el-input__icon) {
+  max-width: 0 !important;
+  max-height: 0 !important;
+}
+
+.date-input {
+  font-style: inherit !important;
+  border: 1px solid transparent;
+  border-radius: 5px;
+
+  &:hover {
+    border: 1px solid #6bacea;
+  }
+}
+
+:deep(.el-icon) {
+  width: 2px !important;
+  //max-height: 2xp !important;
+  //margin-bottom: 5px;
+}
+
+:deep(.el-range-input) {
+  //height: 30px !important;
+  width: 100% !important;
+  text-align: left !important;
 }
 </style>
