@@ -142,7 +142,7 @@
                 {{ $t('video_library.video_library') }}
               </router-link>
             </p>
-            <p @click="toggleSidebar()">
+            <p @click="toggleSidebar()" v-if="false">
               <router-link :to="{ name: 'scan-project' }">
                 <kitsu-icon class="nav-icon" name="scan-project" />
                 {{ $t('scan_project.scan_project') }}
