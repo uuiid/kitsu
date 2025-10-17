@@ -7,7 +7,6 @@
       stdby: entity ? entity.is_casting_standby : false,
       'text-mode': textMode
     }"
-    @click="onClicked($event)"
     @keydown="onKeyDown($event)"
   >
     <div
@@ -15,6 +14,7 @@
       :style="{
         'max-width': columnWidth.name ? columnWidth.name + 'px' : '250px'
       }"
+      @click="onClicked($event)"
     >
       <p class="error has-text-left info-message" v-if="isSaveError">
         {{ $t('breakdown.save_error') }}
@@ -224,7 +224,7 @@
       class="asset-list flexrow-item"
       :key="entity.id + '-' + assetType"
       v-for="assetType in assetTypes"
-      @mousedown="onMouseDown"
+      @mousedown.stop="onMouseDown"
     >
       <div
         class="asset-type-line flexcolumn"
@@ -248,6 +248,7 @@
             @edit-label="onEditLabelClicked"
             @remove-one="removeOneAsset"
             @add-one="addOneAsset"
+            @click.stop="onClickAssetBlock(asset)"
             v-for="asset in assetsByAssetTypesMap[assetType]"
             :ref="setBoxRef(asset)"
             :class="{
@@ -383,10 +384,18 @@ export default {
       current: { x: 0, y: 0 },
       selectedIds: [],
       boxRefs: new Map(),
-      selectedAssets: []
+      selectedAssets: [],
+      isCtrlKey: false
     }
   },
-
+  onMounted() {
+    window.addEventListener('keydown', this.onKeyDown)
+    window.addEventListener('keyup', this.onKeyUp)
+  },
+  beforeUnmount() {
+    window.removeEventListener('keydown', this.onKeyDown)
+    window.removeEventListener('keyup', this.onKeyUp)
+  },
   emits: [
     'add-one',
     'click',
@@ -396,7 +405,8 @@ export default {
     'standby-changed',
     'copy',
     'paste',
-    'remove-assets'
+    'remove-assets',
+    'clear-selection'
   ],
 
   computed: {
@@ -448,8 +458,11 @@ export default {
     },
     onMouseDown(e) {
       this.isSelecting = true
-      this.selectedIds = []
-      this.selectedAssets = []
+      if (!this.isCtrlKey) {
+        this.selectedIds = []
+        this.selectedAssets = []
+        this.$emit('clear-selection')
+      }
       this.start.x = e.clientX
       this.start.y = e.clientY
       this.current.x = e.clientX
@@ -461,42 +474,67 @@ export default {
       if (!this.isSelecting) return
       this.current.x = e.clientX
       this.current.y = e.clientY
-
-      // 实时计算范围
-      const rect = {
-        left: Math.min(this.start.x, this.current.x),
-        top: Math.min(this.start.y, this.current.y),
-        right: Math.max(this.start.x, this.current.x),
-        bottom: Math.max(this.start.y, this.current.y)
-      }
-
-      // 实时判断哪些元素在框中
-      this.selectedIds = []
-      this.selectedAssets = []
-      this.boxRefs.forEach((el, asset) => {
-        const boxRect = el.$el.getBoundingClientRect()
-        const inX = boxRect.left < rect.right && boxRect.right > rect.left
-        const inY = boxRect.top < rect.bottom && boxRect.bottom > rect.top
-
-        if (inX && inY) {
-          this.selectedIds.push(asset.asset_id)
-          this.selectedAssets.push(asset)
+      if (
+        Math.abs(this.start.x - this.current.x) > 5 ||
+        Math.abs(this.start.y - this.current.y) > 5
+      ) {
+        // 实时计算范围
+        const rect = {
+          left: Math.min(this.start.x, this.current.x),
+          top: Math.min(this.start.y, this.current.y),
+          right: Math.max(this.start.x, this.current.x),
+          bottom: Math.max(this.start.y, this.current.y)
         }
-      })
+
+        // 实时判断哪些元素在框中
+        this.selectedIds = []
+        this.selectedAssets = []
+        this.boxRefs.forEach((el, asset) => {
+          const boxRect = el.$el.getBoundingClientRect()
+          const inX = boxRect.left < rect.right && boxRect.right > rect.left
+          const inY = boxRect.top < rect.bottom && boxRect.bottom > rect.top
+
+          if (inX && inY) {
+            this.selectedIds.push(asset.asset_id)
+            this.selectedAssets.push(asset)
+          }
+        })
+      }
+    },
+    onClickAssetBlock(asset) {
+      if (this.selectedIds.includes(asset.asset_id)) {
+        this.selectedIds = this.selectedIds.filter(a => a !== asset.asset_id)
+        this.selectedAssets = this.selectedAssets.filter(
+          a => a.asset_id !== asset.asset_id
+        )
+      } else {
+        this.selectedIds.push(asset.asset_id)
+        this.selectedAssets.push(asset)
+      }
+      if (this.selectedIds.length > 0) this.$emit('copy', this.selectedAssets)
     },
     onKeyDown(e) {
       if (e.key === 'Delete') {
         this.$emit('remove-assets', this.selectedIds)
+      } else if (e.key === 'Control') {
+        this.isCtrlKey = true
+      }
+    },
+    onKeyUp(e) {
+      if (e.key === 'Control') {
+        this.isCtrlKey = false
       }
     },
     onMouseUp() {
       this.isSelecting = false
       this.$emit('copy', this.selectedAssets)
-      if (this.selectedAssets.length > 0) {
-        window.addEventListener('keydown', this.onKeyDown)
-      } else {
-        window.removeEventListener('keydown', this.onKeyDown)
-      }
+      // if (this.selectedAssets.length > 0) {
+      //   //window.addEventListener('keydown', this.onKeyDown)
+      //   //window.addEventListener('keyup', this.onKeyUp)
+      // } else {
+      //   window.removeEventListener('keydown', this.onKeyDown)
+      //   window.removeEventListener('keyup', this.onKeyUp)
+      // }
       window.removeEventListener('mouseup', this.onMouseUp)
       window.removeEventListener('mousemove', this.onMouseMove)
     },
@@ -531,6 +569,14 @@ export default {
         (acc, a) => acc + a.nb_occurences,
         0
       )
+    }
+  },
+  watch: {
+    copyAssets(newVal) {
+      if (newVal.length === 0) {
+        this.selectedIds = []
+        this.selectedAssets = []
+      }
     }
   }
 }
@@ -641,14 +687,6 @@ export default {
     .empty {
       color: $grey;
     }
-  }
-}
-
-.shot:hover {
-  background: var(--background-selectable);
-
-  .sticky {
-    background: var(--background-selectable);
   }
 }
 
