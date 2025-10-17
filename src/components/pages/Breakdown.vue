@@ -357,9 +357,10 @@
             :title="$t('entities.build_filter.title')"
             icon="filter"
             @click="modals.isBuildFilterDisplayed = true"
+            v-if="false"
           />
         </div>
-        <div class="query-list">
+        <div class="query-list" v-if="false">
           <search-query-list
             :groups="breakdownSearchFilterGroups"
             :is-group-enabled="true"
