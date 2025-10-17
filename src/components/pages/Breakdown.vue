@@ -329,6 +329,12 @@
             @click="isOnlyCurrentEpisode = !isOnlyCurrentEpisode"
             v-if="sequenceId !== 'all'"
           />
+          <combobox-styled
+            :options="castingSequencesOptions"
+            v-model="assetSequenceId"
+            v-if="isShotCasting"
+            style="margin-top: 0.4em; margin-right: 0.4em"
+          />
           <combobox
             class="flexrow-item"
             :options="assetTypeOptions"
@@ -595,6 +601,7 @@ export default {
       saveErrors: {},
       selection: {},
       sequenceId: 'all',
+      assetSequenceId: 'all',
       errors: {
         edit: false,
         editLabel: false,
@@ -740,12 +747,12 @@ export default {
       const result = []
       this.assetsByType.forEach(typeGroup => {
         let newGroup = typeGroup.filter(asset => !asset.canceled)
-        if (this.isOnlyCurrentEpisode && this.sequenceId !== 'all') {
+        if (this.assetSequenceId !== 'all') {
           newGroup = typeGroup.filter(asset => {
             return (
               asset.ji_shu_lie.toString() ===
               this.castingSequencesOptions
-                .find(s => s.value === this.sequenceId)
+                .find(s => s.value === this.assetSequenceId)
                 ?.label.replace('EP', '')
             )
           })

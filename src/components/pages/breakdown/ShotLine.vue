@@ -284,7 +284,7 @@
           title="粘贴"
           tabindex="-1"
           @click.stop="$emit('paste', entity)"
-          v-if="copyAssets?.length > 0"
+          v-if="false"
         >
           <clipboard-paste class="icon is-small only-icon" />
         </button>
