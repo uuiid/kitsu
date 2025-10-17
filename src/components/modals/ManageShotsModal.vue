@@ -401,10 +401,9 @@ export default {
           this.$emit('add-shot', shot, shot => {
             this.loading.addShot = false
             this.selectSequence(this.selectedSequenceId)
-            this.names.shot = String(Number(this.names.shot) + 1).padStart(
-              3,
-              '0'
-            )
+            let next_shot = Number(this.names.shot)
+            if (this.shotNameSuffix === '') next_shot += 1
+            this.names.shot = String(next_shot).padStart(3, '0')
           })
         }
       }
