@@ -528,13 +528,6 @@ export default {
     onMouseUp() {
       this.isSelecting = false
       this.$emit('copy', this.selectedAssets)
-      // if (this.selectedAssets.length > 0) {
-      //   //window.addEventListener('keydown', this.onKeyDown)
-      //   //window.addEventListener('keyup', this.onKeyUp)
-      // } else {
-      //   window.removeEventListener('keydown', this.onKeyDown)
-      //   window.removeEventListener('keyup', this.onKeyUp)
-      // }
       window.removeEventListener('mouseup', this.onMouseUp)
       window.removeEventListener('mousemove', this.onMouseMove)
     },
