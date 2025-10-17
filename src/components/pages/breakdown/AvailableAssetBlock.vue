@@ -1,47 +1,60 @@
 <template>
   <div
-    :id="`casting-${asset.id}`"
-    class="asset"
-    :class="{
-      active,
-      'big-asset': bigMode,
-      shared: asset.shared
-    }"
-    :title="asset.name"
-    v-if="!textMode"
+    class="asset-list-item"
+    @mouseenter="showClose = true"
+    @mouseleave="showClose = false"
   >
-    <asset-image-cell
-      :src="`/api/pictures/thumbnails-square/preview-files/${asset.preview_file_id}.png`"
-      @add-one-asset="addOneAsset"
-      @add-ten-asset="addTenAssets"
-      @show-info="$emit('show-info', asset)"
-    ></asset-image-cell>
-    <span
-      class="asset-name"
-      style="top: 3px; left: 5px; text-align: center; max-width: 90px"
-      >{{ asset.name }}</span
+    <x
+      class="close"
+      size="15"
+      v-if="showClose && isEnableClose"
+      @click="$emit('remove', asset.id)"
+    ></x>
+    <div
+      :id="`casting-${asset.id}`"
+      class="asset"
+      :class="{
+        active,
+        'big-asset': bigMode,
+        shared: asset.shared
+      }"
+      :title="asset.name"
+      v-if="!textMode"
     >
-  </div>
-  <div
-    class="asset-text flexrow-item flexrow"
-    :class="{
-      shared: asset.shared
-    }"
-    v-else
-  >
-    <span class="asset-text-name flexrow-item">
-      {{ asset.name }}
-    </span>
-    <span class="modify-asset flexrow-item" @click="addOneAsset"> + 1 </span>
+      <asset-image-cell
+        :src="`/api/pictures/thumbnails-square/preview-files/${asset.preview_file_id}.png`"
+        @add-one-asset="addOneAsset"
+        @add-ten-asset="addTenAssets"
+        @show-info="$emit('show-info', asset)"
+      ></asset-image-cell>
+      <span
+        class="asset-name"
+        style="top: 3px; left: 5px; text-align: center; max-width: 90px"
+        >{{ asset.name }}</span
+      >
+    </div>
+    <div
+      class="asset-text flexrow-item flexrow"
+      :class="{
+        shared: asset.shared
+      }"
+      v-else
+    >
+      <span class="asset-text-name flexrow-item">
+        {{ asset.name }}
+      </span>
+      <span class="modify-asset flexrow-item" @click="addOneAsset"> + 1 </span>
+    </div>
   </div>
 </template>
 
 <script>
 import AssetImageCell from '@/components/cells/AssetImageCell.vue'
+import { X } from 'lucide-vue-next'
 
 export default {
   name: 'available-asset-block',
-  components: { AssetImageCell },
+  components: { AssetImageCell, X },
 
   props: {
     asset: {
@@ -62,10 +75,20 @@ export default {
     bigMode: {
       default: true,
       type: Boolean
+    },
+    isEnableClose: {
+      default: false,
+      type: Boolean
     }
   },
 
-  emits: ['add-one', 'add-ten', 'show-info'],
+  data() {
+    return {
+      showClose: false
+    }
+  },
+
+  emits: ['add-one', 'add-ten', 'show-info', 'remove'],
 
   methods: {
     addOneAsset(event) {
@@ -83,6 +106,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.asset-list-item {
+  position: relative;
+}
 .dark .asset {
   background-color: $dark-grey-lightest;
 }
@@ -215,6 +241,16 @@ export default {
   }
 }
 
-.asset-add-hover {
+.close {
+  position: absolute;
+  border-radius: 10px;
+  background: #ff6b6b;
+  z-index: 10000;
+  top: -5px;
+  left: -5px;
+  cursor: pointer;
+  &:hover {
+    background: red;
+  }
 }
 </style>
