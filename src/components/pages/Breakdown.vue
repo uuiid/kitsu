@@ -263,6 +263,7 @@
               @paste="onPaste"
               @copy="onCopy"
               @remove-assets="removeAssetsFromSelection"
+              @clear-selection="onClearSelection"
               v-for="entity in castingEntities"
             />
           </div>
@@ -363,6 +364,23 @@
         </div>
         <spinner v-if="isAssetsLoading" />
         <template v-else>
+          <div class="asset-list" v-if="tempAssets.length > 0">
+            <available-asset-block
+              :key="id"
+              :asset="assetMap.get(id)"
+              :draggable="true"
+              :text-mode="isTextMode"
+              :big-mode="isBigMode"
+              :is-enable-close="true"
+              @add-one="addOneAsset"
+              @add-ten="addTenAssets"
+              @show-info="showAssetInfo"
+              @dragstart="onDragStart(assetMap.get(id))"
+              @remove="tempAssets.splice(tempAssets.indexOf(id), 1)"
+              v-for="id in tempAssets"
+              v-show="libraryDisplayed || !assetMap.get(id).shared"
+            />
+          </div>
           <div
             ref="asset-list"
             class="asset-list-root"
@@ -628,7 +646,8 @@ export default {
       assetTypeFilters: {
         operator: '=',
         value: ''
-      }
+      },
+      tempAssets: []
     }
   },
 
@@ -639,7 +658,7 @@ export default {
     this.resetSequenceOption()
     this.setLastProductionScreen('breakdown')
     this.isTextMode = preferences.getBoolPreference('breakdown:text-mode')
-    window.addEventListener('keydown', this.onKeyDown, false)
+    //window.addEventListener('keydown', this.onKeyDown, false)
 
     this.resetDisplayHeaders()
     this.resetColumnWidth()
@@ -647,7 +666,7 @@ export default {
   },
 
   beforeUnmount() {
-    window.removeEventListener('keydown', this.onKeyDown)
+    //window.removeEventListener('keydown', this.onKeyDown)
   },
 
   computed: {
@@ -1080,10 +1099,13 @@ export default {
         })
 
         delete this.saveErrors[entityId]
-
+        //this.tempAssets.splice(this.tempAssets.indexOf(assetId), 1)
         try {
           await this.saveCasting(entityId)
           this.setLock()
+          if (!this.tempAssets.includes(assetId)) {
+            this.tempAssets.push(assetId)
+          }
         } catch (err) {
           this.saveErrors[entityId] = true
           console.error(err)
@@ -1478,6 +1500,9 @@ export default {
     },
     onCopy(copyAssets) {
       this.copyAssets = copyAssets
+    },
+    onClearSelection() {
+      this.copyAssets = []
     },
     async onPaste(entity) {
       const startSelection = Object.assign({}, this.selection)
