@@ -658,7 +658,7 @@ export default {
     this.resetSequenceOption()
     this.setLastProductionScreen('breakdown')
     this.isTextMode = preferences.getBoolPreference('breakdown:text-mode')
-    //window.addEventListener('keydown', this.onKeyDown, false)
+    window.addEventListener('keydown', this.onKeyDown, false)
 
     this.resetDisplayHeaders()
     this.resetColumnWidth()
@@ -666,7 +666,7 @@ export default {
   },
 
   beforeUnmount() {
-    //window.removeEventListener('keydown', this.onKeyDown)
+    window.removeEventListener('keydown', this.onKeyDown)
   },
 
   computed: {
@@ -1099,7 +1099,6 @@ export default {
         })
 
         delete this.saveErrors[entityId]
-        //this.tempAssets.splice(this.tempAssets.indexOf(assetId), 1)
         try {
           await this.saveCasting(entityId)
           this.setLock()
@@ -1417,10 +1416,10 @@ export default {
       if (!['INPUT', 'TEXTAREA'].includes(event.target.tagName)) {
         if ((event.ctrlKey || event.metaKey) && event.keyCode === 67) {
           // ctrl + c
-          this.copyCasting()
+          ElMessage.success('复制成功')
         } else if ((event.ctrlKey || event.metaKey) && event.keyCode === 86) {
           // ctrl + v
-          this.pasteCasting()
+          this.onPaste()
         }
       }
     },
@@ -1504,19 +1503,22 @@ export default {
     onClearSelection() {
       this.copyAssets = []
     },
-    async onPaste(entity) {
+    async onPaste(entity = null) {
       const startSelection = Object.assign({}, this.selection)
       const selected = Object.keys(this.selection).filter(
         k => this.selection[k]
       )
-      if (selected.length === 1) {
-        if (selected[0] !== entity.id) this.selection[selected[0]] = false
+      if (entity) {
+        if (selected.length === 1) {
+          if (selected[0] !== entity.id) this.selection[selected[0]] = false
+        }
+        this.selection[entity.id] = true
       }
-      this.selection[entity.id] = true
       for (const asset of this.copyAssets) {
         await this.addOneAsset(asset.asset_id, asset.nb_occurences)
       }
       this.selection = startSelection
+      ElMessage.success('粘贴成功')
     },
     async replaceAsset() {
       this.isReplacingAsset = true
