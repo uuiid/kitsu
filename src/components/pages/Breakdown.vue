@@ -1151,23 +1151,34 @@ export default {
         })
     },
     async removeAssetsFromSelection(assetIds) {
-      for (const assetId of assetIds) {
-        await this.removeAssetFromSelection(assetId)
-      }
-    },
-    async removeAssetFromSelection(assetId) {
       const entityIds = Object.keys(this.selection).filter(
         key => this.selection[key]
       )
       for (const entityId of entityIds) {
-        const asset = this.casting[entityId].find(
-          asset => asset.asset_id === assetId
-        )
-        if (asset) {
-          await this.removeAsset(assetId, entityId, asset.nb_occurences)
+        for (const assetId of assetIds) {
+          const asset = this.casting[entityId].find(
+            asset => asset.asset_id === assetId
+          )
+          if (asset) {
+            await this.removeAsset(assetId, entityId, asset.nb_occurences)
+          }
         }
+        this.saveCasting(entityId)
+          .then(() => {
+            this.setLock()
+            this.modals.isRemoveConfirmationDisplayed = false
+          })
+          .catch(err => {
+            this.saveErrors[entityId] = true
+            this.errors.remove = true
+            console.error(err)
+          })
+          .finally(() => {
+            this.loading.remove = false
+          })
       }
     },
+
     async removeOneAssetFromSelection(assetId) {
       const entityIds = Object.keys(this.selection).filter(
         key => this.selection[key]
@@ -1194,7 +1205,9 @@ export default {
     },
     removeAsset(assetId, entityId, nbOccurences) {
       this.isLocked = true
-      return this.saveAssetRemoval(entityId, assetId, nbOccurences)
+      this.loading.remove = true
+      this.removeAssetFromCasting({ entityId, assetId, nbOccurences })
+      delete this.saveErrors[entityId]
     },
     onAssetListScroll(event) {
       const assetList = this.$refs['asset-list']

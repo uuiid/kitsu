@@ -515,7 +515,8 @@ export default {
     },
     onKeyDown(e) {
       if (e.key === 'Delete') {
-        this.$emit('remove-assets', this.selectedIds)
+        if (this.selectedIds.length > 0)
+          this.$emit('remove-assets', this.selectedIds)
       } else if (e.key === 'Control') {
         this.isCtrlKey = true
       }
