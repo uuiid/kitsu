@@ -1254,6 +1254,9 @@ export default {
 </script>
 
 <style lang="scss" scoped>
+.data-list {
+  overflow: auto;
+}
 .dark thead tr a {
   color: $light-grey;
 

@@ -1132,10 +1132,6 @@ export default {
 </script>
 
 <style lang="scss" scoped>
-.data-list {
-  margin-top: 0;
-}
-
 .level {
   align-items: flex-start;
 }
