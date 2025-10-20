@@ -342,12 +342,12 @@ export default {
   },
 
   methods: {
-    ...mapActions(['updateTask']),
-    onClick(event) {
+    ...mapActions(['updateTask', 'getScanWorkFile']),
+    async onClick(event) {
       if (this.clickable) {
         this.select(event)
       }
-      console.log(this.task)
+      await this.getScanWorkFile(this.task.id)
     },
     getDate(date) {
       return date ? moment(date, 'YYYY-MM-DD').toDate() : null

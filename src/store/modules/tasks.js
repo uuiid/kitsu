@@ -666,6 +666,18 @@ const actions = {
       return comment
     })
   },
+  getScanWorkFile({ commit }, taskId) {
+    return tasksApi.getScanWorkFile(taskId).then(comment => {
+      const data = {
+        working_files: [...comment]
+      }
+      commit(EDIT_TASK_DATES, {
+        taskId,
+        data
+      })
+      return comment
+    })
+  },
   scanWorkFile({ commit }, taskId) {
     return tasksApi.scanWorkFile(taskId).then(comment => {
       if (comment.length === 0) return

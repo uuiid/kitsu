@@ -192,6 +192,11 @@ export default {
     )
   },
 
+  getScanWorkFile(taskId) {
+    const path = `/api/actions/tasks/${taskId}/working-file`
+    return client.pget(path)
+  },
+
   scanWorkFile(taskId) {
     const path = `/api/actions/tasks/${taskId}/working-file`
     return client.ppost(path)
