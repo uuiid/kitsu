@@ -100,6 +100,8 @@ const isGenerate = computed(() => {
 })
 const txt2PInput = reactive({
   input: '',
+  placeholder:
+    '玄幻仙侠3D，融合插画艺术家画风。虚幻引擎渲染特效，电影级工作室作品',
   negativeInput: '',
   visibleInputImage: false,
   image: {
@@ -250,7 +252,19 @@ function onClick(index, video) {
   currentPre.value = currentList.value[index]
   setCurrentPre(index)
 }
-
+async function onDelete() {
+  try {
+    AiScript.state.aiHistory[currentTab.value].splice(currentPreIndex.value, 1)
+    await AiScript.action.writeAiHistory()
+    if (currentPre.value.id)
+      await AiScript.action.deleteSharedAIAssets(currentPre.value.id)
+    currentPreIndex.value = Math.max(1, currentPreIndex.value - 1)
+    currentPre.value = currentList.value[currentPreIndex.value]
+    ElMessage.success('删除成功')
+  } catch (e) {
+    ElMessage.error('删除失败')
+  }
+}
 async function downloadFile() {
   const url = currentPre.value.preSrc
   if (!url) return
@@ -420,7 +434,7 @@ async function onGenerate() {
                   type="textarea"
                   :rows="inputCount"
                   v-model="currentTabContent.input"
-                  placeholder="给我点创作提示吧"
+                  :placeholder="currentTabContent.placeholder"
                   @input="onInput"
                   @keydown="handleInputKeyDown"
                   maxlength="150"
@@ -558,6 +572,7 @@ async function onGenerate() {
       @switch-image="onSwitchImage"
       @download="downloadFile"
       @share="onShare"
+      @delete="onDelete"
       v-if="isShow"
     />
     <!--iframe class="content" src="http://127.0.0.1:7860/" /-->

@@ -70,5 +70,9 @@ export default {
   updateAIImage(data) {
     const path = `/api/doodle/pictures/${data.task_id}`
     return client.ppostFileData(path, data)
+  },
+  deleteSharedAIAssets(id) {
+    const path = `/api/doodle/ai_image/${id}`
+    return client.pdel(path)
   }
 }

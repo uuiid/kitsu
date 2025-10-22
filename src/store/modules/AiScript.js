@@ -397,7 +397,6 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       }
       return { authorization: sign(signParams), signParams: params }
     },
-    deleteLocal() {},
     async saveObjectFromBase64(data, filename) {
       const fs = require('fs')
       const path = require('path')
@@ -544,7 +543,9 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
         ElMessage.error('分享失败')
       }
     },
-    async deleteSharedAIAssets() {}
+    async deleteSharedAIAssets(id) {
+      await AiScript.deleteSharedAIAssets(id)
+    }
   }
   return { state, action }
 })

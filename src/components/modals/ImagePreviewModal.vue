@@ -71,6 +71,14 @@
                 >
                   <download size="20"></download>
                 </div>
+                <div
+                  class="lucide-icon"
+                  :title="$t('playlists.actions.download_file')"
+                  @click="$emit('delete')"
+                  v-if="visibleDelete"
+                >
+                  <trash size="20"></trash>
+                </div>
               </div>
             </div>
             <div>{{ aiInfo.prompt }}</div>
@@ -98,12 +106,14 @@ import {
   X,
   CopyIcon,
   Share2,
-  Download
+  Download,
+  Trash
 } from 'lucide-vue-next'
 
 import { getDownloadAttachmentPath } from '@/lib/path'
 import { ElMessage } from 'element-plus'
 import { modalMixin } from '@/components/modals/base_modal'
+import { mapGetters } from 'vuex'
 
 export default {
   name: 'image-preview-modal',
@@ -116,7 +126,8 @@ export default {
     X,
     CopyIcon,
     Share2,
-    Download
+    Download,
+    Trash
   },
 
   props: {
@@ -153,7 +164,7 @@ export default {
       default: ''
     }
   },
-  emits: ['cancel', 'switch-image', 'download', 'share'],
+  emits: ['cancel', 'switch-image', 'download', 'share', 'delete'],
   data() {
     return {
       imageScale: 1,
@@ -177,6 +188,7 @@ export default {
     if (!this.isVideo) window.removeEventListener('keydown', this.handleKeydown)
   },
   computed: {
+    ...mapGetters(['isCurrentUserManager']),
     previewPath() {
       if (this.previewFileId) {
         const id = this.previewFileId
@@ -192,6 +204,9 @@ export default {
     previewDlPath() {
       const previewId = this.previewFileId
       return `/api/doodle/pictures/${previewId}.png`
+    },
+    visibleDelete() {
+      return this.aiInfo.id === undefined || this.isCurrentUserManager
     }
   },
   methods: {
