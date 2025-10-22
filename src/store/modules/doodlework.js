@@ -585,7 +585,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           state.value.isShowDoodleWorkExeDownloadProgress = true
           state.value.doodleWorkExeDownloadProgressMessage = '下载中...'
           await actions.downloadWithProgress(
-            `/${zipName}`,
+            `${zipName}`,
             state.value.doodleWorkExeLocalRootPath,
             ({ percent }) => {
               if (percent) {
@@ -857,7 +857,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         if (file.isDirectory()) {
           await actions.copyFolder(sourceFilePath, destFilePath)
         } else {
-          fs.copyFileSync(sourceFilePath, destFilePath)
+          await fs.copyFile(sourceFilePath, destFilePath)
         }
       }
     },

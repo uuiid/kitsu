@@ -240,12 +240,15 @@
         @on-confirm="confirmEditVideo"
       />
       <image-preview-modal
+        style="position: fixed"
         ref="image_preview_modal"
         :active="modals.isImagePreviewDisplayed"
         :preview-file-id="currentSelectVideo.id"
         :preview-file-type="currentSelectVideo.extension"
         @cancel="modals.isImagePreviewDisplayed = false"
         @switch-image="switchImage"
+        :is-info="false"
+        v-if="modals.isImagePreviewDisplayed"
       />
     </div>
   </div>

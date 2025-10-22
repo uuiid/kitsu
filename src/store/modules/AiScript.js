@@ -2,6 +2,7 @@ import { defineStore } from 'pinia'
 import { ref } from 'vue'
 import AiScript from '@/store/api/AiScript.js'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
+import { ElMessage } from 'element-plus'
 
 function sign(params) {
   const {
@@ -163,6 +164,7 @@ const initState = {
   receiveVideoList: [],
   receiveImage2VideoList: [],
   receiveTxt2ImageTimer: null,
+  receiveTxt2VideoTimer: null,
   receiveImage2ImageTimer: null,
   txt2ImageIsLoading: false,
   image2VideoIsLoading: false,
@@ -189,36 +191,76 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       return AiScript.getJiMengToken()
     },
     txt2image: async data => {
-      data.req_key = 'jimeng_high_aes_general_v21_L'
+      data.req_key = 'jimeng_t2i_v40'
       data.return_url = true
       const keys = await AiScript.getJiMengKey()
       const { authorization, signParams } = action.createAuthorization(
-        'CVProcess',
+        'CVSync2AsyncSubmitTask',
         keys,
         true,
         data
       )
       // await sleep(10000)
       const res = await AiScript.txt2image(data, signParams, authorization)
-      if (res.data.image_urls.length > 0) {
-        const path = require('path')
-        const filePath = path.join(
-          action.aiGenerateFileRootPath(),
-          'txt2Image',
-          res.data.request_id + '.png'
-        )
-        await action.saveObjectFromUrl(res.data.image_urls[0], filePath)
-        const nativeData = data
-        nativeData['task_id'] = res.data.request_id
-        state.value.aiHistory.txt2Image.push(nativeData)
-        await action.writeAiHistory()
-        state.value.receiveImageList.push(...res.data.image_urls)
-        state.value.txt2ImageIsLoading = false
-        return res
+      if (res.message === 'Success') {
+        const startDate = Date.now()
+        state.value.receiveTxt2ImageTimer = setInterval(() => {
+          action.getTxt2Image(
+            {
+              req_key: data.req_key,
+              task_id: res.data.task_id
+            },
+            startDate,
+            data
+          )
+        }, 2000)
       }
+      return res
+    },
+    getTxt2Image: async (data, startDate, nativeData) => {
+      if (Date.now() - startDate > 1200000) {
+        clearInterval(state.value.receiveTxt2ImageTimer)
+      }
+      const keys = await AiScript.getJiMengKey()
+      const { authorization, signParams } = action.createAuthorization(
+        'CVSync2AsyncGetResult',
+        keys,
+        true,
+        data
+      )
+      //data['req_json'] = `{"return_url": true}`
+      const res = await AiScript.getTxt2Image(data, signParams, authorization)
+      if (res.message === 'Success') {
+        if (
+          res.data.image_urls?.length > 0 ||
+          res.data.binary_data_base64.length > 0
+        ) {
+          clearInterval(state.value.receiveTxt2ImageTimer)
+          const path = require('path')
+          const filePath = path.join(
+            action.aiGenerateFileRootPath(),
+            'txt2Image',
+            res.data.task_id + '.png'
+          )
+          if (res.data.image_urls?.length > 0)
+            await action.saveObjectFromUrl(res.data.image_urls[0], filePath)
+          else
+            await action.saveObjectFromBase64(
+              res.data.binary_data_base64[0],
+              filePath
+            )
+          nativeData['task_id'] = res.data.task_id
+          nativeData['extension'] = 'png'
+          state.value.aiHistory.txt2Image.push(nativeData)
+          await action.writeAiHistory()
+          //state.value.receiveImageList.push(...res.data.image_urls)
+          state.value.txt2ImageIsLoading = false
+        }
+      }
+      return res
     },
     txt2video: async data => {
-      data.req_key = 'jimeng_vgfm_t2v_l20'
+      data.req_key = 'jimeng_t2v_v30'
       const keys = await AiScript.getJiMengKey()
       const { authorization, signParams } = action.createAuthorization(
         'CVSync2AsyncSubmitTask',
@@ -244,7 +286,7 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
     },
     getTxt2video: async (data, startDate, nativeData) => {
       if (Date.now() - startDate > 1200000) {
-        clearInterval(state.value.receiveTxt2ImageTimer)
+        clearInterval(state.value.receiveTxt2VideoTimer)
       }
       const keys = await AiScript.getJiMengKey()
       const { authorization, signParams } = action.createAuthorization(
@@ -264,6 +306,7 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
         )
         await action.saveVideo(res.data.video_url, filePath)
         nativeData['task_id'] = data.task_id
+        nativeData['extension'] = 'mp4'
         state.value.aiHistory.txt2Video.push(nativeData)
         await action.writeAiHistory()
         state.value.txt2VideoIsLoading = false
@@ -272,7 +315,7 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
       return res
     },
     image2video: async data => {
-      data.req_key = 'jimeng_vgfm_i2v_l20'
+      data.req_key = 'jimeng_i2v_first_v30'
       const keys = await AiScript.getJiMengKey()
       const { authorization, signParams } = action.createAuthorization(
         'CVSync2AsyncSubmitTask',
@@ -318,6 +361,7 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
         )
         await action.saveVideo(res.data.video_url, filePath)
         nativeData['task_id'] = data.task_id
+        nativeData['extension'] = 'mp4'
         delete nativeData['binary_data_base64']
         state.value.aiHistory.image2Video.push(nativeData)
         await action.writeAiHistory()
@@ -352,6 +396,16 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
         }
       }
       return { authorization: sign(signParams), signParams: params }
+    },
+    deleteLocal() {},
+    async saveObjectFromBase64(data, filename) {
+      const fs = require('fs')
+      const path = require('path')
+      if (!fs.existsSync(path.dirname(filename))) {
+        fs.mkdirSync(path.dirname(filename), { recursive: true })
+      }
+      const buffer = Buffer.from(data, 'base64')
+      fs.writeFileSync(filename, buffer)
     },
     async saveObjectFromUrl(url, filename) {
       console.log(url, filename)
@@ -417,6 +471,12 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
         return null
       }
     },
+    // formatAiHistory(item) {
+    //   if ('exists' in item) delete item.exists
+    //   if ('src' in item) delete item.src
+    //   if ('preSrc' in item) delete item.preSrc
+    //   return item
+    // },
     async writeAiHistory() {
       const fs = require('fs')
       const path = require('path')
@@ -424,10 +484,67 @@ export const AiScriptStore = defineStore('AiScriptStore', () => {
         action.aiGenerateFileRootPath(),
         'aiHistory.json'
       )
-      if (state.value.aiHistory !== null) {
-        fs.writeFileSync(filePath, JSON.stringify(state.value.aiHistory))
+      const newData = JSON.parse(JSON.stringify(state.value.aiHistory))
+      Object.keys(newData).forEach(category => {
+        newData[category] = newData[category].filter(item => {
+          return item.id === undefined
+        })
+        newData[category].forEach(item => {
+          if ('exists' in item) delete item.exists
+          if ('src' in item) delete item.src
+          if ('preSrc' in item) delete item.preSrc
+        })
+        if (newData !== null) {
+          fs.writeFileSync(filePath, JSON.stringify(newData))
+        }
+      })
+    },
+    async getSharedAIAssets() {
+      const AIAssets = await AiScript.getSharedAIAssets()
+      for (const item of AIAssets) {
+        const exists = state.value.aiHistory[item.category].some(
+          existingItem => {
+            if (existingItem.task_id === item.task_id) {
+              existingItem['exists'] = true
+            }
+            return existingItem.task_id === item.task_id
+          }
+        )
+        if (!exists) {
+          state.value.aiHistory[item.category].unshift(item)
+        } else {
+          state.value.aiHistory[item.category].find(
+            existingItem => existingItem.task_id === item.task_id
+          )['id'] = item.id
+        }
       }
-    }
+    },
+    async fetchArrayBuffer(url) {
+      const response = await fetch(url)
+      return await response.arrayBuffer()
+    },
+    async postSharedAIAssets(asset, category) {
+      try {
+        const tempAsset = Object.assign({}, asset)
+        tempAsset['category'] = category
+        tempAsset['extension'] = asset.extension
+        const res = await AiScript.postSharedAIAssets(tempAsset)
+        const file_data = await action.fetchArrayBuffer(asset.preSrc)
+        const data = {
+          task_id: res.id,
+          data: file_data,
+          filetype: asset.extension === 'png' ? 'image/png' : 'video/mp4'
+        }
+        if (await AiScript.updateAIImage(data)) {
+          await action.writeAiHistory()
+          ElMessage.success('分享成功')
+          asset['id'] = res.id
+        }
+      } catch (err) {
+        ElMessage.error('分享失败')
+      }
+    },
+    async deleteSharedAIAssets() {}
   }
   return { state, action }
 })

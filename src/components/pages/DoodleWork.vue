@@ -132,7 +132,7 @@ const pagedAssets = ref([
   {
     id: 0,
     name: 'ai_script',
-    label: 'AI剧本创作',
+    label: 'AI剧本',
     textIcon: 'I',
     disabled: true,
     description: '',
@@ -144,7 +144,7 @@ const pagedAssets = ref([
   {
     id: 9,
     name: 'ai_painting',
-    label: 'AI原画创作',
+    label: 'AI原画',
     textIcon: 'Y',
     disabled: true,
     description: '',
@@ -157,7 +157,7 @@ const pagedAssets = ref([
   {
     id: 12,
     name: 'ai_video',
-    label: 'AI视频创作',
+    label: 'AI视频',
     textIcon: 'V',
     disabled: true,
     description: '',
@@ -177,6 +177,17 @@ const pagedAssets = ref([
     isVisible: true,
     isBaseTemplate: false,
     hidden: false
+  },
+  {
+    id: 5,
+    name: 'material_Library',
+    label: '数字资产库',
+    textIcon: 'L',
+    disabled: true,
+    description: '',
+    color: '#55e159',
+    isVisible: false,
+    isBaseTemplate: false
   },
   {
     id: 1,
@@ -253,17 +264,6 @@ const pagedAssets = ref([
     disabled: true,
     description: '',
     color: '#ecd875',
-    isVisible: false,
-    isBaseTemplate: false
-  },
-  {
-    id: 5,
-    name: 'material_Library',
-    label: '数字资产库',
-    textIcon: 'L',
-    disabled: true,
-    description: '',
-    color: '#55e159',
     isVisible: false,
     isBaseTemplate: false
   }
@@ -365,7 +365,6 @@ const installPlugin = async plugin => {
         const destPathRoot = `${os.homedir()}\\Documents\\maya\\${plugin.version}\\modules`
         const destPath = `${destPathRoot}\\doodle`
         await doodleWork.actions.copyFolder(sourcePath, destPath)
-        console.log(destPath)
         fs.unlinkSync(`${destPath}\\doodle.mod`)
         //fs.renameSync(`${destPath}\\maya`, `${destPath}\\doodle`)
         fs.writeFileSync(
@@ -469,7 +468,7 @@ PYTHONPATH+:= scripts`
           for (const subPlugin of subPlugins) {
             const sourcePath = `${doodleWork.doodleWorkFilePath}\\${doodleWork.state.doodleWorkSetting.UE_version}\\${subPlugin.sourceName}`
             const destPath = `${doodleWork.state.doodleWorkSetting.UE_path}\\Engine\\Plugins\\${subPlugin.destName}`
-            doodleWork.actions.copyFolder(sourcePath, destPath)
+            await doodleWork.actions.copyFolder(sourcePath, destPath)
           }
         } else {
           ElNotification({
@@ -584,31 +583,11 @@ const onSetOutPath = () => {
                 v-show="(entity.isVisible || visitorShow) && !entity.hidden"
               >
                 <div class="card">
-                  <span
-                    class="text-icon"
-                    :style="`background-color: ${entity.color}`"
-                    >{{ entity.textIcon }}</span
-                  >
                   <div class="item-description">
                     <div class="item-entity-title">
                       <span class="entity-name" :title="entity.label">{{
                         entity.label
                       }}</span>
-                      <a
-                        title="安装"
-                        :class="{
-                          'is-loading': entity.installState
-                        }"
-                        @click.stop="installPlugin(entity)"
-                      >
-                        <circle-arrow-down
-                          class="download"
-                          v-show="entity.isPlugin"
-                        ></circle-arrow-down>
-                      </a>
-                    </div>
-                    <div class="entity-description" :title="entity.label">
-                      {{ entity.description }}
                     </div>
                   </div>
                 </div>
@@ -638,17 +617,13 @@ const onSetOutPath = () => {
                 v-show="(entity.isVisible || visitorShow) && !entity.hidden"
               >
                 <div class="card">
-                  <span
-                    class="text-icon"
-                    :style="`background-color: ${entity.color}`"
-                    >{{ entity.textIcon }}</span
-                  >
                   <div class="item-description">
                     <div class="item-entity-title">
                       <span class="entity-name" :title="entity.label">{{
                         entity.label
                       }}</span>
                       <a
+                        style="width: 20px; margin-top: 6px"
                         title="安装"
                         :class="{
                           'is-loading': entity.installState
@@ -775,7 +750,8 @@ const onSetOutPath = () => {
 
 .item-entity-title {
   display: flex;
-  justify-content: space-between;
+  justify-content: center;
+  justify-items: center;
   gap: 4em;
 }
 
@@ -825,8 +801,9 @@ const onSetOutPath = () => {
 
 .card {
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   align-items: center;
+  justify-items: center;
   gap: 20px;
   min-width: 320px;
   max-width: 320px;
@@ -866,12 +843,12 @@ const onSetOutPath = () => {
     display: flex;
     height: 100px;
     flex-direction: column;
+    justify-content: center;
+    align-items: center;
 
     .entity-name {
       white-space: nowrap;
-      font-size: 20px;
-      max-width: 100px;
-      min-width: 100px;
+      font-size: 25px;
     }
   }
 }

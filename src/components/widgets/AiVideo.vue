@@ -6,7 +6,12 @@ import AiVideoCell from '@/components/cells/AiVideoCell.vue'
 import AiImageCell from '@/components/cells/AiImageCell.vue'
 import user from '@/store/modules/user.js'
 import { ElMessage } from 'element-plus'
+import ImagePreviewModal from '@/components/modals/ImagePreviewModal.vue'
 
+const isShow = ref(false)
+const currentPre = ref()
+const isVideoPre = ref(false)
+const currentPreIndex = ref(0)
 const AiScript = AiScriptStore()
 const props = defineProps({
   tabs: {
@@ -43,16 +48,25 @@ const currentLoading = computed(() => {
 const currentTaskList = computed(() => {
   return AiScript.state.aiHistory[currentTab.value]
 })
-const currentSrcList = computed(() => {
+const currentList = computed(() => {
   const temp = []
   AiScript.state.aiHistory[currentTab.value].forEach(item => {
-    temp.push(
-      createURLFromFilePath(formatSrcPath(item.task_id, 'png'), 'image/png')
-    )
+    if (item.src === undefined)
+      item['src'] = item.id
+        ? `/api/doodle/pictures/${item.id}.png`
+        : createURLFromFilePath(formatSrcPath(item.task_id, 'png'), 'image/png')
+    temp.push(item)
   })
 
   return temp
 })
+
+const visibleInputImage = computed(() => {
+  if (currentTab.value === 'image2Video') return true
+  else if (currentTabContent.value.visibleInputImage) return true
+  return false
+})
+
 const currentTabContent = computed(() => {
   let temp = null
   switch (currentTab.value) {
@@ -87,18 +101,25 @@ const isGenerate = computed(() => {
 const txt2PInput = reactive({
   input: '',
   negativeInput: '',
+  visibleInputImage: false,
+  image: {
+    1: null,
+    2: null,
+    3: null,
+    4: null
+  },
   config: {
     aspect_ratio: {
-      value: '288*512',
+      value: '3024*1296',
       options: [
-        { value: '1194*512', label: '21:9', resolution: '1194*512' },
-        { value: '512*512', label: '1:1', resolution: '512*512' },
-        { value: '512*384', label: '4:3', resolution: '512*384' },
-        { value: '384*512', label: '3:4', resolution: '384*512' },
-        { value: '512*341', label: '3:2', resolution: '512*341' },
-        { value: '341*512', label: '2:3', resolution: '341*512' },
-        { value: '512*288', label: '16:9', resolution: '512*288' },
-        { value: '288*512', label: '9:16', resolution: '288*512' }
+        { value: '3024*1296', label: '21:9', resolution: '3024*1296' },
+        { value: '2048*2048', label: '1:1', resolution: '2048*2048' },
+        { value: '2304*1728', label: '4:3', resolution: '2304*1728' },
+        { value: '1728*2304', label: '3:4', resolution: '1728*2304' },
+        { value: '2496*1664', label: '3:2', resolution: '2496*1664' },
+        { value: '1664*2496', label: '2:3', resolution: '1664*2496' },
+        { value: '2560*1440', label: '16:9', resolution: '2560*1440' },
+        { value: '1440*2560', label: '9:16', resolution: '1440*2560' }
       ]
     }
   }
@@ -124,6 +145,7 @@ const txt2PInput = reactive({
   //   ]
   // }
 })
+
 const txt2VInput = reactive({
   input: '',
   negativeInput: '',
@@ -188,6 +210,7 @@ onMounted(async () => {
   if (aiHistory !== null) {
     AiScript.state.aiHistory = aiHistory
   }
+  await AiScript.action.getSharedAIAssets()
   window.addEventListener('resize', handleResize)
 })
 onUnmounted(() => {
@@ -199,6 +222,67 @@ function handleResize() {
 }
 
 function onInput() {}
+
+function onSwitchImage(isNext) {
+  let index = 0
+  if (isNext)
+    index = Math.min(currentPreIndex.value + 1, currentList.value.length - 1)
+  else index = Math.max(0, currentPreIndex.value - 1)
+  if (index !== currentPreIndex.value) {
+    currentPreIndex.value = index
+    setCurrentPre()
+  }
+}
+
+function setCurrentPre() {
+  currentPre.value = currentList.value[currentPreIndex.value]
+  currentPre.value['preSrc'] = isVideoPre.value
+    ? currentPre.value.id
+      ? `/api/doodle/pictures/${currentPre.value.id}.mp4`
+      : createURLFromFilePath(formatSrcPath(currentPre.value.task_id, 'mp4'))
+    : currentPre.value.src
+}
+
+function onClick(index, video) {
+  isShow.value = true
+  isVideoPre.value = video
+  currentPreIndex.value = index
+  currentPre.value = currentList.value[index]
+  setCurrentPre(index)
+}
+
+async function downloadFile() {
+  const url = currentPre.value.preSrc
+  if (!url) return
+  const response = await fetch(url)
+  const contentLength = +response.headers.get('Content-Length')
+  const reader = response.body.getReader()
+  let receivedLength = 0
+  const chunks = []
+  const temp = 1
+
+  while (temp === 1) {
+    const { done, value } = await reader.read()
+    if (done) break
+    chunks.push(value)
+    receivedLength += value.length
+    console.log(`进度: ${((receivedLength / contentLength) * 100).toFixed(1)}%`)
+  }
+
+  // 合并所有分块
+  const blob = new Blob(chunks)
+  const blobUrl = URL.createObjectURL(blob)
+  const link = document.createElement('a')
+  link.href = blobUrl
+  link.download =
+    Date.now().toString() +
+    '.' +
+    response.headers.get('content-type').split('/')[1]
+  document.body.appendChild(link)
+  link.click()
+  URL.revokeObjectURL(blobUrl)
+  link.remove()
+}
 
 function handleInputKeyDown() {}
 
@@ -235,6 +319,9 @@ function onMouseUp() {
   dragging.value = false
   document.removeEventListener('mousemove', onMouseMove)
   document.removeEventListener('mouseup', onMouseUp)
+}
+function onShare() {
+  AiScript.action.postSharedAIAssets(currentPre.value, currentTab.value)
 }
 
 async function onGenerate() {
@@ -292,7 +379,7 @@ async function onGenerate() {
             </div>
           </div>
           <div class="ai-video-txt2p">
-            <div class="ai-video-image" v-if="currentTab === 'image2Video'">
+            <div class="ai-video-image" v-if="visibleInputImage">
               <div class="ai-video-describe-title">
                 <div class="ai-video-describe-title">
                   <div>
@@ -436,16 +523,24 @@ async function onGenerate() {
                 <div class="video-preview" v-if="props.isVideo">
                   <ai-video-cell
                     :src="
-                      createURLFromFilePath(formatSrcPath(src.task_id, 'mp4'))
+                      src?.id
+                        ? `/api/doodle/pictures/${src?.id}.mp4`
+                        : createURLFromFilePath(
+                            formatSrcPath(src.task_id, 'mp4')
+                          )
                     "
-                    :image-src="currentSrcList[index]"
+                    :image-src="currentList[index]"
+                    :src-index="index"
+                    :src-list="currentList"
+                    @on-click="onClick"
                   />
                 </div>
                 <div class="video-preview" v-else>
                   <ai-image-cell
                     class="auto-resize"
                     :src-index="index"
-                    :src-list="currentSrcList"
+                    :src-list="currentList"
+                    @on-click="onClick"
                   ></ai-image-cell>
                 </div>
               </div>
@@ -454,6 +549,17 @@ async function onGenerate() {
         </el-main>
       </el-container>
     </div>
+    <image-preview-modal
+      :active="isShow"
+      :src="currentPre?.preSrc"
+      :ai-info="currentPre"
+      :is-video="isVideoPre"
+      @cancel="isShow = false"
+      @switch-image="onSwitchImage"
+      @download="downloadFile"
+      @share="onShare"
+      v-if="isShow"
+    />
     <!--iframe class="content" src="http://127.0.0.1:7860/" /-->
   </div>
 </template>

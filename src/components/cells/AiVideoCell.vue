@@ -1,11 +1,11 @@
 <script setup>
 import { ref, computed } from 'vue'
-
 const videoRef = ref()
+const isShow = ref(false)
 const emits = defineEmits(['on-click'])
 const isShowControls = ref(false)
-defineProps(['src', 'imageSrc'])
-const currentTime = ref()
+const props = defineProps(['src', 'imageSrc', 'srcIndex', 'srcList'])
+const currentTime = ref(0)
 const videoTime = computed(() => {
   if (videoRef.value && currentTime.value) {
     return `${formatVideoTime(currentTime.value)}/${formatVideoTime(videoRef.value.duration)}`
@@ -40,18 +40,19 @@ function formatVideoTime(seconds) {
 }
 
 function onClick() {
-  emits('on-click')
-  enterFullscreen()
+  isShow.value = true
+  emits('on-click', props.srcIndex, true)
+  //enterFullscreen()
 }
 
-function enterFullscreen() {
-  if (videoRef.value.requestFullscreen) {
-    videoRef.value.muted = false
-    videoRef.value.requestFullscreen()
-  } else if (videoRef.value.webkitRequestFullscreen) {
-    videoRef.value.webkitRequestFullscreen()
-  }
-}
+// function enterFullscreen() {
+//   if (videoRef.value.requestFullscreen) {
+//     videoRef.value.muted = false
+//     videoRef.value.requestFullscreen()
+//   } else if (videoRef.value.webkitRequestFullscreen) {
+//     videoRef.value.webkitRequestFullscreen()
+//   }
+// }
 </script>
 
 <template>
