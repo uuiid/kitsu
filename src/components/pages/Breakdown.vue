@@ -379,6 +379,7 @@
               :text-mode="isTextMode"
               :big-mode="isBigMode"
               :is-enable-close="true"
+              :active="Object.keys(selection).length > 0"
               @add-one="addOneAsset"
               @add-ten="addTenAssets"
               @show-info="showAssetInfo"
@@ -814,18 +815,12 @@ export default {
 
     castingAssetTypes() {
       const castingAssetTypes = []
-      const assetTypeNameMap = {}
-      this.castingEntities.forEach(entity => {
-        if (this.castingByType[entity.id]) {
-          this.castingByType[entity.id].forEach(type => {
-            if (type[0] && !assetTypeNameMap[type[0].asset_type_name]) {
-              assetTypeNameMap[type[0].asset_type_name] = true
-              castingAssetTypes.push(type[0].asset_type_name)
-            }
-          })
+      this.assetTypeMap.values().forEach(assetType => {
+        if (!(assetType.name === '' || assetType.name === '其他')) {
+          castingAssetTypes.push(assetType.name)
         }
       })
-      return castingAssetTypes.sort()
+      return castingAssetTypes
     },
 
     editLabelModal() {
@@ -1093,6 +1088,7 @@ export default {
     },
 
     async addOneAsset(assetId, amount = 1) {
+      console.log(assetId, amount)
       this.isLocked = true
       const entityIds = Object.keys(this.selection).filter(
         key => this.selection[key]
