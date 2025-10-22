@@ -382,7 +382,9 @@ export default {
             this.loading.addSequence = false
             this.selectEpisode(this.selectedEpisodeId)
             this.selectSequence(sequence.id)
-            this.names.sequence = stringHelpers.generateNextName(sequence.name)
+            this.names.sequence = stringHelpers.generateNextName(
+              this.names.sequence
+            )
           })
         }
       }
