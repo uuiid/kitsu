@@ -66,7 +66,7 @@ const props = defineProps({
 const emits = defineEmits(['on-click'])
 const isShow = ref(false)
 onMounted(() => {
-  console.log(props.srcList)
+  //console.log(props.srcList)
 })
 
 function onClick() {
