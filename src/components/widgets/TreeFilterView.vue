@@ -8,6 +8,12 @@ import taskType from '@/store/modules/tasktypes.js'
 import productions from '@/store/modules/productions.js'
 
 const treeRef = ref()
+const props = defineProps({
+  type: {
+    type: String,
+    default: 'assets'
+  }
+})
 const defaultProps = {
   children: 'children',
   label: 'label'
@@ -26,8 +32,24 @@ const extendWidth = ref({
 })
 
 const selfPosition = ref(0)
+const treeFilterData = computed(() => {
+  return props.type === 'assets'
+    ? assetFilter.state.treeFilterData
+    : assetFilter.state.shotTreeFilterData
+})
+
+const treeFilters = computed(() => {
+  return props.type === 'assets'
+    ? assetFilter.state.assetFilters
+    : assetFilter.state.shotFilters
+})
+const expandedKeys = computed(() => {
+  return props.type === 'assets'
+    ? assetFilter.state.expandedKeys
+    : assetFilter.state.shotExpandedKeys
+})
 const displayTreeData = computed(() => {
-  return assetFilter.state.treeFilterData.filter(
+  return treeFilterData.value.filter(
     item =>
       !(
         item.id === 'chang_ci' &&
@@ -67,11 +89,11 @@ const onCheckChange = event => {
 const onCheck = (o, n) => {
   let id = ''
   if (o.parent) {
-    if (assetFilter.state.assetFilters.has(o.parent)) {
+    if (treeFilters.value.has(o.parent)) {
       id = o.parent
     }
   } else id = o.id
-  const assetFilterItem = assetFilter.state.assetFilters.get(id)
+  const assetFilterItem = treeFilters.value.get(id)
   assetFilterItem.isChecked =
     n.checkedNodes.filter(node => node.id === id).length > 0
   assetFilterItem.values = []
@@ -126,6 +148,13 @@ watch(
   },
   { deep: true }
 )
+watch(
+  () => assetFilter.state.sFilters,
+  () => {
+    treeRef.value.setCheckedKeys(assetFilter.state.sFilters, false)
+  },
+  { deep: true }
+)
 watch(filterText, val => {
   treeRef.value?.filter(val)
 })
@@ -154,12 +183,11 @@ watch(filterText, val => {
           node-key="id"
           :filter-node-method="filterNode"
           @mouseleave="currentNode = null"
-          :default-expanded-keys="[...assetFilter.state.expanded_keys.values()]"
-          @node-expand="data => assetFilter.state.expanded_keys.add(data.id)"
+          :default-expanded-keys="[...expandedKeys.values()]"
+          @node-expand="data => expandedKeys.add(data.id)"
           @node-collapse="
             data => {
-              if (assetFilter.state.expanded_keys.has(data.id))
-                assetFilter.state.expanded_keys.delete(data.id)
+              if (expandedKeys.has(data.id)) expandedKeys.delete(data.id)
             }
           "
         >

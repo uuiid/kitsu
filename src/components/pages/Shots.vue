@@ -102,31 +102,40 @@
           @clear-sorting="onChangeSortClicked(null)"
           v-if="shotSorting?.length"
         />
-        <shot-list
-          ref="shot-list"
-          :contact-sheet-mode="contactSheetMode"
-          :department-filter="departmentFilter"
-          :displayed-shots="displayedShotsBySequence"
-          :is-loading="isShotsLoading || initialLoading"
-          :is-error="isShotsLoadingError"
-          :validation-columns="shotValidationColumns"
-          @add-metadata="onAddMetadataClicked"
-          @add-shots="showManageShots"
-          @change-sort="onChangeSortClicked"
-          @create-tasks="showCreateTasksModal"
-          @delete-all-tasks="onDeleteAllTasksClicked"
-          @delete-clicked="onDeleteClicked"
-          @delete-metadata="onDeleteMetadataClicked"
-          @edit-clicked="onEditClicked"
-          @edit-metadata="onEditMetadataClicked"
-          @field-changed="onFieldChanged"
-          @metadata-changed="onMetadataChanged"
-          @restore-clicked="onRestoreClicked"
-          @scroll="saveScrollPosition"
-          @shot-history="showShotHistoryModal"
-          @sequence-clicked="onSequenceClicked"
-          @keep-task-panel-open="onKeepTaskPanelOpenChanged"
-        />
+        <div class="assets-row datatable-wrapper">
+          <tree-filter-view
+            class="asset-list-tree"
+            @tree-selection-changed="onTreeSelectionChanged"
+            type="shots"
+            v-if="!initialLoading"
+          />
+          <shot-list
+            ref="shot-list"
+            class="shot-list"
+            :contact-sheet-mode="contactSheetMode"
+            :department-filter="departmentFilter"
+            :displayed-shots="displayedShotsBySequence"
+            :is-loading="isShotsLoading || initialLoading"
+            :is-error="isShotsLoadingError"
+            :validation-columns="shotValidationColumns"
+            @add-metadata="onAddMetadataClicked"
+            @add-shots="showManageShots"
+            @change-sort="onChangeSortClicked"
+            @create-tasks="showCreateTasksModal"
+            @delete-all-tasks="onDeleteAllTasksClicked"
+            @delete-clicked="onDeleteClicked"
+            @delete-metadata="onDeleteMetadataClicked"
+            @edit-clicked="onEditClicked"
+            @edit-metadata="onEditMetadataClicked"
+            @field-changed="onFieldChanged"
+            @metadata-changed="onMetadataChanged"
+            @restore-clicked="onRestoreClicked"
+            @scroll="saveScrollPosition"
+            @shot-history="showShotHistoryModal"
+            @sequence-clicked="onSequenceClicked"
+            @keep-task-panel-open="onKeepTaskPanelOpenChanged"
+          />
+        </div>
       </div>
     </div>
 
@@ -340,6 +349,7 @@ import ShowInfosButton from '@/components/widgets/ShowInfosButton.vue'
 import ShotHistoryModal from '@/components/modals/ShotHistoryModal.vue'
 import ShotList from '@/components/lists/ShotList.vue'
 import TaskInfo from '@/components/sides/TaskInfo.vue'
+import TreeFilterView from '@/components/widgets/TreeFilterView.vue'
 
 export default {
   name: 'shots',
@@ -347,6 +357,7 @@ export default {
   mixins: [searchMixin, entitiesMixin],
 
   components: {
+    TreeFilterView,
     AddMetadataModal,
     AddThumbnailsModal,
     BigThumbnailsButton,
@@ -455,7 +466,9 @@ export default {
     const finalize = () => {
       this.$nextTick(() => {
         // Needed to be sure the current production is set
-        this.loadShots()
+        this.loadShots().then(() => {
+          this.setShotTreeFilter()
+        })
       })
     }
 
@@ -484,6 +497,7 @@ export default {
         this.$refs['shot-list']?.selectTaskFromQuery()
         this.applySearchFromUrl()
         this.onSearchChange()
+        this.setShotTreeFilter()
       })
       this.reloadEpisodeShotsIfNeeded()
     }
@@ -612,7 +626,8 @@ export default {
       'setShotSearch',
       'showAssignations',
       'uploadShotFile',
-      'uploadEdlFile'
+      'uploadEdlFile',
+      'setShotTreeFilter'
     ]),
 
     setOptionalImportColumns() {
@@ -699,7 +714,9 @@ export default {
       this.descriptorToEdit = {}
       this.modals.isAddMetadataDisplayed = true
     },
-
+    onTreeSelectionChanged() {
+      this.setShotTreeFilter()
+    },
     onDeleteMetadataClicked(descriptorId) {
       this.descriptorIdToDelete = descriptorId
       this.modals.isDeleteMetadataDisplayed = true
@@ -863,10 +880,15 @@ export default {
 
     reset() {
       this.initialLoading = true
-      this.loadShots(err => {
-        if (err) console.error(err)
-        this.initialLoading = false
-      })
+      this.loadShots()
+        .then(() => {
+          this.setShotTreeFilter()
+          this.initialLoading = false
+        })
+        .catch(err => {
+          if (err) console.error(err)
+          this.initialLoading = false
+        })
     },
 
     resetEditModal() {
@@ -1265,6 +1287,7 @@ export default {
 .shots {
   display: flex;
   flex-direction: column;
+  overflow: hidden;
 }
 
 .columns {
@@ -1280,5 +1303,15 @@ export default {
 
 .combobox-department {
   margin-bottom: 0;
+}
+
+.assets-row {
+  display: flex;
+  flex-direction: row;
+  height: 100%;
+  overflow: hidden;
+}
+.shot-list {
+  overflow: auto;
 }
 </style>

@@ -13,7 +13,12 @@ function initState() {
     oldDisplayedAssetsByType: null,
     treeFilterData: [],
     filters: [],
-    expanded_keys: new Set()
+    sFilters: [],
+    expandedKeys: new Set(),
+    filteredShots: [],
+    shotFilters: new Map(),
+    shotExpandedKeys: new Set(),
+    shotTreeFilterData: []
   }
 }
 
@@ -52,6 +57,11 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
     id: 'assignees',
     values: [],
     parent: 'tasks',
+    isChecked: true
+  })
+  state.value.shotFilters.set('sequence_name', {
+    id: 'sequence_name',
+    values: [],
     isChecked: true
   })
   const getters = {}
@@ -254,10 +264,17 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       return value
     },
     filterTaskStatus: task => {},
-    filterTree: (key, asset, i, keys, task = null) => {
+    filterTree: (
+      key,
+      asset,
+      i,
+      keys,
+      task = null,
+      filters = state.value.assetFilters
+    ) => {
       let filter_value = false
       for (let j = 0; j < i; j++) {
-        const last_item = state.value.assetFilters.get(keys[j])
+        const last_item = filters.get(keys[j])
         const last_key = keys[j]
         let asset_value = asset[last_key]
         if (last_item.parent) {
@@ -344,7 +361,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       }
     },
     addTaskType: (ch, asset) => {
-      if (asset && !asset.canceled) {
+      if (asset && !asset.canceled && asset.episode_id === undefined) {
         asset.tasks.forEach(task_id => {
           const task = tasksStore.state.taskMap.get(task_id)
           if (task.task_status_id !== '4ffc748e-4e58-4336-ba83-51910253514e') {
@@ -391,6 +408,90 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
         }
       })
       state.value.filters = temp_filters
+      return result
+    },
+    filteringShot: (shot, temp, keys) => {
+      let value = false
+      if (shot !== {}) {
+        for (let i = 0; i < state.value.shotFilters.size; i++) {
+          const key = keys[i]
+          const item = state.value.shotFilters.get(key)
+          const ch = {
+            id: '',
+            label: '',
+            num: 1,
+            parent: key,
+            value: ''
+          }
+          ch.id = `${key}:${shot[key]}`
+          ch.label = shot[key]
+          ch.value = shot[key]
+          if (shot[key] === undefined || shot[key] === '') {
+            ch.id = `${key}:undefined`
+            ch.label = '其他'
+            ch.value = undefined
+          }
+          let filter_value = false
+          if (i === 0) {
+            filter_value = true
+          } else {
+            for (let j = 0; j < i; j++) {
+              const last_item = state.value.shotFilters.get(keys[j])
+              const last_key = keys[j]
+              let asset_value = shot[last_key]
+              if (last_item.parent) {
+                asset_value = shot[last_item.parent][last_key]
+                if (shot[key] === '') asset_value = undefined
+              }
+              if (last_item.isChecked) filter_value = true
+              else {
+                if (last_item.values.includes(asset_value)) {
+                  filter_value = true
+                } else {
+                  filter_value = false
+                  break
+                }
+              }
+            }
+          }
+
+          if (i === state.value.shotFilters.size - 1 && filter_value) {
+            if (item.isChecked) value = true
+            else value = item.values.includes(ch.value)
+          }
+
+          if (filter_value) {
+            actions.addTreeFilterItem(temp, ch, item, shot)
+          }
+        }
+      }
+      return value
+    },
+    filteringShots: shots => {
+      if (shots.length === 0) {
+        state.value.shotTreeFilterData = []
+        //state.value.sFilters = []
+        return []
+      }
+      const temp = new Map()
+      const keys = [...state.value.shotFilters.keys()]
+      const result = shots.filter(asset => {
+        return actions.filteringShot(asset, temp, keys)
+      })
+      state.value.shotTreeFilterData = [...temp.values()]
+      state.value.shotTreeFilterData[0]?.children.sort((a, b) => {
+        return a.label - b.label
+      })
+      const temp_filters = []
+      state.value.shotFilters.forEach((value, key) => {
+        if (value.isChecked) temp_filters.push(value.id)
+        if (value.values.length > 0) {
+          value.values.forEach(item => {
+            temp_filters.push(`${key}:${item}`)
+          })
+        }
+      })
+      state.value.sFilters = temp_filters
       return result
     }
   }

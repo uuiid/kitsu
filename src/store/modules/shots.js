@@ -35,48 +35,49 @@ import { buildShotIndex, indexSearch } from '@/lib/indexing'
 import { applyFilters, getFilters, getKeyWords } from '@/lib/filtering'
 
 import {
-  CLEAR_SHOTS,
-  LOAD_SHOTS_START,
-  LOAD_SHOTS_ERROR,
-  LOAD_SHOTS_END,
-  SORT_VALIDATION_COLUMNS,
-  SET_CURRENT_EPISODE,
-  LOAD_SHOT_END,
-  SHOT_CSV_FILE_SELECTED,
-  IMPORT_SHOTS_END,
-  LOAD_OPEN_PRODUCTIONS_END,
-  NEW_SHOT_END,
-  EDIT_SHOT_END,
-  ADD_SHOT,
-  UPDATE_SHOT,
-  REMOVE_SHOT,
-  CANCEL_SHOT,
-  RESTORE_SHOT_END,
-  NEW_TASK_END,
-  CREATE_TASKS_END,
-  SET_SHOT_SEARCH,
-  SET_CURRENT_PRODUCTION,
-  DISPLAY_MORE_SHOTS,
-  SET_SHOT_LIST_SCROLL_POSITION,
-  REMOVE_SELECTED_TASK,
   ADD_SELECTED_TASK,
   ADD_SELECTED_TASKS,
-  DELETE_TASK_END,
+  ADD_SHOT,
+  CANCEL_SHOT,
+  CHANGE_SHOT_SORT,
+  CLEAR_SELECTED_SHOTS,
   CLEAR_SELECTED_TASKS,
-  SET_PREVIEW,
-  SAVE_SHOT_SEARCH_END,
-  SAVE_SHOT_SEARCH_FILTER_GROUP_END,
+  CLEAR_SHOTS,
+  CREATE_TASKS_END,
+  DELETE_TASK_END,
+  DISPLAY_MORE_SHOTS,
+  EDIT_SHOT_END,
+  IMPORT_SHOTS_END,
+  LOAD_OPEN_PRODUCTIONS_END,
+  LOAD_SHOT_END,
+  LOAD_SHOTS_END,
+  LOAD_SHOTS_ERROR,
+  LOAD_SHOTS_START,
+  LOCK_SHOT,
+  NEW_SHOT_END,
+  NEW_TASK_END,
+  REMOVE_SELECTED_TASK,
+  REMOVE_SHOT,
   REMOVE_SHOT_SEARCH_END,
   REMOVE_SHOT_SEARCH_FILTER_GROUP_END,
-  CHANGE_SHOT_SORT,
-  UPDATE_METADATA_DESCRIPTOR_END,
-  LOCK_SHOT,
-  UNLOCK_SHOT,
   RESET_ALL,
-  CLEAR_SELECTED_SHOTS,
-  SET_SHOT_SELECTION
+  RESTORE_SHOT_END,
+  SAVE_SHOT_SEARCH_END,
+  SAVE_SHOT_SEARCH_FILTER_GROUP_END,
+  SET_CURRENT_EPISODE,
+  SET_CURRENT_PRODUCTION,
+  SET_PREVIEW,
+  SET_SHOT_LIST_SCROLL_POSITION,
+  SET_SHOT_SEARCH,
+  SET_SHOT_SELECTION,
+  SHOT_CSV_FILE_SELECTED,
+  SORT_VALIDATION_COLUMNS,
+  UNLOCK_SHOT,
+  UPDATE_METADATA_DESCRIPTOR_END,
+  UPDATE_SHOT
 } from '@/store/mutation-types'
 import async from 'async'
+import { assetFilterStore } from '@/store/modules/assetfilter.js'
 
 const cache = {
   shots: [],
@@ -204,6 +205,21 @@ const helpers = {
       endDateString = moment(task.end_date, 'YYYY-MM-DD').format('GGGG-W')
     }
     return endDateString
+  },
+  buildTreeFilterResult(state) {
+    cache.result = assetFilterStore().actions.filteringShots(cache.shots)
+    const limit =
+      state.displayedShots.length > PAGE_SIZE
+        ? state.displayedShots.length
+        : PAGE_SIZE
+    const displayedShots = cache.result.slice(0, limit)
+    const maxX = displayedShots.length
+    const maxY = state.nbValidationColumns
+
+    state.displayedShots = displayedShots
+    state.shotFilledColumns = getFilledColumns(displayedShots)
+    helpers.setListStats(state, cache.result)
+    state.shotSelectionGrid = buildSelectionGrid(maxX, maxY)
   },
 
   buildResult(
@@ -569,6 +585,11 @@ const actions = {
       production: rootGetters.currentProduction
     })
   },
+  setShotTreeFilter({ commit }) {
+    commit(SET_SHOT_SEARCH, {
+      treeFilter: true
+    })
+  },
 
   setShotSearch({ commit, rootGetters }, shotSearch) {
     const taskStatusMap = rootGetters.taskStatusMap
@@ -576,14 +597,19 @@ const actions = {
     const taskMap = rootGetters.taskMap
     const production = rootGetters.currentProduction
     const persons = rootGetters.people
-    commit(SET_SHOT_SEARCH, {
-      shotSearch,
-      persons,
-      taskStatusMap,
-      taskMap,
-      taskTypeMap,
-      production
-    })
+    if (shotSearch === '') {
+      commit(SET_SHOT_SEARCH, {
+        treeFilter: true
+      })
+    } else
+      commit(SET_SHOT_SEARCH, {
+        shotSearch,
+        persons,
+        taskStatusMap,
+        taskMap,
+        taskTypeMap,
+        production
+      })
   },
 
   saveShotSearch({ commit, rootGetters }, searchQuery) {
@@ -1065,9 +1091,12 @@ const mutations = {
   },
 
   [SET_SHOT_SEARCH](state, payload) {
-    const sorting = state.shotSorting
-    payload.sorting = sorting
-    helpers.buildResult(state, payload)
+    if (payload.treeFilter) {
+      helpers.buildTreeFilterResult(state)
+    } else {
+      payload.sorting = state.shotSorting
+      helpers.buildResult(state, payload)
+    }
   },
 
   [NEW_SHOT_END](state, { shot, episodeMap }) {
