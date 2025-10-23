@@ -77,9 +77,7 @@
             active: selectedBar === 'thumbnails'
           }"
           :title="$t('menu.set_thumbnails')"
-          v-if="
-            isTaskSelection && !isCurrentUserArtist && !isCurrentViewConcept
-          "
+          v-if="isTaskSelection && !isCurrentViewConcept"
           @click="selectBar('thumbnails')"
         >
           <kitsu-icon
