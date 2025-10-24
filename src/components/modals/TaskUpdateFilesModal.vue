@@ -200,7 +200,12 @@ async function pathRule() {
         '0e40cd9b-7f50-418b-8322-39c451f49dde')
   ) {
     file_path.root_path = `Content/${pin_yin_ming_cheng}/Map/${final_file_name}.umap`
-    file_path.maya_file_name = `${final_file_name}_Low.ma`
+    if (
+      updateTaskFiles.state.selectedTask.entity.asset_type_id ===
+      '21b3f5aa-cdd6-4fca-ace4-65077494df4b'
+    )
+      file_path.maya_file_name = `${final_file_name}_Low`
+    else file_path.maya_file_name = `${final_file_name}_Low.ma`
     file_path.ue_file_name = `${pin_yin_ming_cheng}.uproject`
   } else if (
     updateTaskFiles.state.selectedTask.task.task_type_id ===
@@ -317,7 +322,7 @@ const onAddData = async files => {
         }
         files_.push(file_data)
       } else {
-        messages.push(`${file.name}:Maya文件名不正确`)
+        messages.push(`${file.name}:文件名不正确`)
         continue
       }
       //}
@@ -375,6 +380,18 @@ const onAddData = async files => {
         messages.push(`${file.name}:请拖入图片文件`)
         continue
       }
+    } else if (
+      updateTaskFiles.state.selectedTask.entity.asset_type_id ===
+        '21b3f5aa-cdd6-4fca-ace4-65077494df4b' &&
+      (file.name === file_path.maya_file_name + '.abc' ||
+        file.name === file_path.maya_file_name + '.ma')
+    ) {
+      file_data['task_data'] = {
+        path: file.path,
+        category: 'model_maya',
+        target_path: file_path.target_path
+      }
+      files_.push(file_data)
     } else {
       messages.push(`${file.name}:请检查文件名称`)
       continue

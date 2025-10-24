@@ -1812,7 +1812,7 @@
       "end_time": "结束时间",
       "select_type": "选择类型",
       "modified_successfully": "修改成功",
-      "modified_failed": "修改成功",
+      "modified_failed": "修改失败",
       "already_exists": "已存在",
       "average_time": "平均时间",
       "select_all": "选择全部",
