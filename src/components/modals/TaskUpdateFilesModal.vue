@@ -220,7 +220,7 @@ async function pathRule() {
         '6d9d69f0-4269-46fc-9c26-a7f7bf2f30e3'
     ) {
       file_path.root_path = `Content/Character/${pin_yin_ming_cheng}/Meshs/SK_Ch${bian_hao}.uasset`
-      file_path.maya_file_name = `${final_file_name}.ma`
+      file_path.maya_file_name = `${final_file_name}_rig_`
       file_path.ue_file_name = `${pin_yin_ming_cheng}_UE5.uproject`
     }
     // const tasks = updateTaskFiles.state.selectedTask.entity.tasks.filter(
