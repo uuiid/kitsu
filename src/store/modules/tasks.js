@@ -702,6 +702,21 @@ const actions = {
       return comments
     })
   },
+  deleteWorkFile({ commit }, { taskId, workFileId }) {
+    return tasksApi.deleteWorkFile(taskId, workFileId).then(() => {
+      const task = Object.assign(state.taskMap.get(taskId))
+      if (task) {
+        task.working_files = task.working_files.filter(
+          workFile => workFile.id !== workFileId
+        )
+      }
+      commit(EDIT_TASK_DATES, {
+        taskId: taskId,
+        data: task
+      })
+      return workFileId
+    })
+  },
   commentTaskWithPreview(
     { commit, state },
     {

@@ -28,7 +28,19 @@
         @scan-project="onScanProject"
       />
       <div class="pa1" v-if="task?.working_files?.length > 0">
-        <div :key="workingFile.id" v-for="workingFile in task?.working_files">
+        <div
+          :key="workingFile.id"
+          v-for="workingFile in task?.working_files"
+          class="working-files-list"
+          @mouseenter="currentWorkingFileId = workingFile.id"
+          @mouseleave="currentWorkingFileId = null"
+        >
+          <x-icon
+            class="close"
+            size="15"
+            v-if="currentWorkingFileId === workingFile.id"
+            @click="deleteCurrentWorkingFile"
+          ></x-icon>
           <span style="width: 120px; display: inline-block">
             {{ workingFile.description }}
           </span>
@@ -519,7 +531,8 @@ export default {
         editComment: false,
         deleteComment: false,
         deleteExtraPreview: false
-      }
+      },
+      currentWorkingFileId: null
     }
   },
 
@@ -838,7 +851,8 @@ export default {
       'unsubscribeFromTask',
       'updatePreviewAnnotation',
       'scanWorkFile',
-      'scanWorkFiles'
+      'scanWorkFiles',
+      'deleteWorkFile'
     ]),
 
     loadTaskData() {
@@ -1439,6 +1453,14 @@ export default {
       this.removeSelectedTask({ task: data }) // remove list selection
       this.removeSelectedTask({ task }) // remove
       this.$emit('task-removed', task)
+    },
+    deleteCurrentWorkingFile() {
+      if (this.currentWorkingFileId) {
+        this.deleteWorkFile({
+          taskId: this.task.id,
+          workFileId: this.currentWorkingFileId
+        })
+      }
     }
   },
 
@@ -1848,5 +1870,20 @@ export default {
 .working-file-description {
   min-width: 200px;
   max-width: 200px;
+}
+.close {
+  position: absolute;
+  border-radius: 10px;
+  background: #ff6b6b;
+  z-index: 10000;
+  top: -5px;
+  left: -10px;
+  cursor: pointer;
+  &:hover {
+    background: red;
+  }
+}
+.working-files-list {
+  position: relative;
 }
 </style>

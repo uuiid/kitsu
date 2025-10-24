@@ -205,6 +205,10 @@ export default {
     const path = `/api/actions/projects/${projectId}/tasks/working-file-many`
     return client.ppost(path, taskIds)
   },
+  deleteWorkFile(taskId, workFileId) {
+    const path = `/api/actions/tasks/${taskId}/working-file`
+    return client.pdel(path, { id: workFileId })
+  },
   addAttachmentToComment(comment, files) {
     const attachments = new FormData()
     const taskId = comment.object_id
