@@ -200,10 +200,7 @@ async function pathRule() {
         '0e40cd9b-7f50-418b-8322-39c451f49dde')
   ) {
     file_path.root_path = `Content/${pin_yin_ming_cheng}/Map/${final_file_name}.umap`
-    if (
-      updateTaskFiles.state.selectedTask.entity.asset_type_id ===
-      '21b3f5aa-cdd6-4fca-ace4-65077494df4b'
-    )
+    if (updateTaskFiles.state.selectedTask.entity.asset_type_name === '场景')
       file_path.maya_file_name = `${final_file_name}_Low`
     else file_path.maya_file_name = `${final_file_name}_Low.ma`
     file_path.ue_file_name = `${pin_yin_ming_cheng}.uproject`
@@ -381,8 +378,7 @@ const onAddData = async files => {
         continue
       }
     } else if (
-      updateTaskFiles.state.selectedTask.entity.asset_type_id ===
-        '21b3f5aa-cdd6-4fca-ace4-65077494df4b' &&
+      updateTaskFiles.state.selectedTask.entity.asset_type_name === '场景' &&
       (file.name === file_path.maya_file_name + '.abc' ||
         file.name === file_path.maya_file_name + '.ma')
     ) {
