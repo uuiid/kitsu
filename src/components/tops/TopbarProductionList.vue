@@ -55,6 +55,7 @@ import { getProductionPath } from '@/lib/path'
 
 import ComboboxMask from '@/components/widgets/ComboboxMask.vue'
 import ProductionName from '@/components/widgets/ProductionName.vue'
+import { assetFilterStore } from '@/store/modules/assetfilter.js'
 
 export default {
   name: 'topbar-production-list',
@@ -101,6 +102,7 @@ export default {
       if (this.showProductionList) {
         this.lastScrollPosition = this.$refs.select.scrollTop
       }
+      assetFilterStore().actions.resetFilter()
       this.$nextTick(() => {
         this.showProductionList = !this.showProductionList
         if (this.showProductionList) {

@@ -303,6 +303,25 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       }
       return filter_value
     },
+    resetFilter: () => {
+      state.value.filters = []
+      state.value.assetFilters.forEach(f => {
+        f.isChecked = true
+        f.values = []
+      })
+      //state.value.filteredAssets = []
+      //state.value.oldDisplayedAssetsByType = null
+      //state.value.treeFilterData = []
+      state.value.sFilters = []
+      state.value.expandedKeys = new Set()
+      //state.value.filteredShots = []
+      state.value.shotFilters.forEach(f => {
+        f.isChecked = true
+        f.values = []
+      })
+      state.value.shotExpandedKeys = new Set()
+      //state.value.shotTreeFilterData = []
+    },
     addTreeAssigneesGroup: assignees => {
       const temp = new Map()
       assignees.children.forEach(child => {
