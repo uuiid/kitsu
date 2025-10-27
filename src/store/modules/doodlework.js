@@ -857,7 +857,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         if (file.isDirectory()) {
           await actions.copyFolder(sourceFilePath, destFilePath)
         } else {
-          await fs.copyFile(sourceFilePath, destFilePath)
+          await fs.copyFileSync(sourceFilePath, destFilePath)
         }
       }
     },
