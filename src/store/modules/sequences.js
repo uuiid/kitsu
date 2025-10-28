@@ -184,7 +184,7 @@ const cache = {
 
 const initialState = {
   currentSequence: null,
-
+  sequenceMap: new Map(),
   displayedSequences: [],
   displayedSequencesLength: 0,
   displayedSequencesTimeSpent: 0,
@@ -230,7 +230,7 @@ const getters = {
   isSequenceTime: state => state.isSequenceTime,
 
   sequences: state => cache.sequences,
-  sequenceMap: state => cache.sequenceMap,
+  sequenceMap: state => state.sequenceMap,
   sequenceRetakeStats: state => state.sequenceRetakeStats,
   sequenceStats: state => state.sequenceStats,
 
@@ -685,7 +685,7 @@ const mutations = {
       if (!isEstimation && sequence.estimation > 0) isEstimation = true
       if (!isDescription && sequence.description) isDescription = true
       if (!isResolution && sequence.data?.resolution) isResolution = true
-
+      state.sequenceMap.set(sequence.id, sequence)
       cache.sequenceMap.set(sequence.id, sequence)
     })
     sequences = sortSequences(sequences)
@@ -796,6 +796,7 @@ const mutations = {
     cache.sequences = sortByName(cache.sequences)
     state.displayedSequences = cache.sequences
     helpers.setListStats(state, cache.sequences)
+    state.sequenceMap.set(sequence.id, sequence)
     cache.sequenceMap.set(sequence.id, sequence)
     state.sequenceFilledColumns = getFilledColumns(state.displayedSequences)
     cache.sequenceIndex = buildSequenceIndex(cache.sequences)
@@ -1044,6 +1045,7 @@ const mutations = {
   [ADD_SEQUENCE](state, { sequence, episodeMap }) {
     cache.sequences.push(sequence)
     const sortedSequences = sortSequences(cache.sequences)
+    state.sequenceMap.set(sequence.id, sequence)
     cache.sequenceMap.set(sequence.id, sequence)
     if (sequence.parent_id) {
       const episode = episodeMap.get(sequence.parent_id)

@@ -270,9 +270,14 @@
         </div>
       </div>
       <div class="breakdown-column assets-column" v-show="isReplaceAsset">
+        <div class="replace-asset-header">
+          <span>旧</span>
+          <span>新</span>
+        </div>
         <div class="replace-asset">
           <replace-asset-cell
             class="replace-asset-cell"
+            ref="sourceAssetCell"
             :entry="dropEntry"
             :casting="casting"
             :selected-assets="selectedAsset"
@@ -281,6 +286,7 @@
           ></replace-asset-cell>
           <span>>></span>
           <replace-asset-cell
+            ref="targetAssetCell"
             class="replace-asset-cell"
             :entry="dropEntry"
             @drag-end="entry => (targetAsset = entry)"
@@ -288,9 +294,14 @@
         </div>
         <div class="replace_asset-button">
           <button-simple
+            :text="$t('doodle.clear')"
+            class="mt1"
+            @click="clearReplaceAsset"
+          >
+          </button-simple>
+          <button-simple
             :text="$t('doodle.replace_asset')"
             class="mt1"
-            :loading="isReplacingAsset"
             @click="replaceAsset"
             :disabled="
               sourceAsset === null ||
@@ -310,8 +321,7 @@
             class="flexrow-item"
             :title="$t('assets.new_asset')"
             icon="plus"
-            @click="modals.isNewDisplayed = true"
-            v-if="!isOnlyCurrentEpisode"
+            @click="onNewAsset"
           />
           <span class="filler"></span>
           <button-simple
@@ -320,13 +330,12 @@
             icon="assets"
             :is-on="libraryDisplayed"
             @click="libraryDisplayed = !libraryDisplayed"
-            v-if="!isOnlyCurrentEpisode"
+            v-if="false"
           />
           <button-simple
             class="flexrow-item"
             :text="$t('assets.only_current_episode')"
-            :is-on="isOnlyCurrentEpisode"
-            @click="isOnlyCurrentEpisode = !isOnlyCurrentEpisode"
+            @click="onClickOnlyCurrentEpisode"
             v-if="sequenceId !== 'all'"
           />
           <combobox-styled
@@ -334,6 +343,7 @@
             v-model="assetSequenceId"
             v-if="isShotCasting"
             style="margin-top: 0.4em; margin-right: 0.4em"
+            @change="onAssetSequenceIdChange"
           />
           <combobox
             class="flexrow-item"
@@ -767,17 +777,7 @@ export default {
     availableAssetsByType() {
       const result = []
       this.assetsByType.forEach(typeGroup => {
-        let newGroup = typeGroup.filter(asset => !asset.canceled)
-        if (this.assetSequenceId !== 'all') {
-          newGroup = typeGroup.filter(asset => {
-            return (
-              asset.ji_shu_lie.toString() ===
-              this.castingSequencesOptions
-                .find(s => s.value === this.assetSequenceId)
-                ?.label.replace('EP', '')
-            )
-          })
-        }
+        const newGroup = typeGroup.filter(asset => !asset.canceled)
         if (newGroup.length > 0) result.push(newGroup)
       })
       return result
@@ -1207,6 +1207,7 @@ export default {
 
     removeOneAsset(assetId, entityId, nbOccurences) {
       this.isLocked = true
+      this.isLocked = true
       if (this.isEpisodeCasting && nbOccurences === 1) {
         this.removalData = { assetId, entityId, nbOccurences }
         this.modals.isRemoveConfirmationDisplayed = true
@@ -1444,7 +1445,10 @@ export default {
       }
       this.assetToEdit = form
     },
-
+    onNewAsset() {
+      this.assetToEdit = {}
+      this.modals.isNewDisplayed = true
+    },
     onKeyDown(event) {
       if (!['INPUT', 'TEXTAREA'].includes(event.target.tagName)) {
         if ((event.ctrlKey || event.metaKey) && event.keyCode === 67) {
@@ -1592,6 +1596,12 @@ export default {
       workingFileStore().state.tempSelectedAssets.splice(
         workingFileStore().state.tempSelectedAssets.indexOf(assetId),
         1
+      )
+    },
+    onSequenceChange() {
+      workingFileStore().actions.getWorkingFilesFromSequence(
+        this.currentProduction.id,
+        this.assetSequenceId
       )
     },
     getEntityName(entity) {
@@ -1761,6 +1771,12 @@ export default {
         preferences.setPreference(preferenceKey, newWidth)
       }
     },
+    clearReplaceAsset() {
+      this.$refs.sourceAssetCell.assetEntry = null
+      this.$refs.sourceAssetCell.isEnterShow = false
+      this.$refs.targetAssetCell.assetEntry = null
+      this.$refs.targetAssetCell.isEnterShow = false
+    },
     stopResizing() {
       window.removeEventListener('mousemove', this.startResizing)
       window.removeEventListener('mouseup', this.stopResizing)
@@ -1816,6 +1832,23 @@ export default {
     onCastingScroll(event) {
       const position = event.target
       this.$refs['casting-header'].scrollLeft = position.scrollLeft
+    },
+    onAssetSequenceIdChange() {
+      let searchQuery = ''
+      if (this.assetSequenceId === 'all') {
+        this.setAssetSearch(searchQuery)
+        return
+      }
+      const sequenceLabel = this.castingSequencesOptions
+        .find(s => s.value === this.assetSequenceId)
+        ?.label.replace('EP', '')
+      this.setAssetSearch(searchQuery)
+      searchQuery = `集数=[${Number(sequenceLabel)}]`
+      this.confirmBuildFilter(searchQuery)
+    },
+    onClickOnlyCurrentEpisode() {
+      this.assetSequenceId = this.sequenceId
+      this.onAssetSequenceIdChange()
     }
   },
 
@@ -2211,6 +2244,7 @@ export default {
 .replace_asset-button {
   display: flex;
   justify-content: end;
+  gap: 10px;
 }
 
 .asset-list-root {
@@ -2230,5 +2264,11 @@ export default {
   padding: 0.5em;
   border-radius: 5px;
   margin-right: 11px;
+}
+.replace-asset-header {
+  display: flex;
+  justify-content: space-between;
+  margin-right: 80px;
+  margin-left: 100px;
 }
 </style>

@@ -25,7 +25,7 @@ export const workingFileStore = defineStore('workingFileStore', () => {
       }
       console.log(state.value.workingFiles)
     },
-    groupEntitiesByParents(entities, parentNameField) {
+    groupEntitiesByParents(entities, parentNameField, isMap = false) {
       const entitiesByParents = new Map()
 
       for (const entity of entities) {
@@ -37,6 +37,7 @@ export const workingFileStore = defineStore('workingFileStore', () => {
       }
 
       // 如果需要数组形式的结果
+      if (isMap) return entitiesByParents
       return Array.from(entitiesByParents.values())
     }
   }

@@ -77,14 +77,14 @@ const applyFiltersFunctions = {
 
   descriptor(entry, filter, taskMap) {
     let isOk = false
-    let dataValue = entry.data?.[filter.descriptor.field_name]
+    let dataValue = entry?.[filter.descriptor.field_name]
     if ((dataValue || dataValue === 0) && filter.values) {
       if (typeof dataValue === 'string') dataValue = dataValue.toLowerCase()
 
       // Checklist case
       if (
         filter.values.length === 1 &&
-        filter.values[0].match(new RegExp('(:true)|(:false)$'))
+        /:true|:false$/.test(filter.values[0])
       ) {
         const isTrue = Boolean(filter.values[0].match(new RegExp(':true$')))
         let value = filter.values[0].replace(
@@ -467,7 +467,10 @@ export const getDescFilters = (descriptors, taskTypes, queryText) => {
       let value = cleanParenthesis(pattern[1])
       const excluding = value.startsWith('-')
       if (excluding) value = value.substring(1)
-      const values = value.split(',')
+      let values = value.split(',')
+      if (matchedDescriptors[0].data_type === 'number') {
+        values = values.map(value => Number(value))
+      }
       if (matchedDescriptors) {
         results.push({
           descriptor: matchedDescriptors[0],

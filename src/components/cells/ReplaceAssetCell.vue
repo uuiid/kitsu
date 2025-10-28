@@ -65,6 +65,10 @@ function onDragLeave(e) {
     isError.value = false
   }
 }
+defineExpose({
+  assetEntry,
+  isEnterShow
+})
 </script>
 
 <template>
