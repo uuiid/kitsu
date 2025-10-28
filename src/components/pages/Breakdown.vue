@@ -371,7 +371,22 @@
         </div>
         <spinner v-if="isAssetsLoading" />
         <template v-else>
-          <div class="asset-list" v-if="tempAssets.length > 0">
+          <div class="asset-list-action">
+            <chevron-right
+              size="30"
+              v-if="!visibleTempAssets"
+              @click="visibleTempAssets = true"
+            ></chevron-right>
+            <chevron-down
+              size="30"
+              v-if="visibleTempAssets"
+              @click="visibleTempAssets = false"
+            ></chevron-down>
+          </div>
+          <div
+            class="temp-asset-list asset-list"
+            v-if="tempAssets.length > 0 && visibleTempAssets"
+          >
             <available-asset-block
               :key="id"
               :asset="assetMap.get(id)"
@@ -384,7 +399,7 @@
               @add-ten="addTenAssets"
               @show-info="showAssetInfo"
               @dragstart="onDragStart(assetMap.get(id))"
-              @remove="tempAssets.splice(tempAssets.indexOf(id), 1)"
+              @remove="onRemoveTempAsset(id)"
               v-for="id in tempAssets"
               v-show="libraryDisplayed || !assetMap.get(id).shared"
             />
@@ -550,6 +565,7 @@ import { ElMessage } from 'element-plus'
 import ReplaceAssetCell from '@/components/cells/ReplaceAssetCell.vue'
 import Combobox from '@/components/widgets/Combobox.vue'
 import ManageShotsModal from '@/components/modals/ManageShotsModal.vue'
+import { workingFileStore } from '@/store/modules/workingfile.js'
 
 export default {
   name: 'breakdown',
@@ -656,7 +672,7 @@ export default {
         operator: '=',
         value: ''
       },
-      tempAssets: []
+      visibleTempAssets: true
     }
   },
 
@@ -718,6 +734,9 @@ export default {
 
     searchField() {
       return this.$refs['search-field']
+    },
+    tempAssets() {
+      return workingFileStore().state.tempSelectedAssets
     },
 
     castingTypeOptions() {
@@ -1088,12 +1107,13 @@ export default {
     },
 
     async addOneAsset(assetId, amount = 1) {
-      console.log(assetId, amount)
       this.isLocked = true
       const entityIds = Object.keys(this.selection).filter(
         key => this.selection[key]
       )
-
+      if (!workingFileStore().state.tempSelectedAssets.includes(assetId)) {
+        workingFileStore().state.tempSelectedAssets.push(assetId)
+      }
       for (const entityId of entityIds) {
         this.addAssetToCasting({
           entityId,
@@ -1101,14 +1121,10 @@ export default {
           nbOccurences: amount,
           label: this.castingType === 'shot' ? 'animate' : 'fixed'
         })
-
         delete this.saveErrors[entityId]
         try {
           await this.saveCasting(entityId)
           this.setLock()
-          if (!this.tempAssets.includes(assetId)) {
-            this.tempAssets.push(assetId)
-          }
         } catch (err) {
           this.saveErrors[entityId] = true
           console.error(err)
@@ -1570,6 +1586,12 @@ export default {
       const departemts = descriptor.departments || []
       return departemts.map(departmentId =>
         this.departmentMap.get(departmentId)
+      )
+    },
+    onRemoveTempAsset(assetId) {
+      workingFileStore().state.tempSelectedAssets.splice(
+        workingFileStore().state.tempSelectedAssets.indexOf(assetId),
+        1
       )
     },
     getEntityName(entity) {
@@ -2199,5 +2221,14 @@ export default {
   display: flex;
   align-items: center;
   justify-content: space-between;
+}
+.asset-list-action {
+  height: 30px;
+}
+.temp-asset-list {
+  background: var(--background-alt-4);
+  padding: 0.5em;
+  border-radius: 5px;
+  margin-right: 11px;
 }
 </style>
