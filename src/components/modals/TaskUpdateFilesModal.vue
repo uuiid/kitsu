@@ -105,7 +105,7 @@ const onActions = async (action_name, task) => {
   } else if (action_name === 'view-log') {
     const fs = require('fs')
     const localLogPath = await doodleWorkStore().actions.getLocalLogPath()
-    const logPath = `${localLogPath}/${task.id}.log`
+    const logPath = `${localLogPath.tmp_dir}/${task.id}.log`
     if (fs.existsSync(logPath)) {
       window.api.openPath(logPath)
     } else ElMessage.error('文件不存在，请稍后尝试')

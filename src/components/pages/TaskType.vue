@@ -258,6 +258,9 @@
           @confirm="renderImport"
         />
       </div>
+      <task-update-files-modal
+        v-if="updateTaskFilesStore().state.isShowUpdateModal"
+      />
     </div>
 
     <div class="column side-column" v-if="nbSelectedTasks >= 1">
@@ -317,7 +320,9 @@ import TaskInfo from '@/components/sides/TaskInfo.vue'
 import TaskList from '@/components/lists/TaskList.vue'
 import TaskTypeName from '@/components/widgets/TaskTypeName.vue'
 import TaskListNumbers from '@/components/widgets/TaskListNumbers.vue'
+import TaskUpdateFilesModal from '@/components/modals/TaskUpdateFilesModal.vue'
 
+import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 const filters = {
   all(tasks) {
     return tasks
@@ -424,6 +429,7 @@ export default {
   mixins: [formatListMixin, searchMixin],
 
   components: {
+    TaskUpdateFilesModal,
     ButtonSimple,
     CornerLeftUpIcon,
     ComboboxNumber,
@@ -792,6 +798,7 @@ export default {
   },
 
   methods: {
+    updateTaskFilesStore,
     ...mapActions([
       'addSelectedTask',
       'clearSelectedTasks',
@@ -1046,6 +1053,10 @@ export default {
 
     onTaskSelected(task) {
       this.currentTask = task
+      updateTaskFilesStore().state.selectedTask = {
+        task: task,
+        entity: this.entityMap.get(task.entity_id)
+      }
       this.updateTaskInQuery()
     },
 
