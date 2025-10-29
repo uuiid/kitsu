@@ -56,19 +56,21 @@ const workingFilesList = computed(() => {
 })
 onMounted(() => {
   if (props.sequenceId === 'all') return
-  workingFileStore().actions.getWorkingFilesFromSequence(
-    props.projectId,
-    props.sequenceId
-  )
+  if (workingFile.state.workingFiles.size === 0)
+    workingFileStore().actions.getWorkingFilesFromSequence(
+      props.projectId,
+      props.sequenceId
+    )
 })
 function onClickWorkFile(work_file) {
   const fs = require('fs')
-  const path = `${productions.state.productionMap.get(props.projectId).path}/${work_file.path}`
-  if (!fs.existsSync(path)) {
+  const path = require('path')
+  const full_path = `${productions.state.productionMap.get(props.projectId).path}/${work_file.path}`
+  if (!fs.existsSync(full_path)) {
     ElMessage.error('文件不存在')
     return
   }
-  window.api.openPath(path)
+  window.api.openPath(path.dirname(full_path))
 }
 </script>
 
@@ -111,6 +113,7 @@ function onClickWorkFile(work_file) {
                 errorText: work_file.path === ''
               }"
               :key="work_file.id"
+              :title="work_file.path"
               v-for="work_file in asset.work_files.get(taskType.id)"
               @click="onClickWorkFile(work_file)"
             >
