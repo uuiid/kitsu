@@ -110,7 +110,8 @@ function onClickWorkFile(work_file) {
             <div
               class="clickable-text"
               :class="{
-                errorText: work_file.path === ''
+                errorText: work_file.path === '',
+                successText: work_file.path !== ''
               }"
               :key="work_file.id"
               :title="work_file.path"
@@ -131,12 +132,14 @@ function onClickWorkFile(work_file) {
   color: red;
   cursor: default;
 }
-.clickable-text {
+.successText {
+  color: #6098df;
   cursor: pointer;
+}
+.clickable-text {
   transition: all 0.2s ease;
   padding: 4px 8px;
   border-radius: 4px;
   text-decoration: underline;
-  color: #6098df;
 }
 </style>

@@ -13,6 +13,7 @@ export const workingFileStore = defineStore('workingFileStore', () => {
   const state = ref(initState())
   const actions = {
     async getWorkingFilesFromSequence(projectId, sequenceId) {
+      state.value.workingFiles.clear()
       const res = await workingfile.getWorkingFilesFromSequence(
         projectId,
         sequenceId
