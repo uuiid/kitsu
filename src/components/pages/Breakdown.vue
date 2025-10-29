@@ -20,6 +20,7 @@
             :options="castingSequencesOptions"
             v-model="sequenceId"
             v-if="isShotCasting"
+            @change="onSequenceChange"
           />
           <combobox-styled
             :label="$t('tasks.fields.asset_type')"
@@ -77,6 +78,13 @@
             :is-responsive="true"
             :title="$t('doodle.replace_asset')"
             @click="isReplaceAsset = !isReplaceAsset"
+          />
+          <button-simple
+            class="flexrow-item"
+            icon="chart-area"
+            :is-responsive="true"
+            :title="$t('doodle.statistical_asset')"
+            @click="visibleStatisticalAssets = !visibleStatisticalAssets"
           />
           <button-simple
             class="flexrow-item"
@@ -312,7 +320,20 @@
           </button-simple>
         </div>
       </div>
-      <div class="breakdown-column assets-column" v-if="isCurrentUserManager">
+      <statistical-assets
+        v-if="isCurrentUserManager && visibleStatisticalAssets"
+        :project-id="currentProduction.id"
+        :sequence-id="sequenceId"
+        class="breakdown-column"
+      />
+      <div
+        style="margin-top: 25%; cursor: pointer; width: 20px"
+        @click="visibleAssetsList = !visibleAssetsList"
+      >
+        <chevron-right v-if="visibleAssetsList"></chevron-right>
+        <chevron-left v-else></chevron-left>
+      </div>
+      <div class="breakdown-column assets-column" v-show="visibleAssetsList">
         <h2 class="subtitle">
           {{ $t('breakdown.all_assets') }}
         </h2>
@@ -544,7 +565,7 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import moment from 'moment'
-import { ChevronRight, ChevronDown } from 'lucide-vue-next'
+import { ChevronRight, ChevronDown, ChevronLeft } from 'lucide-vue-next'
 
 import csv from '@/lib/csv'
 import clipboard from '@/lib/clipboard'
@@ -576,6 +597,7 @@ import ReplaceAssetCell from '@/components/cells/ReplaceAssetCell.vue'
 import Combobox from '@/components/widgets/Combobox.vue'
 import ManageShotsModal from '@/components/modals/ManageShotsModal.vue'
 import { workingFileStore } from '@/store/modules/workingfile.js'
+import StatisticalAssets from '@/components/widgets/StatisticalAssets.vue'
 
 export default {
   name: 'breakdown',
@@ -583,6 +605,7 @@ export default {
   mixins: [entityListMixin, searchMixin],
 
   components: {
+    StatisticalAssets,
     ManageShotsModal,
     Combobox,
     AvailableAssetBlock,
@@ -591,6 +614,7 @@ export default {
     ButtonSimple,
     ChevronDown,
     ChevronRight,
+    ChevronLeft,
     ComboboxStyled,
     DeleteModal,
     DepartmentName,
@@ -673,6 +697,8 @@ export default {
       assetToEdit: {},
       copyAssets: [],
       isReplaceAsset: false,
+      visibleStatisticalAssets: false,
+      visibleAssetsList: true,
       dropEntry: null,
       sourceAsset: null,
       targetAsset: null,
@@ -1598,11 +1624,12 @@ export default {
         1
       )
     },
-    onSequenceChange() {
-      workingFileStore().actions.getWorkingFilesFromSequence(
-        this.currentProduction.id,
-        this.assetSequenceId
-      )
+    onSequenceChange(value) {
+      if (value !== 'all' && this.visibleStatisticalAssets)
+        workingFileStore().actions.getWorkingFilesFromSequence(
+          this.currentProduction.id,
+          value
+        )
     },
     getEntityName(entity) {
       return this.sequenceId === 'all' &&
@@ -2038,8 +2065,8 @@ export default {
   flex: 1;
   display: flex;
   flex-direction: row;
-  overflow-y: auto;
   margin-top: 0.5em;
+  overflow: hidden;
 }
 
 .breakdown-column {
@@ -2176,7 +2203,7 @@ export default {
   font-weight: 600;
   letter-spacing: 1px;
   min-height: 40px;
-  overflow-y: hidden;
+  overflow: hidden;
   padding: 0;
   position: sticky;
   top: 0;

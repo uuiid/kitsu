@@ -50,6 +50,7 @@
     <clock-icon class="icon" v-else-if="icon === 'clock'" />
     <scan-search class="icon" v-else-if="icon === 'scan'" />
     <replace-icon class="icon" v-else-if="icon === 'replace'" />
+    <chart-area-icon class="icon" v-else-if="icon === 'chart-area'" />
     <refresh-ccw-icon
       class="icon"
       :stroke-width="1.2"
@@ -83,6 +84,7 @@ import {
   ChevronDownIcon,
   ChevronLeftIcon,
   ChevronRightIcon,
+  ChartAreaIcon,
   ClockIcon,
   CodepenIcon,
   CornerLeftDownIcon,
@@ -129,6 +131,7 @@ export default {
     ChevronDownIcon,
     ChevronLeftIcon,
     ChevronRightIcon,
+    ChartAreaIcon,
     ClockIcon,
     CodepenIcon,
     CornerLeftDownIcon,
