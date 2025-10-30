@@ -58,7 +58,11 @@ const displayTreeData = computed(() => {
       )
   )
 })
-
+const checkedKeys = computed(() => {
+  return props.type === 'assets'
+    ? assetFilter.state.filters
+    : assetFilter.state.sFilters
+})
 const onExtendDown = event => {
   extendWidth.value.isStartHandle = true
   extendWidth.value.startWidth = event.clientX
@@ -141,20 +145,6 @@ const filterNode = (value, data) => {
   if (!value) return true
   return String(data.label)?.includes(value)
 }
-watch(
-  () => assetFilter.state.filters,
-  () => {
-    treeRef.value.setCheckedKeys(assetFilter.state.filters, false)
-  },
-  { deep: true }
-)
-watch(
-  () => assetFilter.state.sFilters,
-  () => {
-    treeRef.value.setCheckedKeys(assetFilter.state.sFilters, false)
-  },
-  { deep: true }
-)
 watch(filterText, val => {
   treeRef.value?.filter(val)
 })
@@ -182,6 +172,7 @@ watch(filterText, val => {
           @check-change="onCheckChange"
           node-key="id"
           :filter-node-method="filterNode"
+          :default-checked-keys="checkedKeys"
           @mouseleave="currentNode = null"
           :default-expanded-keys="[...expandedKeys.values()]"
           @node-expand="data => expandedKeys.add(data.id)"
@@ -193,23 +184,25 @@ watch(filterText, val => {
         >
           <template #default="{ node, data }">
             <div class="custom-tree-node" @mouseenter="currentNode = node">
-              <div v-if="node.data.task_type_ids?.size > 0">
-                <department-name
-                  class="department-dot"
-                  :department="getDepartmentId(task_type_id)"
-                  no-padding
-                  only-dot
-                  :key="task_type_id"
-                  v-for="task_type_id in Array.from(node.data.all_task_type_ids)
-                    .filter(id => !node.data.task_type_ids.has(id))
-                    .sort(
-                      (a, b) =>
-                        taskType.cache.taskTypeMap.get(a).priority -
-                        taskType.cache.taskTypeMap.get(b).priority
-                    )"
-                />
-              </div>
               <div class="tag-container">
+                <div v-if="node.data.task_type_ids?.size > 0">
+                  <department-name
+                    class="department-dot"
+                    :department="getDepartmentId(task_type_id)"
+                    no-padding
+                    only-dot
+                    :key="task_type_id"
+                    v-for="task_type_id in Array.from(
+                      node.data.all_task_type_ids
+                    )
+                      .filter(id => !node.data.task_type_ids.has(id))
+                      .sort(
+                        (a, b) =>
+                          taskType.cache.taskTypeMap.get(a).priority -
+                          taskType.cache.taskTypeMap.get(b).priority
+                      )"
+                  />
+                </div>
                 <span>{{ node.data.label }}</span>
                 <span>({{ node.data.num }})</span>
               </div>
@@ -316,5 +309,11 @@ watch(filterText, val => {
   background: $green;
   border-radius: 3px;
   padding: 1px 0.2em;
+}
+
+.tag-container {
+  display: flex;
+  gap: 2px;
+  flex-flow: row nowrap;
 }
 </style>

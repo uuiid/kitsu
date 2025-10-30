@@ -314,7 +314,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       //state.value.treeFilterData = []
       state.value.sFilters = []
       state.value.expandedKeys = new Set()
-      //state.value.filteredShots = []
+      state.value.filteredShots = []
       state.value.shotFilters.forEach(f => {
         f.isChecked = true
         f.values = []
