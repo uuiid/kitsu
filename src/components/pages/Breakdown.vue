@@ -835,6 +835,7 @@ export default {
     },
 
     castingEntities() {
+      console.log(this.castingSequenceShots)
       if (this.isEpisodeCasting) {
         return this.castingEpisodes
       } else if (this.isShotCasting) {
@@ -1411,7 +1412,13 @@ export default {
       this.newSequence(sequence).then(callback).catch(console.error)
     },
     addShot(shot, callback) {
-      this.newShot(shot).then(callback).catch(console.error)
+      this.newShot(shot)
+        .then(() => {
+          callback()
+          this.setCastingSequence(this.sequenceId)
+          this.updateUrl()
+        })
+        .catch(console.error)
     },
     hideManageShots() {
       this.modals.isManageDisplayed = false

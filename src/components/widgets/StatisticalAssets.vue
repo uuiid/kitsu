@@ -77,10 +77,14 @@ function onClickWorkFile(work_file) {
 <template>
   <div class="statistical-assets">
     <table class="datatable multi-section">
-      <thead class="datatable-head" v-columns-resizable id="datatable-asset">
+      <thead class="datatable-head" v-columns-resizable>
         <tr>
-          <th>名称</th>
-          <th :key="taskType.id" v-for="taskType in displayedTaskTypes">
+          <th class="name datatable-row-header">名称</th>
+          <th
+            class="name datatable-row-header"
+            :key="taskType.id"
+            v-for="taskType in displayedTaskTypes"
+          >
             {{ taskType.name }}
           </th>
         </tr>
