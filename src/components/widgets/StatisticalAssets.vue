@@ -5,6 +5,7 @@ import assets from '@/store/modules/assets'
 import tasktypes from '@/store/modules/tasktypes.js'
 import productions from '@/store/modules/productions.js'
 import { ElMessage } from 'element-plus'
+import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
 
 const props = defineProps({
   projectId: {
@@ -35,13 +36,11 @@ const workingFilesList = computed(() => {
     const entity = assets.state.assetMap.get(entity_id)
     if (entity) {
       const temp_entity = Object.assign({}, entity)
-      temp_entity['work_files'] =
-        workingFile.actions.groupEntitiesTaskByParents(
-          workingFile.state.workingFiles.get(entity_id),
-          'task_id',
-          'task_type_id',
-          true
-        )
+      temp_entity['work_files'] = workingFile.actions.groupEntitiesByParents(
+        workingFile.state.workingFiles.get(entity_id),
+        'task_type_id',
+        true
+      )
       temp_list.push(temp_entity)
     }
   }
@@ -72,66 +71,93 @@ function onClickWorkFile(work_file) {
   }
   window.api.openPath(path.dirname(full_path))
 }
+function onClickScan() {
+  if (props.sequenceId === 'all') return
+  workingFile.state.isLoading = true
+  workingFile.actions.scanWorkingFiles(props.projectId)
+}
 </script>
 
 <template>
   <div class="statistical-assets">
-    <table class="datatable multi-section">
-      <thead class="datatable-head" v-columns-resizable>
-        <tr>
-          <th class="name datatable-row-header">名称</th>
-          <th
-            class="name datatable-row-header"
-            :key="taskType.id"
-            v-for="taskType in displayedTaskTypes"
-          >
-            {{ taskType.name }}
-          </th>
-        </tr>
-      </thead>
-      <tbody
-        class="datatable-body"
-        :key="k"
-        v-for="(group, k) in workingFilesList"
-      >
-        <tr class="datatable-type-header" v-if="group[0]">
-          <th scope="rowgroup" :colspan="visibleColumns">
-            <span class="datatable-row-header pointer">
-              {{ group[0] ? group[0].asset_type_name : '' }}
-            </span>
-          </th>
-        </tr>
-        <tr
-          class="datatable-row"
-          :key="`row${asset.id}`"
-          v-for="asset in group"
-        >
-          <td>{{ asset.name }}</td>
-          <td
-            :key="taskType.id + asset.id"
-            v-for="taskType in displayedTaskTypes"
-          >
-            <div
-              class="clickable-text"
-              :class="{
-                errorText: work_file.path === '',
-                successText: work_file.path !== ''
-              }"
-              :key="work_file.id"
-              :title="work_file.path"
-              v-for="work_file in asset.work_files.get(taskType.id)"
-              @click="onClickWorkFile(work_file)"
+    <div class="statistical-assets-title">
+      <span class="title-text"> 当前集数所用资产 </span>
+      <button-simple
+        class="flexrow-item"
+        icon="scan"
+        :is-loading="workingFile.state.isLoading"
+        :title="$t('scan_project.scan_project')"
+        @click="onClickScan"
+      />
+    </div>
+    <div class="statistical-assets-content">
+      <table class="datatable multi-section">
+        <thead class="datatable-head" v-columns-resizable>
+          <tr>
+            <th class="name datatable-row-header">名称</th>
+            <th
+              class="name datatable-row-header"
+              :key="taskType.id"
+              v-for="taskType in displayedTaskTypes"
             >
-              {{ work_file.description }}
-            </div>
-          </td>
-        </tr>
-      </tbody>
-    </table>
+              {{ taskType.name }}
+            </th>
+          </tr>
+        </thead>
+        <tbody
+          class="datatable-body"
+          :key="k"
+          v-for="(group, k) in workingFilesList"
+        >
+          <tr class="datatable-type-header" v-if="group[0]">
+            <th scope="rowgroup" :colspan="visibleColumns">
+              <span class="datatable-row-header pointer">
+                {{ group[0] ? group[0].asset_type_name : '' }}
+              </span>
+            </th>
+          </tr>
+          <tr
+            class="datatable-row"
+            :key="`row${asset.id}`"
+            v-for="asset in group"
+          >
+            <td>{{ asset.name }}</td>
+            <td
+              :key="taskType.id + asset.id"
+              v-for="taskType in displayedTaskTypes"
+            >
+              <div
+                class="clickable-text"
+                :class="{
+                  errorText: work_file.path === '',
+                  successText: work_file.path !== ''
+                }"
+                :key="work_file.id"
+                :title="work_file.path"
+                v-for="work_file in asset.work_files.get(taskType.id)"
+                @click="onClickWorkFile(work_file)"
+              >
+                {{ work_file.description }}
+              </div>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
   </div>
 </template>
 
 <style scoped lang="scss">
+.statistical-assets {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
+  overflow: hidden;
+  height: 100%;
+}
+.title-text {
+  font-size: 1.3em;
+}
 .errorText {
   color: red;
   cursor: default;
@@ -145,5 +171,20 @@ function onClickWorkFile(work_file) {
   padding: 4px 8px;
   border-radius: 4px;
   text-decoration: underline;
+}
+.datatable-body {
+  overflow-y: auto;
+}
+
+.statistical-assets-title {
+  display: flex;
+  flex-flow: row nowrap;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.statistical-assets-content {
+  overflow-y: auto;
+  overflow-x: hidden;
 }
 </style>

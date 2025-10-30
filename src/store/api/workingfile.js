@@ -5,5 +5,9 @@ export default {
     return client.pget(
       `/api/actions/projects/${project_id}/sequences/${sequence_id}/working-file`
     )
+  },
+  getWorkingFilesFromEntities(project_id, entities) {
+    const path = `/api/actions/projects/${project_id}/entities/working-file-many`
+    return client.ppost(path, entities)
   }
 }

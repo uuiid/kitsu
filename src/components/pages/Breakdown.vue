@@ -324,7 +324,7 @@
         v-if="isCurrentUserManager && visibleStatisticalAssets"
         :project-id="currentProduction.id"
         :sequence-id="sequenceId"
-        class="breakdown-column"
+        class="breakdown-column statistical-column"
       />
       <div
         style="margin-top: 25%; cursor: pointer; width: 20px"
@@ -2101,7 +2101,9 @@ export default {
   max-width: 460px;
   overflow: hidden;
 }
-
+.statistical-column {
+  overflow: hidden;
+}
 .asset-type,
 .sequence {
   text-transform: uppercase;
