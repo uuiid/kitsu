@@ -213,7 +213,7 @@ async function pathRule() {
       'f9a8be37-2d05-4e20-8fae-751a61960ce4'
     ) {
       file_path.root_path = `Content/Character/${pin_yin_ming_cheng}/Meshs/SK_Ch${bian_hao}.uasset`
-      file_path.maya_file_name = `Ch${bian_hao}_rig_`
+      file_path.maya_file_name = `Ch${bian_hao}_rig`
       file_path.ue_file_name = `${pin_yin_ming_cheng}_UE5.uproject`
     } else if (
       updateTaskFiles.state.selectedTask.entity.asset_type_id ===
@@ -222,7 +222,7 @@ async function pathRule() {
         '6d9d69f0-4269-46fc-9c26-a7f7bf2f30e3'
     ) {
       file_path.root_path = `Content/Character/${pin_yin_ming_cheng}/Meshs/SK_Ch${bian_hao}.uasset`
-      file_path.maya_file_name = `${final_file_name}_rig_`
+      file_path.maya_file_name = `${final_file_name}_rig`
       file_path.ue_file_name = `${pin_yin_ming_cheng}_UE5.uproject`
     }
     // const tasks = updateTaskFiles.state.selectedTask.entity.tasks.filter(
