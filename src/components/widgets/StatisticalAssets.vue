@@ -1,8 +1,6 @@
 <script setup>
 import { workingFileStore } from '@/store/modules/workingfile.js'
 import { computed, onMounted } from 'vue'
-import assets from '@/store/modules/assets'
-import tasktypes from '@/store/modules/tasktypes.js'
 import productions from '@/store/modules/productions.js'
 import { ElMessage } from 'element-plus'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
@@ -18,11 +16,6 @@ const props = defineProps({
   }
 })
 const workingFile = workingFileStore()
-const displayedTaskTypes = computed(() => {
-  return tasktypes.state.taskTypes.filter(
-    taskType => taskType.for_entity === 'Asset'
-  )
-})
 
 const workingFilesList = computed(() => {
   if (
@@ -31,19 +24,8 @@ const workingFilesList = computed(() => {
     props.sequenceId === 'all'
   )
     return []
-  const temp_list = []
-  for (const entity_id of workingFile.state.workingFiles.keys()) {
-    const entity = assets.state.assetMap.get(entity_id)
-    if (entity) {
-      const temp_entity = Object.assign({}, entity)
-      temp_entity['work_files'] = workingFile.actions.groupEntitiesByParents(
-        workingFile.state.workingFiles.get(entity_id),
-        'task_type_id',
-        true
-      )
-      temp_list.push(temp_entity)
-    }
-  }
+  const temp_list = [...workingFile.state.workingFiles.values()]
+
   temp_list.sort((a, b) => {
     return a.name.localeCompare(b.name)
   })
@@ -69,11 +51,13 @@ function onClickWorkFile(work_file) {
     ElMessage.error('文件不存在')
     return
   }
-  window.api.openPath(path.dirname(full_path))
+  if (/^[^.]+\.[^.]+$/.test(work_file.name))
+    window.api.openPath(path.dirname(full_path))
+  else window.api.openPath(full_path)
 }
 function onClickScan() {
   if (props.sequenceId === 'all') return
-  workingFile.state.isLoading = true
+  workingFile.state.isLoading
   workingFile.actions.scanWorkingFiles(props.projectId)
 }
 </script>
@@ -95,13 +79,7 @@ function onClickScan() {
         <thead class="datatable-head" v-columns-resizable>
           <tr>
             <th class="name datatable-row-header">名称</th>
-            <th
-              class="name datatable-row-header"
-              :key="taskType.id"
-              v-for="taskType in displayedTaskTypes"
-            >
-              {{ taskType.name }}
-            </th>
+            <th class="name datatable-row-header">路径</th>
           </tr>
         </thead>
         <tbody
@@ -122,10 +100,7 @@ function onClickScan() {
             v-for="asset in group"
           >
             <td>{{ asset.name }}</td>
-            <td
-              :key="taskType.id + asset.id"
-              v-for="taskType in displayedTaskTypes"
-            >
+            <td>
               <div
                 class="clickable-text"
                 :class="{
@@ -134,7 +109,7 @@ function onClickScan() {
                 }"
                 :key="work_file.id"
                 :title="work_file.path"
-                v-for="work_file in asset.work_files.get(taskType.id)"
+                v-for="work_file in asset.work_files"
                 @click="onClickWorkFile(work_file)"
               >
                 {{ work_file.description }}
