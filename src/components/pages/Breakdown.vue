@@ -321,7 +321,7 @@
         </div>
       </div>
       <statistical-assets
-        v-if="isCurrentUserManager && visibleStatisticalAssets"
+        v-if="visibleStatisticalAssets"
         :project-id="currentProduction.id"
         :sequence-id="sequenceId"
         class="breakdown-column statistical-column"
