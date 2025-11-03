@@ -36,7 +36,10 @@ const workingFilesList = computed(() => {
   return temp
 })
 onMounted(() => {
-  if (props.sequenceId === 'all') return
+  if (props.sequenceId === 'all') {
+    ElMessage.error('请先选择集数')
+    return
+  }
   if (workingFile.state.workingFiles.size === 0)
     workingFileStore().actions.getWorkingFilesFromSequence(
       props.projectId,
