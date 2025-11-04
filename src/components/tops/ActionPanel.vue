@@ -1529,7 +1529,7 @@ export default {
       for (const taskId of this.selectedTaskIds) {
         const task = this.taskMap.get(taskId)
         const res = await fetch(
-          `api/actions/projects/${this.productionId}/shots/${task.entity_id}/run-ue-assembly`,
+          `/api/actions/projects/${this.productionId}/shots/${task.entity_id}/run-ue-assembly`,
           {
             method: 'post',
             body: ''
