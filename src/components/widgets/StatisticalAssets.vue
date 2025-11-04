@@ -58,10 +58,13 @@ function onClickWorkFile(work_file) {
     window.api.openPath(path.dirname(full_path))
   else window.api.openPath(full_path)
 }
-function onClickScan() {
+
+function reset() {
   if (props.sequenceId === 'all') return
-  workingFile.state.isLoading
-  workingFile.actions.scanWorkingFiles(props.projectId)
+  workingFile.actions.getWorkingFilesFromSequence(
+    props.projectId,
+    props.sequenceId
+  )
 }
 </script>
 
@@ -74,14 +77,7 @@ function onClickScan() {
           class="flexrow-item"
           icon="refresh"
           :title="$t('doodle.refresh')"
-          @click="reset()"
-        />
-        <button-simple
-          class="flexrow-item"
-          icon="scan"
-          :is-loading="workingFile.state.isLoading"
-          :title="$t('scan_project.scan_project')"
-          @click="onClickScan"
+          @click="reset"
         />
       </div>
     </div>
