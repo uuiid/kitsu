@@ -62,7 +62,7 @@
             icon="export"
             :is-responsive="true"
             :title="$t('main.csv.export_current_view')"
-            @click="exportViewToCsv"
+            @click="onExportClick"
           />
           <button-href-link
             class="flexrow-item"
@@ -566,7 +566,6 @@
 import { mapGetters, mapActions } from 'vuex'
 import moment from 'moment'
 import { ChevronRight, ChevronDown, ChevronLeft } from 'lucide-vue-next'
-
 import csv from '@/lib/csv'
 import clipboard from '@/lib/clipboard'
 import preferences from '@/lib/preferences'
@@ -765,7 +764,9 @@ export default {
       'shotMap',
       'shotMetadataDescriptors',
       'productionAssetTypes',
-      'assetTypeMap'
+      'assetTypeMap',
+      'taskMap',
+      'taskTypeMap'
     ]),
 
     searchField() {
@@ -1689,6 +1690,140 @@ export default {
       }
       return stringHelpers.slugify(nameData.join('_'))
     },
+    getWorkingFilePath(workFile, softwareType) {
+      return workFile.work_files.filter(
+        work_file => work_file.software_type === softwareType
+      )
+    },
+    onExportClick() {
+      const headers = [
+        '镜头号',
+        '人物',
+        '道具',
+        '特效',
+        '场景',
+        'UE位置路径',
+        'UE总关卡命名',
+        'MAYA位置路径',
+        'MAYA版本文件命名',
+        '场景编号',
+        '制作人',
+        '帧数',
+        '秒',
+        '帧数变动',
+        '灯光备注'
+      ]
+      const assetLines = []
+      const project_path =
+        `C:\\sy\\${this.currentProduction.path.substring(
+          this.currentProduction.path.lastIndexOf('/') + 1
+        )}` || ''
+      this.castingEntities.forEach(entity => {
+        const line = {}
+        const assets = this.castingByType[entity.id] || []
+        assets.forEach(asset => {
+          asset.forEach(item => {
+            line[item.asset_type_name] = line[item.asset_type_name]
+              ? `${line[item.asset_type_name]},${item.asset_name}`
+              : item.asset_name
+            if (item.asset_type_name === '场景') {
+              if (
+                workingFileStore().state.workingFiles.get(item.asset_id)
+                  .unreal_engine_path === undefined
+              ) {
+                const work_files = this.getWorkingFilePath(
+                  workingFileStore().state.workingFiles.get(item.asset_id),
+                  'unreal_engine'
+                )
+                if (work_files.length > 0) {
+                  const work_file = work_files[0]
+                  workingFileStore().state.workingFiles.get(item.asset_id)[
+                    'unreal_engine_path'
+                  ] = work_file.path ? `${project_path}\\${work_file.path}` : ''
+                  workingFileStore().state.workingFiles.get(item.asset_id)[
+                    'unreal_engine_name'
+                  ] = work_file.name || ''
+                }
+              }
+              if (
+                workingFileStore().state.workingFiles.get(item.asset_id)
+                  .alembic_path === undefined
+              ) {
+                const work_files = this.getWorkingFilePath(
+                  workingFileStore().state.workingFiles.get(item.asset_id),
+                  'alembic'
+                )
+                if (work_files.length > 0) {
+                  const work_file = work_files[0]
+                  workingFileStore().state.workingFiles.get(item.asset_id)[
+                    'alembic_path'
+                  ] = work_file.path ? `${project_path}\\${work_file.path}` : ''
+                  workingFileStore().state.workingFiles.get(item.asset_id)[
+                    'alembic_name'
+                  ] = work_file?.name || ''
+                }
+              }
+              if (
+                workingFileStore().state.workingFiles.get(item.asset_id)
+                  .maya_path === undefined
+              ) {
+                const work_files = this.getWorkingFilePath(
+                  workingFileStore().state.workingFiles.get(item.asset_id),
+                  'maya'
+                )
+                if (work_files.length > 0) {
+                  const work_file = work_files[0]
+                  workingFileStore().state.workingFiles.get(item.asset_id)[
+                    'maya_path'
+                  ] = work_file.path ? `${project_path}\\${work_file.path}` : ''
+                  workingFileStore().state.workingFiles.get(item.asset_id)[
+                    'maya_name'
+                  ] = work_file.name
+                }
+              }
+              line['场景编号'] = workingFileStore().state.workingFiles.get(
+                item.asset_id
+              ).bian_hao
+              line['UE位置路径'] = workingFileStore().state.workingFiles.get(
+                item.asset_id
+              ).unreal_engine_path
+              line['UE总关卡命名'] = workingFileStore().state.workingFiles.get(
+                item.asset_id
+              ).unreal_engine_name
+              line['MAYA位置路径'] =
+                workingFileStore().state.workingFiles.get(item.asset_id)
+                  .maya_path ||
+                workingFileStore().state.workingFiles.get(item.asset_id)
+                  .alembic_path
+              line['MAYA版本文件命名'] =
+                workingFileStore().state.workingFiles.get(item.asset_id)
+                  .maya_name ||
+                workingFileStore().state.workingFiles.get(item.asset_id)
+                  .alembic_name
+            }
+          })
+        })
+        assetLines.push([
+          entity.name,
+          line['角色'] || '',
+          line['道具'] || '',
+          line['特效'] || '',
+          line['场景'] || '',
+          line['UE位置路径'] || '',
+          line['UE总关卡命名'] || '',
+          line['MAYA位置路径'] || '',
+          line['MAYA版本文件命名'] || '',
+          line['场景编号'] || '',
+          line['制作人'] || '',
+          line['帧数'] || '',
+          line['秒'] || '',
+          line['帧数变动'] || '',
+          line['灯光备注'] || ''
+        ])
+      })
+      const name = `分镜${this.sequenceMap.get(this.sequenceId)?.name || this.sequenceId}-地编制作表`
+      csv.buildCsvFile(name, [headers].concat(assetLines))
+    },
     getCsvFileHeaders() {
       const headers = [
         this.$t('shots.fields.name'),
@@ -1753,10 +1888,11 @@ export default {
       return entries
     },
     exportViewToCsv() {
-      const entries = this.getCsvEntries()
-      const name = this.getCsvFileName()
-      const headers = this.getCsvFileHeaders()
-      csv.buildCsvFile(name, [headers].concat(entries))
+      this.onExportClick()
+      // const entries = this.getCsvEntries()
+      // const name = this.getCsvFileName()
+      // const headers = this.getCsvFileHeaders()
+      // csv.buildCsvFile(name, [headers].concat(entries))
     },
     removeSearchQuery(searchQuery) {
       this.removeBreakdownSearch(searchQuery).catch(console.error)
