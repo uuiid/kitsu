@@ -199,7 +199,7 @@
         >
           <kitsu-icon name="check" :title="$t('doodle.check_shot_light')" />
         </div>
-        <div
+        <!--div
           class="menu-item"
           :title="$t('scan_project.scan_project')"
           @click="$emit('scan-project')"
@@ -213,7 +213,7 @@
             style="animation: spinAround 2000ms infinite linear"
             v-else
           ></loader>
-        </div>
+        </div-->
         <div
           v-if="
             (isCurrentViewAsset ||
@@ -871,9 +871,7 @@ import {
   PlayCircleIcon,
   XIcon,
   FolderOpen,
-  FolderUp,
-  ScanSearch,
-  Loader
+  FolderUp
 } from 'lucide-vue-next'
 import { mapGetters, mapActions } from 'vuex'
 
@@ -945,17 +943,14 @@ export default {
     ViewPlaylistModal,
     XIcon,
     FolderOpen,
-    FolderUp,
-    ScanSearch,
-    Loader
+    FolderUp
   },
   emits: [
     'export-task',
     'set-frame-thumbnail',
     'open-folder',
     'execute-doodle-work',
-    'folder-up',
-    'scan-project'
+    'folder-up'
   ],
 
   data() {

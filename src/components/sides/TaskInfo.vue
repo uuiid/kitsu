@@ -33,15 +33,13 @@
           :key="workingFile.id"
           v-for="workingFile in task?.working_files"
           class="working-files-list"
-          @mouseenter="currentWorkingFileId = workingFile.id"
-          @mouseleave="currentWorkingFileId = null"
         >
-          <x-icon
+          <!--x-icon
             class="close"
             size="15"
             v-if="currentWorkingFileId === workingFile.id"
             @click="deleteCurrentWorkingFile"
-          ></x-icon>
+          ></x-icon-->
           <span style="width: 120px; display: inline-block">
             {{ workingFile.description }}
           </span>
@@ -532,8 +530,7 @@ export default {
         editComment: false,
         deleteComment: false,
         deleteExtraPreview: false
-      },
-      currentWorkingFileId: null
+      }
     }
   },
 
@@ -1454,15 +1451,15 @@ export default {
       this.removeSelectedTask({ task: data }) // remove list selection
       this.removeSelectedTask({ task }) // remove
       this.$emit('task-removed', task)
-    },
-    deleteCurrentWorkingFile() {
-      if (this.currentWorkingFileId) {
-        this.deleteWorkFile({
-          taskId: this.task.id,
-          workFileId: this.currentWorkingFileId
-        })
-      }
     }
+    // deleteCurrentWorkingFile() {
+    //   if (this.currentWorkingFileId) {
+    //     this.deleteWorkFile({
+    //       taskId: this.task.id,
+    //       workFileId: this.currentWorkingFileId
+    //     })
+    //   }
+    // }
   },
 
   watch: {
