@@ -145,6 +145,23 @@ const filterNode = (value, data) => {
   if (!value) return true
   return String(data.label)?.includes(value)
 }
+
+watch(
+  () => assetFilter.state.filters,
+  () => {
+    treeRef.value.setCheckedKeys(assetFilter.state.filters, false)
+  },
+  { deep: true }
+)
+
+watch(
+  () => assetFilter.state.sFilters,
+  () => {
+    treeRef.value.setCheckedKeys(assetFilter.state.sFilters, false)
+  },
+  { deep: true }
+)
+
 watch(filterText, val => {
   treeRef.value?.filter(val)
 })
