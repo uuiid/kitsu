@@ -184,8 +184,26 @@
         </div>
         <div
           class="menu-item"
+          :class="{
+            active: selectedBar === 'subscribe'
+          }"
+          :title="$t('menu.subscribe')"
+          v-if="
+            isTaskSelection &&
+            !isCurrentViewSingleEntity &&
+            !isCurrentViewTodos &&
+            !isCurrentViewConcept &&
+            isCurrentViewShot
+          "
+          @click="checkShotLight"
+        >
+          <kitsu-icon name="check" :title="$t('doodle.check_shot_light')" />
+        </div>
+        <div
+          class="menu-item"
           :title="$t('scan_project.scan_project')"
           @click="$emit('scan-project')"
+          v-if="!isCurrentViewShot"
         >
           <scan-search
             :title="$t('scan_project.scan_project')"
@@ -874,6 +892,7 @@ import SearchField from '@/components/widgets/SearchField.vue'
 import Spinner from '@/components/widgets/Spinner.vue'
 import ViewPlaylistModal from '@/components/modals/ViewPlaylistModal.vue'
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'action-panel',
@@ -1505,6 +1524,23 @@ export default {
     },
     hidePlaylistModal() {
       this.modals.playlist = false
+    },
+    async checkShotLight() {
+      for (const taskId of this.selectedTaskIds) {
+        const task = this.taskMap.get(taskId)
+        const res = await fetch(
+          `api/actions/projects/${this.productionId}/shots/${task.entity_id}/run-ue-assembly`,
+          {
+            method: 'post',
+            body: ''
+          }
+        )
+        if (res.status === 200 || res.status === 201) {
+          ElMessage.success('可以进行自动灯光')
+        } else {
+          ElMessage.error('不可以进行自动灯光')
+        }
+      }
     },
     confirmSetThumbnailsFromTasks() {
       this.loading.setThumbnails = true

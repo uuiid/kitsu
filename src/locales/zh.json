@@ -1833,7 +1833,8 @@
       "replace_asset": "替换资产",
       "date_range": "日期范围",
       "clear": "清除",
-      "statistical_asset": "统计资产"
+      "statistical_asset": "统计资产",
+      "check_shot_light": "检查镜头自动灯光"
     },
     "doodle_productions": {
       "fields": {
