@@ -921,6 +921,10 @@ export default {
     scanLoading: {
       type: Boolean,
       default: false
+    },
+    selectedEntities: {
+      type: Array,
+      default: () => []
     }
   },
 
@@ -1221,12 +1225,14 @@ export default {
     isModelGroup() {
       for (const taskId of this.selectedTaskIds) {
         const task = this.taskMap.get(taskId)
+        console.log(task)
         if (
           [
             '13ddf60c-ed8e-4e65-85bb-57dc4207aeca',
             '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34',
             '32504e3e-381c-4f36-bdeb-f73328f96f9c',
-            'da050d42-4f45-40c4-9638-cc637753d3b5'
+            'da050d42-4f45-40c4-9638-cc637753d3b5',
+            'eb7c92c8-232c-4894-8efa-c62ced44ff05'
           ].includes(task?.task_type_id)
         ) {
           return true

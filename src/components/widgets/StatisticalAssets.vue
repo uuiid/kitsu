@@ -69,13 +69,21 @@ function onClickScan() {
   <div class="statistical-assets">
     <div class="statistical-assets-title">
       <span class="title-text"> 当前集数所用资产 </span>
-      <button-simple
-        class="flexrow-item"
-        icon="scan"
-        :is-loading="workingFile.state.isLoading"
-        :title="$t('scan_project.scan_project')"
-        @click="onClickScan"
-      />
+      <div>
+        <button-simple
+          class="flexrow-item"
+          icon="refresh"
+          :title="$t('doodle.refresh')"
+          @click="reset()"
+        />
+        <button-simple
+          class="flexrow-item"
+          icon="scan"
+          :is-loading="workingFile.state.isLoading"
+          :title="$t('scan_project.scan_project')"
+          @click="onClickScan"
+        />
+      </div>
     </div>
     <div class="statistical-assets-content">
       <table class="datatable multi-section">

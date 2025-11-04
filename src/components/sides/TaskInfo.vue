@@ -19,6 +19,7 @@
         :is-set-frame-thumbnail-loading="loading.setFrameThumbnail"
         :production-id="currentProductionId"
         :team="currentTeam"
+        :selected-entities="selectedEntities"
         :working-files="task?.working_files"
         @export-task="onExportClick"
         @set-frame-thumbnail="onSetCurrentFrameAsThumbnail"
