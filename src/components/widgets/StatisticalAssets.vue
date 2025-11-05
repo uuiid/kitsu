@@ -4,7 +4,8 @@ import { computed, onMounted } from 'vue'
 import productions from '@/store/modules/productions.js'
 import { ElMessage } from 'element-plus'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
-
+import csv from '@/lib/csv.js'
+import sequences from '@/store/modules/sequences.js'
 const props = defineProps({
   projectId: {
     type: String,
@@ -66,6 +67,46 @@ function reset() {
     props.sequenceId
   )
 }
+
+function exportPath() {
+  const headers = ['类型', '名称', '路径']
+  const project_path =
+    `C:\\sy\\${productions.state.productionMap
+      .get(props.projectId)
+      .path.substring(
+        productions.state.productionMap
+          .get(props.projectId)
+          .path.lastIndexOf('/') + 1
+      )}` || ''
+  const assetLines = []
+  workingFilesList.value.forEach(group => {
+    group.forEach(asset => {
+      let work_files = ''
+      let path = ''
+      if (asset.asset_type_name === '场景') {
+        work_files = asset.work_files.filter(
+          work_file => work_file.software_type === 'alembic'
+        )
+        if (work_files.length === 0)
+          work_files = asset.work_files.filter(
+            work_file => work_file.software_type === 'maya'
+          )
+      } else {
+        work_files = asset.work_files.filter(
+          work_file => work_file.software_type === 'maya_sim'
+        )
+      }
+      if (work_files.length > 0) path = work_files[0].path
+      assetLines.push([
+        asset.asset_type_name,
+        asset.name,
+        path === '' ? '' : `${project_path}/${path}`
+      ])
+    })
+  })
+  const name = `${sequences.state.sequenceMap.get(props.sequenceId)?.name || props.sequenceId}项目路径`
+  csv.buildCsvFile(name, [headers].concat(assetLines))
+}
 </script>
 
 <template>
@@ -73,6 +114,13 @@ function reset() {
     <div class="statistical-assets-title">
       <span class="title-text"> 当前集数所用资产 </span>
       <div>
+        <button-simple
+          class="flexrow-item"
+          :title="$t('main.csv.export_file')"
+          icon="export-lines"
+          :is-responsive="true"
+          @click="exportPath"
+        />
         <button-simple
           class="flexrow-item"
           icon="refresh"

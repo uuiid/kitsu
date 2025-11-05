@@ -736,7 +736,6 @@ export default {
         for (const video of videos) {
           await this.modifyVideoActive(video)
         }
-        //console.log('deleteSelected')
       } else if (action === 'clearSelected') {
         this.clearSelectedVideos()
       } else if (action === 'modifyThumbnail') {
@@ -744,7 +743,6 @@ export default {
         this.modals.isEditVideoAssetDisplayed = true
       } else if (action === 'openVideoType') {
         this.setAncestorOpened(entity.parent_id)
-        console.log('openVideoType')
       }
     },
     switchImage(isNext) {

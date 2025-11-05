@@ -64,14 +64,6 @@
             :title="$t('main.csv.export_current_view')"
             @click="onExportClick"
           />
-          <button-href-link
-            class="flexrow-item"
-            :title="$t('main.csv.export_file')"
-            icon="export-lines"
-            :is-responsive="true"
-            :path="exportUrlPath"
-            v-if="isCurrentUserManager"
-          />
           <button-simple
             class="flexrow-item"
             icon="replace"
@@ -576,7 +568,6 @@ import { entityListMixin } from '@/components/mixins/entity_list'
 
 import AvailableAssetBlock from '@/components/pages/breakdown/AvailableAssetBlock.vue'
 import BuildFilterModal from '@/components/modals/BuildFilterModal.vue'
-import ButtonHrefLink from '@/components/widgets/ButtonHrefLink.vue'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
 import ComboboxStyled from '@/components/widgets/ComboboxStyled.vue'
 import DeleteModal from '@/components/modals/DeleteModal.vue'
@@ -609,7 +600,6 @@ export default {
     Combobox,
     AvailableAssetBlock,
     BuildFilterModal,
-    ButtonHrefLink,
     ButtonSimple,
     ChevronDown,
     ChevronRight,
