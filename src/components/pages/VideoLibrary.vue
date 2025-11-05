@@ -724,7 +724,10 @@ export default {
       } else if (action === 'delete') {
         await this.modifyVideoActive(entity)
       } else if (action === 'openVideo') {
-        await window.api.showItemInFolder(entity.path)
+        const fs = require('fs')
+        if (fs.existsSync(entity.path))
+          await window.api.showItemInFolder(entity.path)
+        else ElMessage.error('文件不存在')
       } else if (action === 'showBigImage') {
         this.modals.isImagePreviewDisplayed = true
         this.currentSelectVideo = entity
