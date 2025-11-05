@@ -466,6 +466,7 @@ export const updateTaskFilesStore = defineStore(
           const data = Object.assign({}, item)
           data.path = item.file.path
           data.file = ''
+          data.task_id = state.value.selectedTask.task.id
           let result = null
           if (
             state.value.selectedTask.task.task_type_id ===
