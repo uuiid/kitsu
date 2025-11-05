@@ -169,8 +169,8 @@ export const updateTaskFilesStore = defineStore(
             //   state.value.selectedTask.task.id
             // )
           } else if (task.updateType === 0) {
-            await actions.updateFile(task.file.path, task)
-            await actions.submitLocalDoodleWork(task.id)
+            //await actions.updateFile(task.file.path, task)
+            await actions.submitLocalDoodleWork(task)
 
             // const ue_path = await doodlework.getUeFilePath(task.id)
             // const maya_path = await doodlework.getMayaFilePath(task.id)
@@ -232,6 +232,7 @@ export const updateTaskFilesStore = defineStore(
           task.end_time = new Date().toISOString()
           state.value.loadingNum -= 1
         } catch (e) {
+          console.log(e)
           task.status = 'failed'
           task.last_line_log = e.message
           task.end_time = new Date().toISOString()
@@ -429,14 +430,15 @@ export const updateTaskFilesStore = defineStore(
         await doodleWorkStore().actions.getWorkSetting()
         return doodleWorkStore().state.doodleWorkSetting
       },
-      submitLocalDoodleWork: async task_id => {
+      submitLocalDoodleWork: async task => {
+        //const task_id = task.id
+        const item = Object.assign({}, task)
         const port = window.api.DoodleExePort()
         //const path = require('path')
         if (port) state.value.localHttpPath = `http://127.0.0.1:${port}`
         // await fetch(state.value.localHttpPath + `/api/doodle/local_setting`, {
         //   mode: 'no-cors'
         // })
-        const item = state.value.allFiles.get(task_id)
 
         if (state.value.selectedTask.task.task_type_id !== '') {
           // if (
@@ -462,6 +464,7 @@ export const updateTaskFilesStore = defineStore(
           )
             doodleWorkCheckFiles.formatDataState(item)
           const data = Object.assign({}, item)
+          data.path = item.file.path
           data.file = ''
           let result = null
           if (
