@@ -1535,10 +1535,11 @@ export default {
             body: ''
           }
         )
+        const data = await res.json()
         if (res.status === 200 || res.status === 201) {
           ElMessage.success('可以进行自动灯光')
-        } else {
-          ElMessage.error('不可以进行自动灯光')
+        } else if (data.code === 400) {
+          ElMessage.error(data.error)
         }
       }
     },
