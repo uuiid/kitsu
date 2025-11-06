@@ -718,7 +718,8 @@ export default {
       line.push(duration)
       line.push(t.work_remark)
       console.log(t)
-      if (t.work_user_remark) line.push(`${t.task_name}(${t.work_user_remark})`)
+      if (t.work_user_remark)
+        line.push(`${t.entity_name || t.task_name}(${t.work_user_remark})`)
       else line.push(t.entity_name || t.task_name)
       const level = t.entity_deng_ji
       line.push(level)
