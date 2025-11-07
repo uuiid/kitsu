@@ -27,9 +27,10 @@ useHead({
   title: i18n.global.t('doodle_work.doodle_work')
 })
 const doodleWork = doodleWorkStore()
-onMounted(() => {
+onMounted(async () => {
   //document.addEventListener('keydown', onKeyupEvent)
-  doodleWork.actions.getVisitorContext()
+  await doodleWork.actions.getVisitorContext()
+  doodleWork.actions.pullProcess()
 })
 
 const DownloadProgress = ref(0.0)

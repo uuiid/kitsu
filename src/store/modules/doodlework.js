@@ -625,6 +625,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           }
           state.value.doodleSocket = io(`http://127.0.0.1:${port}/events`)
           await actions.setSocketEvent()
+          state.value.isInitialProcessed = false
           break
         }
       }

@@ -110,7 +110,7 @@ const client = {
     return new Promise((resolve, reject) => {
       superagent
         .post(path)
-        .set('Content-Type', file.filetype)
+        .set('Content-Type', file.filetype || 'application/octet-stream')
         .set(
           'Content-Disposition',
           Buffer.from(file.disposition || '').toString('base64') || ''

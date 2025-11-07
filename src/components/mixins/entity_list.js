@@ -255,6 +255,7 @@ export const entityListMixin = {
         this.updateTaskInQuery()
       } else {
         this.$store.commit('ADD_SELECTED_TASKS', selection)
+        console.log(selection)
         this.updateTaskInQuery()
       }
 

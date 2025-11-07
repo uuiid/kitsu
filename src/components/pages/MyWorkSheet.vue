@@ -717,7 +717,6 @@ export default {
       const duration = Number(t.work_duration / (1000 * 1000 * 60 * 60 * 8))
       line.push(duration)
       line.push(t.work_remark)
-      console.log(t)
       if (t.work_user_remark)
         line.push(`${t.entity_name || t.task_name}(${t.work_user_remark})`)
       else line.push(t.entity_name || t.task_name)

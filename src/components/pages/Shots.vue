@@ -309,6 +309,10 @@
       @confirm="confirmBuildFilter"
     />
   </div>
+  <task-update-files-modal
+    update-entity-type="shot"
+    v-if="updateTaskFilesStore().state.isShowUpdateModal"
+  />
 </template>
 
 <script>
@@ -350,6 +354,8 @@ import ShotHistoryModal from '@/components/modals/ShotHistoryModal.vue'
 import ShotList from '@/components/lists/ShotList.vue'
 import TaskInfo from '@/components/sides/TaskInfo.vue'
 import TreeFilterView from '@/components/widgets/TreeFilterView.vue'
+import TaskUpdateFilesModal from '@/components/modals/TaskUpdateFilesModal.vue'
+import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 
 export default {
   name: 'shots',
@@ -357,6 +363,7 @@ export default {
   mixins: [searchMixin, entitiesMixin],
 
   components: {
+    TaskUpdateFilesModal,
     TreeFilterView,
     AddMetadataModal,
     AddThumbnailsModal,
@@ -599,6 +606,7 @@ export default {
   },
 
   methods: {
+    updateTaskFilesStore,
     ...mapActions([
       'addMetadataDescriptor',
       'createTasks',

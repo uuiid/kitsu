@@ -1338,9 +1338,15 @@ export default {
       updateTaskFilesStore()
         .actions.getLocalSetting()
         .then(res => {
-          if (res.UE_path !== '' && res.maya_path !== '')
-            updateTaskFilesStore().state.isShowUpdateModal = true
-          else ElMessage.error('请先到AI工作台设置Maya和Unreal的路径')
+          if (res.UE_path !== '' && res.maya_path !== '') {
+            if (updateTaskFilesStore().state.selectedTask !== null)
+              updateTaskFilesStore().state.isShowUpdateModal = true
+            else ElMessage.error('请先选择一个任务')
+          } else ElMessage.error('请先到AI工作台设置Maya和Unreal的路径')
+        })
+        .catch(err => {
+          console.error(err)
+          ElMessage.error('后台未启动，请稍后重试')
         })
     },
     onExportClick() {

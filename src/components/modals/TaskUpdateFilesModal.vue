@@ -5,14 +5,26 @@ import { onUnmounted, onMounted, computed } from 'vue'
 import { ElMessage, ElNotification } from 'element-plus'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
+import productions from '@/store/modules/productions.js'
 
 const updateTaskFiles = updateTaskFilesStore()
+const props = defineProps({
+  updateEntityType: {
+    type: String,
+    default: 'asset'
+  }
+})
 const notNeedInspections = new Map()
 const updateTypes = [
-  { id: 0, label: 'maya文件', name: 'maya' },
-  { id: 1, label: 'maya贴图', name: 'maya' },
-  { id: 3, label: 'ue文件', name: 'ue' }
+  { id: 0, label: 'maya文件', name: 'maya', type: 'asset' },
+  { id: 1, label: 'maya贴图', name: 'maya', type: 'asset' },
+  { id: 3, label: 'ue文件', name: 'ue', type: 'asset' },
+  { id: 4, label: '动画相关文件', name: 'maya', type: 'shot' }
 ]
+const displayUpdateTypes = computed(() => {
+  return updateTypes.filter(type => type.type === props.updateEntityType)
+})
+
 const tests = computed(() => {
   return updateTypes.filter(
     type => type.id === updateTaskFiles.state.currentUpdateType
@@ -88,6 +100,7 @@ onUnmounted(() => {
 })
 
 onMounted(() => {
+  updateTaskFiles.state.currentUpdateType = displayUpdateTypes.value[0].id
   console.log(updateTaskFiles.state.selectedTask)
 })
 const onViewLog = work_task => {
@@ -197,10 +210,15 @@ async function pathRule() {
     (updateTaskFiles.state.selectedTask.entity.asset_type_id ===
       '21b3f5aa-cdd6-4fca-ace4-65077494df4b' ||
       updateTaskFiles.state.selectedTask.entity.asset_type_id ===
-        '0e40cd9b-7f50-418b-8322-39c451f49dde')
+        '0e40cd9b-7f50-418b-8322-39c451f49dde' ||
+      updateTaskFiles.state.selectedTask.entity.asset_type_id ===
+        '2e869265-f7d6-436e-83aa-516eb7d68eae')
   ) {
     file_path.root_path = `Content/${pin_yin_ming_cheng}/Map/${final_file_name}.umap`
-    if (updateTaskFiles.state.selectedTask.entity.asset_type_name === '场景')
+    if (
+      updateTaskFiles.state.selectedTask.entity.asset_type_name === '场景' ||
+      updateTaskFiles.state.selectedTask.entity.asset_type_name === '地编模型'
+    )
       file_path.maya_file_name = `${final_file_name}_Low`
     else file_path.maya_file_name = `${final_file_name}_Low.ma`
     file_path.ue_file_name = `${pin_yin_ming_cheng}.uproject`
@@ -259,6 +277,33 @@ async function pathRule() {
 
 const onAddData = async files => {
   const messages = []
+  const files_ = []
+  if (props.updateEntityType === 'shot') {
+    for (const file of files) {
+      const file_split = file.name.split('.')
+      if (updateTaskFiles.state.selection.length === 0)
+        updateTaskFiles.state.selection.push(updateTaskFiles.state.selectedTask)
+      const temp_task = updateTaskFiles.state.selection.filter(task => {
+        return (
+          `${productions.state.currentProduction.code}_${task.entity.sequence_name}_${task.entity.name}` ===
+          file_split[0]
+        )
+      })
+      if (temp_task.length === 0) return
+      const task = setDoodleWorlTask(file)
+      if (
+        file_split[1].toLowerCase() === 'abc' ||
+        file_split[1].toLowerCase() === 'mov'
+      )
+        task.type = 'output'
+      else task.type = 'maya'
+      task.task_id = temp_task[0].task.id
+      task.file = file
+      updateTaskFiles.state.allFiles.set(task.id, task)
+      notNeedInspections.set(task.id, task)
+    }
+    return
+  }
   const result = updateTaskFiles.actions.checkEntity(
     updateTaskFiles.state.selectedTask.entity
   )
@@ -273,7 +318,6 @@ const onAddData = async files => {
     return
   }
   const fs = require('fs')
-  const files_ = []
   const file_path = await pathRule()
   // if (file_path.target_path === undefined || file_path.target_path === '') {
   //   ElNotification({
@@ -367,6 +411,7 @@ const onAddData = async files => {
         // notNeedInspections.set(task.id, task)
       } else {
         messages.push(`${file.name}:请检查文件路径`)
+        console.log(file_path)
         continue
       }
     } else if (
@@ -390,13 +435,10 @@ const onAddData = async files => {
       files_.push(file_data)
     } else {
       messages.push(`${file.name}:请检查文件名称`)
+      console.log(file_path)
       continue
     }
-    const task = updateTaskFiles.doodleWorkCheckFiles.formatData(file)
-    task.status = 'waiting'
-    task.run_time = new Date().toISOString()
-    task.submit_time = new Date().toISOString()
-    task.updateType = updateTaskFiles.state.currentUpdateType
+    const task = setDoodleWorlTask(file)
     updateTaskFiles.state.allFiles.set(task.id, task)
     notNeedInspections.set(task.id, task)
   }
@@ -419,6 +461,16 @@ const onAddData = async files => {
   //   }
   // )
 }
+
+function setDoodleWorlTask(file) {
+  const task = updateTaskFiles.doodleWorkCheckFiles.formatData(file)
+  task.status = 'waiting'
+  task.run_time = new Date().toISOString()
+  task.submit_time = new Date().toISOString()
+  task.updateType = updateTaskFiles.state.currentUpdateType
+  return task
+}
+
 const onSubmit = async () => {
   notNeedInspections.forEach(task => {
     if (task.updateType === updateTaskFiles.state.currentUpdateType) {
@@ -458,7 +510,8 @@ const onSubmit = async () => {
             :label="type.label"
             :value="type.id"
             :key="type.id"
-            v-for="type in updateTypes"
+            v-show="type.type === updateEntityType"
+            v-for="type in displayUpdateTypes"
           />
         </el-radio-group>
         <div class="task-data-filed">

@@ -103,7 +103,8 @@ function initState() {
     checkedTasks: new Map(),
     loadingNum: 0,
     localHttpPath: '',
-    currentUpdateType: 0
+    currentUpdateType: 0,
+    selection: []
   }
 }
 
@@ -124,17 +125,18 @@ export const updateTaskFilesStore = defineStore(
 
     const actions = {
       checkEntity: entity => {
-        console.log(entity)
         let message = ''
-        if (entity.asset_type_id !== '8c02b76a-6be6-4959-af58-5c31a85fe072')
-          if (
-            !entity.bian_hao &&
-            entity.asset_type_id !== '6d9d69f0-4269-46fc-9c26-a7f7bf2f30e3'
-          )
-            message += '编号 '
-        if (!entity.pin_yin_ming_cheng) message += '拼音名称 '
-        if (!entity.gui_dang) message += '归档 '
-        if (!entity.kai_shi_ji_shu) message += '开始集数'
+        if (entity.entity_type_id !== 'c8b65ac0-e0b7-4da5-b4d2-9b466be0788e') {
+          if (entity.asset_type_id !== '8c02b76a-6be6-4959-af58-5c31a85fe072')
+            if (
+              !entity.bian_hao &&
+              entity.asset_type_id !== '6d9d69f0-4269-46fc-9c26-a7f7bf2f30e3'
+            )
+              message += '编号 '
+          if (!entity.pin_yin_ming_cheng) message += '拼音名称 '
+          if (!entity.gui_dang) message += '归档 '
+          if (!entity.kai_shi_ji_shu) message += '开始集数'
+        }
         return message
       },
       walkDir: async (dir, files) => {
@@ -170,7 +172,12 @@ export const updateTaskFilesStore = defineStore(
             // )
           } else if (task.updateType === 0) {
             //await actions.updateFile(task.file.path, task)
-            await actions.submitLocalDoodleWork(task)
+            if (
+              state.value.selectedTask.task.entity_type_name === '场景' ||
+              state.value.selectedTask.task.entity_type_name === '地编资产'
+            )
+              await actions.updateFile(task.file.path, task)
+            else await actions.submitLocalDoodleWork(task)
 
             // const ue_path = await doodlework.getUeFilePath(task.id)
             // const maya_path = await doodlework.getMayaFilePath(task.id)
@@ -181,6 +188,8 @@ export const updateTaskFilesStore = defineStore(
             //   state.value.selectedTask.task.id
             // )
             await actions.updateFile(task.file.path, task)
+          } else if (task.updateType === 4) {
+            await actions.updateFile(task.file.path, task, task.type)
           }
           // target_path = target_path.file_path
           // target_path = path.join(
@@ -232,7 +241,6 @@ export const updateTaskFilesStore = defineStore(
           task.end_time = new Date().toISOString()
           state.value.loadingNum -= 1
         } catch (e) {
-          console.log(e)
           task.status = 'failed'
           task.last_line_log = e.message
           task.end_time = new Date().toISOString()
@@ -282,11 +290,14 @@ export const updateTaskFilesStore = defineStore(
         const path = require('path')
         const file_data = {
           filetype: 'application/octet-stream',
-          disposition: path.basename(file_path),
+          disposition:
+            type === 'output'
+              ? `${path.basename(file_path).split('.')[1]}/${path.basename(file_path)}`
+              : path.basename(file_path),
           data: data
         }
         task.task_id = state.value.selectedTask.task.id
-        if (type === 'maya' || type === 'image')
+        if (type === 'maya' || type === 'image' || type === 'output')
           return await doodlework.updateFile(
             task,
             file_data,
@@ -359,7 +370,6 @@ export const updateTaskFilesStore = defineStore(
         const path = require('path')
         // 收集所有文件
         let files = []
-        console.log(srcDirs, destDir)
         for (const srcDir of srcDirs) {
           const dirFiles = actions
             .getAllFiles(srcDir)
@@ -430,6 +440,8 @@ export const updateTaskFilesStore = defineStore(
         await doodleWorkStore().actions.getWorkSetting()
         return doodleWorkStore().state.doodleWorkSetting
       },
+      updateShotMaya: async task => {},
+      updateShotFbx: async task => {},
       submitLocalDoodleWork: async task => {
         //const task_id = task.id
         const item = Object.assign({}, task)
@@ -485,6 +497,7 @@ export const updateTaskFilesStore = defineStore(
               state.value.localHttpPath
             )
           }
+
           const task = Object.assign({}, state.value.allFiles.get(item.id))
           state.value.allFiles.delete(item.id)
           task.id = result.id
