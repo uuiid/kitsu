@@ -93,7 +93,7 @@ function exportPath() {
           )
       } else {
         work_files = asset.work_files.filter(
-          work_file => work_file.software_type === 'maya_sim'
+          work_file => work_file.software_type === 'maya'
         )
       }
       if (work_files.length > 0) path = work_files[0].path
