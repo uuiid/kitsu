@@ -281,12 +281,11 @@
       <div class="actions">
         <button
           class="button action"
-          title="粘贴"
+          data-test="button-delete-admin"
           tabindex="-1"
-          @click.stop="$emit('paste', entity)"
-          v-if="false"
+          @click="$emit('delete-selected-shot')"
         >
-          <clipboard-paste class="icon is-small only-icon" />
+          <trash-icon class="icon is-small" />
         </button>
       </div>
     </div>
@@ -302,7 +301,7 @@ import { descriptorMixin } from '@/components/mixins/descriptors'
 
 import AssetBlock from '@/components/pages/breakdown/AssetBlock.vue'
 import EntityThumbnail from '@/components/widgets/EntityThumbnail.vue'
-import { ClipboardPaste } from 'lucide-vue-next'
+import { TrashIcon } from 'lucide-vue-next'
 
 export default {
   name: 'shot-line',
@@ -310,7 +309,7 @@ export default {
   mixins: [entityListMixin, descriptorMixin],
 
   components: {
-    ClipboardPaste,
+    TrashIcon,
     AssetBlock,
     EntityThumbnail
   },
@@ -404,9 +403,9 @@ export default {
     'remove-one',
     'standby-changed',
     'copy',
-    'paste',
     'remove-assets',
-    'clear-selection'
+    'clear-selection',
+    'delete-selected-shot'
   ],
 
   computed: {

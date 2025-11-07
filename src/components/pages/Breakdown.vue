@@ -264,6 +264,7 @@
               @copy="onCopy"
               @remove-assets="removeAssetsFromSelection"
               @clear-selection="onClearSelection"
+              @delete-selected-shot="onDeleteSelectedShot"
               v-for="entity in castingEntities"
             />
           </div>
@@ -958,7 +959,8 @@ export default {
       'replaceCasting',
       'newEpisode',
       'newSequence',
-      'newShot'
+      'newShot',
+      'deleteShot'
     ]),
 
     reset() {
@@ -1563,6 +1565,17 @@ export default {
     },
     onClearSelection() {
       this.copyAssets = []
+    },
+    async onDeleteSelectedShot() {
+      const selected = Object.keys(this.selection).filter(
+        k => this.selection[k]
+      )
+      for (const shot_id of selected)
+        await this.deleteShot({
+          id: shot_id
+        })
+      this.setCastingSequence(this.sequenceId)
+      this.updateUrl()
     },
     async onPaste(entity = null) {
       const startSelection = Object.assign({}, this.selection)
