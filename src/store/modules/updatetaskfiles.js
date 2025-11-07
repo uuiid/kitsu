@@ -303,7 +303,7 @@ export const updateTaskFilesStore = defineStore(
             file_data,
             type,
             (loaded, total) => {
-              type === 'maya' ? null : (task.progress = loaded / total)
+              type === (task.progress = loaded / total)
             }
           )
         else {
@@ -440,8 +440,6 @@ export const updateTaskFilesStore = defineStore(
         await doodleWorkStore().actions.getWorkSetting()
         return doodleWorkStore().state.doodleWorkSetting
       },
-      updateShotMaya: async task => {},
-      updateShotFbx: async task => {},
       submitLocalDoodleWork: async task => {
         //const task_id = task.id
         const item = Object.assign({}, task)
