@@ -2400,6 +2400,17 @@ export default {
     text-align: right;
   }
 }
+.casting-list::-webkit-scrollbar {
+  width: 15px;
+}
+.casting-list::-webkit-scrollbar-thumb {
+  background: var(--background-alt-4);
+  min-height: 60px;
+}
+
+.casting-list::-webkit-scrollbar-thumb:hover {
+  background: var(--background-hover);
+}
 
 .query-list {
   margin-bottom: 0.5em;
