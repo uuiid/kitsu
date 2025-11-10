@@ -1411,6 +1411,7 @@ export default {
           callback()
           this.setCastingSequence(this.sequenceId)
           this.updateUrl()
+          this.resetSelection()
         })
         .catch(console.error)
     },
@@ -1577,6 +1578,7 @@ export default {
         })
       this.setCastingSequence(this.sequenceId)
       this.updateUrl()
+      this.resetSelection()
     },
     async onPaste(entity = null) {
       const startSelection = Object.assign({}, this.selection)
