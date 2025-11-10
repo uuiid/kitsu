@@ -248,6 +248,7 @@
             @edit-label="onEditLabelClicked"
             @remove-one="removeOneAsset"
             @add-one="addOneAsset"
+            @show-info="showAssetInfo"
             @click.stop="onClickAssetBlock(asset)"
             v-for="asset in assetsByAssetTypesMap[assetType]"
             :ref="setBoxRef(asset)"
@@ -405,7 +406,8 @@ export default {
     'copy',
     'remove-assets',
     'clear-selection',
-    'delete-selected-shot'
+    'delete-selected-shot',
+    'show-info'
   ],
 
   computed: {
@@ -537,6 +539,10 @@ export default {
 
     onEditLabelClicked(asset, label) {
       this.$emit('edit-label', asset, label, this.entity.id)
+    },
+
+    showAssetInfo(asset) {
+      this.$emit('show-info', this.assetMap.get(asset.asset_id))
     },
 
     removeOneAsset(assetId) {

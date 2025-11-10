@@ -16,11 +16,13 @@
         <div class="asset-add" @click.stop="removeOneAsset">- 1</div>
       </template>
       <div class="asset-picture" v-if="asset.preview_file_id">
-        <img
-          loading="lazy"
-          alt=""
+        <asset-image-cell
           :src="`/api/pictures/thumbnails-square/preview-files/${asset.preview_file_id}.png`"
-        />
+          add-ten-txt="-1"
+          @add-one-asset="addOneAsset"
+          @add-ten-asset="removeOneAsset"
+          @show-info="$emit('show-info', asset)"
+        ></asset-image-cell>
         <span class="nb-occurences" v-if="nbOccurences > 1">
           {{ nbOccurences }}
         </span>
@@ -58,9 +60,11 @@
 <script>
 import stringHelpers from '@/lib/string'
 import { domMixin } from '@/components/mixins/dom'
+import AssetImageCell from '@/components/cells/AssetImageCell.vue'
 
 export default {
   name: 'asset-block',
+  components: { AssetImageCell },
 
   mixins: [domMixin],
 
@@ -98,7 +102,7 @@ export default {
     }
   },
 
-  emits: ['add-one', 'edit-label', 'remove-one'],
+  emits: ['add-one', 'edit-label', 'remove-one', 'show-info'],
 
   methods: {
     removeOneAsset(event) {
@@ -141,15 +145,15 @@ export default {
   font-size: 0.8em;
   word-wrap: break-word;
   border-radius: 5px;
-  height: 40px;
+  height: 80px;
 
   .asset-wrapper {
-    width: 40px;
+    width: 80px;
   }
 
   &.big-asset {
-    width: 100px;
-    height: 100px;
+    width: 180px;
+    height: 180px;
 
     .asset-picture {
       top: -10px;
@@ -282,7 +286,7 @@ export default {
 .asset-text {
   width: 120px;
   margin-right: 0;
-
+  font-size: 1em;
   &.shared {
     box-shadow: 0 0 0 2px var(--shared-color);
   }

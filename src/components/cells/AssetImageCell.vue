@@ -21,6 +21,14 @@ defineProps({
   imageHeight: {
     type: Number,
     default: 93
+  },
+  addOneTxt: {
+    type: String,
+    default: '+1'
+  },
+  addTenTxt: {
+    type: String,
+    default: '+10'
   }
 })
 const isShowActon = ref(false)
@@ -43,28 +51,28 @@ const isShowActon = ref(false)
           class="action-icon"
           size="15"
           color="#6bacea"
-          title="+1"
-          @click="emit('add-one-asset')"
+          :title="addOneTxt"
+          @click.stop="emit('add-one-asset')"
         >
-          +1
+          {{ addOneTxt }}
         </el-icon>
         <el-icon
           class="action-icon"
           size="15"
           color="#6bacea"
           title="详情"
-          @click="emit('show-info')"
+          @click.stop="emit('show-info')"
         >
           <info-filled />
         </el-icon>
         <el-icon
           class="action-icon"
           size="15"
-          title="+10"
+          :title="addTenTxt"
           color="#6bacea"
-          @click="emit('add-ten-asset')"
+          @click.stop="emit('add-ten-asset')"
         >
-          +10
+          {{ addTenTxt }}
         </el-icon>
       </template>
     </ai-image-action>

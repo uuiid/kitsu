@@ -265,6 +265,7 @@
               @remove-assets="removeAssetsFromSelection"
               @clear-selection="onClearSelection"
               @delete-selected-shot="onDeleteSelectedShot"
+              @show-info="showAssetInfo"
               v-for="entity in castingEntities"
             />
           </div>
