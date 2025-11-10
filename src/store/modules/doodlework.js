@@ -826,11 +826,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     getWorkSetting: async () => {
       await actions.getToolVersions()
       await actions.getLocalHttpPath()
-      if (window.api.DoodleExePort() !== 0) {
-        state.value.doodleWorkSetting = await doodlework.getLocalSetting(
-          state.value.localHttpPath
-        )
-      }
+      const res = await doodlework.getLocalSetting(state.value.localHttpPath)
+      if (res) state.value.doodleWorkSetting = res
+      else throw new Error(res)
     },
 
     setWorkSetting: async () => {

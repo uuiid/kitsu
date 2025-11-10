@@ -828,7 +828,6 @@ export default {
     },
 
     castingEntities() {
-      console.log(this.castingSequenceShots)
       if (this.isEpisodeCasting) {
         return this.castingEpisodes
       } else if (this.isShotCasting) {
