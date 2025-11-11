@@ -285,6 +285,7 @@ const onAddData = async files => {
       )
     )
       updateTaskFiles.state.selection.push(updateTaskFiles.state.selectedTask)
+    files = Array.from(files).sort((a, b) => a.name.localeCompare(b.name))
     for (const file of files) {
       const file_split = file.name.split('.')
       const temp_task = updateTaskFiles.state.selection.filter(task => {

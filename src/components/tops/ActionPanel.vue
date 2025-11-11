@@ -1050,7 +1050,8 @@ export default {
       'taskMap',
       'taskStatusForCurrentUser',
       'taskTypeMap',
-      'user'
+      'user',
+      'currentProduction'
     ]),
 
     isElectron() {
@@ -1560,9 +1561,9 @@ export default {
           if (
             this.taskMap.get(taskId).task_type_id ===
             'eb7c92c8-232c-4894-8efa-c62ced44ff05'
-          )
+          ) {
             path = `${doodleWorkStore().state.localHttpPath}/api/actions/projects/${this.productionId}/shots/${taskId}/run-ue-assembly`
-          else if (
+          } else if (
             this.taskMap.get(taskId).task_type_id ===
             '9d71918b-cbf0-46bc-9c39-27177c9a950a'
           )
@@ -1570,12 +1571,23 @@ export default {
           if (path !== '') {
             const res = await fetch(path, {
               method: 'post',
-              body: ''
+              body: JSON.stringify({
+                name: `${this.currentProduction.code}_${this.taskMap.get(taskId).entity_name.replace(' / ', '_')}`,
+                status: 'waiting',
+                source_computer: '本机',
+                submitter:
+                  this.user?.id || 'CB3b915c-2F16-cE9d-c2cE-b45B5ebb583a',
+                type: 'auto_light'
+              })
             })
             const data = await res.json()
             if (res.status === 200 || res.status === 201) {
               ElMessage.success('进行自动灯光')
-            } else if (data.code === 400 || data.code === 500) {
+            } else if (
+              data.code === 400 ||
+              data.code === 500 ||
+              data.code === 404
+            ) {
               ElMessage.error(data.error)
             }
           } else ElMessage.success('该任务不能进行自动灯光')
