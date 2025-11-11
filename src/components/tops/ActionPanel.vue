@@ -158,7 +158,7 @@
           class="menu-item"
           :class="{ disabled: workingFiles.length === 0 }"
           :title="workingFiles.length === 0 ? '' : $t('menu.openFolder')"
-          v-if="isElectron"
+          v-if="isElectron && workingFiles.length !== 0"
         >
           <el-popover style="padding: 0" :width="50" trigger="hover">
             <template #reference>
@@ -199,7 +199,11 @@
         >
           <kitsu-icon name="check" :title="$t('doodle.check_shot_light')" />
         </div>
-        <div class="menu-item" @click="autoLight">
+        <div
+          class="menu-item"
+          @click="autoLight"
+          :title="$t('doodle.run_auto_light')"
+        >
           <flashlight></flashlight>
         </div>
         <!--div

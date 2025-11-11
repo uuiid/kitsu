@@ -1125,6 +1125,31 @@ export default {
         }, 3000)
       }
     },
+    async addManyAssets(assets) {
+      this.isLocked = true
+      const entityIds = Object.keys(this.selection).filter(
+        key => this.selection[key]
+      )
+      console.log(assets)
+      for (const entityId of entityIds) {
+        for (const asset of assets) {
+          this.addAssetToCasting({
+            entityId,
+            assetId: asset.id,
+            nbOccurences: asset.nb_occurences,
+            label: this.castingType === 'shot' ? 'animate' : 'fied'
+          })
+          delete this.saveErrors[entityId]
+        }
+        try {
+          await this.saveCasting(entityId)
+          this.setLock()
+        } catch (err) {
+          this.saveErrors[entityId] = true
+          console.error(err)
+        }
+      }
+    },
 
     async addOneAsset(assetId, amount = 1) {
       this.isLocked = true
@@ -1188,11 +1213,13 @@ export default {
       )
       for (const entityId of entityIds) {
         for (const assetId of assetIds) {
-          const asset = this.casting[entityId].find(
-            asset => asset.asset_id === assetId
-          )
-          if (asset) {
-            await this.removeAsset(assetId, entityId, asset.nb_occurences)
+          if (this.casting[entityId]) {
+            const asset = this.casting[entityId].find(
+              asset => asset.asset_id === assetId
+            )
+            if (asset) {
+              await this.removeAsset(assetId, entityId, asset.nb_occurences)
+            }
           }
         }
         this.saveCasting(entityId)
@@ -1216,11 +1243,13 @@ export default {
         key => this.selection[key]
       )
       for (const entityId of entityIds) {
-        const asset = this.casting[entityId].find(
-          asset => asset.asset_id === assetId
-        )
-        if (asset) {
-          await this.removeOneAsset(assetId, entityId, asset.nb_occurences)
+        if (this.casting[entityId]) {
+          const asset = this.casting[entityId].find(
+            asset => asset.asset_id === assetId
+          )
+          if (asset) {
+            await this.removeOneAsset(assetId, entityId, asset.nb_occurences)
+          }
         }
       }
     },
@@ -1590,9 +1619,15 @@ export default {
         }
         this.selection[entity.id] = true
       }
+      const assets = []
       for (const asset of this.copyAssets) {
-        await this.addOneAsset(asset.asset_id, asset.nb_occurences)
+        assets.push({
+          id: asset.asset_id,
+          nb_occurences: asset.nb_occurences
+        })
+        //await this.addOneAsset(asset.asset_id, asset.nb_occurences)
       }
+      await this.addManyAssets(assets)
       this.selection = startSelection
       ElMessage.success('粘贴成功')
     },
