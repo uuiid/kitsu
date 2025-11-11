@@ -279,11 +279,19 @@ const onAddData = async files => {
   const messages = []
   const files_ = []
   if (props.updateEntityType === 'shot') {
+    if (
+      !updateTaskFiles.state.selection.some(
+        t => t.task.id === updateTaskFiles.state.selectedTask.task.id
+      )
+    )
+      updateTaskFiles.state.selection.push(updateTaskFiles.state.selectedTask)
     for (const file of files) {
       const file_split = file.name.split('.')
-      if (updateTaskFiles.state.selection.length === 0)
-        updateTaskFiles.state.selection.push(updateTaskFiles.state.selectedTask)
+      console.log(updateTaskFiles.state.selection)
       const temp_task = updateTaskFiles.state.selection.filter(task => {
+        console.log(
+          `${productions.state.currentProduction.code}_${task.entity.sequence_name}_${task.entity.name}`
+        )
         return (
           `${productions.state.currentProduction.code}_${task.entity.sequence_name}_${task.entity.name}` ===
           file_split[0]

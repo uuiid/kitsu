@@ -199,6 +199,9 @@
         >
           <kitsu-icon name="check" :title="$t('doodle.check_shot_light')" />
         </div>
+        <div class="menu-item" @click="autoLight">
+          <flashlight></flashlight>
+        </div>
         <!--div
           class="menu-item"
           :title="$t('scan_project.scan_project')"
@@ -871,7 +874,8 @@ import {
   PlayCircleIcon,
   XIcon,
   FolderOpen,
-  FolderUp
+  FolderUp,
+  Flashlight
 } from 'lucide-vue-next'
 import { mapGetters, mapActions } from 'vuex'
 
@@ -891,6 +895,7 @@ import Spinner from '@/components/widgets/Spinner.vue'
 import ViewPlaylistModal from '@/components/modals/ViewPlaylistModal.vue'
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 import { ElMessage } from 'element-plus'
+import { doodleWorkStore } from '@/store/modules/doodlework.js'
 
 export default {
   name: 'action-panel',
@@ -934,6 +939,7 @@ export default {
     ComboboxStatus,
     ComboboxStyled,
     DeleteEntities,
+    Flashlight,
     KitsuIcon,
     LinkIcon,
     PeopleField,
@@ -1541,6 +1547,37 @@ export default {
         } else if (data.code === 400 || data.code === 500) {
           ElMessage.error(data.error)
         }
+      }
+    },
+    async autoLight() {
+      if (doodleWorkStore().actions.getWorkSetting()) {
+        for (const taskId of this.selectedTaskIds) {
+          let path = ''
+          if (
+            this.taskMap.get(taskId).task_type_id ===
+            'eb7c92c8-232c-4894-8efa-c62ced44ff05'
+          )
+            path = `${doodleWorkStore().state.localHttpPath}/api/actions/projects/${this.productionId}/shots/${taskId}/run-ue-assembly`
+          else if (
+            this.taskMap.get(taskId).task_type_id ===
+            '9d71918b-cbf0-46bc-9c39-27177c9a950a'
+          )
+            path = `${doodleWorkStore().state.localHttpPath}/api/actions/projects/${this.productionId}/shots/${taskId}/run-cloth-simulation`
+          if (path !== '') {
+            const res = await fetch(path, {
+              method: 'post',
+              body: ''
+            })
+            const data = await res.json()
+            if (res.status === 200 || res.status === 201) {
+              ElMessage.success('进行自动灯光')
+            } else if (data.code === 400 || data.code === 500) {
+              ElMessage.error(data.error)
+            }
+          } else ElMessage.success('该任务不能进行自动灯光')
+        }
+      } else {
+        ElMessage.error('后台未启动，请稍后重试')
       }
     },
     confirmSetThumbnailsFromTasks() {

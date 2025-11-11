@@ -204,6 +204,7 @@ export const entityListMixin = {
       }
       this.$emit('keep-task-panel-open', true)
       updateTaskFilesStore().state.selectedTask = validationInfo
+      let num = 0
       if (validationInfo.isShiftKey) {
         if (this.lastSelection) {
           let startX = this.lastSelection.x
@@ -211,7 +212,7 @@ export const entityListMixin = {
           let startY = this.lastSelection.y
           if (!sticked) startY += columnOffset
           let endY = validationInfo.y
-          const grid = this[`${this.type}SelectionGrid`]
+
           if (validationInfo.x < this.lastSelection.x) {
             startX = validationInfo.x
             endX = this.lastSelection.x
@@ -221,26 +222,24 @@ export const entityListMixin = {
             endY = this.lastSelection.y
             if (!sticked) endY += columnOffset
           }
-
           for (let i = startX; i <= endX; i++) {
             for (let j = startY; j <= endY; j++) {
+              num = num + 1
               const ref = `validation-${i}-${j}`
               const validationCell = this.$refs[ref][0]
-              if (!grid[i][j]) {
-                let y = validationCell.columnY
-                if (!sticked) y += columnOffset
 
-                // Add cell to selection
-                if (validationCell.selectable) {
-                  selection.push({
-                    entity: validationCell.entity,
-                    column: validationCell.column,
-                    task: validationCell.task,
-                    x: validationCell.rowX,
-                    y
-                  })
-                }
-              }
+              let y = validationCell.columnY
+              if (!sticked) y += columnOffset
+
+              // Add cell to selection
+
+              selection.push({
+                entity: validationCell.entity,
+                column: validationCell.column,
+                task: validationCell.task,
+                x: validationCell.rowX,
+                y
+              })
             }
           }
           this.$store.commit('ADD_SELECTED_TASK', validationInfo)
@@ -248,6 +247,7 @@ export const entityListMixin = {
         }
       } else if (!validationInfo.isCtrlKey) {
         this.$store.commit('CLEAR_SELECTED_TASKS')
+        updateTaskFilesStore().state.selection = selection
         this.updateTaskInQuery()
       }
       if (selection.length === 0) {
@@ -255,7 +255,8 @@ export const entityListMixin = {
         this.updateTaskInQuery()
       } else {
         this.$store.commit('ADD_SELECTED_TASKS', selection)
-        console.log(selection)
+        updateTaskFilesStore().state.selection = selection
+        console.log(num, updateTaskFilesStore().state.selection)
         this.updateTaskInQuery()
       }
 
