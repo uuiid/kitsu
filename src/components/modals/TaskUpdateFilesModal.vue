@@ -287,11 +287,7 @@ const onAddData = async files => {
       updateTaskFiles.state.selection.push(updateTaskFiles.state.selectedTask)
     for (const file of files) {
       const file_split = file.name.split('.')
-      console.log(updateTaskFiles.state.selection)
       const temp_task = updateTaskFiles.state.selection.filter(task => {
-        console.log(
-          `${productions.state.currentProduction.code}_${task.entity.sequence_name}_${task.entity.name}`
-        )
         return (
           `${productions.state.currentProduction.code}_${task.entity.sequence_name}_${task.entity.name}` ===
           file_split[0]
