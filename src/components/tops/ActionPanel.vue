@@ -1571,6 +1571,9 @@ export default {
           if (path !== '') {
             const res = await fetch(path, {
               method: 'post',
+              headers: {
+                'Content-Type': 'application/json'
+              },
               body: JSON.stringify({
                 name: `${this.currentProduction.code}_${this.taskMap.get(taskId).entity_name.replace(' / ', '_')}`,
                 status: 'waiting',
