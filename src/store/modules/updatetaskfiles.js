@@ -298,6 +298,7 @@ export const updateTaskFilesStore = defineStore(
           data: data
         }
         task.task_id = state.value.selectedTask.task.id
+
         if (type === 'maya' || type === 'image' || type === 'output')
           return await doodlework.updateFile(
             task,
@@ -489,7 +490,9 @@ export const updateTaskFilesStore = defineStore(
             )
           } else if (
             state.value.selectedTask.task.task_type_id ===
-            '32504e3e-381c-4f36-bdeb-f73328f96f9c'
+              '32504e3e-381c-4f36-bdeb-f73328f96f9c' ||
+            state.value.selectedTask.task.task_type_id ===
+              'da050d42-4f45-40c4-9638-cc637753d3b5'
           ) {
             result = await doodlework.submitGenerateUeskTask(
               data,

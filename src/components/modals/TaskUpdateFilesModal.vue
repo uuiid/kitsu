@@ -6,7 +6,8 @@ import { ElMessage, ElNotification } from 'element-plus'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import productions from '@/store/modules/productions.js'
-
+import { useRoute } from 'vue-router'
+const route = useRoute()
 const updateTaskFiles = updateTaskFilesStore()
 const props = defineProps({
   updateEntityType: {
@@ -19,7 +20,7 @@ const updateTypes = [
   { id: 0, label: 'maya文件', name: 'maya', type: 'asset' },
   { id: 1, label: 'maya贴图', name: 'maya', type: 'asset' },
   { id: 3, label: 'ue文件', name: 'ue', type: 'asset' },
-  { id: 4, label: '动画相关文件', name: 'maya', type: 'shot' }
+  { id: 4, label: '文件', name: 'maya', type: 'shot' }
 ]
 const displayUpdateTypes = computed(() => {
   return updateTypes.filter(type => type.type === props.updateEntityType)
@@ -56,9 +57,14 @@ onMounted(() => {
       async data => {
         if (data.type === 'check_maya') {
           const task = updateTaskFiles.state.allFiles.get(data.id)
-          await doodleWorkStore().actions.formatTask(task, data)
-          if (data.status === 'completed') {
-            task.progress = 1
+          if (data) {
+            await doodleWorkStore().actions.formatTask(task, data)
+            if (data.status === 'completed') {
+              task.progress = 1
+            }
+          } else {
+            task.status = 'failed'
+            task.progress = 0
           }
         }
       }
@@ -304,6 +310,7 @@ const onAddData = async files => {
       else task.type = 'maya'
       task.task_id = temp_task[0].task.id
       task.file = file
+      task.entity_type = route.name
       updateTaskFiles.state.allFiles.set(task.id, task)
       notNeedInspections.set(task.id, task)
     }
@@ -416,7 +423,6 @@ const onAddData = async files => {
         // notNeedInspections.set(task.id, task)
       } else {
         messages.push(`${file.name}:请检查文件路径`)
-        console.log(file_path)
         continue
       }
     } else if (
@@ -440,10 +446,10 @@ const onAddData = async files => {
       files_.push(file_data)
     } else {
       messages.push(`${file.name}:请检查文件名称`)
-      console.log(file_path)
       continue
     }
     const task = setDoodleWorlTask(file)
+    task.entity_type = route.name
     updateTaskFiles.state.allFiles.set(task.id, task)
     notNeedInspections.set(task.id, task)
   }
