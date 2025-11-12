@@ -383,13 +383,18 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       if (asset && !asset.canceled && asset.episode_id === undefined) {
         asset.tasks.forEach(task_id => {
           const task = tasksStore.state.taskMap.get(task_id)
-          if (task.task_status_id !== '4ffc748e-4e58-4336-ba83-51910253514e') {
-            if (ch['task_type_ids']) ch['task_type_ids'].add(task.task_type_id)
-            else ch['task_type_ids'] = new Set([task.task_type_id])
+          if (task) {
+            if (
+              task.task_status_id !== '4ffc748e-4e58-4336-ba83-51910253514e'
+            ) {
+              if (ch['task_type_ids'])
+                ch['task_type_ids'].add(task.task_type_id)
+              else ch['task_type_ids'] = new Set([task.task_type_id])
+            }
+            if (ch['all_task_type_ids'])
+              ch['all_task_type_ids'].add(task.task_type_id)
+            else ch['all_task_type_ids'] = new Set([task.task_type_id])
           }
-          if (ch['all_task_type_ids'])
-            ch['all_task_type_ids'].add(task.task_type_id)
-          else ch['all_task_type_ids'] = new Set([task.task_type_id])
         })
       }
     },
