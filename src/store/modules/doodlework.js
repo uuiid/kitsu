@@ -444,6 +444,7 @@ function initState() {
     isVisitor: false,
     isPullProcessed: false,
     isInitialProcessed: false,
+    isPullProcessing: false,
     visitorContext: null,
     doodleWorkExeLocalRootPath: '',
     doodleWorkExeDownloadPath: '',
@@ -605,6 +606,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       const os = require('os')
       if (state.value.isInitialProcessed) return
       else state.value.isInitialProcessed = true
+      state.value.isPullProcessing = true
       state.value.isPullProcessed = false
       if (!state.value.doodleWorkZipFileVision)
         state.value.doodleWorkZipFileVision = state.value.versions[0]
@@ -655,21 +657,26 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         num++
         await sleep(2000)
         if (window.api.DoodleExePort() !== 0) {
-          state.value.isPullProcessed = true
           const port = window.api.DoodleExePort()
           state.value.localHttpPath = `http://127.0.0.1:${port}`
           //state.value.doodleSocket = io(`http://127.0.0.1:5000/socket.io/`)
           //state.value.doodleSocket = io(`http://192.168.20.89:50025/socket.io/`)
+          await sleep(2000)
           await actions.getWorkSetting()
           if (state.value.doodleSocket) {
             state.value.doodleSocket.disconnect()
           }
           state.value.doodleSocket = io(`http://127.0.0.1:${port}/events`)
           await actions.setSocketEvent()
+          state.value.isPullProcessing = false
+          console.log(state.value.isPullProcessing)
           state.value.isInitialProcessed = false
+          state.value.isPullProcessed = true
+          state.value.isPullProcessing = false
           break
         }
       }
+      state.value.isPullProcessing = false
     },
     setLocalHttpPath: async () => {
       const port = window.api.DoodleExePort()

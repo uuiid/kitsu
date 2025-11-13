@@ -116,10 +116,14 @@
             :type="
               doodleWorkStore().state.isPullProcessed ? 'primary' : 'danger'
             "
-            :loading="doodleWorkStore().state.isInitialProcessed"
-            @click="doodleWorkStore().actions.pullProcess()"
+            :loading="doodleWorkStore().state.isPullProcessing"
+            @click="onRunDoodleWork"
             >{{
-              doodleWorkStore().state.isPullProcessed ? '已启动' : '启动'
+              doodleWorkStore().state.isPullProcessing
+                ? `启动中`
+                : doodleWorkStore().state.isPullProcessed
+                  ? '已启动'
+                  : '启动'
             }}</el-button
           >
         </div>
@@ -265,6 +269,7 @@ import TopbarSectionList from '@/components/tops/TopbarSectionList.vue'
 
 import { version } from '@/../package.json'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
+import { ElMessage } from 'element-plus'
 
 export default {
   name: 'topbar',
@@ -624,7 +629,18 @@ export default {
       if (name === 'news-feed') name = 'newsFeed'
       return name
     },
-
+    onRunDoodleWork() {
+      const message = ElMessage({
+        message: '后台启动中，请勿关闭',
+        type: 'warning',
+        duration: 0
+      })
+      this.doodleWorkStore()
+        .actions.pullProcess()
+        .then(() => {
+          message.close()
+        })
+    },
     updateContext(productionId) {
       if (!productionId) {
         this.clearContext()

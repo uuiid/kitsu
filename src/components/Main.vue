@@ -4,6 +4,14 @@
       <topbar />
       <sidebar />
       <router-view />
+      <download-message
+        v-model="doodleWorkStore().state.isShowDoodleWorkExeDownloadProgress"
+        :progress="doodleWorkStore().state.doodleWorkExeDownloadProgress"
+        :message-prefix="
+          doodleWorkStore().state.doodleWorkExeDownloadProgressMessage
+        "
+        type="warning"
+      />
     </div>
   </XyzTransition>
 </template>
@@ -14,15 +22,19 @@ import Sidebar from '@/components/sides/Sidebar.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import { ElMessage } from 'element-plus'
 import i18n from '@/lib/i18n.js'
+import DownloadMessage from '@/components/widgets/DownloadMessage.vue'
 
 export default {
   name: 'main-wrapper',
 
   components: {
+    DownloadMessage,
     Topbar,
     Sidebar
   },
-
+  methods: {
+    doodleWorkStore
+  },
   mounted() {
     this.$socket.connect()
     try {

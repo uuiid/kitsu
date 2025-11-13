@@ -706,12 +706,6 @@ const onSetOutPath = () => {
     :message-prefix="messagePrefix"
     type="warning"
   />
-  <download-message
-    v-model="doodleWork.state.isShowDoodleWorkExeDownloadProgress"
-    :progress="doodleWork.state.doodleWorkExeDownloadProgress"
-    :message-prefix="doodleWork.state.doodleWorkExeDownloadProgressMessage"
-    type="warning"
-  />
 </template>
 
 <style lang="scss" scoped>

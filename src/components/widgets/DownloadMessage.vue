@@ -1,13 +1,15 @@
 <!-- DownloadMessage.vue -->
 <template>
-  <Transition name="el-fade-in-linear">
-    <div v-if="visible" class="download-message" :class="typeClass">
-      <el-icon class="icon">
-        <component :is="iconComponent" />
-      </el-icon>
-      <span class="text">{{ message }}</span>
-    </div>
-  </Transition>
+  <teleport to="body">
+    <Transition name="el-fade-in-linear" :style="`top: ${props.top}px`">
+      <div v-if="visible" class="download-message" :class="typeClass">
+        <el-icon class="icon">
+          <component :is="iconComponent" />
+        </el-icon>
+        <span class="text">{{ message }}</span>
+      </div>
+    </Transition>
+  </teleport>
 </template>
 
 <script setup>
@@ -29,6 +31,10 @@ const props = defineProps({
   messagePrefix: {
     type: String,
     default: '正在下载UE插件'
+  },
+  top: {
+    type: Number,
+    default: 60
   }
 })
 
@@ -59,7 +65,6 @@ const message = computed(() => {
 <style scoped>
 .download-message {
   position: fixed;
-  top: 60px;
   left: 50%;
   transform: translateX(-50%);
   background: #fefefe;
