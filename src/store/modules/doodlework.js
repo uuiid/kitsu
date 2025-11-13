@@ -563,7 +563,43 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         }
       })
     },
+    deleteHistoryDoodleFile(folderPath, exclude = '') {
+      const fs = require('fs')
+      const path = require('path')
+      fs.readdir(folderPath, (err, files) => {
+        if (err) {
+          console.error('读取文件夹出错:', err)
+          return
+        }
 
+        files.forEach(file => {
+          const fullPath = path.join(folderPath, file)
+          fs.stat(fullPath, (err, stats) => {
+            if (err) return console.error(err)
+            if (!file.includes(exclude)) {
+              if (stats.isDirectory()) {
+                console.log('文件夹及内容已删除 ✅', fullPath)
+                fs.rm(fullPath, { recursive: true, force: true }, err => {
+                  if (err) {
+                    console.error('删除失败:', err)
+                    return
+                  }
+                  console.log('文件夹及内容已删除 ✅')
+                })
+              } else {
+                fs.unlink(fullPath, err => {
+                  if (err) {
+                    console.error('删除文件失败:', err)
+                    return
+                  }
+                  console.log('文件已删除 ✅')
+                })
+              }
+            }
+          })
+        })
+      })
+    },
     pullProcess: async () => {
       const fs = require('fs')
       const os = require('os')
@@ -576,12 +612,17 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       if (window.api.DoodleExePort() !== 0) {
         window.api.doodleExeClose()
       }
+      const fileName = `Doodle-${state.value.doodleWorkZipFileVision}-win64`
+      actions.deleteHistoryDoodleFile(
+        state.value.doodleWorkExeLocalRootPath,
+        fileName
+      )
       if (!fs.existsSync(doodleWorkExePath.value)) {
         if (!fs.existsSync(state.value.doodleWorkExeLocalRootPath)) {
           fs.mkdirSync(state.value.doodleWorkExeLocalRootPath)
         }
         if (!fs.existsSync(doodleWorkExePath.value)) {
-          const zipName = `Doodle-${state.value.doodleWorkZipFileVision}-win64.zip`
+          const zipName = `${fileName}.zip`
           state.value.isShowDoodleWorkExeDownloadProgress = true
           state.value.doodleWorkExeDownloadProgressMessage = '下载中...'
           await actions.downloadWithProgress(
