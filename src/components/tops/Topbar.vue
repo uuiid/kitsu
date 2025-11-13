@@ -107,6 +107,12 @@
         >
           {{ $t('timesheets.title') }}
         </router-link>
+
+        <span
+          class="flexrow-item mr0 doodlework-status"
+          :class="{ success: doodleworkStatus, error: !doodleworkStatus }"
+        ></span>
+
         <global-search-field
           class="flexrow-item mr0"
           v-if="mainConfig.indexer_configured"
@@ -248,6 +254,7 @@ import TopbarProductionList from '@/components/tops/TopbarProductionList.vue'
 import TopbarSectionList from '@/components/tops/TopbarSectionList.vue'
 
 import { version } from '@/../package.json'
+import { doodleWorkStore } from '@/store/modules/doodlework.js'
 
 export default {
   name: 'topbar',
@@ -319,6 +326,10 @@ export default {
 
     assetSections() {
       return ['assets', 'assetTypes', 'playlists']
+    },
+
+    doodleworkStatus() {
+      return doodleWorkStore().state.isPullProcessed
     },
 
     editSections() {
@@ -977,5 +988,17 @@ export default {
   .nav-right {
     display: flex;
   }
+}
+.doodlework-status {
+  margin-top: 25px;
+  height: 10px;
+  width: 10px;
+  border-radius: 5px;
+}
+.success {
+  background-color: $green;
+}
+.error {
+  background-color: $red;
 }
 </style>
