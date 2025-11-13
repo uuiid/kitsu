@@ -872,6 +872,17 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       else throw new Error(res)
     },
 
+    checkDoodleWork: () => {
+      actions.getLocalHttpPath()
+      doodlework
+        .getLocalSetting(state.value.localHttpPath)
+        .then(() => {
+          state.value.isPullProcessed = true
+        })
+        .catch(() => {
+          state.value.isPullProcessed = false
+        })
+    },
     setWorkSetting: async () => {
       await actions.getLocalHttpPath()
       state.value.doodleWorkSetting = await doodlework.setLocalSetting(

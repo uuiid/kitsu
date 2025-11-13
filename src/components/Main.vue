@@ -29,7 +29,7 @@ export default {
       doodleWorkStore()
         .actions.getToolVersions()
         .then(() => {
-          doodleWorkStore().actions.pullProcess()
+          //doodleWorkStore().actions.pullProcess()
         })
     } catch (error) {
       ElMessage({

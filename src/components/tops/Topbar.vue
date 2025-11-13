@@ -107,12 +107,22 @@
         >
           {{ $t('timesheets.title') }}
         </router-link>
-
-        <span
-          class="flexrow-item mr0 doodlework-status"
-          :class="{ success: doodleworkStatus, error: !doodleworkStatus }"
-        ></span>
-
+        <div class="nav-item">
+          <span
+            class="flexrow-item mr0 doodlework-status"
+            :class="{ success: doodleworkStatus, error: !doodleworkStatus }"
+          ></span>
+          <el-button
+            :type="
+              doodleWorkStore().state.isPullProcessed ? 'primary' : 'danger'
+            "
+            :loading="doodleWorkStore().state.isInitialProcessed"
+            @click="doodleWorkStore().actions.pullProcess()"
+            >{{
+              doodleWorkStore().state.isPullProcessed ? '已启动' : '启动'
+            }}</el-button
+          >
+        </div>
         <global-search-field
           class="flexrow-item mr0"
           v-if="mainConfig.indexer_configured"
@@ -283,13 +293,21 @@ export default {
       silent: true,
       display: {
         shortcutModal: false
-      }
+      },
+      timer: null
     }
   },
 
   mounted() {
     this.currentProjectSection = this.getCurrentSectionFromRoute()
     this.setProductionFromRoute()
+    this.timer = setInterval(() => {
+      if (!doodleWorkStore().state.isInitialProcessed)
+        doodleWorkStore().actions.checkDoodleWork()
+    }, 2000)
+  },
+  unmounted() {
+    clearTimeout(this.timer)
   },
 
   computed: {
@@ -563,6 +581,7 @@ export default {
   },
 
   methods: {
+    doodleWorkStore,
     ...mapActions([
       'clearEpisodes',
       'clearSelectedTasks',
@@ -990,7 +1009,6 @@ export default {
   }
 }
 .doodlework-status {
-  margin-top: 25px;
   height: 10px;
   width: 10px;
   border-radius: 5px;
