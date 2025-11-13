@@ -30,7 +30,7 @@ const doodleWork = doodleWorkStore()
 onMounted(async () => {
   //document.addEventListener('keydown', onKeyupEvent)
   await doodleWork.actions.getVisitorContext()
-  doodleWork.actions.pullProcess()
+  //doodleWork.actions.pullProcess()
 })
 
 const DownloadProgress = ref(0.0)
