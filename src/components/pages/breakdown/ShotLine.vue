@@ -234,7 +234,10 @@
           {{ nbAssetsForType(assetType) }}
           {{ $tc('assets.number', nbAssetsForType(assetType)) }}
         </div>
-        <div class="asset-type-items flexrow-item">
+        <div
+          class="asset-type-items flexrow-item"
+          v-if="isShowAsset ? true : selected"
+        >
           <asset-block
             class="flexrow-item no-select"
             :key="asset.id"
@@ -375,6 +378,10 @@ export default {
     copyAssets: {
       default: () => [],
       type: Array
+    },
+    isShowAsset: {
+      default: true,
+      type: Boolean
     }
   },
   data() {

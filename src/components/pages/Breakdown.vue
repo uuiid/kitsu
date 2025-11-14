@@ -29,6 +29,7 @@
             v-if="isAssetCasting"
           />
           <span class="filler"></span>
+          <el-switch class="flexrow-item" v-model="isShowAsset" />
           <show-infos-button class="flexrow-item" :is-breakdown="true" />
           <button-simple
             class="flexrow-item"
@@ -253,6 +254,7 @@
               :is-save-error="saveErrors[entity.id]"
               :column-width="columnWidth"
               :copy-assets="copyAssets"
+              :is-show-asset="isShowAsset"
               @add-one="addOneAsset"
               @click="selectEntity"
               @description-changed="onDescriptionChanged"
@@ -711,7 +713,8 @@ export default {
         operator: '=',
         value: ''
       },
-      visibleTempAssets: true
+      visibleTempAssets: true,
+      isShowAsset: true
     }
   },
 
