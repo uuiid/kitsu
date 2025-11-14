@@ -89,11 +89,11 @@ function exportPath() {
         )
         if (work_files.length === 0)
           work_files = asset.work_files.filter(
-            work_file => work_file.software_type === 'maya'
+            work_file => work_file.software_type === 'maya_rig'
           )
       } else {
         work_files = asset.work_files.filter(
-          work_file => work_file.software_type === 'maya'
+          work_file => work_file.software_type === 'maya_rig'
         )
       }
       if (work_files.length > 0) path = work_files[0].path
