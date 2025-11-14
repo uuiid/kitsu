@@ -173,9 +173,8 @@ export const updateTaskFilesStore = defineStore(
           } else if (task.updateType === 0) {
             //await actions.updateFile(task.file.path, task)
             if (
-              state.value.selectedTask.task.entity_type_name === '场景' ||
-              state.value.selectedTask.task.entity_type_name === '地编资产' ||
-              state.value.selectedTask.task.entity_type_name === '道具'
+              state.value.selectedTask.task.task_type_id ===
+              '13ddf60c-ed8e-4e65-85bb-57dc4207aeca'
             )
               await actions.updateFile(task.file.path, task)
             else await actions.submitLocalDoodleWork(task)
