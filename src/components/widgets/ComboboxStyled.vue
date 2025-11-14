@@ -313,7 +313,7 @@ export default {
   border-bottom-right-radius: 1em;
   left: 0;
   margin-left: -1px;
-  max-height: 180px;
+  max-height: 480px;
   overflow-x: hidden;
   overflow-y: auto;
   position: absolute;
