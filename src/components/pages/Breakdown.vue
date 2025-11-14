@@ -396,17 +396,23 @@
         </div>
         <spinner v-if="isAssetsLoading" />
         <template v-else>
-          <div class="asset-list-action">
-            <chevron-right
-              size="30"
-              v-if="!visibleTempAssets"
-              @click="visibleTempAssets = true"
-            ></chevron-right>
-            <chevron-down
-              size="30"
-              v-if="visibleTempAssets"
-              @click="visibleTempAssets = false"
-            ></chevron-down>
+          <div class="asset-list-action" v-if="tempAssets.length > 0">
+            <div class="asset-list-action-cell">
+              <chevron-right
+                class="icon"
+                size="30"
+                v-if="!visibleTempAssets"
+                @click="visibleTempAssets = true"
+              ></chevron-right>
+              <chevron-down
+                class="icon"
+                size="30"
+                v-if="visibleTempAssets"
+                @click="visibleTempAssets = false"
+              ></chevron-down>
+            </div>
+            <div class="asset-list-action-cell"></div>
+            <trash-icon class="icon is-small" @click="clearTempAssets" />
           </div>
           <div
             class="temp-asset-list asset-list"
@@ -559,7 +565,12 @@
 <script>
 import { mapGetters, mapActions } from 'vuex'
 import moment from 'moment'
-import { ChevronRight, ChevronDown, ChevronLeft } from 'lucide-vue-next'
+import {
+  ChevronRight,
+  ChevronDown,
+  ChevronLeft,
+  TrashIcon
+} from 'lucide-vue-next'
 import csv from '@/lib/csv'
 import clipboard from '@/lib/clipboard'
 import preferences from '@/lib/preferences'
@@ -597,6 +608,7 @@ export default {
   mixins: [entityListMixin, searchMixin],
 
   components: {
+    TrashIcon,
     StatisticalAssets,
     ManageShotsModal,
     Combobox,
@@ -1660,6 +1672,9 @@ export default {
       }
       this.isReplacingAsset = false
     },
+    clearTempAssets() {
+      workingFileStore().state.tempSelectedAssets = []
+    },
     descriptorCurrentDepartments(descriptor) {
       const departemts = descriptor.departments || []
       return departemts.map(departmentId =>
@@ -2479,8 +2494,19 @@ export default {
   align-items: center;
   justify-content: space-between;
 }
+
 .asset-list-action {
+  display: flex;
+  flex-flow: row nowrap;
+  justify-content: space-between;
   height: 30px;
+  padding-right: 15px;
+}
+.icon {
+  cursor: pointer;
+  &:hover {
+    color: #00b242;
+  }
 }
 .temp-asset-list {
   background: var(--background-alt-4);
