@@ -199,12 +199,18 @@
         >
           <kitsu-icon name="check" :title="$t('doodle.check_shot_light')" />
         </div>
-        <div
-          class="menu-item"
-          @click="autoLight"
-          :title="$t('doodle.run_auto_light')"
-        >
-          <flashlight></flashlight>
+        <div class="menu-item" :title="$t('doodle.run_auto_light')">
+          <el-popover style="padding: 0" :width="50" trigger="hover">
+            <template #reference>
+              <flashlight />
+            </template>
+            <div class="menu-item path-menu-item" @click="autoLight">
+              运行自动灯光
+            </div>
+            <div class="menu-item path-menu-item" @click="showAutoLightList">
+              打开列表
+            </div>
+          </el-popover>
         </div>
         <!--div
           class="menu-item"
@@ -960,7 +966,8 @@ export default {
     'set-frame-thumbnail',
     'open-folder',
     'execute-doodle-work',
-    'folder-up'
+    'folder-up',
+    'show-auto-light-list'
   ],
 
   data() {
@@ -1019,7 +1026,8 @@ export default {
         editDeletion: false,
         episodeDeletion: false,
         shotDeletion: false
-      }
+      },
+      visibleAutoLightMenu: false
     }
   },
   mounted() {
@@ -1586,6 +1594,9 @@ export default {
             const data = await res.json()
             if (res.status === 200 || res.status === 201) {
               ElMessage.success('进行自动灯光')
+              doodleWorkStore()
+                .doodleWorkStateMap.get('auto_light')
+                .workList.set(data.id, data)
             } else if (
               data.code === 400 ||
               data.code === 500 ||
@@ -1598,6 +1609,12 @@ export default {
       } else {
         ElMessage.error('后台未启动，请稍后重试')
       }
+    },
+    showAutoLightList() {
+      doodleWorkStore().state.currentDoodleWorkState =
+        doodleWorkStore().doodleWorkStateMap.get('auto_light')
+      doodleWorkStore().state.isShowAutoLightList = true
+      this.$emit('show-auto-light-list')
     },
     confirmSetThumbnailsFromTasks() {
       this.loading.setThumbnails = true

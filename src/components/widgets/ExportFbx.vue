@@ -140,7 +140,6 @@ const onAction = async (action_name, task) => {
     //onViewLog(task)
     const fs = require('fs')
     const logPath = `${localLogPath.value}/${task.id}.log`
-    console.log(logPath)
     if (fs.existsSync(logPath)) {
       window.api.openPath(logPath)
     } else ElMessage.error('文件不存在，请稍后尝试')

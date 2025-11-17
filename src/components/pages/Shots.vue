@@ -313,6 +313,8 @@
     update-entity-type="shot"
     v-if="updateTaskFilesStore().state.isShowUpdateModal"
   />
+  <auto-light-list-modal v-if="doodleWorkStore().state.isShowAutoLightList" />
+  <doodle-work-log-modal v-if="doodleWorkStore().state.isActiveLogModal" />
 </template>
 
 <script>
@@ -356,6 +358,9 @@ import TaskInfo from '@/components/sides/TaskInfo.vue'
 import TreeFilterView from '@/components/widgets/TreeFilterView.vue'
 import TaskUpdateFilesModal from '@/components/modals/TaskUpdateFilesModal.vue'
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
+import AutoLightListModal from '@/components/modals/AutoLightListModal.vue'
+import { doodleWorkStore } from '@/store/modules/doodlework.js'
+import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
 
 export default {
   name: 'shots',
@@ -363,6 +368,8 @@ export default {
   mixins: [searchMixin, entitiesMixin],
 
   components: {
+    DoodleWorkLogModal,
+    AutoLightListModal,
     TaskUpdateFilesModal,
     TreeFilterView,
     AddMetadataModal,
@@ -606,6 +613,7 @@ export default {
   },
 
   methods: {
+    doodleWorkStore,
     updateTaskFilesStore,
     ...mapActions([
       'addMetadataDescriptor',

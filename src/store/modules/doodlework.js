@@ -464,7 +464,8 @@ function initState() {
     autoLightSearchTasks: [],
     doodleWorkExeDownloadProgressMessage: '',
     doodleWorkExeDownloadProgress: 0,
-    isShowDoodleWorkExeDownloadProgress: false
+    isShowDoodleWorkExeDownloadProgress: false,
+    isShowAutoLightList: false
   }
 }
 
@@ -534,6 +535,13 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     setSocketEvent: async () => {
       state.value.doodleSocket.on('connect', () => {
         console.log('connected')
+        state.value.isPullProcessed = true
+      })
+      state.value.doodleSocket.on('disconnect', () => {
+        state.value.isPullProcessed = false
+      })
+      state.value.doodleSocket.on('message', () => {
+        state.value.isPullProcessed = true
       })
       state.value.doodleSocket.on('doodle:task_info:update', async data => {
         //await sleep(10)
@@ -879,17 +887,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       else throw new Error(res)
     },
 
-    checkDoodleWork: () => {
-      actions.getLocalHttpPath()
-      doodlework
-        .getLocalSetting(state.value.localHttpPath)
-        .then(() => {
-          state.value.isPullProcessed = true
-        })
-        .catch(() => {
-          state.value.isPullProcessed = false
-        })
-    },
     setWorkSetting: async () => {
       await actions.getLocalHttpPath()
       state.value.doodleWorkSetting = await doodlework.setLocalSetting(
@@ -927,6 +924,12 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     }
   }
   actions.getToolVersions()
+  if (window.api.DoodleExePort() !== 0) {
+    state.value.doodleSocket = io(
+      `http://127.0.0.1:${window.api.DoodleExePort()}/events`
+    )
+    actions.setSocketEvent()
+  }
   return {
     state,
     actions,

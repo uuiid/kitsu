@@ -1708,6 +1708,7 @@
     "doodle_work": {
       "doodle_work": "AI工作台",
       "add_doodle_work": "添加任务",
+      "auto_light_list": "自动灯光列表",
       "view_log": "查看日志",
       "restart": "重新提交",
       "log": "日志",

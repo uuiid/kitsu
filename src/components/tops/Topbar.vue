@@ -306,10 +306,6 @@ export default {
   mounted() {
     this.currentProjectSection = this.getCurrentSectionFromRoute()
     this.setProductionFromRoute()
-    this.timer = setInterval(() => {
-      if (!doodleWorkStore().state.isInitialProcessed)
-        doodleWorkStore().actions.checkDoodleWork()
-    }, 2000)
   },
   unmounted() {
     clearTimeout(this.timer)
