@@ -5,10 +5,9 @@
       <sidebar />
       <router-view />
       <download-message
-        v-model="doodleWorkStore().state.isShowDoodleWorkExeDownloadProgress"
-        :progress="doodleWorkStore().state.doodleWorkExeDownloadProgress"
+        :progress="doodleWorkStore().state?.doodleWorkExeDownloadProgress"
         :message-prefix="
-          doodleWorkStore().state.doodleWorkExeDownloadProgressMessage
+          doodleWorkStore().state?.doodleWorkExeDownloadProgressMessage
         "
         type="warning"
       />
