@@ -172,6 +172,7 @@
                 v-show="!isSimpleThumbnails"
                 :key="'header' + descriptor.id"
                 :descriptor="descriptor"
+                :grade-list="gradeList"
                 @show-metadata-header-menu="
                   event => showMetadataHeaderMenu(descriptor.id, event)
                 "
@@ -663,6 +664,7 @@ import assetTypeStore from '@/store/modules/assettypes'
 import episodeStore from '@/store/modules/episodes'
 import taskTypeStore from '@/store/modules/tasktypes'
 import moment from 'moment-timezone'
+import { assetFilterStore } from '@/store/modules/assetfilter.js'
 
 export default {
   name: 'asset-list',
@@ -826,6 +828,9 @@ export default {
 
     taskTypeMap() {
       return taskTypeStore.cache.taskTypeMap
+    },
+    gradeList() {
+      return assetFilterStore().state.gradeList
     },
 
     isEmptyList() {

@@ -13,9 +13,28 @@
         only-dot
         v-for="department in currentDepartments"
       /> -->
+      <el-popover
+        placement="top"
+        trigger="hover"
+        :width="196"
+        v-if="descriptor.name === '等级'"
+      >
+        <template #reference>
+          <span
+            class="flexrow-item ellipsis descriptor-name"
+            :title="descriptor.name"
+          >
+            {{ descriptor.name }}
+          </span>
+        </template>
+        <span :key="grade.name" v-for="grade in gradeList"
+          >{{ grade.name || '空' }}:{{ grade.num }},
+        </span>
+      </el-popover>
       <span
         class="flexrow-item ellipsis descriptor-name"
         :title="descriptor.name"
+        v-else
       >
         {{ descriptor.name }}
       </span>
@@ -51,6 +70,10 @@ export default {
     noMenu: {
       type: Boolean,
       default: false
+    },
+    gradeList: {
+      type: Array,
+      default: () => []
     }
   },
 

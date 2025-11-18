@@ -18,7 +18,8 @@ function initState() {
     filteredShots: [],
     shotFilters: new Map(),
     shotExpandedKeys: new Set(),
-    shotTreeFilterData: []
+    shotTreeFilterData: [],
+    gradeList: []
   }
 }
 
@@ -379,6 +380,53 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
         })
       }
     },
+    setGradeList(AssetsList) {
+      console.log(AssetsList)
+      const temp = new Map()
+      const GRADE_ORDER = [
+        'S+',
+        'S',
+        'S-',
+        'A+',
+        'A',
+        'A-',
+        'B+',
+        'B',
+        'B-',
+        'C+',
+        'C',
+        'C-',
+        'D+',
+        'D',
+        'D-',
+        'F+',
+        'F',
+        'F-',
+        ''
+      ]
+
+      AssetsList.forEach(asset => {
+        let grade = asset.deng_ji.replace(/\s/g, '').toUpperCase()
+        grade = grade.replace('＋', '+')
+        if (temp.has(grade)) {
+          temp.set(grade, {
+            name: grade,
+            num: temp.get(grade).num + 1
+          })
+        } else {
+          temp.set(grade, {
+            name: grade,
+            num: 1
+          })
+        }
+      })
+      state.value.gradeList = [...temp.values()].sort((a, b) => {
+        const indexA = GRADE_ORDER.indexOf(a.name)
+        console.log(indexA)
+        const indexB = GRADE_ORDER.indexOf(b.name)
+        return indexA - indexB
+      })
+    },
     addTaskType: (ch, asset) => {
       if (asset && !asset.canceled && asset.episode_id === undefined) {
         asset.tasks.forEach(task_id => {
@@ -432,6 +480,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
         }
       })
       state.value.filters = temp_filters
+      actions.setGradeList(result)
       return result
     },
     filteringShot: (shot, temp, keys) => {
