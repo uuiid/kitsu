@@ -1575,7 +1575,7 @@ export default {
             this.taskMap.get(taskId).task_type_id ===
             '9d71918b-cbf0-46bc-9c39-27177c9a950a'
           )
-            path = `${doodleWorkStore().state.localHttpPath}/api/actions/projects/${this.productionId}/shots/${taskId}/run-cloth-simulation`
+            path = `${doodleWorkStore().state.localHttpPath}/api/actions/projects/${this.productionId}/shots/${taskId}/run-ue-assembly`
           if (path !== '') {
             const res = await fetch(path, {
               method: 'post',
