@@ -45,9 +45,9 @@
           </span>
           <span
             class="clickable-text"
-            :class="{ errorText: workingFile.path === '' }"
+            :class="{ errorText: !workingFile.is_exists }"
             @click="
-              workingFile.path === '' ? null : onOpenFolder(workingFile.path)
+              workingFile.is_exists ? onOpenFolder(workingFile.path) : null
             "
           >
             {{ workingFile.path || `未知路径` }}</span

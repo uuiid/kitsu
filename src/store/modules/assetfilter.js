@@ -406,18 +406,20 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       ]
 
       AssetsList.forEach(asset => {
-        let grade = asset.deng_ji.replace(/\s/g, '').toUpperCase()
-        grade = grade.replace('＋', '+')
-        if (temp.has(grade)) {
-          temp.set(grade, {
-            name: grade,
-            num: temp.get(grade).num + 1
-          })
-        } else {
-          temp.set(grade, {
-            name: grade,
-            num: 1
-          })
+        if (asset.deng_ji) {
+          let grade = asset.deng_ji.replace(/\s/g, '').toUpperCase()
+          grade = grade.replace('＋', '+')
+          if (temp.has(grade)) {
+            temp.set(grade, {
+              name: grade,
+              num: temp.get(grade).num + 1
+            })
+          } else {
+            temp.set(grade, {
+              name: grade,
+              num: 1
+            })
+          }
         }
       })
       state.value.gradeList = [...temp.values()].sort((a, b) => {

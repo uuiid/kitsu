@@ -159,8 +159,8 @@ function exportPath() {
               <div
                 class="clickable-text"
                 :class="{
-                  errorText: work_file.path === '',
-                  successText: work_file.path !== ''
+                  errorText: !work_file.is_exists,
+                  successText: work_file.is_exists
                 }"
                 :key="work_file.id"
                 :title="work_file.path"
