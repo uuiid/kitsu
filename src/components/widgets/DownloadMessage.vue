@@ -20,7 +20,6 @@ import {
   CircleCheckFilled,
   CircleCloseFilled
 } from '@element-plus/icons-vue'
-import { doodleWorkStore } from '@/store/modules/doodlework.js'
 
 const props = defineProps({
   modelValue: Boolean,
@@ -39,9 +38,7 @@ const props = defineProps({
   }
 })
 
-const visible = computed(
-  () => doodleWorkStore().state?.isShowDoodleWorkExeDownloadProgress
-)
+const visible = computed(() => props.modelValue)
 
 const typeClass = computed(() => {
   return `download-message--${props.type}`

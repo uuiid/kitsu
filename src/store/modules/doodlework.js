@@ -924,11 +924,13 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     }
   }
   actions.getToolVersions()
-  if (window.api.DoodleExePort() !== 0) {
-    state.value.doodleSocket = io(
-      `http://127.0.0.1:${window.api.DoodleExePort()}/events`
-    )
-    actions.setSocketEvent()
+  if (navigator.userAgent.includes('Electron')) {
+    if (window.api.DoodleExePort() !== 0) {
+      state.value.doodleSocket = io(
+        `http://127.0.0.1:${window.api.DoodleExePort()}/events`
+      )
+      actions.setSocketEvent()
+    }
   }
   return {
     state,
