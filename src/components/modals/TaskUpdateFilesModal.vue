@@ -300,12 +300,6 @@ const onAddData = async files => {
       })
       if (temp_task.length === 0) return
       const task = setDoodleWorlTask(file)
-      if (
-        file_split[1].toLowerCase() === 'abc' ||
-        file_split[1].toLowerCase() === 'mov'
-      )
-        task.type = 'output'
-      else task.type = 'maya'
       task.task_id = temp_task[0].task.id
       task.file = file
       task.entity_type = route.name

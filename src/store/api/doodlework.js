@@ -99,5 +99,11 @@ export default {
       localPath +
       `/api/actions/projects/${task.project_id}/shots/${task.task_id}/export-anim-fbx`
     return client.ppost(path, task)
+  },
+  submitSimAbc(task, localPath = '') {
+    const path =
+      localPath +
+      `/api/actions/projects/${task.project_id}/shots/${task.task_id}/update-sim-abc`
+    return client.ppost(path, task)
   }
 }

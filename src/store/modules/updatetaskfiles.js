@@ -178,70 +178,11 @@ export const updateTaskFilesStore = defineStore(
             )
               await actions.updateFile(task.file.path, task)
             else await actions.submitLocalDoodleWork(task)
-
-            // const ue_path = await doodlework.getUeFilePath(task.id)
-            // const maya_path = await doodlework.getMayaFilePath(task.id)
-            // console.log(ue_path, maya_path)
-            //await actions.copyFoldersWithProgress([])
           } else if (task.updateType === 1) {
-            // target_path = await doodlework.getMayaFilePath(
-            //   state.value.selectedTask.task.id
-            // )
             await actions.updateFile(task.file.path, task)
           } else if (task.updateType === 4) {
-            if (
-              state.value.selectedTask.task.task_type_id ===
-              'eb7c92c8-232c-4894-8efa-c62ced44ff05'
-            )
-              await actions.submitLocalDoodleWork(task)
-            else await actions.updateFile(task.file.path, task, task.type)
+            await actions.submitLocalDoodleWork(task)
           }
-          // target_path = target_path.file_path
-          // target_path = path.join(
-          //   productions.state.currentProduction.path,
-          //   target_path
-          // )
-          // //const stats = path.extname(target_path)
-          // if (path.extname(task.file.path) !== '') {
-          //   actions
-          //     .copyFileWithProgress(
-          //       task.file.path,
-          //       path.join(target_path, path.basename(task.file.path)),
-          //       (percent, file, relPath, srcDir, totalSize) => {
-          //         task.progress = task.file.path.endsWith('.uproject')
-          //           ? 0
-          //           : percent
-          //         task.totalSize = totalSize
-          //       }
-          //     )
-          //     .then(() => {
-          //       if (!task.file.path.endsWith('.uproject')) {
-          //         actions.handleCopyCompletion(task)
-          //       }
-          //     })
-          //}
-          // const srcDirs = []
-          // if (
-          //   path.extname(task.file.path) !== '' &&
-          //   task.file.path.endsWith('.uproject')
-          // ) {
-          //   srcDirs.push(path.join(path.dirname(task.file.path), 'Content'))
-          //   srcDirs.push(path.join(path.dirname(task.file.path), 'Config'))
-          // }
-          // if (srcDirs.length > 0) {
-          //   actions
-          //     .copyFoldersWithProgress(
-          //       srcDirs,
-          //       target_path,
-          //       (percent, file, relPath, srcDir, totalSize) => {
-          //         task.progress = percent / 100
-          //         task.totalSize = totalSize
-          //       }
-          //     )
-          //     .then(() => {
-          //       actions.handleCopyCompletion(task)
-          //     })
-          // }
           task.status = 'updated'
           task.end_time = new Date().toISOString()
           state.value.loadingNum -= 1
@@ -509,6 +450,15 @@ export const updateTaskFilesStore = defineStore(
           ) {
             data['project_id'] = productions.state.currentProduction.id
             result = await doodlework.submitExportAnimation(
+              data,
+              state.value.localHttpPath
+            )
+          } else if (
+            state.value.selectedTask.task.task_type_id ===
+            '9d71918b-cbf0-46bc-9c39-27177c9a950a'
+          ) {
+            data['project_id'] = productions.state.currentProduction.id
+            result = await doodlework.submitSimAbc(
               data,
               state.value.localHttpPath
             )
