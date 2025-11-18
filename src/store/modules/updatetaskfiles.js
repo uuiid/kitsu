@@ -189,7 +189,12 @@ export const updateTaskFilesStore = defineStore(
             // )
             await actions.updateFile(task.file.path, task)
           } else if (task.updateType === 4) {
-            await actions.updateFile(task.file.path, task, task.type)
+            if (
+              state.value.selectedTask.task.task_type_id ===
+              'eb7c92c8-232c-4894-8efa-c62ced44ff05'
+            )
+              await actions.submitLocalDoodleWork(task)
+            else await actions.updateFile(task.file.path, task, task.type)
           }
           // target_path = target_path.file_path
           // target_path = path.join(
@@ -443,6 +448,7 @@ export const updateTaskFilesStore = defineStore(
       },
       submitLocalDoodleWork: async task => {
         //const task_id = task.id
+        task.type = 'check_maya'
         const item = Object.assign({}, task)
         const port = window.api.DoodleExePort()
         //const path = require('path')
@@ -494,6 +500,15 @@ export const updateTaskFilesStore = defineStore(
               'da050d42-4f45-40c4-9638-cc637753d3b5'
           ) {
             result = await doodlework.submitGenerateUeskTask(
+              data,
+              state.value.localHttpPath
+            )
+          } else if (
+            state.value.selectedTask.task.task_type_id ===
+            'eb7c92c8-232c-4894-8efa-c62ced44ff05'
+          ) {
+            data['project_id'] = productions.state.currentProduction.id
+            result = await doodlework.submitExportAnimation(
               data,
               state.value.localHttpPath
             )

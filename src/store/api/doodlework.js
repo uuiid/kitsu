@@ -93,5 +93,11 @@ export default {
     const path =
       localPath + `/api/doodle/task/${task.task_id}/generate_uesk_file`
     return client.ppost(path, task)
+  },
+  submitExportAnimation(task, localPath = '') {
+    const path =
+      localPath +
+      `/api/actions/projects/${task.project_id}/shots/${task.task_id}/export-anim-fbx`
+    return client.ppost(path, task)
   }
 }

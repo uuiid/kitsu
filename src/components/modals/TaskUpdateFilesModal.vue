@@ -55,17 +55,15 @@ onMounted(() => {
     doodleWorkStore().state.doodleSocket.on(
       'doodle:task_info:update',
       async data => {
-        if (data.type === 'check_maya') {
-          const task = updateTaskFiles.state.allFiles.get(data.id)
-          if (data) {
-            await doodleWorkStore().actions.formatTask(task, data)
-            if (data.status === 'completed') {
-              task.progress = 1
-            }
-          } else {
-            task.status = 'failed'
-            task.progress = 0
+        const task = updateTaskFiles.state.allFiles.get(data.id)
+        if (data) {
+          await doodleWorkStore().actions.formatTask(task, data)
+          if (data.status === 'completed') {
+            task.progress = 1
           }
+        } else {
+          task.status = 'failed'
+          task.progress = 0
         }
       }
     )
