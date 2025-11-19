@@ -199,18 +199,12 @@
         >
           <kitsu-icon name="check" :title="$t('doodle.check_shot_light')" />
         </div>
-        <div class="menu-item" :title="$t('doodle.run_auto_light')">
-          <el-popover style="padding: 0" :width="50" trigger="hover">
-            <template #reference>
-              <flashlight />
-            </template>
-            <div class="menu-item path-menu-item" @click="autoLight">
-              运行自动灯光
-            </div>
-            <div class="menu-item path-menu-item" @click="showAutoLightList">
-              打开列表
-            </div>
-          </el-popover>
+        <div
+          class="menu-item"
+          :title="$t('doodle.run_auto_light')"
+          v-if="isCurrentViewShot"
+        >
+          <flashlight @click="autoLight" />
         </div>
         <!--div
           class="menu-item"
