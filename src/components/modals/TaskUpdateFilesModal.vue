@@ -45,7 +45,9 @@ const displayAllFiles = computed(() => {
 onMounted(() => {
   if (
     updateTaskFiles.state.selectedTask.task.task_type_id ===
-    '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
+      '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34' ||
+    updateTaskFiles.state.selectedTask.task.task_type_id ===
+      'eb7c92c8-232c-4894-8efa-c62ced44ff05'
   ) {
     updateTaskFiles.doodleWorkCheckFiles.isShowFiled = true
   } else {
@@ -471,6 +473,7 @@ function setDoodleWorlTask(file) {
   task.run_time = new Date().toISOString()
   task.submit_time = new Date().toISOString()
   task.updateType = updateTaskFiles.state.currentUpdateType
+  task.task_type_id = updateTaskFiles.state.selectedTask.task.task_type_id
   return task
 }
 
@@ -522,13 +525,18 @@ const onSubmit = async () => {
             class="interval"
             v-if="
               updateTaskFiles.doodleWorkCheckFiles.isShowFiled &&
-              updateTaskFiles.state.currentUpdateType === 0
+              (updateTaskFiles.state.currentUpdateType === 0 ||
+                updateTaskFiles.state.currentUpdateType === 4)
             "
           >
             <div
               class="project-list"
               :key="key"
               v-for="(taskData, key) in disPlayTaskDataFiled"
+              v-show="
+                taskData[1].task_type_id ===
+                updateTaskFiles.state.selectedTask.task.task_type_id
+              "
             >
               <div
                 class="project-list-item"

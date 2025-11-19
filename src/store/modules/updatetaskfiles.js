@@ -16,25 +16,43 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
       id: 'kframe_check',
       name: '是否检查K帧',
       checked: true,
-      type: Boolean
+      type: Boolean,
+      task_type_id: '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
     })
     this.task_data_filed.set('history_check', {
       id: 'history_check',
       name: '是否检查历史',
       checked: true,
-      type: Boolean
+      type: Boolean,
+      task_type_id: '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
     })
     this.task_data_filed.set('multi_uv_inspection', {
       id: 'multi_uv_inspection',
       name: '是否检查名称长度',
       checked: true,
-      type: Boolean
+      type: Boolean,
+      task_type_id: '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
     })
     this.task_data_filed.set('name_length_check', {
       id: 'name_length_check',
       name: '检查是否有多uv的情况(默认勾选)',
       checked: true,
-      type: Boolean
+      type: Boolean,
+      task_type_id: '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
+    })
+    this.task_data_filed.set('only_upload', {
+      id: 'only_upload',
+      name: '仅上传',
+      checked: true,
+      type: Boolean,
+      task_type_id: 'eb7c92c8-232c-4894-8efa-c62ced44ff05'
+    })
+    this.task_data_filed.set('create_play_blast', {
+      id: 'create_play_blast',
+      name: '创建拍屏',
+      checked: true,
+      type: Boolean,
+      task_type_id: 'eb7c92c8-232c-4894-8efa-c62ced44ff05'
     })
     this.tableHeaderFiled['update_progress'] = {
       name: '上传进度',
@@ -49,7 +67,7 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
   formatDataState(data) {
     if (this.isShowFiled) {
       for (const [key, value] of this.task_data_filed) {
-        data[key] = value.checked
+        if (value.task_type_id === data.task_type_id) data[key] = value.checked
       }
     }
   }
@@ -416,6 +434,7 @@ export const updateTaskFilesStore = defineStore(
           //
           //   }
           // }
+          console.log(item)
           if (
             state.value.selectedTask.task.task_type_id !==
             '32504e3e-381c-4f36-bdeb-f73328f96f9c'

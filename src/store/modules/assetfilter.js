@@ -68,6 +68,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
   const getters = {}
   const actions = {
     filteringAsset: (asset, temp, keys) => {
+      if (asset.canceled) return true
       let value = false
       if (asset !== {}) {
         for (let i = 0; i < state.value.assetFilters.size; i++) {
@@ -381,7 +382,6 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       }
     },
     setGradeList(AssetsList) {
-      console.log(AssetsList)
       const temp = new Map()
       const GRADE_ORDER = [
         'S+',
@@ -404,8 +404,8 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
         'F-',
         ''
       ]
-
-      AssetsList.forEach(asset => {
+      for (const asset of AssetsList) {
+        if (asset.canceled) continue
         if (asset.deng_ji) {
           let grade = asset.deng_ji.replace(/\s/g, '').toUpperCase()
           grade = grade.replace('＋', '+')
@@ -421,7 +421,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
             })
           }
         }
-      })
+      }
       state.value.gradeList = [...temp.values()].sort((a, b) => {
         const indexA = GRADE_ORDER.indexOf(a.name)
         console.log(indexA)
@@ -486,6 +486,7 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       return result
     },
     filteringShot: (shot, temp, keys) => {
+      if (shot.canceled) return true
       let value = false
       if (shot !== {}) {
         for (let i = 0; i < state.value.shotFilters.size; i++) {
