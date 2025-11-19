@@ -134,6 +134,8 @@ function exportPath() {
         <thead class="datatable-head" v-columns-resizable>
           <tr>
             <th class="name datatable-row-header">名称</th>
+            <th class="name datatable-row-header">拼音名称</th>
+            <th class="name datatable-row-header">编号</th>
             <th class="name datatable-row-header">路径</th>
           </tr>
         </thead>
@@ -155,6 +157,8 @@ function exportPath() {
             v-for="asset in group"
           >
             <td>{{ asset.name }}</td>
+            <td>{{ asset.pin_yin_ming_cheng }}</td>
+            <td>{{ asset.bian_hao }}</td>
             <td>
               <div
                 class="clickable-text"
