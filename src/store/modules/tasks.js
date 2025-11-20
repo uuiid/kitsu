@@ -666,11 +666,12 @@ const actions = {
       return comment
     })
   },
-  getScanWorkFile({ commit }, taskId) {
-    return tasksApi.getScanWorkFile(taskId).then(comment => {
+  getScanWorkFile({ commit }, task) {
+    return tasksApi.getScanWorkFile(task.entity_id).then(comment => {
       const data = {
         working_files: [...comment]
       }
+      const taskId = task.id
       commit(EDIT_TASK_DATES, {
         taskId,
         data

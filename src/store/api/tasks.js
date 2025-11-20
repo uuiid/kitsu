@@ -192,8 +192,8 @@ export default {
     )
   },
 
-  getScanWorkFile(taskId) {
-    const path = `/api/actions/tasks/${taskId}/working-file`
+  getScanWorkFile(entityId) {
+    const path = `/api/actions/entity/${entityId}/working-file`
     return client.pget(path)
   },
 

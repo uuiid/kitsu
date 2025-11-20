@@ -347,7 +347,7 @@ export default {
       if (this.clickable) {
         this.select(event)
       }
-      await this.getScanWorkFile(this.task.id)
+      await this.getScanWorkFile(this.task)
     },
     getDate(date) {
       return date ? moment(date, 'YYYY-MM-DD').toDate() : null
