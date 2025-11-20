@@ -581,7 +581,8 @@ export default {
       'nbSelectedValidations',
       'taskEntityPreviews',
       'taskTypeMap',
-      'user'
+      'user',
+      'assetMap'
     ]),
 
     sideColumnParent() {
@@ -1322,24 +1323,29 @@ export default {
       console.log(this.selectedTasks)
     },
     updateTaskFile() {
+      updateTaskFilesStore().state.selection = []
       this.isLoadingWorkingFiles = true
-      console.log(this.isLoadingWorkingFiles)
       updateTaskFilesStore()
         .actions.getLocalSetting()
         .then(async res => {
           if (res.UE_path !== '' && res.maya_path !== '') {
-            if (updateTaskFilesStore().state.selectedTask !== null) {
+            if (this.selectedTasks.size > 0) {
+              ;[...this.selectedTasks.values()].forEach(task => {
+                updateTaskFilesStore().state.selection.push({
+                  task,
+                  column: task.column,
+                  x: task.x,
+                  y: task.y,
+                  entity:
+                    this.$route.name === 'assets'
+                      ? this.assetMap.get(task.entity_id)
+                      : this.shotMap.get(task.entity_id)
+                })
+              })
               if (
-                !updateTaskFilesStore().state.selection.some(
-                  t =>
-                    t.task.id ===
-                    updateTaskFilesStore().state.selectedTask.task.id
-                )
-              )
-                updateTaskFilesStore().state.selection.push(
-                  updateTaskFilesStore().state.selectedTask
-                )
-              if (updateTaskFilesStore().state.selection.length > 1) {
+                updateTaskFilesStore().state.selection.length > 1 &&
+                this.$route.name === 'assets'
+              ) {
                 const tasksMap = new Map()
                 const productionId = productions.state.currentProduction.id
                 updateTaskFilesStore().state.selection.forEach(item => {

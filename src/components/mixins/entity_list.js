@@ -247,7 +247,6 @@ export const entityListMixin = {
         }
       } else if (!validationInfo.isCtrlKey) {
         this.$store.commit('CLEAR_SELECTED_TASKS')
-        updateTaskFilesStore().state.selection = selection
         this.updateTaskInQuery()
       }
       if (selection.length === 0) {
@@ -255,8 +254,6 @@ export const entityListMixin = {
         this.updateTaskInQuery()
       } else {
         this.$store.commit('ADD_SELECTED_TASKS', selection)
-        updateTaskFilesStore().state.selection = selection
-        console.log(num, updateTaskFilesStore().state.selection)
         this.updateTaskInQuery()
       }
 

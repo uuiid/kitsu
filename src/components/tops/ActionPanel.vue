@@ -1553,6 +1553,7 @@ export default {
       this.modals.playlist = false
     },
     async checkShotLight() {
+      const contents = []
       for (const taskId of this.selectedTaskIds) {
         const res = await fetch(
           `/api/actions/projects/${this.productionId}/shots/${taskId}/run-ue-assembly`,
@@ -1564,7 +1565,17 @@ export default {
         const data = await res.json()
         if (res.status === 200 || res.status === 201) {
           ElMessage.success('可以进行自动灯光')
+          contents.push({
+            taskId,
+            message: '可以进行自动灯光',
+            success: true
+          })
         } else if (data.code === 400 || data.code === 500) {
+          contents.push({
+            taskId,
+            message: data.error,
+            success: false
+          })
           ElMessage.error(data.error)
         }
       }
