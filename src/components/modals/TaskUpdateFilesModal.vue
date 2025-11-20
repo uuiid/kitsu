@@ -107,7 +107,6 @@ onUnmounted(() => {
 
 onMounted(() => {
   updateTaskFiles.state.currentUpdateType = displayUpdateTypes.value[0].id
-  console.log(updateTaskFiles.state.selectedTask)
 })
 const onViewLog = work_task => {
   updateTaskFiles.doodleWork.state.viewLogWorkTask = work_task
@@ -284,23 +283,49 @@ async function pathRule() {
 const onAddData = async files => {
   const messages = []
   const files_ = []
-  if (props.updateEntityType === 'shot') {
-    if (
-      !updateTaskFiles.state.selection.some(
-        t => t.task.id === updateTaskFiles.state.selectedTask.task.id
-      )
-    )
-      updateTaskFiles.state.selection.push(updateTaskFiles.state.selectedTask)
+  if (
+    props.updateEntityType === 'shot' ||
+    [
+      '32504e3e-381c-4f36-bdeb-f73328f96f9c',
+      'da050d42-4f45-40c4-9638-cc637753d3b5'
+    ].includes(updateTaskFiles.state.selectedTask.task.task_type_id)
+  ) {
     files = Array.from(files).sort((a, b) => a.name.localeCompare(b.name))
-    for (const file of files) {
-      const file_split = file.name.split('.')
-      const temp_task = updateTaskFiles.state.selection.filter(task => {
-        return (
-          `${productions.state.currentProduction.code}_${task.entity.sequence_name}_${task.entity.name}` ===
-          file_split[0]
-        )
+    if (props.updateEntityType !== 'shot') {
+      const entity_ids = []
+      updateTaskFiles.state.selection.forEach(item => {
+        entity_ids.push(item.entity.id)
       })
-      if (temp_task.length === 0) return
+    }
+    for (const file of files) {
+      let temp_task = []
+      if (props.updateEntityType === 'shot') {
+        const file_split = file.name.split('.')
+        temp_task = updateTaskFiles.state.selection.filter(task => {
+          return (
+            `${productions.state.currentProduction.code}_${task.entity.sequence_name}_${task.entity.name}` ===
+            file_split[0]
+          )
+        })
+      } else {
+        temp_task = updateTaskFiles.state.selection.filter(selection => {
+          return (
+            selection.task.working_files.filter(
+              working_file => working_file.name === file.name
+            ).length > 0
+          )
+        })
+      }
+      if (temp_task.length === 0) {
+        ElNotification({
+          title: '添加失败',
+          message: '请检查文件名称：' + file.name,
+          type: 'error',
+          duration: 5000,
+          offset: 150
+        })
+        continue
+      }
       const task = setDoodleWorlTask(file)
       task.task_id = temp_task[0].task.id
       task.file = file

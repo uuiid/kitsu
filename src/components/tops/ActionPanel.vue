@@ -180,7 +180,14 @@
           @click="$emit('folder-up')"
           v-if="isElectron && isModelGroup"
         >
-          <folder-up :title="$t('doodle.folder_up')" />
+          <folder-up
+            :title="$t('doodle.folder_up')"
+            v-if="!isLoadingWorkingFiles"
+          />
+          <loader
+            style="animation: spinAround 2000ms infinite linear"
+            v-else
+          ></loader>
         </div>
         <div
           class="menu-item"
@@ -879,7 +886,8 @@ import {
   XIcon,
   FolderOpen,
   FolderUp,
-  Flashlight
+  Flashlight,
+  Loader
 } from 'lucide-vue-next'
 import { mapGetters, mapActions } from 'vuex'
 
@@ -932,6 +940,10 @@ export default {
     selectedEntities: {
       type: Array,
       default: () => []
+    },
+    isLoadingWorkingFiles: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -944,6 +956,7 @@ export default {
     ComboboxStyled,
     DeleteEntities,
     Flashlight,
+    Loader,
     KitsuIcon,
     LinkIcon,
     PeopleField,

@@ -424,7 +424,6 @@ export const assetFilterStore = defineStore('assetFilterStore', () => {
       }
       state.value.gradeList = [...temp.values()].sort((a, b) => {
         const indexA = GRADE_ORDER.indexOf(a.name)
-        console.log(indexA)
         const indexB = GRADE_ORDER.indexOf(b.name)
         return indexA - indexB
       })

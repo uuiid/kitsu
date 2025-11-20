@@ -197,18 +197,11 @@ export default {
     return client.pget(path)
   },
 
-  scanWorkFile(taskId) {
-    const path = `/api/actions/tasks/${taskId}/working-file`
-    return client.ppost(path)
+  scanWorkFiles(projectId, entityIds) {
+    const path = `/api/actions/projects/${projectId}/entity/working-file-many`
+    return client.ppost(path, entityIds)
   },
-  scanWorkFiles(projectId, taskIds) {
-    const path = `/api/actions/projects/${projectId}/tasks/working-file-many`
-    return client.ppost(path, taskIds)
-  },
-  deleteWorkFile(taskId, workFileId) {
-    const path = `/api/actions/tasks/${taskId}/working-file`
-    return client.pdel(path, { id: workFileId })
-  },
+
   addAttachmentToComment(comment, files) {
     const attachments = new FormData()
     const taskId = comment.object_id

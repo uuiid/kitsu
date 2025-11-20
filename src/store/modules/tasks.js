@@ -679,45 +679,21 @@ const actions = {
       return comment
     })
   },
-  scanWorkFile({ commit }, taskId) {
-    return tasksApi.scanWorkFile(taskId).then(comment => {
-      if (comment.length === 0) return
-      const data = {
-        working_files: [...comment]
-      }
-      commit(EDIT_TASK_DATES, {
-        taskId,
-        data
-      })
-      return comment
-    })
-  },
-  scanWorkFiles({ commit }, { productionId, taskIds }) {
-    return tasksApi.scanWorkFiles(productionId, taskIds).then(comments => {
-      taskIds.forEach(task_id => {
-        commit(EDIT_TASK_DATES, {
-          taskId: task_id,
-          data: comments.get(task_id)
+
+  scanWorkFiles({ commit }, { productionId, tasksMap }) {
+    return tasksApi
+      .scanWorkFiles(productionId, [...tasksMap.values()])
+      .then(comments => {
+        tasksMap.forEach((task_id, entity_id) => {
+          commit(EDIT_TASK_DATES, {
+            taskId: task_id,
+            data: comments[entity_id]
+          })
         })
+        return comments
       })
-      return comments
-    })
   },
-  deleteWorkFile({ commit }, { taskId, workFileId }) {
-    return tasksApi.deleteWorkFile(taskId, workFileId).then(() => {
-      const task = Object.assign(state.taskMap.get(taskId))
-      if (task) {
-        task.working_files = task.working_files.filter(
-          workFile => workFile.id !== workFileId
-        )
-      }
-      commit(EDIT_TASK_DATES, {
-        taskId: taskId,
-        data: task
-      })
-      return workFileId
-    })
-  },
+
   commentTaskWithPreview(
     { commit, state },
     {

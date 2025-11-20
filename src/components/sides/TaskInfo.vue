@@ -21,12 +21,12 @@
         :team="currentTeam"
         :selected-entities="selectedEntities"
         :working-files="task?.working_files"
+        :is-loading-working-files="isLoadingWorkingFiles"
         @export-task="onExportClick"
         @set-frame-thumbnail="onSetCurrentFrameAsThumbnail"
         @open-folder="onOpenFolder"
         @execute-doodle-work="executeDoodleWork"
         @folder-up="updateTaskFile"
-        @scan-project="onScanProject"
       />
       <div class="pa1" v-if="task?.working_files?.length > 0">
         <div
@@ -390,6 +390,7 @@ import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 import { ElMessage } from 'element-plus'
 import errorText from '@/components/widgets/ErrorText.vue'
 import doodlework from '@/store/api/doodlework.js'
+import productions from '@/store/modules/productions.js'
 
 const DEFAULT_PANEL_WIDTH = 400
 
@@ -530,7 +531,8 @@ export default {
         editComment: false,
         deleteComment: false,
         deleteExtraPreview: false
-      }
+      },
+      isLoadingWorkingFiles: false
     }
   },
 
@@ -848,9 +850,7 @@ export default {
       'subscribeToTask',
       'unsubscribeFromTask',
       'updatePreviewAnnotation',
-      'scanWorkFile',
-      'scanWorkFiles',
-      'deleteWorkFile'
+      'scanWorkFiles'
     ]),
 
     loadTaskData() {
@@ -1316,32 +1316,40 @@ export default {
 
       //window.api.openPath('::{F874310E-B6B7-47DC-BC84-B9E6B38F5903}')
     },
-    onScanProject() {
-      const taskIds = [...this.selectedTasks.keys()]
-      const productionId = this.currentProduction.id
-      if (taskIds.length > 1) {
-        this.scanWorkFiles({ productionId, taskIds }).then(() => {
-          ElMessage.success('扫描成功')
-        })
-        return
-      }
-      const taskId = this.task.id
-      this.scanWorkFile(taskId).then(() => {
-        ElMessage.success('扫描成功')
-      })
-    },
+
     executeDoodleWork() {
       console.log(this.taskTypeMap)
       console.log(this.selectedTasks)
     },
     updateTaskFile() {
+      this.isLoadingWorkingFiles = true
+      console.log(this.isLoadingWorkingFiles)
       updateTaskFilesStore()
         .actions.getLocalSetting()
-        .then(res => {
+        .then(async res => {
           if (res.UE_path !== '' && res.maya_path !== '') {
             if (updateTaskFilesStore().state.selectedTask !== null)
+              if (
+                !updateTaskFilesStore().state.selection.some(
+                  t =>
+                    t.task.id ===
+                    updateTaskFilesStore().state.selectedTask.task.id
+                )
+              )
+                updateTaskFilesStore().state.selection.push(
+                  updateTaskFilesStore().state.selectedTask
+                )
+            if (updateTaskFilesStore().state.selection.length > 1) {
+              const tasksMap = new Map()
+              const productionId = productions.state.currentProduction.id
+              updateTaskFilesStore().state.selection.forEach(item => {
+                tasksMap.set(item.task.id, item.task.entity_id)
+              })
+
+              await this.scanWorkFiles({ productionId, tasksMap })
+              this.isLoadingWorkingFiles = false
               updateTaskFilesStore().state.isShowUpdateModal = true
-            else ElMessage.error('请先选择一个任务')
+            } else ElMessage.error('请先选择一个任务')
           } else ElMessage.error('请先到AI工作台设置Maya和Unreal的路径')
         })
         .catch(err => {
@@ -1458,14 +1466,6 @@ export default {
       this.removeSelectedTask({ task }) // remove
       this.$emit('task-removed', task)
     }
-    // deleteCurrentWorkingFile() {
-    //   if (this.currentWorkingFileId) {
-    //     this.deleteWorkFile({
-    //       taskId: this.task.id,
-    //       workFileId: this.currentWorkingFileId
-    //     })
-    //   }
-    // }
   },
 
   watch: {
