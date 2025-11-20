@@ -1328,7 +1328,7 @@ export default {
         .actions.getLocalSetting()
         .then(async res => {
           if (res.UE_path !== '' && res.maya_path !== '') {
-            if (updateTaskFilesStore().state.selectedTask !== null)
+            if (updateTaskFilesStore().state.selectedTask !== null) {
               if (
                 !updateTaskFilesStore().state.selection.some(
                   t =>
@@ -1339,20 +1339,25 @@ export default {
                 updateTaskFilesStore().state.selection.push(
                   updateTaskFilesStore().state.selectedTask
                 )
-            if (updateTaskFilesStore().state.selection.length > 1) {
-              const tasksMap = new Map()
-              const productionId = productions.state.currentProduction.id
-              updateTaskFilesStore().state.selection.forEach(item => {
-                tasksMap.set(item.task.id, item.task.entity_id)
-              })
+              if (updateTaskFilesStore().state.selection.length > 1) {
+                const tasksMap = new Map()
+                const productionId = productions.state.currentProduction.id
+                updateTaskFilesStore().state.selection.forEach(item => {
+                  tasksMap.set(item.task.id, item.task.entity_id)
+                })
 
-              await this.scanWorkFiles({ productionId, tasksMap })
+                await this.scanWorkFiles({ productionId, tasksMap })
+              }
               this.isLoadingWorkingFiles = false
               updateTaskFilesStore().state.isShowUpdateModal = true
-            } else ElMessage.error('请先选择一个任务')
+            } else {
+              this.isLoadingWorkingFiles = false
+              ElMessage.error('请先选择一个任务')
+            }
           } else ElMessage.error('请先到AI工作台设置Maya和Unreal的路径')
         })
         .catch(err => {
+          this.isLoadingWorkingFiles = false
           console.error(err)
           ElMessage.error('后台未启动，请稍后重试')
         })

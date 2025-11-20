@@ -85,15 +85,18 @@ function exportPath() {
       let path = ''
       if (asset.asset_type_name === '场景') {
         work_files = asset.work_files.filter(
-          work_file => work_file.software_type === 'alembic'
+          work_file =>
+            work_file.software_type === 'alembic' && work_file.is_exists
         )
         if (work_files.length === 0)
           work_files = asset.work_files.filter(
-            work_file => work_file.software_type === 'maya_rig'
+            work_file =>
+              work_file.software_type === 'maya_rig' && work_file.is_exists
           )
       } else {
         work_files = asset.work_files.filter(
-          work_file => work_file.software_type === 'maya_rig'
+          work_file =>
+            work_file.software_type === 'maya_rig' && work_file.is_exists
         )
       }
       if (work_files.length > 0) path = work_files[0].path
