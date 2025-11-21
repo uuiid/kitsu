@@ -303,7 +303,7 @@ const onAddData = async files => {
         const file_split = file.name.split('.')
         temp_task = updateTaskFiles.state.selection.filter(task => {
           return (
-            `${productions.state.currentProduction.code}_${task.entity.sequence_name}_${task.entity.name}` ===
+            `${productions.state.currentProduction.code}_${task.task.entity_name.replace(' / ', '_')}` ===
             file_split[0]
           )
         })
