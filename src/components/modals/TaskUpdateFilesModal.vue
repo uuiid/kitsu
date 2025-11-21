@@ -366,8 +366,7 @@ const onAddData = async files => {
       path: file.path,
       target_path: file_path.target_path
     }
-    if (updateTaskFiles.state.currentUpdateType === 0)
-      file_data['task_id'] = updateTaskFiles.state.selectedTask.task.id
+    file_data['task_id'] = updateTaskFiles.state.selectedTask.task.id
     if (
       updateTaskFiles.state.currentUpdateType === 0 &&
       updateTaskFiles.state.selectedTask.task.task_type_id ===
@@ -468,6 +467,7 @@ const onAddData = async files => {
       continue
     }
     const task = setDoodleWorlTask(file)
+    task.task_id = updateTaskFiles.state.selectedTask.task.id
     task.entity_type = route.name
     updateTaskFiles.state.allFiles.set(task.id, task)
     notNeedInspections.set(task.id, task)

@@ -260,7 +260,8 @@ export const updateTaskFilesStore = defineStore(
               : path.basename(file_path),
           data: data
         }
-        task.task_id = state.value.selectedTask.task.id
+        // if (task.task_id === undefined || task.task_id === '')
+        //   task.task_id = state.value.selectedTask.task.id
 
         if (type === 'maya' || type === 'image' || type === 'output')
           return await doodlework.updateFile(
