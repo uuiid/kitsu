@@ -1562,22 +1562,29 @@ export default {
             body: ''
           }
         )
+        const task = this.taskMap.get(taskId)
         const data = await res.json()
         if (res.status === 200 || res.status === 201) {
-          ElMessage.success('可以进行自动灯光')
+          if (this.selectedTaskIds.length === 1)
+            ElMessage.success('可以进行自动灯光')
           contents.push({
-            taskId,
+            task,
             message: '可以进行自动灯光',
             success: true
           })
         } else if (data.code === 400 || data.code === 500) {
           contents.push({
-            taskId,
+            task,
             message: data.error,
             success: false
           })
-          ElMessage.error(data.error)
+          if (this.selectedTaskIds.length === 1) ElMessage.error(data.error)
         }
+      }
+      if (this.selectedTaskIds.length > 1) {
+        doodleWorkStore().state.isShowCheckAutoLightList = true
+        doodleWorkStore().state.checkAutoLightList = contents
+        console.log(doodleWorkStore().state.checkAutoLightList)
       }
     },
     async autoLight() {

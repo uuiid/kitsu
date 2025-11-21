@@ -315,6 +315,10 @@
   />
   <auto-light-list-modal v-if="doodleWorkStore().state.isShowAutoLightList" />
   <doodle-work-log-modal v-if="doodleWorkStore().state.isActiveLogModal" />
+  <check-auto-light-usability-modal
+    :auto-light-list="doodleWorkStore().state.checkAutoLightList"
+    v-if="doodleWorkStore().state.isShowCheckAutoLightList"
+  />
 </template>
 
 <script>
@@ -361,6 +365,7 @@ import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 import AutoLightListModal from '@/components/modals/AutoLightListModal.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
+import CheckAutoLightUsabilityModal from '@/components/modals/CheckAutoLigthUsability.vue'
 
 export default {
   name: 'shots',
@@ -372,6 +377,7 @@ export default {
     AutoLightListModal,
     TaskUpdateFilesModal,
     TreeFilterView,
+    CheckAutoLightUsabilityModal,
     AddMetadataModal,
     AddThumbnailsModal,
     BigThumbnailsButton,

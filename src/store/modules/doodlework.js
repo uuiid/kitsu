@@ -465,7 +465,9 @@ function initState() {
     doodleWorkExeDownloadProgressMessage: '',
     doodleWorkExeDownloadProgress: 0,
     isShowDoodleWorkExeDownloadProgress: false,
-    isShowAutoLightList: false
+    isShowAutoLightList: false,
+    isShowCheckAutoLightList: false,
+    checkAutoLightList: []
   }
 }
 
