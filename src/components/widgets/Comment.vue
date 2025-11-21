@@ -33,7 +33,7 @@
           </strong>
           <div class="filler"></div>
           <span class="flexrow-item date" :title="fullDate">
-            {{ shortDate }}
+            {{ fullDate }}
           </span>
           <div
             class="flexrow-item menu-wrapper"
