@@ -676,7 +676,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           if (state.value.doodleSocket) {
             state.value.doodleSocket.disconnect()
           }
-          state.value.doodleSocket = io(`http://127.0.0.1:${port}/events`)
+          state.value.doodleSocket = io(`http://127.0.0.1:${port}/events`, {
+            transports: ['websocket']
+          })
           await actions.setSocketEvent()
           state.value.isPullProcessing = false
           console.log(state.value.isPullProcessing)
