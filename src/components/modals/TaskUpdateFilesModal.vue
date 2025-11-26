@@ -316,7 +316,12 @@ const onAddData = async files => {
           )
         })
       }
-      if (temp_task.length === 0) {
+      console.log(updateTaskFiles.state.currentUpdateType)
+      if (
+        temp_task.length === 0 &&
+        updateTaskFiles.state.currentUpdateType !== 1 &&
+        updateTaskFiles.state.currentUpdateType !== 3
+      ) {
         ElNotification({
           title: '添加失败',
           message: '请检查文件名称：' + file.name,
@@ -326,6 +331,11 @@ const onAddData = async files => {
         })
         continue
       }
+      if (
+        updateTaskFiles.state.currentUpdateType === 1 ||
+        updateTaskFiles.state.currentUpdateType === 3
+      )
+        temp_task.push(updateTaskFiles.state.selectedTask)
       const task = setDoodleWorlTask(file)
       task.task_id = temp_task[0].task.id
       task.file = file
