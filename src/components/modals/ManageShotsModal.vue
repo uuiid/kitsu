@@ -421,13 +421,10 @@ export default {
             let i
             for (i = 0; i < this.names.shot_number; i++) {
               this.loading.addShot = true
-              const names_shot = stringHelpers.generateNextName(
-                shotName,
-                parseInt(i)
-              )
               if (this.selectedSequenceId) {
                 const shot = {
-                  name: names_shot + this.shotNameSuffix,
+                  name:
+                    'SC' + String(Number(this.names.shot) + i).padStart(3, '0'),
                   sequence_id: this.selectedSequenceId,
                   project_id: this.currentProduction.id
                 }
@@ -435,6 +432,7 @@ export default {
                 this.$emit('add-shot', shot, shot => {
                   this.loading.addShot = false
                   this.selectSequence(this.selectedSequenceId)
+                  console.log(this.names.shot)
                   this.names.shot = String(
                     Number(this.names.shot) + 1
                   ).padStart(3, '0')
