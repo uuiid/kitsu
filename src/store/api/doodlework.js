@@ -45,6 +45,10 @@ export default {
     const path = localPath + `/api/doodle/task`
     return client.ppost(path, task)
   },
+  addWatermark(task, localPath = '') {
+    const path = localPath + `/api/actions/tools/add-watermark`
+    return client.ppost(path, task)
+  },
   resubmitWorkTask(task, localPath = '') {
     const path = localPath + `/api/doodle/task/${task.id}/restart`
     return client.ppost(path, task)
@@ -84,6 +88,14 @@ export default {
   getLocalLogPath(localPath = '') {
     const path = localPath + `/api/doodle/local_setting/tmp_dir/server_task`
     return client.pget(path)
+  },
+  getLocalWatermarkSetting(localPath = '') {
+    const path = localPath + `/api/actions/tools/add-watermark`
+    return client.pget(path)
+  },
+  previewWatermark(data, localPath = '') {
+    const path = localPath + `/api/actions/tools/add-watermark`
+    return client.pput(path, data)
   },
   submitInspectTask(task, localPath = '') {
     const path = localPath + `/api/doodle/task/${task.task_id}/inspect`

@@ -4,6 +4,7 @@ import { useStore } from 'vuex'
 import i18n from '@/lib/i18n.js'
 import TimerCell from '@/components/cells/TimerCell.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
+import ColorPicker from '@/components/widgets/ColorPicker.vue'
 
 const vuexStore = useStore()
 const props = defineProps({
@@ -217,7 +218,7 @@ const handleAction = (action_name, task_id) => {
                   completed:
                     work[key] === 'completed' || work[key] === 'updated'
                 }"
-                v-if="value.type === 'string'"
+                v-if="value.type === 'string' || value.type === 'number'"
               >
                 {{ formatTableBodyData(work, key) }}
               </span>
@@ -235,6 +236,15 @@ const handleAction = (action_name, task_id) => {
                 :width="100"
                 v-else-if="value.type === 'progress'"
               />
+              <color-picker
+                :color="work[key]"
+                v-else-if="value.type === 'color'"
+              />
+              <div v-else-if="value.type === 'list'">
+                <span :key="item" v-for="(item, index) in work[key]">{{
+                  index !== work[key].length - 1 ? item + ',' : item
+                }}</span>
+              </div>
             </td>
             <td class="action">
               <a
@@ -306,6 +316,7 @@ const handleAction = (action_name, task_id) => {
   border-radius: 5px;
   border: 1px solid #00b89c;
   max-height: 80%;
+  width: 100%;
 }
 
 .datatable {
@@ -346,9 +357,14 @@ const handleAction = (action_name, task_id) => {
     border-bottom: 0;
   }
 }
+.color-picker {
+  width: 10px;
+  height: 10px;
+}
 
 .datatable-wrapper {
   border-radius: 5px;
+  width: 100%;
 }
 
 tr {

@@ -5,6 +5,7 @@ import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
 import { ElMessage } from 'element-plus'
 import { SearchIcon } from 'lucide-vue-next'
+import AddWatermarkSetting from '@/components/widgets/AddWatermarkSetting.vue'
 //const _this = getCurrentInstance().appContext.config.globalProperties
 const doodleWork = doodleWorkStore()
 const localLogPath = ref('')
@@ -134,7 +135,8 @@ const reExecute = async () => {
 }
 const onAction = async (action_name, task) => {
   if (action_name === 'remove-task') {
-    doodleWork.actions.deleteDoodleWorkTask(task.id)
+    if (doodleWork.currentDoodleWorkState.name !== 'watermark')
+      doodleWork.actions.deleteDoodleWorkTask(task.id)
     doodleWork.currentDoodleWorkState.workList.delete(task.id)
   } else if (action_name === 'view-log') {
     //onViewLog(task)
@@ -171,87 +173,102 @@ onUnmounted(() => {
 
 <template>
   <div class="datatable-main">
-    <div class="has-right">
-      <div class="search-field-main">
-        <span class="search-icon">
-          <search-icon :size="20" />
-        </span>
-        <input
-          ref="search-field"
-          class="input"
-          :placeholder="$t('doodle_work.log')"
-          v-model.trim="inputValueModel"
-          @keydown.enter="inputValue = inputValueModel"
-          @input="inputValueModel ? undefined : (inputValue = inputValueModel)"
-        />
+    <div class="datatable-content">
+      <div class="has-right">
+        <div class="search-field-main">
+          <span class="search-icon">
+            <search-icon :size="20" />
+          </span>
+          <input
+            ref="search-field"
+            class="input"
+            :placeholder="$t('doodle_work.log')"
+            v-model.trim="inputValueModel"
+            @keydown.enter="inputValue = inputValueModel"
+            @input="
+              inputValueModel ? undefined : (inputValue = inputValueModel)
+            "
+          />
+        </div>
       </div>
-    </div>
-    <table-list
-      :table-header-filed="doodleWork.currentDoodleWorkState.tableHeaderFiled"
-      :body-list="
-        filteredWorkList || doodleWork.currentDoodleWorkState.workList
-      "
-      name="刷新"
-      :is-drop="true"
-      :is-show-submit="false"
-      :is-show-view-log="true"
-      :is-show-restart="true"
-      :is-show-demonstrate="true"
-      @add-data="onAddData"
-      @remove-data="doodleWork.currentDoodleWorkState.workList.delete"
-      @view-log="onViewLog"
-      @handle-action="onAction"
-    ></table-list>
-    <div
-      class="has-right"
-      v-if="doodleWork.currentDoodleWorkState.workList.size > 0"
-    >
-      <span>失败/所有:</span>
-      <span>
-        {{ statusNum }}/{{ doodleWork.currentDoodleWorkState.workList.size }}
-      </span>
-    </div>
-    <div class="has-text-right">
-      <div class="buttons">
-        <a
-          :class="{
-            button: true
-          }"
-          @click="doodleWork.state.isActiveHistoryModal = true"
-        >
-          {{ `历史` }}
-        </a>
-        <div
-          class="buttons"
-          v-show="doodleWork.currentDoodleWorkState.workList.size > 0"
-        >
+      <table-list
+        style="width: 100%"
+        :table-header-filed="doodleWork.currentDoodleWorkState.tableHeaderFiled"
+        :body-list="
+          filteredWorkList || doodleWork.currentDoodleWorkState.workList
+        "
+        name="刷新"
+        :is-drop="true"
+        :is-show-submit="false"
+        :is-show-view-log="
+          doodleWork.currentDoodleWorkState.name !== 'watermark'
+        "
+        :is-show-restart="
+          doodleWork.currentDoodleWorkState.name !== 'watermark'
+        "
+        :is-show-demonstrate="true"
+        @add-data="onAddData"
+        @remove-data="doodleWork.currentDoodleWorkState.workList.delete"
+        @view-log="onViewLog"
+        @handle-action="onAction"
+      ></table-list>
+      <div
+        class="has-right"
+        v-if="doodleWork.currentDoodleWorkState.workList.size > 0"
+      >
+        <span>失败/所有:</span>
+        <span>
+          {{ statusNum }}/{{ doodleWork.currentDoodleWorkState.workList.size }}
+        </span>
+      </div>
+      <div class="has-text-right">
+        <div class="buttons">
           <a
             :class="{
               button: true
             }"
-            @click="reload"
+            @click="doodleWork.state.isActiveHistoryModal = true"
           >
-            {{ `刷新` }}
+            {{ `历史` }}
           </a>
+          <div
+            class="buttons"
+            v-show="doodleWork.currentDoodleWorkState.workList.size > 0"
+          >
+            <a
+              :class="{
+                button: true
+              }"
+              @click="reload"
+            >
+              {{ `刷新` }}
+            </a>
+            <a
+              :class="{
+                button: true
+              }"
+              @click="reExecute"
+            >
+              {{ `重新执行错误任务` }}
+            </a>
+          </div>
           <a
             :class="{
               button: true
             }"
-            @click="reExecute"
+            @click="doodleWork.state.isShowAutoLightSearch = true"
+            v-if="props.name === 'auto_light'"
           >
-            {{ `重新执行错误任务` }}
+            查找
           </a>
         </div>
-        <a
-          :class="{
-            button: true
-          }"
-          @click="doodleWork.state.isShowAutoLightSearch = true"
-          v-if="props.name === 'auto_light'"
-        >
-          查找
-        </a>
       </div>
+    </div>
+    <div
+      class="watermark-settings"
+      v-if="doodleWorkStore().currentDoodleWorkState.name === 'watermark'"
+    >
+      <add-watermark-setting></add-watermark-setting>
     </div>
   </div>
 </template>
@@ -259,19 +276,35 @@ onUnmounted(() => {
 <style scoped lang="scss">
 .datatable-main {
   display: flex;
-  flex-direction: column;
+  flex-direction: row;
   padding: 2em;
+  max-height: 100%;
+  width: 100%;
+  overflow: hidden;
+  margin-bottom: 1rem;
+  gap: 10px;
+}
+.datatable-content {
+  display: flex;
+  flex-direction: column;
   border-radius: 5px;
   max-height: 100%;
-  overflow: auto;
-  margin-bottom: 1rem;
+  width: 100%;
+  overflow: hidden;
 }
-
 .settings {
   display: flex;
   flex-direction: column;
   width: 100%;
   margin-bottom: 0.5em;
+}
+.watermark-settings {
+  margin-top: 40px;
+  display: flex;
+  flex-direction: column;
+  width: 300px;
+  margin-bottom: 0.5em;
+  overflow-x: hidden;
 }
 
 .settings-item {

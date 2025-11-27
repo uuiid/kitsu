@@ -267,17 +267,18 @@ const pagedAssets = ref([
     color: '#ecd875',
     isVisible: false,
     isBaseTemplate: false
+  },
+  {
+    id: 9,
+    name: 'watermark',
+    label: '添加水印',
+    textIcon: 'P',
+    disabled: true,
+    description: '',
+    color: '#75ec97',
+    isVisible: true,
+    isBaseTemplate: true
   }
-  // {
-  //   id: 9,
-  //   name: 'plugin_center',
-  //   label: '插件中心',
-  //   textIcon: 'P',
-  //   disabled: true,
-  //   description: '',
-  //   color: '#75ec97',
-  //   isVisible: true
-  // }
 ])
 const pluginAssets = ref([
   {
@@ -654,7 +655,6 @@ const onSetOutPath = () => {
           "
           v-if="currentPage.isBaseTemplate"
         />
-
         <extract-caption
           class="datatable-wrapper"
           :name="currentPage.name"

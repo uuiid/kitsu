@@ -430,6 +430,78 @@ class DoodleWorkConnectVideo extends DoodleWorkMergeVideo {
   }
 }
 
+class DoodleWorkWatermark extends DoodleWorkMergeVideo {
+  constructor() {
+    super()
+    this.tableHeaderFiled = {
+      name: { name: '文件名', type: 'string' },
+      status: { name: '状态', type: 'string' },
+      watermark_text: { name: '水印内容', type: 'string' },
+      watermark_color: { name: '水印颜色', type: 'color' },
+      watermark_opacity: { name: '水印透明度', type: 'number' },
+      watermark_size: {
+        name: '水印间隔大小',
+        type: 'list'
+      },
+      watermark_height: {
+        name: '水印高度',
+        type: 'number'
+      },
+      out_path: { name: '导出路径', type: 'string' },
+      progress: {
+        name: '上传进度',
+        type: 'progress'
+      }
+    }
+    this.name = 'watermark'
+    this.watermark_setting = {}
+  }
+
+  validateString(input) {
+    const regex = /^[A-Z]+_EP\d+_SC\d+[A-Z]?\.mp4$/
+    return regex.test(input)
+  }
+
+  addFilesData(files) {
+    if (
+      this.watermark_setting.out_path === '' ||
+      this.watermark_setting.out_path === undefined
+    ) {
+      ElMessage({
+        message: `请先设置导出路径`,
+        type: 'error'
+      })
+      return
+    }
+    const file_paths = []
+    files.forEach(file => {
+      file_paths.push(file.path)
+    })
+    if (file_paths.length > 0) {
+      const data = this.formatData(files[0])
+      data.id = uuid()
+      data.name =
+        files.length > 1
+          ? files[0].name + '-' + files[file_paths.length - 1]
+          : files[0].name
+      data.status = 'waiting'
+      data.image_paths = file_paths
+      data.complete_image_paths = []
+      this.uncommittedWorkList.set(data.id, data)
+    }
+  }
+
+  formatData(file) {
+    const data = {}
+    data['out_path'] = this.watermark_setting.out_path
+    data['watermark_text'] = this.watermark_setting.watermark_text
+    data['watermark_color'] = this.watermark_setting.watermark_color
+    data['watermark_opacity'] = this.watermark_setting.watermark_opacity
+    data['watermark_size'] = this.watermark_setting.watermark_size
+    data['watermark_height'] = this.watermark_setting.watermark_height
+    return data
+  }
+}
 function initState() {
   return {
     workList: [],
@@ -492,6 +564,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
   const doodleWorkExtractCaption = new DoodleWorkExtractCaption()
   const doodleWorkMergeVideo = new DoodleWorkMergeVideo()
   const doodleWorkConnectVideo = new DoodleWorkConnectVideo()
+  const doodleWorkWatermark = new DoodleWorkWatermark()
   const doodleWorkStateMap = ref(
     new Map([
       ['export_fbx', doodleWorkFbx],
@@ -500,7 +573,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       ['auto_light', doodleWorkAutoLight],
       ['extract_caption', doodleWorkExtractCaption],
       ['merge_video', doodleWorkMergeVideo],
-      ['connect_video', doodleWorkConnectVideo]
+      ['connect_video', doodleWorkConnectVideo],
+      ['watermark', doodleWorkWatermark]
     ])
   )
   const currentDoodleWorkState = computed(() => {
@@ -573,6 +647,32 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           )
         }
       })
+      state.value.doodleSocket.on(
+        'tools:add_watermark:progress',
+        async data => {
+          await sleep(100)
+          doodleWorkStateMap.value
+            .get('watermark')
+            .workList.get(data.id)
+            .complete_image_paths.push(data.out_path)
+          doodleWorkStateMap.value
+            .get('watermark')
+            .workList.get(data.id).progress =
+            doodleWorkStateMap.value.get('watermark').workList.get(data.id)
+              .complete_image_paths.length /
+            doodleWorkStateMap.value.get('watermark').workList.get(data.id)
+              .image_paths.length
+          if (
+            doodleWorkStateMap.value.get('watermark').workList.get(data.id)
+              .complete_image_paths.length ===
+            doodleWorkStateMap.value.get('watermark').workList.get(data.id)
+              .image_paths.length
+          )
+            doodleWorkStateMap.value
+              .get('watermark')
+              .workList.get(data.id).status = 'completed'
+        }
+      )
     },
     deleteHistoryDoodleFile(folderPath, exclude = '') {
       const fs = require('fs')
@@ -676,10 +776,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
           if (state.value.doodleSocket) {
             state.value.doodleSocket.disconnect()
           }
-          state.value.doodleSocket = io(`http://127.0.0.1:${port}/events`, {
-            transports: ['websocket']
-          })
-          await actions.setSocketEvent()
+          await actions.createSocketIo(port)
           state.value.isPullProcessing = false
           console.log(state.value.isPullProcessing)
           state.value.isInitialProcessed = false
@@ -689,6 +786,12 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         }
       }
       state.value.isPullProcessing = false
+    },
+    createSocketIo: async port => {
+      state.value.doodleSocket = await io(`127.0.0.1:${port}/events`, {
+        transports: ['websocket']
+      })
+      await actions.setSocketEvent()
     },
     setLocalHttpPath: async () => {
       const port = window.api.DoodleExePort()
@@ -722,11 +825,17 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         ...currentDoodleWorkState.value.uncommittedWorkList.values()
       ]) {
         currentDoodleWorkState.value.formatDataState(item)
-
-        const result = await doodlework.submitWorkTask(
-          item,
-          state.value.localHttpPath
-        )
+        let result = null
+        if (currentDoodleWorkState.value.name === 'watermark') {
+          result = await doodlework.addWatermark(
+            item,
+            state.value.localHttpPath
+          )
+        } else
+          result = await doodlework.submitWorkTask(
+            item,
+            state.value.localHttpPath
+          )
         const task = Object.assign(
           {},
           currentDoodleWorkState.value.uncommittedWorkList.get(item.id)
@@ -887,6 +996,10 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       await actions.getToolVersions()
       await actions.getLocalHttpPath()
       const res = await doodlework.getLocalSetting(state.value.localHttpPath)
+      const watermark = await doodlework.getLocalWatermarkSetting(
+        state.value.localHttpPath
+      )
+      doodleWorkWatermark.watermark_setting = watermark || {}
       if (res) state.value.doodleWorkSetting = res
       else throw new Error(res)
     },
@@ -904,6 +1017,12 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     getVisitorContext: async () => {
       state.value.visitorContext = await doodlework.getVisitorContext()
+    },
+    previewWatermark: async () => {
+      return await doodlework.previewWatermark(
+        currentDoodleWorkState.value.watermark_setting,
+        state.value.localHttpPath
+      )
     },
     copyFolder: async (sourcePath, destPath) => {
       const fs = require('fs')
@@ -930,10 +1049,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
   actions.getToolVersions()
   if (navigator.userAgent.includes('Electron')) {
     if (window.api.DoodleExePort() !== 0) {
-      state.value.doodleSocket = io(
-        `http://127.0.0.1:${window.api.DoodleExePort()}/events`
-      )
-      actions.setSocketEvent()
+      actions.createSocketIo(window.api.DoodleExePort())
     }
   }
   return {
