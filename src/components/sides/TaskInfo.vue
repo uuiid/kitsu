@@ -208,7 +208,6 @@
                   @clear-files="clearPreviewFiles"
                   @remove-preview="onPreviewFormRemoved"
                   @annotation-snapshots-requested="extractAnnotationSnapshots"
-                  v-if="isCommentingAllowed"
                 />
 
                 <div
