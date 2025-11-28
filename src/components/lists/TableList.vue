@@ -31,6 +31,7 @@ const colors = [
   { color: '#1989fa', percentage: 80 },
   { color: '#5cb87a', percentage: 100 }
 ]
+const isPaste = ref(true)
 const emit = defineEmits([
   'submit',
   'add-data',
@@ -129,6 +130,14 @@ const onDrop = event => {
   }
 }
 
+function onMouseEnter() {
+  isPaste.value = true
+  //window.addEventListener('paste', onClipboardFile, false)
+}
+function onMouseLeave() {
+  isPaste.value = false
+  //window.removeEventListener('paste', onClipboardFile, false)
+}
 const onClickBody = (work, key) => {
   if (props.isSelectable) {
     emit('selected', work)
@@ -140,12 +149,13 @@ const onClickBody = (work, key) => {
 }
 
 const onClipboardFile = event => {
-  event.preventDefault()
   if (props.isDrop) {
     isDragOver.value = false
     const clipboardData = event.clipboardData || window.clipboardData
     const files = clipboardData.files
-    emit('add-data', files)
+    if (files.length !== 0) {
+      emit('add-data', files)
+    }
   }
 }
 const handleAction = (action_name, task_id) => {
@@ -159,6 +169,8 @@ const handleAction = (action_name, task_id) => {
     :class="{ placeholder: isShowPrompt }"
     @drop="onDrop"
     @dragover="handleDragOver"
+    @mouseenter="onMouseEnter"
+    @mouseleave="onMouseLeave"
   >
     <div class="doodle-work-placeholder" v-if="isShowPrompt && isDrop">
       <div style="padding: 0 10px">

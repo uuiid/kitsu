@@ -28,7 +28,6 @@ onMounted(async () => {
   refreshKey.value++
 })
 const onTextChange = (val, key) => {
-  console.log(val, key)
   if (key === 'watermark_color')
     doodleWork.currentDoodleWorkState.watermark_setting[key] = val
 }
