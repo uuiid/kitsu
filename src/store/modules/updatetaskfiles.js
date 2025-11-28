@@ -43,7 +43,7 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
     this.task_data_filed.set('only_upload', {
       id: 'only_upload',
       name: '仅上传',
-      checked: true,
+      checked: false,
       type: Boolean,
       task_type_id: 'eb7c92c8-232c-4894-8efa-c62ced44ff05'
     })
