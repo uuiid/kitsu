@@ -39,10 +39,10 @@ const emit = defineEmits([
   'view-log'
 ])
 onMounted(() => {
-  window.addEventListener('paste', onClipboard)
+  window.addEventListener('paste', onClipboardFile, false)
 })
 onUnmounted(() => {
-  window.removeEventListener('paste', onClipboard)
+  window.removeEventListener('paste', onClipboardFile)
 })
 const isDragOver = ref(false)
 const displayWorkList = computed(() => {
@@ -139,7 +139,7 @@ const onClickBody = (work, key) => {
   }
 }
 
-const onClipboard = event => {
+const onClipboardFile = event => {
   event.preventDefault()
   if (props.isDrop) {
     isDragOver.value = false
@@ -159,7 +159,6 @@ const handleAction = (action_name, task_id) => {
     :class="{ placeholder: isShowPrompt }"
     @drop="onDrop"
     @dragover="handleDragOver"
-    @paste="onClipboard"
   >
     <div class="doodle-work-placeholder" v-if="isShowPrompt && isDrop">
       <div style="padding: 0 10px">

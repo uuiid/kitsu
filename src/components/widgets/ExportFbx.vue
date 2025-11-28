@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, onUnmounted, ref, computed } from 'vue'
+import { onMounted, ref, computed } from 'vue'
 //import { getCurrentInstance } from 'vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
@@ -51,24 +51,11 @@ const filteredWorkList = computed(() => {
 onMounted(() => {
   if (props.isSetOutPath && doodleWork.state.outPath === '') {
     doodleWork.state.dialogFormVisible = true
-    document.addEventListener('paste', onClipboard)
   }
   doodleWork.actions.getLocalLogPath().then(path => {
     localLogPath.value = path.tmp_dir
   })
-  //document.addEventListener('paste', onClipboard)
 })
-// const handleDragOver = event => {
-//   event.preventDefault()
-//   if (!isDragOver.value) {
-//     isDragOver.value = true
-//     if (props.isDrop) {
-//       event.dataTransfer.dropEffect = 'none'
-//     } else {
-//       event.dataTransfer.dropEffect = 'copy'
-//     }
-//   }
-// }
 const reload = async () => {
   try {
     await doodleWork.actions.loadLocalDoodleWork()
@@ -98,15 +85,6 @@ const onAddData = files => {
   doodleWork.currentDoodleWorkState.addFilesData(files)
   if (doodleWork.currentDoodleWorkState.uncommittedWorkList.size > 0) {
     doodleWork.state.isActiveModal = true
-  }
-}
-
-const onClipboard = event => {
-  if (doodleWork.state.outPath) {
-    event.preventDefault()
-    const clipboardData = event.clipboardData || window.clipboardData
-    const files = clipboardData.files
-    if (!doodleWork.state.isActiveModal) onAddData(files)
   }
 }
 
@@ -164,11 +142,6 @@ const onAction = async (action_name, task) => {
     doodleWork.actions.resubmitLocalDoodleWork(task)
   }
 }
-
-onUnmounted(() => {
-  //clearInterval(intervalId)
-  document.removeEventListener('paste', onClipboard)
-})
 </script>
 
 <template>

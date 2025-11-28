@@ -24,7 +24,10 @@ const onAddData = files => {
     for (const file of files) {
       let isAdd = true
       for (const work of doodleWork.currentDoodleWorkState.uncommittedWorkList)
-        if (file.path === work[1].task_data.path) {
+        if (
+          file?.path === work[1].task_data?.path ||
+          file?.path === work[1].path
+        ) {
           isAdd = false
           ElMessage.error(
             `${file.path} ${i18n.global.t('doodle.already_exists')}`
@@ -33,7 +36,8 @@ const onAddData = files => {
       if (isAdd) files_temp.push(file)
     }
   } else files_temp.push([...files])
-  doodleWork.currentDoodleWorkState.addFilesData(files_temp)
+  if (files[0].path !== '')
+    doodleWork.currentDoodleWorkState.addFilesData(files_temp)
 }
 
 const onAction = (action_name, task) => {
