@@ -21,7 +21,9 @@ const textPlaceholder = (val, key) => {
   else return String(val)
 }
 onMounted(async () => {
-  if (this.watermark_setting.out_path === undefined)
+  if (
+    doodleWork.currentDoodleWorkState.watermark_setting.out_path === undefined
+  )
     doodleWork.actions.getWorkSetting()
   refreshKey.value++
 })

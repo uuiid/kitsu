@@ -474,16 +474,39 @@ class DoodleWorkWatermark extends DoodleWorkMergeVideo {
       return
     }
     const file_paths = []
-    files.forEach(file => {
-      file_paths.push(file.path)
-    })
+    const temp_files = []
+    if (files[0].path !== '')
+      files.forEach(file => {
+        file_paths.push(file.path)
+        temp_files.push({
+          name: file.name,
+          path: file.path
+        })
+      })
+    else {
+      const { clipboard } = require('electron')
+      const fs = require('fs')
+      const path = require('path')
+      const image = clipboard.readImage()
+      if (!image.isEmpty()) {
+        const buffer = image.toPNG()
+        const name = `${Date.now()}.png`
+        const savePath = path.join(this.watermark_setting.out_path, name)
+        fs.writeFileSync(savePath, buffer)
+        file_paths.push(savePath)
+        temp_files.push({
+          name: name,
+          path: savePath
+        })
+      }
+    }
     if (file_paths.length > 0) {
-      const data = this.formatData(files[0])
+      const data = this.formatData(temp_files[0])
       data.id = uuid()
       data.name =
-        files.length > 1
-          ? files[0].name + '-' + files[file_paths.length - 1]
-          : files[0].name
+        temp_files.length > 1
+          ? temp_files[0].name + '-' + temp_files[file_paths.length - 1]
+          : temp_files[0].name
       data.status = 'waiting'
       data.image_paths = file_paths
       data.complete_image_paths = []

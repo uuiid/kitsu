@@ -1,5 +1,5 @@
 <script setup>
-import { computed, ref } from 'vue'
+import { computed, ref, onMounted, onUnmounted } from 'vue'
 import { useStore } from 'vuex'
 import i18n from '@/lib/i18n.js'
 import TimerCell from '@/components/cells/TimerCell.vue'
@@ -38,6 +38,12 @@ const emit = defineEmits([
   'selected',
   'view-log'
 ])
+onMounted(() => {
+  window.addEventListener('paste', onClipboard)
+})
+onUnmounted(() => {
+  window.removeEventListener('paste', onClipboard)
+})
 const isDragOver = ref(false)
 const displayWorkList = computed(() => {
   return [...props.bodyList.values()]

@@ -428,7 +428,6 @@ export default {
                   sequence_id: this.selectedSequenceId,
                   project_id: this.currentProduction.id
                 }
-                console.log(shot)
                 this.$emit('add-shot', shot, shot => {
                   this.loading.addShot = false
                   this.selectSequence(this.selectedSequenceId)
