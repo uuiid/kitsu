@@ -35,7 +35,7 @@ const onAddData = files => {
         }
       if (isAdd) files_temp.push(file)
     }
-  } else files_temp.push([...files])
+  } else files_temp.push(...files)
   if (files[0].path !== '')
     doodleWork.currentDoodleWorkState.addFilesData(files_temp)
 }
