@@ -1817,7 +1817,10 @@ export default {
             line[item.asset_type_name] = line[item.asset_type_name]
               ? `${line[item.asset_type_name]},${item.asset_name}`
               : item.asset_name
-            if (item.asset_type_name === '场景') {
+            if (
+              item.asset_type_name === '场景' &&
+              workingFileStore().state.workingFiles.size > 0
+            ) {
               if (
                 workingFileStore().state.workingFiles.get(item.asset_id)
                   .unreal_engine_path === undefined
