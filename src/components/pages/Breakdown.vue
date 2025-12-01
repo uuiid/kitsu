@@ -1330,7 +1330,8 @@ export default {
           )
           if (entity) {
             for (const res_str of result.slice(1, 5)) {
-              if (res_str !== '') {
+              if (res_str !== '' && res_str !== undefined) {
+                console.log(res_str)
                 const res_list = res_str.split(',')
                 for (const res of res_list) {
                   if (temp_asset.has(res)) {
@@ -1346,7 +1347,8 @@ export default {
                 }
               }
             }
-            await this.addManyAssets(assets_list, [entity.id])
+            if (assets_list.length > 0)
+              await this.addManyAssets(assets_list, [entity.id])
           }
         }
         //this.parsedCSV = results

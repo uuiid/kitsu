@@ -185,14 +185,17 @@ const actions = {
     }
     const production = rootGetters.currentProduction
     const casting = []
-    Object.values(state.casting[entityId]).forEach(asset => {
-      casting.push({
-        asset_id: asset.asset_id,
-        nb_occurences: asset.nb_occurences || 1,
-        label: asset.label
+    if (state.casting[entityId]) {
+      Object.values(state.casting[entityId]).forEach(asset => {
+        casting.push({
+          asset_id: asset.asset_id,
+          nb_occurences: asset.nb_occurences || 1,
+          label: asset.label
+        })
       })
-    })
-    return breakdownApi.updateCasting(production.id, entityId, casting)
+      return breakdownApi.updateCasting(production.id, entityId, casting)
+    }
+    return Promise.resolve()
   },
 
   uploadCastingFile({ commit, state, rootGetters }, formData) {
