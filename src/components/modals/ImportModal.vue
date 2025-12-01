@@ -12,23 +12,30 @@
         <h1 class="title">
           {{ $t('main.csv.import_title') }}
         </h1>
-
         <div v-if="columns.length > 0" class="mb1">
+          未识别到的资产
+          <ul>
+            <li v-for="column in importError" :key="column">
+              {{ column }}
+            </li>
+          </ul>
+        </div>
+        <!--div v-if="columns.length > 0" class="mb1">
           {{ $t('main.csv.required_fields') }}
           <ul>
             <li v-for="column in columns" :key="column">
               {{ column }}
             </li>
           </ul>
-        </div>
-        <div v-if="optionalColumns.length > 0" class="mb1">
+        </div-->
+        <!--div v-if="optionalColumns.length > 0" class="mb1">
           {{ $t('main.csv.optional_fields') }}
           <ul>
             <li v-for="optionalColumn in optionalColumns" :key="optionalColumn">
               {{ optionalColumn }}
             </li>
           </ul>
-        </div>
+        </div-->
         <div v-if="genericColumns.length > 0" class="mb1">
           {{ $t('main.csv.generic_fields') }}
           <ul>
@@ -67,7 +74,7 @@
         </div>
 
         <modal-footer
-          :confirm-label="$t('main.csv.preview')"
+          :confirm-label="$t('productions.parameters.save.button')"
           :error-text="$t('main.csv.error_upload')"
           :is-loading="isLoading"
           :is-disabled="!isValid"
@@ -139,6 +146,10 @@ export default {
     isError: {
       type: Boolean,
       default: false
+    },
+    importError: {
+      type: Array,
+      default: () => []
     }
   },
 

@@ -471,19 +471,21 @@ const mutations = {
 
   [CASTING_SET_CASTING](state, { casting, production }) {
     const entityCastingByType = {}
-    const entityCastingKeys = Object.keys(casting)
-    entityCastingKeys.forEach(entityId => {
-      const entityCasting = casting[entityId]
-      entityCasting.forEach(entity => {
-        entity.shared = entity.project_id !== production.id
+    if (casting) {
+      const entityCastingKeys = Object.keys(casting)
+      entityCastingKeys.forEach(entityId => {
+        const entityCasting = casting[entityId]
+        entityCasting.forEach(entity => {
+          entity.shared = entity.project_id !== production.id
+        })
+        entityCastingByType[entityId] = groupEntitiesByParents(
+          entityCasting,
+          'asset_type_name'
+        )
       })
-      entityCastingByType[entityId] = groupEntitiesByParents(
-        entityCasting,
-        'asset_type_name'
-      )
-    })
-    state.casting = casting
-    state.castingByType = entityCastingByType
+      state.casting = casting
+      state.castingByType = entityCastingByType
+    }
   },
 
   [CASTING_ADD_TO_CASTING](state, { entityId, asset, nbOccurences, label }) {

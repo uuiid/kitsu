@@ -508,6 +508,7 @@
       :is-error="errors.importing"
       :form-data="importCsvFormData"
       :columns="csvColumns"
+      :import-error="notFindAssets"
       :optional-columns="optionalCsvColumns"
       @cancel="hideImportModal"
       @confirm="renderImport"
@@ -714,7 +715,8 @@ export default {
         value: ''
       },
       visibleTempAssets: true,
-      isShowAsset: true
+      isShowAsset: true,
+      notFindAssets: []
     }
   },
 
@@ -773,7 +775,8 @@ export default {
       'productionAssetTypes',
       'assetTypeMap',
       'taskMap',
-      'taskTypeMap'
+      'taskTypeMap',
+      'assets'
     ]),
 
     searchField() {
@@ -1140,18 +1143,18 @@ export default {
         }, 3000)
       }
     },
-    async addManyAssets(assets) {
+    async addManyAssets(assets, entityIds = []) {
       this.isLocked = true
-      const entityIds = Object.keys(this.selection).filter(
-        key => this.selection[key]
-      )
-      console.log(assets)
+      if (entityIds.length === 0)
+        entityIds = Object.keys(this.selection).filter(
+          key => this.selection[key]
+        )
       for (const entityId of entityIds) {
         for (const asset of assets) {
           this.addAssetToCasting({
             entityId,
             assetId: asset.id,
-            nbOccurences: asset.nb_occurences,
+            nbOccurences: asset.nb_occurences || 1,
             label: this.castingType === 'shot' ? 'animate' : 'fied'
           })
           delete this.saveErrors[entityId]
@@ -1317,11 +1320,40 @@ export default {
       if (mode === 'file') {
         data = data.get('file')
       }
-      csv.processCSV(data).then(results => {
-        this.parsedCSV = results
-        this.hideImportModal()
+      const temp_asset = new Map()
+      const not_find_asset = []
+      csv.processCSV(data).then(async results => {
+        for (const result of results.slice(1)) {
+          const assets_list = []
+          const entity = this.castingEntities.find(
+            entity => entity.name === result[0]
+          )
+          if (entity) {
+            for (const res_str of result.slice(1, 5)) {
+              if (res_str !== '') {
+                const res_list = res_str.split(',')
+                for (const res of res_list) {
+                  if (temp_asset.has(res)) {
+                    if (temp_asset.get(res))
+                      assets_list.push(temp_asset.get(res))
+                  } else {
+                    const find_asset = this.assets.find(
+                      asset => asset.name === res
+                    )
+                    temp_asset.set(res, find_asset)
+                    if (!find_asset) not_find_asset.push(res)
+                  }
+                }
+              }
+            }
+            await this.addManyAssets(assets_list, [entity.id])
+          }
+        }
+        //this.parsedCSV = results
+        //this.hideImportModal()
         this.loading.importing = false
-        this.showImportRenderModal()
+        this.notFindAssets = not_find_asset
+        //this.showImportRenderModal()
       })
     },
 
@@ -1338,20 +1370,20 @@ export default {
       this.errors.importingError = null
       this.importCsvFormData = formData
 
-      this.uploadCastingFile(this.importCsvFormData)
-        .then(() => {
-          this.hideImportRenderModal()
-          if (this.sequenceId) {
-            this.setCastingSequence(this.sequenceId || 'all')
-          }
-        })
-        .catch(err => {
-          this.errors.importingError = err
-          this.errors.importing = true
-        })
-        .finally(() => {
-          this.loading.importing = false
-        })
+      // this.uploadCastingFile(this.importCsvFormData)
+      //   .then(() => {
+      //     this.hideImportRenderModal()
+      //     if (this.sequenceId) {
+      //       this.setCastingSequence(this.sequenceId || 'all')
+      //     }
+      //   })
+      //   .catch(err => {
+      //     this.errors.importingError = err
+      //     this.errors.importing = true
+      //   })
+      //   .finally(() => {
+      //     this.loading.importing = false
+      //   })
     },
 
     resetImport() {
@@ -1753,6 +1785,7 @@ export default {
         work_file => work_file.software_type === softwareType
       )
     },
+    onImportClick() {},
     onExportClick() {
       const headers = [
         '镜头号',
