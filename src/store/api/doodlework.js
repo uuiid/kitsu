@@ -61,8 +61,8 @@ export default {
     const path = '/api/data/user/context'
     return client.pget(path)
   },
-  updateFile(task, file_data, type, onProgress) {
-    const path = `/api/doodle/data/${task.entity_type || `assets`}/${task.task_id}/file/${type}`
+  updateFile(task, file_data, type, onProgress, assetOrShot = '') {
+    const path = `/api/doodle/data/${assetOrShot !== '' ? assetOrShot : task.entity_type || `assets`}/${task.task_id || task.id}/file/${type}`
     return client.ppostFileData(path, file_data, onProgress)
   },
   getVideoThumbnail(task, localPath = '') {

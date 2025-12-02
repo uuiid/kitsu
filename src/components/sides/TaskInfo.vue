@@ -390,6 +390,7 @@ import { ElMessage } from 'element-plus'
 import errorText from '@/components/widgets/ErrorText.vue'
 import doodlework from '@/store/api/doodlework.js'
 import productions from '@/store/modules/productions.js'
+import videoLibrary from '@/store/modules/videolibrary.js'
 
 const DEFAULT_PANEL_WIDTH = 400
 
@@ -907,19 +908,37 @@ export default {
           .dispatch(action, params)
           .then(() => {
             if (navigator.userAgent.includes('Electron')) {
-              const mayaFilePath = doodlework.getMayaFilePath(this.task.id)
-              if (mayaFilePath) {
-                const path = require('path')
-                const dirName = path.dirname(
-                  path.join(this.production.path, mayaFilePath)
+              const forms =
+                this.previewForms.length > 0 ? this.previewForms : attachment
+              forms.forEach(async form => {
+                const data = await videoLibrary.helpers.getDateFromFile(
+                  form.get('file')
                 )
-                attachment.forEach(a => {
-                  updateTaskFilesStore().actions.copyFileWithProgress(
-                    a.get('file').path,
-                    path.join(dirName, path.basename(a.get('file').name))
-                  )
-                })
-              }
+                await doodlework.updateFile(
+                  this.task,
+                  {
+                    data: data,
+                    filetype: 'application/octet-stream',
+                    disposition: form.get('file').name
+                  },
+                  'image',
+                  null,
+                  this.$route.name
+                )
+              })
+              // const mayaFilePath = doodlework.getMayaFilePath(this.task.id)
+              // if (mayaFilePath) {
+              //   const path = require('path')
+              //   const dirName = path.dirname(
+              //     path.join(this.production.path, mayaFilePath)
+              //   )
+              //   attachment.forEach(a => {
+              //     updateTaskFilesStore().actions.copyFileWithProgress(
+              //       a.get('file').path,
+              //       path.join(dirName, path.basename(a.get('file').name))
+              //     )
+              //   })
+              // }
             }
             drafts.clearTaskDraft(this.task.id)
             this.$refs['add-comment']?.reset()
