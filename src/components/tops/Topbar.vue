@@ -111,6 +111,7 @@
           <span
             class="flexrow-item mr0 doodlework-status"
             :class="{ success: doodleworkStatus, error: !doodleworkStatus }"
+            v-if="isElectron"
           ></span>
           <el-button
             :type="
@@ -118,6 +119,7 @@
             "
             :loading="doodleWorkStore().state.isPullProcessing"
             @click="onRunDoodleWork"
+            v-if="isElectron"
             >{{
               doodleWorkStore().state.isPullProcessing
                 ? `启动中`
@@ -410,6 +412,9 @@ export default {
         return this.episodeOptionGroups
       }
     },
+    isElectron() {
+      return navigator.userAgent.includes('Electron')
+    },
 
     hasEpisodeId() {
       return this.$route.params.episode_id
@@ -575,9 +580,6 @@ export default {
       return this.sectionOptions.find(
         option => option.value === this.currentProjectSection
       )?.value
-    },
-    isElectron() {
-      return navigator.userAgent.includes('Electron')
     }
   },
 

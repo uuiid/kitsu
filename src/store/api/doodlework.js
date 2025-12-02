@@ -41,8 +41,9 @@ export default {
     const path = localPath + `/api/doodle/task/${task_id}`
     return client.ppatch(path, task)
   },
-  submitWorkTask(task, localPath = '') {
-    const path = localPath + `/api/doodle/task`
+  submitWorkTask(task, localPath = '', isVisitor = false, project_id = '') {
+    let path = localPath + `/api/doodle/task`
+    if (isVisitor) path = `/api/actions/projects/${project_id}/export-anim-fbx`
     return client.ppost(path, task)
   },
   addWatermark(task, localPath = '') {

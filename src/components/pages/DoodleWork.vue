@@ -30,6 +30,10 @@ const doodleWork = doodleWorkStore()
 onMounted(async () => {
   //document.addEventListener('keydown', onKeyupEvent)
   await doodleWork.actions.getVisitorContext()
+  if (doodleWork.state.isVisitor) {
+    doodleWork.state.localHttpPath = ''
+    await doodleWork.actions.createSocketIo(0)
+  }
   //doodleWork.actions.pullProcess()
 })
 
@@ -51,7 +55,8 @@ const switchPage = pageName => {
   doodleWork.state.DemonstrateVideoName = pageName.name
   if (pageName.name === 'material_Library') {
     router.push('/video-library')
-  } else if (doodleWork.state.isPullProcessed) currentPage.value = pageName
+  } else if (doodleWork.state.isPullProcessed || doodleWork.state.isVisitor)
+    currentPage.value = pageName
   else
     ElNotification({
       title: i18n.global.t('video_library.warning'),
@@ -86,7 +91,7 @@ const visitorShow = computed(() => {
 // }
 
 const onClickSetting = () => {
-  if (doodleWork.state.isPullProcessed) {
+  if (doodleWork.state.isPullProcessed || doodleWork.state.isVisitor) {
     doodleWork.actions.getWorkSetting()
     doodleWork.state.isActiveSettingModal = true
   } else
@@ -100,6 +105,10 @@ const onClickSetting = () => {
 
 const intervalId = setInterval(() => {
   if (navigator.userAgent.includes('Electron')) {
+    if (doodleWork.state.isVisitor) {
+      clearInterval(intervalId)
+      if (message) message.close()
+    }
     if (doodleWork.state.localHttpPath) {
       doodleWork.actions.getWorkSetting()
       clearInterval(intervalId)
@@ -152,7 +161,8 @@ const pagedAssets = ref([
     color: '#00a9b8',
     isVisible: true,
     isBaseTemplate: false,
-    hidden: false
+    hidden: false,
+    isVisitor: false
   },
 
   {
@@ -165,7 +175,8 @@ const pagedAssets = ref([
     color: '#00b865',
     isVisible: true,
     isBaseTemplate: false,
-    hidden: false
+    hidden: false,
+    isVisitor: false
   },
   {
     id: 12,
@@ -177,7 +188,8 @@ const pagedAssets = ref([
     color: '#0087b8',
     isVisible: true,
     isBaseTemplate: false,
-    hidden: false
+    hidden: false,
+    isVisitor: false
   },
   {
     id: 5,
@@ -188,7 +200,8 @@ const pagedAssets = ref([
     description: '',
     color: '#55e159',
     isVisible: false,
-    isBaseTemplate: false
+    isBaseTemplate: false,
+    isVisitor: false
   },
   {
     id: 1,
@@ -200,7 +213,8 @@ const pagedAssets = ref([
     color: '#00b89c',
     isVisible: true,
     isBaseTemplate: true,
-    videoName: '自动导出动画'
+    videoName: '自动导出动画',
+    isVisitor: true
   },
   {
     id: 2,
@@ -211,7 +225,8 @@ const pagedAssets = ref([
     description: '',
     color: '#9c45e6',
     isVisible: true,
-    isBaseTemplate: true
+    isBaseTemplate: true,
+    isVisitor: false
   },
   {
     id: 3,
@@ -222,7 +237,8 @@ const pagedAssets = ref([
     description: '',
     color: '#d775ec',
     isVisible: true,
-    isBaseTemplate: true
+    isBaseTemplate: true,
+    isVisitor: false
   },
   {
     id: 4,
@@ -233,7 +249,8 @@ const pagedAssets = ref([
     description: '',
     color: '#ec758b',
     isVisible: false,
-    isBaseTemplate: true
+    isBaseTemplate: true,
+    isVisitor: false
   },
   {
     id: 6,
@@ -244,7 +261,8 @@ const pagedAssets = ref([
     description: '',
     color: '#00FF7F',
     isVisible: false,
-    isBaseTemplate: true
+    isBaseTemplate: true,
+    isVisitor: false
   },
   {
     id: 7,
@@ -255,7 +273,8 @@ const pagedAssets = ref([
     description: '',
     color: '#686aef',
     isVisible: false,
-    isBaseTemplate: true
+    isBaseTemplate: true,
+    isVisitor: false
   },
   {
     id: 5,
@@ -266,7 +285,8 @@ const pagedAssets = ref([
     description: '',
     color: '#ecd875',
     isVisible: false,
-    isBaseTemplate: false
+    isBaseTemplate: false,
+    isVisitor: false
   },
   {
     id: 9,
@@ -277,7 +297,8 @@ const pagedAssets = ref([
     description: '',
     color: '#75ec97',
     isVisible: true,
-    isBaseTemplate: true
+    isBaseTemplate: true,
+    isVisitor: false
   }
 ])
 const pluginAssets = ref([
@@ -582,7 +603,11 @@ const onSetOutPath = () => {
                 @click="
                   entity.isPlugin !== undefined ? false : switchPage(entity)
                 "
-                v-show="(entity.isVisible || visitorShow) && !entity.hidden"
+                v-show="
+                  (entity.isVisible || visitorShow) &&
+                  !entity.hidden &&
+                  (doodleWork.state.isVisitor ? entity.isVisitor : true)
+                "
               >
                 <div class="card">
                   <div class="item-description">
@@ -596,8 +621,13 @@ const onSetOutPath = () => {
               </li>
             </ul>
           </div>
-          <div style="font-size: 30px; margin-bottom: 20px">插件中心</div>
-          <div class="list-body" v-if="homePage">
+          <div
+            style="font-size: 30px; margin-bottom: 20px"
+            v-if="!doodleWork.state.isVisitor"
+          >
+            插件中心
+          </div>
+          <div class="list-body" v-if="homePage && !doodleWork.state.isVisitor">
             <ul class="items">
               <li
                 @mouseenter="

@@ -811,14 +811,16 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       state.value.isPullProcessing = false
     },
     createSocketIo: async port => {
-      state.value.doodleSocket = await io(`127.0.0.1:${port}/events`, {
+      let host = `127.0.0.1:${port}`
+      if (state.value.isVisitor) host = window.location.host
+      state.value.doodleSocket = await io(`${host}/events`, {
         transports: ['websocket']
       })
       await actions.setSocketEvent()
     },
     setLocalHttpPath: async () => {
       const port = window.api.DoodleExePort()
-      state.value.localHttpPath = `http://127.0.0.1:${port}`
+      //state.value.localHttpPath = `http://127.0.0.1:${port}`
       if (port !== 0) {
         state.value.isPullProcessed = true
         await actions.getWorkSetting()
@@ -848,6 +850,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         ...currentDoodleWorkState.value.uncommittedWorkList.values()
       ]) {
         currentDoodleWorkState.value.formatDataState(item)
+        const currentProduction = currentDoodleWorkState.value.productions.find(
+          production => production.code === item.name.split('_')[0]
+        )
         let result = null
         if (currentDoodleWorkState.value.name === 'watermark') {
           result = await doodlework.addWatermark(
@@ -857,7 +862,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
         } else
           result = await doodlework.submitWorkTask(
             item,
-            state.value.localHttpPath
+            state.value.localHttpPath,
+            state.value.isVisitor,
+            currentProduction.id
           )
         const task = Object.assign(
           {},
@@ -1012,17 +1019,22 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       })
     },
     getLocalHttpPath: () => {
-      const port = window.api.DoodleExePort()
-      state.value.localHttpPath = `http://127.0.0.1:${port}`
+      if (state.value.isVisitor) state.value.localHttpPath = ''
+      else {
+        const port = window.api.DoodleExePort()
+        state.value.localHttpPath = `http://127.0.0.1:${port}`
+      }
     },
     getWorkSetting: async () => {
       await actions.getToolVersions()
       await actions.getLocalHttpPath()
       const res = await doodlework.getLocalSetting(state.value.localHttpPath)
-      const watermark = await doodlework.getLocalWatermarkSetting(
-        state.value.localHttpPath
-      )
-      doodleWorkWatermark.watermark_setting = watermark || {}
+      if (!state.value.isVisitor) {
+        const watermark = await doodlework.getLocalWatermarkSetting(
+          state.value.localHttpPath
+        )
+        doodleWorkWatermark.watermark_setting = watermark || {}
+      }
       if (res) state.value.doodleWorkSetting = res
       else throw new Error(res)
     },
@@ -1071,7 +1083,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
   }
   actions.getToolVersions()
   if (navigator.userAgent.includes('Electron')) {
-    if (window.api.DoodleExePort() !== 0) {
+    if (window.api.DoodleExePort() !== 0 || state.value.isVisitor) {
       actions.createSocketIo(window.api.DoodleExePort())
     }
   }

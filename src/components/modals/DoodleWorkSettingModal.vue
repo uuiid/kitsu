@@ -8,7 +8,7 @@ import Combobox from '@/components/widgets/Combobox.vue'
 
 const doodleWork = doodleWorkStore()
 doodleWork.actions.getToolVersions().then(() => {
-  doodleWork.state.isVisitor ? doodleWork.actions.pullProcess() : null
+  //doodleWork.state.isVisitor ? doodleWork.actions.pullProcess() : null
 })
 const readonlyFields = ['UE_version']
 
