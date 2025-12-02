@@ -1331,17 +1331,17 @@ export default {
           if (entity) {
             for (const res_str of result.slice(1, 5)) {
               if (res_str !== '' && res_str !== undefined) {
-                console.log(res_str)
                 const res_list = res_str.split(',')
                 for (const res of res_list) {
                   if (temp_asset.has(res)) {
-                    if (temp_asset.get(res))
+                    if (temp_asset.get(res) !== undefined)
                       assets_list.push(temp_asset.get(res))
                   } else {
                     const find_asset = this.assets.find(
                       asset => asset.name === res
                     )
                     temp_asset.set(res, find_asset)
+                    if (find_asset !== undefined) assets_list.push(find_asset)
                     if (!find_asset) not_find_asset.push(res)
                   }
                 }
