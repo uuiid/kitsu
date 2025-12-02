@@ -722,7 +722,7 @@ export default {
           console.log(error)
         }
       } else if (action === 'delete') {
-        await this.modifyVideoActive(entity)
+        await this.deleteVideo(entity)
       } else if (action === 'openVideo') {
         const fs = require('fs')
         if (fs.existsSync(entity.path))

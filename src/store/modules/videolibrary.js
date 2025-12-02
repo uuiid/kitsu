@@ -114,7 +114,7 @@ const state = {
 
 const mutations = {
   SET_VIDEOS(state, videos) {
-    state.videos = videos.filter(item => item.active)
+    state.videos = videos
   },
   SET_EDIT_VIDEO(state, video) {
     state.editVideo = video
