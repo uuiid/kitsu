@@ -73,6 +73,7 @@ export class DoodleWorkBase {
       id: uuid(),
       name: file.name,
       status: 'waiting',
+      path: file.path,
       source_computer: '本机',
       submitter: user.state.user?.id || 'CB3b915c-2F16-cE9d-c2cE-b45B5ebb583a',
       run_computer_id: 'CB3b915c-2F16-cE9d-c2cE-b45B5ebb583C',
