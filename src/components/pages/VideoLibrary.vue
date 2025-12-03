@@ -101,7 +101,11 @@
               <template v-else>
                 <div class="list-head">
                   <h1 class="type-text">
-                    {{ currentVideoType.label }} ({{ displayAllAssets.length }})
+                    {{ currentVideoType.label }} ({{
+                      displayAllAssets.length > 1000
+                        ? displayAllAssets.length * 8
+                        : displayAllAssets.length
+                    }})
                   </h1>
                   <button-simple
                     :text="
