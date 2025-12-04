@@ -738,7 +738,7 @@ export default {
       } else if (action === 'deleteSelected') {
         const videos = Array.from(this.selectedVideos.values())
         for (const video of videos) {
-          await this.modifyVideoActive(video)
+          await this.deleteVideo(video)
         }
       } else if (action === 'clearSelected') {
         this.clearSelectedVideos()
