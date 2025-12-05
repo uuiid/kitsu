@@ -122,7 +122,8 @@ function initState() {
     loadingNum: 0,
     localHttpPath: '',
     currentUpdateType: 0,
-    selection: []
+    selection: [],
+    downloadFileTaskId: ''
   }
 }
 
@@ -405,6 +406,27 @@ export const updateTaskFilesStore = defineStore(
       getLocalSetting: async () => {
         await doodleWorkStore().actions.getWorkSetting()
         return doodleWorkStore().state.doodleWorkSetting
+      },
+      submitLightLocalDoodleWork: async task => {
+        task['id'] = uuid()
+        task['source_computer'] = '本机'
+        task['submitter'] = user.state.user.id || ''
+        if (state.value.localHttpPath === '')
+          state.value.localHttpPath = `http://127.0.0.1:${window.api.DoodleExePort()}`
+        const res = await doodlework.submitLightTask(
+          productions.state.currentProduction.id,
+          task,
+          state.value.localHttpPath
+        )
+        res['updateType'] = 4
+        if (task.download) {
+          doodleWorkStore().state.doodleWorkExeDownloadProgressMessage =
+            '下载中...'
+          doodleWorkStore().state.doodleWorkExeDownloadProgress = 0
+          doodleWorkStore().state.isShowDoodleWorkExeDownloadProgress = true
+          state.value.downloadFileTaskId = res.id
+        }
+        state.value.allFiles.set(res.id, res)
       },
       submitLocalDoodleWork: async task => {
         //const task_id = task.id

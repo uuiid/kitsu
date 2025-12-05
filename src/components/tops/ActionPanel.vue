@@ -191,6 +191,21 @@
         </div>
         <div
           class="menu-item"
+          :title="$t('doodle.folder_down')"
+          @click="$emit('folder-down')"
+          v-if="isElectron && isShowDownFolder"
+        >
+          <folder-down
+            :title="$t('doodle.folder_up')"
+            v-if="!isLoadingDownFile"
+          />
+          <loader
+            style="animation: spinAround 2000ms infinite linear"
+            v-else
+          ></loader>
+        </div>
+        <div
+          class="menu-item"
           :class="{
             active: selectedBar === 'subscribe'
           }"
@@ -886,6 +901,7 @@ import {
   XIcon,
   FolderOpen,
   FolderUp,
+  FolderDown,
   Flashlight,
   Loader
 } from 'lucide-vue-next'
@@ -944,6 +960,10 @@ export default {
     isLoadingWorkingFiles: {
       type: Boolean,
       default: false
+    },
+    isLoadingDownFile: {
+      type: Boolean,
+      default: false
     }
   },
 
@@ -966,7 +986,8 @@ export default {
     ViewPlaylistModal,
     XIcon,
     FolderOpen,
-    FolderUp
+    FolderUp,
+    FolderDown
   },
   emits: [
     'export-task',
@@ -974,7 +995,8 @@ export default {
     'open-folder',
     'execute-doodle-work',
     'folder-up',
-    'show-auto-light-list'
+    'show-auto-light-list',
+    'folder-down'
   ],
 
   data() {
@@ -1253,7 +1275,23 @@ export default {
             '32504e3e-381c-4f36-bdeb-f73328f96f9c',
             'da050d42-4f45-40c4-9638-cc637753d3b5',
             'eb7c92c8-232c-4894-8efa-c62ced44ff05',
-            '9d71918b-cbf0-46bc-9c39-27177c9a950a'
+            '9d71918b-cbf0-46bc-9c39-27177c9a950a',
+            '9be21729-be9e-4914-afc4-6046ed089886',
+            'a33b7371-038c-4628-93b2-6754fc4f302b'
+          ].includes(task?.task_type_id)
+        ) {
+          return true
+        }
+      }
+      return false
+    },
+    isShowDownFolder() {
+      for (const taskId of this.selectedTaskIds) {
+        const task = this.taskMap.get(taskId)
+        if (
+          [
+            '9be21729-be9e-4914-afc4-6046ed089886',
+            'a33b7371-038c-4628-93b2-6754fc4f302b'
           ].includes(task?.task_type_id)
         ) {
           return true

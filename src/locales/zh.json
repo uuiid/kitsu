@@ -1738,7 +1738,8 @@
         "maya_path": "maya路径",
         "maya_parallel_quantity": "并行数量",
         "UE_version": "UE版本",
-        "timeout": "超时时间"
+        "timeout": "超时时间",
+        "user_work_root": "项目根目录"
       },
       "task_state": {
         "waiting": "等待",
@@ -1801,6 +1802,7 @@
       "open_folder": "打开文件夹",
       "download": "下载客户端",
       "folder_up": "上传文件",
+      "folder_down": "下载文件",
       "add_custom_entry": "添加自定义任务",
       "select_production": "选择项目",
       "project_uuid": "项目",

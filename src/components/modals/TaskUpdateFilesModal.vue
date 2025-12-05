@@ -42,6 +42,9 @@ const displayAllFiles = computed(() => {
     task => task.updateType === updateTaskFiles.state.currentUpdateType
   )
 })
+function sleep(ms) {
+  return new Promise(resolve => setTimeout(resolve, ms))
+}
 onMounted(() => {
   if (
     updateTaskFiles.state.selectedTask.task.task_type_id ===
@@ -57,8 +60,18 @@ onMounted(() => {
     doodleWorkStore().state.doodleSocket.on(
       'doodle:task_info:update',
       async data => {
+        console.log(updateTaskFiles.state.downloadFileTaskId)
+        await sleep(100)
+        console.log(updateTaskFiles.state.downloadFileTaskId)
+        if (data.id === updateTaskFiles.state.downloadFileTaskId) {
+          if (data.status === 'failed') {
+            doodleWorkStore().state.isShowDoodleWorkExeDownloadProgress = false
+            ElMessage.error('下载失败')
+          }
+          doodleWorkStore().state.doodleWorkExeDownloadProgress = data.progress
+        }
         const task = updateTaskFiles.state.allFiles.get(data.id)
-        if (data) {
+        if (data && task) {
           await doodleWorkStore().actions.formatTask(task, data)
           if (data.status === 'completed') {
             task.progress = 1
@@ -316,7 +329,6 @@ const onAddData = async files => {
           )
         })
       }
-      console.log(updateTaskFiles.state.currentUpdateType)
       if (
         temp_task.length === 0 &&
         updateTaskFiles.state.currentUpdateType !== 1 &&

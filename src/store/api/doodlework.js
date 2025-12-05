@@ -98,6 +98,10 @@ export default {
     const path = localPath + `/api/actions/tools/add-watermark`
     return client.pput(path, data)
   },
+  submitLightTask(project_id, task, localPath = '') {
+    const path = localPath + `/api/actions/project/${project_id}/sync`
+    return client.ppost(path, task)
+  },
   submitInspectTask(task, localPath = '') {
     const path = localPath + `/api/doodle/task/${task.task_id}/inspect`
     return client.ppost(path, task)

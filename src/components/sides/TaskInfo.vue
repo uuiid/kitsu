@@ -27,6 +27,7 @@
         @open-folder="onOpenFolder"
         @execute-doodle-work="executeDoodleWork"
         @folder-up="updateTaskFile"
+        @folder-down="downloadTaskFile"
       />
       <div class="pa1" v-if="task?.working_files?.length > 0">
         <div
@@ -1372,8 +1373,36 @@ export default {
 
                 await this.scanWorkFiles({ productionId, tasksMap })
               }
+              if (
+                [
+                  '9be21729-be9e-4914-afc4-6046ed089886',
+                  'a33b7371-038c-4628-93b2-6754fc4f302b'
+                ].includes([...this.selectedTasks.values()][0].task_type_id)
+              ) {
+                if (res.user_work_root !== '') {
+                  const task_ids = []
+                  this.selectedTasks.forEach(task => {
+                    task_ids.push(task.id)
+                  })
+                  await updateTaskFilesStore().actions.submitLightLocalDoodleWork(
+                    {
+                      upload: true,
+                      download: false,
+                      task_ids: task_ids,
+                      name:
+                        this.selectedTasks.size > 1
+                          ? [...this.selectedTasks.values()][0].name +
+                            '_' +
+                            [...this.selectedTasks.values()][
+                              this.selectedTasks.size - 1
+                            ].name
+                          : [...this.selectedTasks.values()][0].name
+                    }
+                  )
+                  updateTaskFilesStore().state.isShowUpdateModal = true
+                } else ElMessage.error('请先到AI工作台设置项目根目录')
+              }
               this.isLoadingWorkingFiles = false
-              updateTaskFilesStore().state.isShowUpdateModal = true
             } else {
               this.isLoadingWorkingFiles = false
               ElMessage.error('请先选择一个任务')
@@ -1384,6 +1413,39 @@ export default {
           this.isLoadingWorkingFiles = false
           console.error(err)
           ElMessage.error('后台未启动，请稍后重试')
+        })
+    },
+    downloadTaskFile() {
+      updateTaskFilesStore()
+        .actions.getLocalSetting()
+        .then(async res => {
+          if (res.user_work_root !== '') {
+            if (
+              [
+                '9be21729-be9e-4914-afc4-6046ed089886',
+                'a33b7371-038c-4628-93b2-6754fc4f302b'
+              ].includes([...this.selectedTasks.values()][0].task_type_id)
+            ) {
+              const task_ids = []
+              this.selectedTasks.forEach(task => {
+                task_ids.push(task.id)
+              })
+              await updateTaskFilesStore().actions.submitLightLocalDoodleWork({
+                upload: false,
+                download: true,
+                task_ids: task_ids,
+                name:
+                  this.selectedTasks.size > 1
+                    ? [...this.selectedTasks.values()][0].name +
+                      '_' +
+                      [...this.selectedTasks.values()][
+                        this.selectedTasks.size - 1
+                      ].name
+                    : [...this.selectedTasks.values()][0].name
+              })
+              updateTaskFilesStore().state.isShowUpdateModal = true
+            }
+          } else ElMessage.error('请先到AI工作台设置Maya和Unreal的路径')
         })
     },
     onExportClick() {
