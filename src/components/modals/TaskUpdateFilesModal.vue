@@ -534,6 +534,11 @@ const onSubmit = async () => {
   //await updateTaskFiles.actions.submitLocalDoodleWork()
   //updateTaskFiles.doodleWorkCheckFiles.isReload = true
 }
+function deleteAllTask() {
+  displayAllFiles.value.forEach(task => {
+    updateTaskFiles.state.allFiles.delete(task.id)
+  })
+}
 </script>
 
 <template>
@@ -640,6 +645,16 @@ const onSubmit = async () => {
           @view-log="onViewLog"
           @handle-action="onActions"
         ></table-list>
+        <div class="has-text-right">
+          <a
+            :class="{
+              button: true
+            }"
+            @click="deleteAllTask"
+          >
+            删除所有
+          </a>
+        </div>
       </div>
     </div>
   </div>
@@ -684,5 +699,8 @@ const onSubmit = async () => {
 
 .task-data-filed {
   min-height: 30px;
+}
+.has-text-right {
+  margin-top: 5px;
 }
 </style>
