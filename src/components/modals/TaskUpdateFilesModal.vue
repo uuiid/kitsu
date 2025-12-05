@@ -60,9 +60,7 @@ onMounted(() => {
     doodleWorkStore().state.doodleSocket.on(
       'doodle:task_info:update',
       async data => {
-        console.log(updateTaskFiles.state.downloadFileTaskId)
         await sleep(100)
-        console.log(updateTaskFiles.state.downloadFileTaskId)
         if (data.id === updateTaskFiles.state.downloadFileTaskId) {
           if (data.status === 'failed') {
             doodleWorkStore().state.isShowDoodleWorkExeDownloadProgress = false

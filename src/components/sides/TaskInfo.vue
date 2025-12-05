@@ -1401,8 +1401,10 @@ export default {
                   )
                   updateTaskFilesStore().state.isShowUpdateModal = true
                 } else ElMessage.error('请先到AI工作台设置项目根目录')
+                return
               }
               this.isLoadingWorkingFiles = false
+              updateTaskFilesStore().state.isShowUpdateModal = true
             } else {
               this.isLoadingWorkingFiles = false
               ElMessage.error('请先选择一个任务')
