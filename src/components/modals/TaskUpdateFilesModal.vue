@@ -65,6 +65,9 @@ onMounted(() => {
           if (data.status === 'failed') {
             doodleWorkStore().state.isShowDoodleWorkExeDownloadProgress = false
             ElMessage.error('下载失败')
+          } else if (data.status === 'completed') {
+            doodleWorkStore().state.isShowDoodleWorkExeDownloadProgress = false
+            ElMessage.error('下载成功')
           }
           doodleWorkStore().state.doodleWorkExeDownloadProgress = data.progress
         }
