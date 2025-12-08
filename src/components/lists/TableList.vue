@@ -84,7 +84,7 @@ const formatTableBodyData = (workTask, key) => {
       if (workTask.computed_time) {
         return workTask.computed_time
       }
-      const currentTime = new Date()
+      const currentTime = new Date({ timezone: 'UTC' })
       const date = new Date(workTask[key])
       if (currentTime > date) {
         return formatDiffTime(currentTime - date)
@@ -105,6 +105,11 @@ const formatTableBodyData = (workTask, key) => {
           : i18n.global.t(`doodle_work.task_state.${workTask['status']}`)
       }
     return i18n.global.t(`doodle_work.task_state.${workTask['status']}`)
+  } else if (['submit_time', 'end_time'].includes(key)) {
+    if (workTask[key] === undefined || workTask[key] === '') return ''
+    return new Date(workTask[key]).toLocaleString('zh-CN', {
+      timeZone: 'Asia/Shanghai'
+    })
   }
   return workTask[key]
 }

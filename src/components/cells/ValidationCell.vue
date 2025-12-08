@@ -261,7 +261,8 @@ export default {
       'isDarkTheme',
       'personMap',
       'taskMap',
-      'taskStatusMap'
+      'taskStatusMap',
+      'user'
     ]),
 
     assignees() {
@@ -353,7 +354,7 @@ export default {
       return date ? moment(date, 'YYYY-MM-DD').toDate() : null
     },
     formatDate(date) {
-      if (date) return moment(date).format('YYYY-MM-DD')
+      if (date) return moment(date).tz(this.user.timezone).format('YYYY-MM-DD')
       return '\n'
     },
     onClickDate() {
