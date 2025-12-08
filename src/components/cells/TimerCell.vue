@@ -69,6 +69,10 @@ const start = () => {
           }
         })
         time.value = doodleWork.actions.formatDiffTime(all_time)
+      } else {
+        time.value = doodleWork.actions.formatDiffTime(
+          new Date(props.task.end_time) - new Date(props.task.start_time)
+        )
       }
     }
   }, 1000)
