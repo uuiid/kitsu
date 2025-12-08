@@ -1019,7 +1019,7 @@ export default {
       }
     },
     formatDate(date) {
-      if (date) return moment(date).format('YYYY-MM-DD')
+      if (date) return moment(date).tz('UTC').format('YYYY-MM-DD HH:mm:ss')
       return '\n'
     },
     onUpdateTask(task) {
@@ -1051,6 +1051,7 @@ export default {
         const taskId = this.updateDateTask.id
         const data = {
           start_date: this.formatDate(this.updateDateTask.dateRange[0]),
+
           due_date: this.formatDate(this.updateDateTask.dateRange[1])
         }
         if (
