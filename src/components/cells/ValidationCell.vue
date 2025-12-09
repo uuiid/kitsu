@@ -354,7 +354,13 @@ export default {
       return date ? moment(date, 'YYYY-MM-DD').toDate() : null
     },
     formatDate(date) {
-      if (date) return moment(date).tz(this.user.timezone).format('YYYY-MM-DD')
+      if (date)
+        return new Date(date).toLocaleString('zh-CN', {
+          timeZone: this.user.timeZone,
+          year: 'numeric',
+          month: '2-digit',
+          day: '2-digit'
+        })
       return '\n'
     },
     onClickDate() {
