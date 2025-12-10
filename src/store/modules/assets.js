@@ -264,7 +264,8 @@ const helpers = {
         : cache.assets.filter(asset => {
             return (
               asset.name.indexOf(keywords) !== -1 ||
-              asset.bian_hao?.indexOf(keywords) !== -1
+              asset.bian_hao?.indexOf(keywords) !== -1 ||
+              asset.pin_yin_ming_cheng.indexOf(keywords) !== -1
             )
           }) //indexSearch(cache.assetIndex, keywords) || cache.assets
     result = applyFilters(result, filters, taskMap)
