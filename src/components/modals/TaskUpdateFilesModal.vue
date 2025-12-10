@@ -69,7 +69,6 @@ onMounted(() => {
             doodleWorkStore().state.isShowDoodleWorkExeDownloadProgress = false
             ElMessage.success('下载成功')
           }
-          doodleWorkStore().state.doodleWorkExeDownloadProgress = data.progress
         }
         const task = updateTaskFiles.state.allFiles.get(data.id)
         if (data && task) {
@@ -81,6 +80,14 @@ onMounted(() => {
           task.status = 'failed'
           task.progress = 0
         }
+      }
+    )
+    doodleWorkStore().state.doodleSocket.on(
+      'doodle:task_info:progress',
+      async data => {
+        doodleWorkStore().state.doodleWorkExeDownloadProgress = (
+          data.progress * 100
+        ).toFixed(4)
       }
     )
   }
