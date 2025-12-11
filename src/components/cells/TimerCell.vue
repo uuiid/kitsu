@@ -52,8 +52,9 @@ const time_info = computed(() => {
 const start = () => {
   interval = setInterval(() => {
     if (props.task.status === 'running' || props.task.status === 'updating') {
-      const currentTime = new Date({ timezone: 'UTC' })
+      const currentTime = new Date()
       const date = new Date(props.task.run_time)
+      console.log(currentTime)
       time.value = doodleWork.actions.formatDiffTime(currentTime - date)
     } else if (
       ['completed', 'failed', 'canceled', 'updated'].includes(props.task.status)

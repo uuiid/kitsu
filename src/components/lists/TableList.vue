@@ -106,7 +106,8 @@ const formatTableBodyData = (workTask, key) => {
       }
     return i18n.global.t(`doodle_work.task_state.${workTask['status']}`)
   } else if (['submit_time', 'end_time'].includes(key)) {
-    if (workTask[key] === undefined || workTask[key] === '') return ''
+    console.log(key, workTask[key])
+    if (workTask[key] === null || workTask[key] === '') return workTask[key]
     return new Date(workTask[key]).toLocaleString('zh-CN', {
       timeZone: 'Asia/Shanghai'
     })
