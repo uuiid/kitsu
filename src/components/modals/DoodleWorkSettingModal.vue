@@ -10,7 +10,7 @@ const doodleWork = doodleWorkStore()
 doodleWork.actions.getToolVersions().then(() => {
   //doodleWork.state.isVisitor ? doodleWork.actions.pullProcess() : null
 })
-const readonlyFields = ['UE_version']
+const readonlyFields = ['UE_version', 'maya_path']
 
 const displayFields = computed(() => {
   return doodleWork.state.doodleWorkSetting

@@ -81,6 +81,12 @@
           />
           <button-simple
             class="flexrow-item"
+            icon="scan"
+            :title="$t('doodle.update_asset_from_fbx')"
+            @click="updateAssetFromFbx"
+          />
+          <button-simple
+            class="flexrow-item"
             :text="$t('shots.manage')"
             icon="plus"
             @click="showManageShots"
@@ -716,7 +722,8 @@ export default {
       },
       visibleTempAssets: true,
       isShowAsset: true,
-      notFindAssets: []
+      notFindAssets: [],
+      targetAssetsMap: new Map()
     }
   },
 
@@ -1317,7 +1324,98 @@ export default {
     hideImportRenderModal() {
       this.modals.isImportRenderDisplayed = false
     },
-
+    async updateAssetFromFbx() {
+      if (this.sequenceId === 'all') {
+        ElMessage.error('请先选择基数')
+        return
+      }
+      if (this.targetAssetsMap.size === 0) {
+        for (const asset of this.assets) {
+          if (asset.bian_hao !== '') {
+            const bian_hao_name = 'Ch' + asset.bian_hao
+            if (this.targetAssetsMap.has(bian_hao_name)) {
+              this.targetAssetsMap.get(bian_hao_name).push(asset)
+            } else {
+              this.targetAssetsMap.set(bian_hao_name, [asset])
+            }
+          }
+          if (asset.pin_yin_ming_cheng !== '') {
+            if (this.targetAssetsMap.has(asset.pin_yin_ming_cheng)) {
+              this.targetAssetsMap.get(asset.pin_yin_ming_cheng).push(asset)
+            } else {
+              this.targetAssetsMap.set(asset.pin_yin_ming_cheng, [asset])
+            }
+          }
+          if (asset.pin_yin_ming_cheng !== '' && asset.ban_ben !== '') {
+            if (
+              this.targetAssetsMap.has(
+                `${asset.pin_yin_ming_cheng}_${asset.ban_ben}`
+              )
+            ) {
+              this.targetAssetsMap
+                .get(`${asset.pin_yin_ming_cheng}_${asset.ban_ben}`)
+                .push(asset)
+            } else {
+              this.targetAssetsMap.set(
+                `${asset.pin_yin_ming_cheng}_${asset.ban_ben}`,
+                [asset]
+              )
+            }
+          }
+        }
+      }
+      const entitiesNameMap = new Map()
+      for (const entity of this.castingEntities) {
+        entitiesNameMap.set(entity.name, entity)
+      }
+      const fs = require('fs')
+      const path = require('path')
+      const root_path = `${this.currentProduction.path}/03_Workflow/Shots/${this.sequenceMap.get(this.sequenceId).name}/fbx`
+      const dirs = fs.readdirSync(root_path)
+      for (const dir of dirs) {
+        const sequence_name = dir.slice(dir.lastIndexOf('_') + 1, dir.length)
+        const entity = entitiesNameMap.get(sequence_name)
+        if (!entity) {
+          continue
+        }
+        const entityAssetsMap = new Map()
+        for (const assetByType of this.castingByType[entity.id]) {
+          for (const asset of assetByType) {
+            entityAssetsMap.set(asset.asset_id, asset)
+          }
+        }
+        const dir_path = path.join(root_path, dir)
+        const files = fs.readdirSync(dir_path)
+        const update_asset = []
+        for (const file of files) {
+          if (file.endsWith('.fbx') && file.indexOf('_camera_') === -1) {
+            let asset_name = ''
+            if (file.indexOf('_rig_') !== -1) {
+              asset_name = file.slice(dir.length + 1, file.indexOf('_rig_'))
+            } else {
+              asset_name = file.slice(dir.length + 1, file.indexOf('_Low_'))
+            }
+            const targetAsset = this.targetAssetsMap.get(asset_name)
+            if (targetAsset) {
+              if (entityAssetsMap.size > 0) {
+                let isAdd = true
+                for (const asset of targetAsset) {
+                  if (entityAssetsMap.has(asset.id)) {
+                    isAdd = false
+                    break
+                  }
+                }
+                if (isAdd) update_asset.push(targetAsset[0])
+              }
+            }
+          }
+        }
+        if (update_asset.length > 0) {
+          await this.addManyAssets(update_asset, [entity.id])
+        }
+      }
+      ElMessage.success('更新成功')
+    },
     renderImport(data, mode) {
       this.loading.importing = true
       this.errors.importing = false
