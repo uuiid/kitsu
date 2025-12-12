@@ -108,7 +108,6 @@ const client = {
   },
   ppostFileData(path, file, onProgress = null) {
     return new Promise((resolve, reject) => {
-      const buffer = Buffer.from(file.data)
       superagent
         .post(path)
         .set('Content-Type', file.filetype || 'application/octet-stream')
@@ -116,7 +115,7 @@ const client = {
           'Content-Disposition',
           Buffer.from(file.disposition || '').toString('base64') || ''
         )
-        .send(buffer)
+        .send(file.data)
         .on('progress', event => {
           if (onProgress && event.direction === 'upload') {
             onProgress(event.loaded, event.total) // 调用进度回调
