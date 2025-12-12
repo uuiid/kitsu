@@ -347,20 +347,13 @@ const actions = {
   async newVideo({ commit }, video) {
     try {
       const res = await videolibraryApi.newVideo(video)
-      let data = null
-      const reader = new FileReader()
-      reader.onload = () => {
-        data = reader.result
-      }
-      reader.onloadend = () => {
-        const re = res
-        re.data = data
-        re.filetype = video.upimage.type
-        videolibraryApi.addImage(re).then(() => {
-          commit('NEW_VIDEO', res)
-        })
-      }
-      reader.readAsArrayBuffer(video.upimage)
+      const data = await helpers.getDateFromFile(video.upimage)
+      const re = res
+      re.data = data
+      re.filetype = video.upimage.type
+      videolibraryApi.addImage(re).then(() => {
+        commit('NEW_VIDEO', res)
+      })
       return res
     } catch (err) {
       console.log(err)

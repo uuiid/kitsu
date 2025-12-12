@@ -842,6 +842,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       // }
     },
     getVideoThumbnail: async task => {
+      if (state.value.localHttpPath === '')
+        state.value.localHttpPath = `http://127.0.0.1:${window.api.DoodleExePort()}`
       return doodlework.getVideoThumbnail(task, state.value.localHttpPath)
     },
     submitLocalDoodleWork: async () => {
