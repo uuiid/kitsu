@@ -348,7 +348,7 @@ const actions = {
     try {
       const res = await videolibraryApi.newVideo(video)
       let data = null
-      if (video.buffer) data = video.buffer
+      if (video.buffer) data = Buffer.from(video.buffer)
       else data = await helpers.getDateFromFile(video.upimage)
       const re = res
       re.data = data
