@@ -347,7 +347,9 @@ const actions = {
   async newVideo({ commit }, video) {
     try {
       const res = await videolibraryApi.newVideo(video)
-      const data = await helpers.getDateFromFile(video.upimage)
+      let data = null
+      if (video.buffer) data = video.buffer
+      else data = await helpers.getDateFromFile(video.upimage)
       const re = res
       re.data = data
       re.filetype = video.upimage.type

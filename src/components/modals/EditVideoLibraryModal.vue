@@ -197,7 +197,8 @@ export default {
         type: this.videoType,
         notes: '',
         parents: [this.videoTypeId],
-        active: true
+        active: true,
+        buffer: null
       }
     }
   },
@@ -247,6 +248,7 @@ export default {
           type: data.type,
           lastModified: Date.now()
         })
+        this.videoToCreat.buffer = data
         this.$refs.image.images = []
         this.$refs.image.images.push(file)
         this.$refs.image.imageUrl =
@@ -301,7 +303,8 @@ export default {
         type: this.videoType,
         notes: '',
         parents: [this.videoTypeId],
-        active: true
+        active: true,
+        buffer: null
       }
       this.$refs.image.init()
       this.$refs.video.init()
