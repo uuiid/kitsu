@@ -1388,7 +1388,11 @@ export default {
           continue
         }
         const entityAssetsMap = new Map()
-        for (const assetByType of this.castingByType[entity.id]) {
+        const assetByType = this.castingByType[entity.id]
+        if (assetByType === undefined) {
+          continue
+        }
+        for (const assetByType of assetByType) {
           for (const asset of assetByType) {
             entityAssetsMap.set(asset.asset_id, asset)
           }
