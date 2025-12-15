@@ -139,6 +139,7 @@ function exportPath() {
             <th class="name datatable-row-header">名称</th>
             <th class="name datatable-row-header">拼音名称</th>
             <th class="name datatable-row-header">编号</th>
+            <th class="name datatable-row-header">版本</th>
             <th class="name datatable-row-header">路径</th>
           </tr>
         </thead>
@@ -162,6 +163,7 @@ function exportPath() {
             <td>{{ asset.name }}</td>
             <td>{{ asset.pin_yin_ming_cheng }}</td>
             <td>{{ asset.bian_hao }}</td>
+            <td>{{ asset.ban_ben }}</td>
             <td>
               <div
                 class="clickable-text"
