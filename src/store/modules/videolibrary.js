@@ -265,10 +265,9 @@ const actions = {
       ) {
         try {
           const data = await helpers.getFileFromPath(video.path)
-          const buffer = await data.arrayBuffer()
           const image = {
             id: video.id,
-            data: buffer,
+            data: data,
             filetype: video.extension
           }
           await videolibraryApi.addImage(image)
@@ -293,7 +292,8 @@ const actions = {
           await videolibraryApi.addImage(image)
           commit('SET_UPDATED_NUM', 'add')
         } catch (err) {
-          await videolibraryApi.modifyVideo(video)
+          console.log(err)
+          //await videolibraryApi.modifyVideo(video)
         }
       }
     }
@@ -349,11 +349,10 @@ const actions = {
     try {
       const res = await videolibraryApi.newVideo(video)
       let data = null
-      if (video.buffer) data = await video.buffer
+      if (video.buffer) data = video.buffer
       else data = await helpers.getDateFromFile(video.upimage)
-      const buffer = await data.arrayBuffer()
       const re = res
-      re.data = Buffer.from(buffer)
+      re.data = data
       re.filetype = video.upimage.type
       videolibraryApi.addImage(re).then(() => {
         commit('NEW_VIDEO', res)

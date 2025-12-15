@@ -1117,7 +1117,7 @@ export default {
   border-radius: 1em;
   transition: border-color 0.2s ease-in-out;
   cursor: pointer;
-  max-height: 142px;
+  //max-height: 142px;
 
   &:hover {
     border-color: var(--background-selectable);
@@ -1141,8 +1141,8 @@ export default {
     font-size: 0.9em;
     font-weight: bold;
     white-space: nowrap;
-    max-width: 140px;
-    min-width: 140px;
+    //max-width: 140px;
+    //min-width: 140px;
     padding: 0.5em;
 
     .entity-name {
