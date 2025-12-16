@@ -180,7 +180,8 @@ export const updateTaskFilesStore = defineStore(
           // const path = require('path')
           // let target_path = ''
           if (task.updateType === 3) {
-            await actions.updateDir(task)
+            task['path'] = task.file.path
+            await actions.updateUeFile(task)
             // target_path = await doodlework.getUeFilePath(
             //   state.value.selectedTask.task.id
             // )
@@ -249,7 +250,11 @@ export const updateTaskFilesStore = defineStore(
           task.progress = updated_size / totalSize
         }
       },
-
+      updateUeFile: async task => {
+        if (state.value.localHttpPath === '')
+          state.value.localHttpPath = `http://127.0.0.1:${window.api.DoodleExePort()}`
+        await doodlework.updateUeFile(task, state.value.localHttpPath)
+      },
       updateFile: async (file_path, task, type = 'maya') => {
         const data = await actions.getFileFromPath(file_path)
         const path = require('path')

@@ -122,5 +122,9 @@ export default {
       localPath +
       `/api/actions/projects/${task.project_id}/shots/${task.task_id}/update-sim-abc`
     return client.ppost(path, task)
+  },
+  updateUeFile(task, localPath = '') {
+    const path = localPath + `/api/actions/local/task/${task.task_id}/update/ue`
+    return client.ppost(path, task)
   }
 }

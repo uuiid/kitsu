@@ -71,7 +71,6 @@ const start = () => {
         })
         time.value = doodleWork.actions.formatDiffTime(all_time)
       } else {
-        console.log(props.task)
         time.value = doodleWork.actions.formatDiffTime(
           new Date(props.task.end_time) - new Date(props.task.submit_time)
         )
