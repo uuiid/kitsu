@@ -109,7 +109,7 @@
                   class="custom-input"
                   v-else
                   v-model="entry.start_time"
-                  value-format="YYYY-MM-DD HH:mm:ss"
+                  value-format="YYYY-MM-DD HH:mm:ss.000Z"
                   type="datetime"
                   :disabled-date="
                     time => {
@@ -137,7 +137,7 @@
                     }
                   "
                   type="datetime"
-                  value-format="YYYY-MM-DD HH:mm:ss"
+                  value-format="YYYY-MM-DD HH:mm:ss.000Z"
                   placeholder="Select date and time"
                 />
               </td>
