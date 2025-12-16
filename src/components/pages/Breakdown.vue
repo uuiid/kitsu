@@ -1331,7 +1331,7 @@ export default {
       }
       if (this.targetAssetsMap.size === 0) {
         for (const asset of this.assets) {
-          if (!asset.canceled) continue
+          if (asset.canceled) continue
           if (
             ![
               '8c02b76a-6be6-4959-af58-5c31a85fe072',
