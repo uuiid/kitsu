@@ -28,6 +28,7 @@
         @execute-doodle-work="executeDoodleWork"
         @folder-up="updateTaskFile"
         @folder-down="downloadTaskFile"
+        @image-up="updateTaskFile"
       />
       <div class="pa1" v-if="task?.working_files?.length > 0">
         <div
@@ -1343,7 +1344,7 @@ export default {
       console.log(this.taskTypeMap)
       console.log(this.selectedTasks)
     },
-    updateTaskFile() {
+    updateTaskFile(label = '') {
       updateTaskFilesStore().state.selection = []
       this.isLoadingWorkingFiles = true
       updateTaskFilesStore()
@@ -1381,6 +1382,12 @@ export default {
                   'a33b7371-038c-4628-93b2-6754fc4f302b'
                 ].includes([...this.selectedTasks.values()][0].task_type_id)
               ) {
+                if (label !== '') {
+                  this.isLoadingWorkingFiles = false
+                  updateTaskFilesStore().state.isShowUpdateModal = true
+                  updateTaskFilesStore().state.currentUpdateType = 5
+                  return
+                }
                 if (res.user_work_root !== '') {
                   const task_ids = []
                   this.selectedTasks.forEach(task => {
@@ -1402,8 +1409,11 @@ export default {
                     }
                   )
                   updateTaskFilesStore().state.isShowUpdateModal = true
-                } else ElMessage.error('请先到AI工作台设置项目根目录')
-                return
+                } else {
+                  ElMessage.error('请先到AI工作台设置项目根目录')
+                  this.isLoadingWorkingFiles = false
+                  return
+                }
               }
               this.isLoadingWorkingFiles = false
               updateTaskFilesStore().state.isShowUpdateModal = true

@@ -191,6 +191,21 @@
         </div>
         <div
           class="menu-item"
+          :title="$t('doodle.folder_up')"
+          @click="$emit('image-up', 'image-up')"
+          v-if="isElectron && isShowDownFolder"
+        >
+          <image-up
+            :title="$t('doodle.folder_up')"
+            v-if="!isLoadingWorkingFiles"
+          />
+          <loader
+            style="animation: spinAround 2000ms infinite linear"
+            v-else
+          ></loader>
+        </div>
+        <div
+          class="menu-item"
           :title="$t('doodle.folder_down')"
           @click="$emit('folder-down')"
           v-if="isElectron && isShowDownFolder"
@@ -903,7 +918,8 @@ import {
   FolderUp,
   FolderDown,
   Flashlight,
-  Loader
+  Loader,
+  ImageUp
 } from 'lucide-vue-next'
 import { mapGetters, mapActions } from 'vuex'
 
@@ -987,7 +1003,8 @@ export default {
     XIcon,
     FolderOpen,
     FolderUp,
-    FolderDown
+    FolderDown,
+    ImageUp
   },
   emits: [
     'export-task',
@@ -996,7 +1013,8 @@ export default {
     'execute-doodle-work',
     'folder-up',
     'show-auto-light-list',
-    'folder-down'
+    'folder-down',
+    'image-up'
   ],
 
   data() {

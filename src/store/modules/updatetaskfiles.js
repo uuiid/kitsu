@@ -203,6 +203,7 @@ export const updateTaskFilesStore = defineStore(
           } else if (task.updateType === 4) {
             await actions.submitLocalDoodleWork(task)
           } else if (task.updateType === 5) {
+            task['path'] = task.file.path
             await actions.updateShotVideoAndSequence(task)
           }
           task.status = 'updated'
@@ -292,10 +293,15 @@ export const updateTaskFilesStore = defineStore(
       updateShotVideoAndSequence: async task => {
         if (state.value.localHttpPath === '')
           state.value.localHttpPath = `http://127.0.0.1:${window.api.DoodleExePort()}`
-        await doodlework.updateShotVideoAndSequence(
+        const result = await doodlework.updateShotVideoAndSequence(
           task,
           state.value.localHttpPath
         )
+        const task_temp = Object.assign({}, state.value.allFiles.get(task.id))
+        state.value.allFiles.delete(task.id)
+        task_temp.id = result.id
+        await doodleWork.actions.formatTask(task_temp, result)
+        state.value.allFiles.set(task_temp.id, task_temp)
       },
       copyFileWithProgress(src, dest, callback) {
         const fs = require('fs')
@@ -525,7 +531,6 @@ export const updateTaskFilesStore = defineStore(
               state.value.localHttpPath
             )
           }
-          console.log(result)
           const task = Object.assign({}, state.value.allFiles.get(item.id))
           state.value.allFiles.delete(item.id)
           task.id = result.id

@@ -20,7 +20,8 @@ const updateTypes = [
   { id: 0, label: 'maya文件', name: 'maya', type: 'asset' },
   { id: 1, label: 'maya贴图', name: 'maya', type: 'asset' },
   { id: 3, label: 'ue文件', name: 'ue', type: 'asset' },
-  { id: 4, label: '文件', name: 'maya', type: 'shot' }
+  { id: 4, label: '文件', name: 'maya', type: 'shot' },
+  { id: 5, label: '视频文件', name: 'maya', type: 'shot' }
 ]
 const displayUpdateTypes = computed(() => {
   return updateTypes.filter(type => type.type === props.updateEntityType)
@@ -131,7 +132,8 @@ onUnmounted(() => {
 })
 
 onMounted(() => {
-  updateTaskFiles.state.currentUpdateType = displayUpdateTypes.value[0].id
+  if (updateTaskFiles.state.currentUpdateType !== 5)
+    updateTaskFiles.state.currentUpdateType = displayUpdateTypes.value[0].id
 })
 const onViewLog = work_task => {
   updateTaskFiles.doodleWork.state.viewLogWorkTask = work_task
