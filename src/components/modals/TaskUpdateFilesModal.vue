@@ -75,16 +75,20 @@ onMounted(() => {
           await doodleWorkStore().actions.formatTask(task, data)
           if (data.status === 'completed') {
             task.progress = 1
+          } else {
+            task.status = 'failed'
+            task.progress = 0
           }
-        } else {
-          task.status = 'failed'
-          task.progress = 0
         }
       }
     )
     doodleWorkStore().state.doodleSocket.on(
       'doodle:task_info:progress',
       async data => {
+        const task = updateTaskFiles.state.allFiles.get(data.id)
+        if (task) {
+          task.progress = data.progress
+        }
         doodleWorkStore().state.doodleWorkExeDownloadProgress = (
           data.progress * 100
         ).toFixed(4)

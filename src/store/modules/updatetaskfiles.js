@@ -181,7 +181,7 @@ export const updateTaskFilesStore = defineStore(
           // let target_path = ''
           if (task.updateType === 3) {
             task['path'] = task.file.path
-            await actions.updateUeFile(task)
+            await actions.submitLocalDoodleWork(task)
             // target_path = await doodlework.getUeFilePath(
             //   state.value.selectedTask.task.id
             // )
@@ -202,11 +202,14 @@ export const updateTaskFilesStore = defineStore(
             await actions.updateFile(task.file.path, task)
           } else if (task.updateType === 4) {
             await actions.submitLocalDoodleWork(task)
+          } else if (task.updateType === 5) {
+            await actions.updateShotVideoAndSequence(task)
           }
           task.status = 'updated'
           task.end_time = new Date().toISOString()
           state.value.loadingNum -= 1
         } catch (e) {
+          console.log(e)
           task.status = 'failed'
           task.last_line_log = e.message
           task.end_time = new Date().toISOString()
@@ -285,6 +288,14 @@ export const updateTaskFilesStore = defineStore(
           )
           await doodlework.updateFile(task, file_data, type, () => {})
         }
+      },
+      updateShotVideoAndSequence: async task => {
+        if (state.value.localHttpPath === '')
+          state.value.localHttpPath = `http://127.0.0.1:${window.api.DoodleExePort()}`
+        await doodlework.updateShotVideoAndSequence(
+          task,
+          state.value.localHttpPath
+        )
       },
       copyFileWithProgress(src, dest, callback) {
         const fs = require('fs')
@@ -462,7 +473,6 @@ export const updateTaskFilesStore = defineStore(
           //
           //   }
           // }
-          console.log(item)
           if (
             state.value.selectedTask.task.task_type_id !==
             '32504e3e-381c-4f36-bdeb-f73328f96f9c'
@@ -473,7 +483,12 @@ export const updateTaskFilesStore = defineStore(
           data.file = ''
           //data.task_id = state.value.selectedTask.task.id
           let result = null
-          if (
+          if (data.updateType === 3) {
+            result = await doodlework.updateUeFile(
+              data,
+              state.value.localHttpPath
+            )
+          } else if (
             state.value.selectedTask.task.task_type_id ===
             '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
           ) {
@@ -510,7 +525,7 @@ export const updateTaskFilesStore = defineStore(
               state.value.localHttpPath
             )
           }
-
+          console.log(result)
           const task = Object.assign({}, state.value.allFiles.get(item.id))
           state.value.allFiles.delete(item.id)
           task.id = result.id

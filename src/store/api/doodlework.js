@@ -126,5 +126,10 @@ export default {
   updateUeFile(task, localPath = '') {
     const path = localPath + `/api/actions/local/task/${task.task_id}/update/ue`
     return client.ppost(path, task)
+  },
+  updateShotVideoAndSequence(task, localPath = '') {
+    const path =
+      localPath + `/api/actions/local/task/${task.task_id}/update/shot`
+    return client.ppost(path, task)
   }
 }
