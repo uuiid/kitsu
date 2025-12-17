@@ -75,7 +75,7 @@ onMounted(() => {
           await doodleWorkStore().actions.formatTask(task, data)
           if (data.status === 'completed') {
             task.progress = 1
-          } else {
+          } else if (data.status === 'failed') {
             task.status = 'failed'
             task.progress = 0
           }
