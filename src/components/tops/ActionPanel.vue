@@ -191,12 +191,12 @@
         </div>
         <div
           class="menu-item"
-          :title="$t('doodle.folder_up')"
+          :title="$t('doodle.image_up')"
           @click="$emit('image-up', 'image-up')"
           v-if="isElectron && isShowDownFolder"
         >
           <image-up
-            :title="$t('doodle.folder_up')"
+            :title="$t('doodle.image_up')"
             v-if="!isLoadingWorkingFiles"
           />
           <loader

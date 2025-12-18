@@ -329,9 +329,8 @@ const onAddData = async files => {
       if (props.updateEntityType === 'shot') {
         const file_split = file.name.split('.')
         temp_task = updateTaskFiles.state.selection.filter(task => {
-          return (
-            `${productions.state.currentProduction.code}_${task.task.entity_name.replace(' / ', '_')}` ===
-            file_split[0]
+          return file_split[0].startsWith(
+            `${productions.state.currentProduction.code}_${task.task.entity_name.replace(' / ', '_')}`
           )
         })
       } else {
