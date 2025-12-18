@@ -110,6 +110,7 @@
             "
             unlink-panels
             placeholder="Select date and time"
+            value-format="YYYY-MM-DD HH:mm:ss.000Z"
             @change="onEntryChange"
             @blur="isShouEditeDate = false"
             v-if="isShouEditeDate"
@@ -364,6 +365,8 @@ export default {
       return '\n'
     },
     onClickDate() {
+      console.log(this.task.start_date)
+      console.log(this.formatDate(this.task.start_date))
       this.isShouEditeDate = true
       this.$nextTick(() => {
         this.$refs.datePicker.focus()

@@ -1034,8 +1034,8 @@ export default {
         checklist: [],
         links: [],
         task_status_id: this.updateDateTask.task_status_id,
-        start_date: this.formatDate(this.updateDateTask.dateRange[0]),
-        due_date: this.formatDate(this.updateDateTask.dateRange[1]),
+        start_date: this.updateDateTask.dateRange[0],
+        due_date: this.updateDateTask.dateRange[1],
         comment: this.dateComment
       }
       this.modifyDateComment({ taskId, data })
@@ -1046,13 +1046,14 @@ export default {
         })
         .catch(console.error)
     },
+
     modifyTaskDate() {
       if (this.updateDateTask) {
         const taskId = this.updateDateTask.id
         const data = {
-          start_date: this.formatDate(this.updateDateTask.dateRange[0]),
+          start_date: this.updateDateTask.dateRange[0],
 
-          due_date: this.formatDate(this.updateDateTask.dateRange[1])
+          due_date: this.updateDateTask.dateRange[1]
         }
         if (
           !(
