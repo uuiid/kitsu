@@ -107,15 +107,23 @@
                         : displayAllAssets.length
                     }})
                   </h1>
-                  <button-simple
-                    :text="
-                      isEditVideoSelection
-                        ? $t('main.cancel') + $t('main.edit')
-                        : $t('main.edit')
-                    "
-                    @click="editVideoSelection"
-                    v-if="isCurrentUserManager"
-                  />
+                  <div class="video-action">
+                    <el-slider
+                      v-model="imageSliderValue"
+                      v-if="isShowBigImage"
+                      style="width: 200px"
+                    />
+                    <el-switch v-model="isShowBigImage" />
+                    <button-simple
+                      :text="
+                        isEditVideoSelection
+                          ? $t('main.cancel') + $t('main.edit')
+                          : $t('main.edit')
+                      "
+                      @click="editVideoSelection"
+                      v-if="isCurrentUserManager"
+                    />
+                  </div>
                 </div>
                 <div class="list-body">
                   <ul class="items">
@@ -134,10 +142,10 @@
                       >
                         <video-preview
                           :ref="entity.id"
-                          :empty-height="100"
-                          :empty-width="150"
-                          :height="100"
-                          :width="150"
+                          :empty-height="videoPreviewSize.width"
+                          :empty-width="videoPreviewSize.height"
+                          :height="200"
+                          :width="250"
                           :entity="entity"
                           :preview-file-id="entity.id"
                           is-rounded-top-border
@@ -365,7 +373,9 @@ export default {
       currentLabelAllId: [],
       typeTreeData: [],
       labelTreeData: [],
-      isAddLabel: false
+      isAddLabel: false,
+      isShowBigImage: false,
+      imageSliderValue: 50
     }
   },
 
@@ -414,6 +424,17 @@ export default {
         },
         (_, index) => index + 1
       )
+    },
+    videoPreviewSize() {
+      const size = {
+        width: 100,
+        height: 150
+      }
+      if (this.isShowBigImage) {
+        size.width = size.width + this.imageSliderValue * 3
+        size.height = size.height + this.imageSliderValue * 3
+      }
+      return size
     },
     pagedAssets() {
       return this.displayAllAssets.slice(
@@ -1195,5 +1216,10 @@ export default {
   background-color: rgba(100, 100, 100, 0.5);
   position: relative;
   z-index: 10;
+}
+.video-action {
+  display: flex;
+  flex-flow: row;
+  gap: 20px;
 }
 </style>

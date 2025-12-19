@@ -143,6 +143,10 @@ export default {
     showMovie: {
       default: true,
       type: Boolean
+    },
+    showBigImage: {
+      default: true,
+      type: Boolean
     }
   },
   components: {
@@ -171,13 +175,10 @@ export default {
 
     thumbnailPath() {
       const previewFileId = this.previewFileId || this.entity.preview_file_id
-      return (
-        '/api/doodle/pictures/thumbnails/' +
-        previewFileId +
-        '.png?t' +
-        new Date().getTime() +
-        this.refreshKey
-      )
+      const thumbnailPath = this.showBigImage
+        ? `/api/doodle/pictures/${previewFileId}.png?t${new Date().getTime()}`
+        : `/api/doodle/pictures/thumbnails/${previewFileId}.png?t${new Date().getTime()}`
+      return thumbnailPath + this.refreshKey
     },
 
     thumbnailKey() {
