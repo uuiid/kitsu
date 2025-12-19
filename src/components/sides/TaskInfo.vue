@@ -1350,44 +1350,44 @@ export default {
       updateTaskFilesStore()
         .actions.getLocalSetting()
         .then(async res => {
-          if (res.UE_path !== '' && res.maya_path !== '') {
-            if (this.selectedTasks.size > 0) {
-              ;[...this.selectedTasks.values()].forEach(task => {
-                updateTaskFilesStore().state.selection.push({
-                  task,
-                  column: task.column,
-                  x: task.x,
-                  y: task.y,
-                  entity:
-                    this.$route.name === 'assets'
-                      ? this.assetMap.get(task.entity_id)
-                      : this.shotMap.get(task.entity_id)
-                })
+          if (this.selectedTasks.size > 0) {
+            ;[...this.selectedTasks.values()].forEach(task => {
+              updateTaskFilesStore().state.selection.push({
+                task,
+                column: task.column,
+                x: task.x,
+                y: task.y,
+                entity:
+                  this.$route.name === 'assets'
+                    ? this.assetMap.get(task.entity_id)
+                    : this.shotMap.get(task.entity_id)
               })
-              if (
-                updateTaskFilesStore().state.selection.length > 1 &&
-                this.$route.name === 'assets'
-              ) {
-                const tasksMap = new Map()
-                const productionId = productions.state.currentProduction.id
-                updateTaskFilesStore().state.selection.forEach(item => {
-                  tasksMap.set(item.task.id, item.task.entity_id)
-                })
+            })
+            if (
+              updateTaskFilesStore().state.selection.length > 1 &&
+              this.$route.name === 'assets'
+            ) {
+              const tasksMap = new Map()
+              const productionId = productions.state.currentProduction.id
+              updateTaskFilesStore().state.selection.forEach(item => {
+                tasksMap.set(item.task.id, item.task.entity_id)
+              })
 
-                await this.scanWorkFiles({ productionId, tasksMap })
+              await this.scanWorkFiles({ productionId, tasksMap })
+            }
+            if (
+              [
+                '9be21729-be9e-4914-afc4-6046ed089886',
+                'a33b7371-038c-4628-93b2-6754fc4f302b'
+              ].includes([...this.selectedTasks.values()][0].task_type_id)
+            ) {
+              if (label !== '') {
+                this.isLoadingWorkingFiles = false
+                updateTaskFilesStore().state.isShowUpdateModal = true
+                updateTaskFilesStore().state.currentUpdateType = 5
+                return
               }
-              if (
-                [
-                  '9be21729-be9e-4914-afc4-6046ed089886',
-                  'a33b7371-038c-4628-93b2-6754fc4f302b'
-                ].includes([...this.selectedTasks.values()][0].task_type_id)
-              ) {
-                if (label !== '') {
-                  this.isLoadingWorkingFiles = false
-                  updateTaskFilesStore().state.isShowUpdateModal = true
-                  updateTaskFilesStore().state.currentUpdateType = 5
-                  return
-                }
+              if (res.UE_path !== '' && res.maya_path !== '') {
                 if (res.user_work_root !== '') {
                   const task_ids = []
                   this.selectedTasks.forEach(task => {
@@ -1414,14 +1414,14 @@ export default {
                   this.isLoadingWorkingFiles = false
                   return
                 }
-              }
-              this.isLoadingWorkingFiles = false
-              updateTaskFilesStore().state.isShowUpdateModal = true
-            } else {
-              this.isLoadingWorkingFiles = false
-              ElMessage.error('请先选择一个任务')
+              } else ElMessage.error('请先到AI工作台设置Maya和Unreal的路径')
             }
-          } else ElMessage.error('请先到AI工作台设置Maya和Unreal的路径')
+            this.isLoadingWorkingFiles = false
+            updateTaskFilesStore().state.isShowUpdateModal = true
+          } else {
+            this.isLoadingWorkingFiles = false
+            ElMessage.error('请先选择一个任务')
+          }
         })
         .catch(err => {
           this.isLoadingWorkingFiles = false
