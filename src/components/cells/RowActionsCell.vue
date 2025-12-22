@@ -2,7 +2,7 @@
   <td class="actions has-text-right">
     <button
       class="button"
-      :title="$t('row_actions.history')"
+      :title="$t('main.history')"
       data-test="button-history"
       tabindex="-1"
       @click="$emit('history-clicked')"
@@ -13,7 +13,7 @@
 
     <button
       class="button"
-      :title="$t('row_actions.edit')"
+      :title="$t('main.edit')"
       data-test="button-edit"
       tabindex="-1"
       @click="$emit('edit-clicked')"

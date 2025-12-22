@@ -683,17 +683,21 @@ export default {
       }
     },
     async confirmEditVideo(video, tags) {
-      await ModelLibraryStore().actions.tagLinkAsset(tags, video.id)
-      for (const tag of video.parents) {
-        if (!tags.includes(tag)) {
-          await ModelLibraryStore().actions.deleteTagLinkAsset(tag, video.id)
+      try {
+        await ModelLibraryStore().actions.tagLinkAsset(tags, video.id)
+        for (const tag of video.parents) {
+          if (!tags.includes(tag)) {
+            await ModelLibraryStore().actions.deleteTagLinkAsset(tag, video.id)
+          }
         }
+        await this.modifyVideo(video)
+        this.currentSelectVideo = video
+        await this.refresh()
+        if (this.$refs[video.id][0]) this.$refs[video.id][0].refreshKey += 1
+      } catch (error) {
+        ElMessage.error(error.message)
       }
-      await this.modifyVideo(video)
-      this.currentSelectVideo = video
       this.setIsUpdatingVideos()
-      await this.refresh()
-      if (this.$refs[video.id][0]) this.$refs[video.id][0].refreshKey += 1
     },
     checkElectron() {
       this.setIsElectron(navigator.userAgent.includes('Electron'))
