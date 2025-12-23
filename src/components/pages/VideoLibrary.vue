@@ -121,7 +121,7 @@
                           : $t('main.edit')
                       "
                       @click="editVideoSelection"
-                      v-if="isCurrentUserManager"
+                      v-if="isCurrentUserSupervisorAbove"
                     />
                   </div>
                 </div>
@@ -406,7 +406,8 @@ export default {
       'isEditVideoSelection',
       'imageExtensions',
       'refreshTimer',
-      'currentVideoLabel'
+      'currentVideoLabel',
+      'isCurrentUserSupervisorAbove'
     ]),
     searchField() {
       return this.$refs['search-field']
