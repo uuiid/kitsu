@@ -129,7 +129,8 @@ export default {
   },
   updateShotVideoAndSequence(task, localPath = '') {
     const path =
-      localPath + `/api/actions/local/task/${task.task_id}/update/movie`
+      localPath +
+      `/api/actions/local/task/${task.task_id}/update/movie${task.compose_movie ? '/compose' : ''}`
     return client.ppost(path, task)
   }
 }

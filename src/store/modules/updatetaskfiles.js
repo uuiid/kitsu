@@ -54,6 +54,13 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
       type: Boolean,
       task_type_id: 'eb7c92c8-232c-4894-8efa-c62ced44ff05'
     })
+    this.task_data_filed.set('compose_movie', {
+      id: 'compose_movie',
+      name: '特效送审文件',
+      checked: false,
+      type: Boolean,
+      task_type_id: 'a33b7371-038c-4628-93b2-6754fc4f302b'
+    })
     this.tableHeaderFiled['update_progress'] = {
       name: '上传进度',
       type: 'progress'
@@ -293,6 +300,8 @@ export const updateTaskFilesStore = defineStore(
       updateShotVideoAndSequence: async task => {
         if (state.value.localHttpPath === '')
           state.value.localHttpPath = `http://127.0.0.1:${window.api.DoodleExePort()}`
+        doodleWorkCheckFiles.formatDataState(task)
+
         const result = await doodlework.updateShotVideoAndSequence(
           task,
           state.value.localHttpPath

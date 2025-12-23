@@ -51,7 +51,9 @@ onMounted(() => {
     updateTaskFiles.state.selectedTask.task.task_type_id ===
       '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34' ||
     updateTaskFiles.state.selectedTask.task.task_type_id ===
-      'eb7c92c8-232c-4894-8efa-c62ced44ff05'
+      'eb7c92c8-232c-4894-8efa-c62ced44ff05' ||
+    updateTaskFiles.state.selectedTask.task.task_type_id ===
+      'a33b7371-038c-4628-93b2-6754fc4f302b'
   ) {
     updateTaskFiles.doodleWorkCheckFiles.isShowFiled = true
   } else {
@@ -591,7 +593,8 @@ function deleteAllTask() {
             v-if="
               updateTaskFiles.doodleWorkCheckFiles.isShowFiled &&
               (updateTaskFiles.state.currentUpdateType === 0 ||
-                updateTaskFiles.state.currentUpdateType === 4)
+                updateTaskFiles.state.currentUpdateType === 4 ||
+                updateTaskFiles.state.currentUpdateType === 5)
             "
           >
             <div
