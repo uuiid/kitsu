@@ -332,10 +332,10 @@ const onAddData = async files => {
         // const file_split = file.name.split('.')
         temp_task = updateTaskFiles.state.selection.filter(task => {
           const target_name = `${productions.state.currentProduction.code}_${task.task.entity_name.replace(' / ', '_')}`
-          console.log(file.name[target_name.length])
           return (
             (file.name[target_name.length] === '.' ||
-              file.name[target_name.length] === '_') &&
+              file.name[target_name.length] === '_' ||
+              file.name[target_name.length] === undefined) &&
             file.name.startsWith(
               `${productions.state.currentProduction.code}_${task.task.entity_name.replace(' / ', '_')}`
             )

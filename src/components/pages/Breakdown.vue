@@ -1423,7 +1423,7 @@ export default {
             }
           }
         }
-        if (update_asset.length > 0) {
+        if (update_asset.length > 0 && this.casting[entity.id] !== undefined) {
           await this.addManyAssets(update_asset, [entity.id])
         }
       }
@@ -1436,6 +1436,9 @@ export default {
         data = data.get('file')
       }
       const temp_asset = new Map()
+      this.assets.forEach(asset => {
+        if (asset.name) temp_asset.set(asset.name, asset)
+      })
       const not_find_asset = []
       csv.processCSV(data).then(async results => {
         for (const result of results.slice(1)) {
@@ -1448,21 +1451,19 @@ export default {
               if (res_str !== '' && res_str !== undefined) {
                 const res_list = res_str.split(',')
                 for (const res of res_list) {
-                  if (temp_asset.has(res)) {
-                    if (temp_asset.get(res) !== undefined)
-                      assets_list.push(temp_asset.get(res))
-                  } else {
-                    const find_asset = this.assets.find(
-                      asset => asset.name === res
-                    )
-                    temp_asset.set(res, find_asset)
-                    if (find_asset !== undefined) assets_list.push(find_asset)
-                    if (!find_asset) not_find_asset.push(res)
+                  if (res.replace(/\s+/g, '') !== '') {
+                    if (temp_asset.has(res)) {
+                      if (temp_asset.get(res) !== undefined)
+                        assets_list.push(temp_asset.get(res))
+                    } else {
+                      if (!not_find_asset.includes(res))
+                        not_find_asset.push(res)
+                    }
                   }
                 }
               }
             }
-            if (assets_list.length > 0)
+            if (assets_list.length > 0 && this.casting[entity.id] !== undefined)
               await this.addManyAssets(assets_list, [entity.id])
           }
         }
