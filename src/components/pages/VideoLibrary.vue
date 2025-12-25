@@ -24,7 +24,7 @@
               'update-video-button': true
             }"
             @click="showNewModal"
-            v-if="isElectron && isCurrentUserManager"
+            v-if="isElectron && isCurrentUserSupervisorAbove"
           >
             {{ $t('video_library.update_video') }}
           </button>
@@ -35,7 +35,7 @@
               'update-video-button': true
             }"
             @click="showBatchNewModal"
-            v-if="isElectron && isCurrentUserManager"
+            v-if="isElectron && isCurrentUserSupervisorAbove"
           >
             {{ $t('video_library.batch_update_video') }}
           </button>

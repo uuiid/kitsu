@@ -37,7 +37,7 @@
               isCurrentViewSingleEntity) &&
             !isEntitySelection &&
             isTaskSelection &&
-            !isCurrentUserArtist
+            currentProduction.team.includes(user.id)
           "
         >
           <kitsu-icon
