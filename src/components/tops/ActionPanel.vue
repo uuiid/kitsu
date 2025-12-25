@@ -37,7 +37,7 @@
               isCurrentViewSingleEntity) &&
             !isEntitySelection &&
             isTaskSelection &&
-            currentProduction.team.includes(user.id)
+            isCurrentUserSupervisorAbove
           "
         >
           <kitsu-icon
@@ -1106,7 +1106,8 @@ export default {
       'taskStatusForCurrentUser',
       'taskTypeMap',
       'user',
-      'currentProduction'
+      'currentProduction',
+      'isCurrentUserSupervisorAbove'
     ]),
 
     isElectron() {
