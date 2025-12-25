@@ -1158,7 +1158,7 @@ export default {
         )
       for (const entityId of entityIds) {
         for (const asset of assets) {
-          const previousAsset = this.casting[entityId].find(
+          const previousAsset = this.casting[entityId]?.find(
             a => a.asset_id === asset.id
           )
           if (previousAsset) continue
