@@ -38,14 +38,14 @@ const workingFilesList = computed(() => {
 })
 onMounted(() => {
   if (props.sequenceId === 'all') {
+    workingFile.state.workingFiles.clear()
     ElMessage.error('请先选择集数')
     return
   }
-  if (workingFile.state.workingFiles.size === 0)
-    workingFileStore().actions.getWorkingFilesFromSequence(
-      props.projectId,
-      props.sequenceId
-    )
+  workingFileStore().actions.getWorkingFilesFromSequence(
+    props.projectId,
+    props.sequenceId
+  )
 })
 function onClickWorkFile(work_file) {
   const fs = require('fs')
