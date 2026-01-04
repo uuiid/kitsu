@@ -194,7 +194,7 @@ import { formatListMixin } from '@/components/mixins/format'
 import { descriptorMixin } from '@/components/mixins/descriptors'
 
 import { PAGE_SIZE } from '@/lib/pagination'
-import { formatFullDate } from '@/lib/time'
+import { formatFullDateWithTimezone } from '@/lib/time'
 
 import DescriptionCell from '@/components/cells/DescriptionCell'
 import TableInfo from '@/components/widgets/TableInfo'
@@ -305,7 +305,7 @@ export default {
     },
 
     formatDate(date) {
-      return date ? formatFullDate(date) : ''
+      return date ? formatFullDateWithTimezone(date, this.user.timezone) : ''
     },
     onClick(entry) {
       entry.is_show = true
