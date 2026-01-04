@@ -438,6 +438,18 @@ export const updateTaskFilesStore = defineStore(
         await doodleWorkStore().actions.getWorkSetting()
         return doodleWorkStore().state.doodleWorkSetting
       },
+      submitCreateReview: async (task, data) => {
+        const commentData = new FormData()
+        data.files.forEach((attachment, key) => {
+          commentData.append(key, attachment.file)
+        })
+        commentData.set('episodes_name', data.episodes_name)
+        commentData.set('task_status_id', task.task_status_id)
+        commentData.set('comment', data.comment || '')
+        commentData.set('checklist', [])
+        console.log(commentData)
+        await doodlework.submitCreateReview(task, commentData)
+      },
       submitLightLocalDoodleWork: async task => {
         task['id'] = uuid()
         task['source_computer'] = '本机'

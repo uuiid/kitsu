@@ -1,5 +1,6 @@
 <script setup>
 import TableList from '@/components/lists/TableList.vue'
+import { reactive, ref } from 'vue'
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles'
 import { onUnmounted, onMounted, computed } from 'vue'
 import { ElMessage, ElNotification } from 'element-plus'
@@ -7,6 +8,8 @@ import DoodleWorkLogModal from '@/components/modals/DoodleWorkLogModal.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import productions from '@/store/modules/productions.js'
 import { useRoute } from 'vue-router'
+import AddReviewFileCell from '@/components/cells/AddReviewFileCell.vue'
+import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
 const route = useRoute()
 const updateTaskFiles = updateTaskFilesStore()
 const props = defineProps({
@@ -15,13 +18,36 @@ const props = defineProps({
     default: 'asset'
   }
 })
+const isLoading = ref(false)
+const reviewForm = reactive({
+  episodes_name_start: '',
+  episodes_name_end: '',
+  comment: '',
+  subtitle_path: {
+    name: '',
+    file: null
+  },
+  audio_path: {
+    name: '',
+    file: null
+  },
+  intro_path: {
+    name: '',
+    file: null
+  },
+  outro_path: {
+    name: '',
+    file: null
+  }
+})
 const notNeedInspections = new Map()
 const updateTypes = [
   { id: 0, label: 'maya文件', name: 'maya', type: 'asset' },
   { id: 1, label: 'maya贴图', name: 'maya', type: 'asset' },
   { id: 3, label: 'ue文件', name: 'ue', type: 'asset' },
   { id: 4, label: '文件', name: 'maya', type: 'shot' },
-  { id: 5, label: '视频文件', name: 'maya', type: 'shot' }
+  { id: 5, label: '视频文件', name: 'maya', type: 'shot' },
+  { id: 6, label: '送审资料文件', name: 'maya', type: 'sequence' }
 ]
 const displayUpdateTypes = computed(() => {
   return updateTypes.filter(type => type.type === props.updateEntityType)
@@ -178,6 +204,29 @@ const onActions = async (action_name, task) => {
 //     return doodlework.getImageFilePath(task.id)
 // }
 
+async function submitCreateReview() {
+  isLoading.value = true
+  const data = new Map()
+  data.set('subtitle_path', reviewForm.subtitle_path)
+  data.set('audio_path', reviewForm.audio_path)
+  data.set('intro_path', reviewForm.intro_path)
+  data.set(' outro_path', reviewForm.outro_path)
+  try {
+    await updateTaskFiles.actions.submitCreateReview(
+      updateTaskFiles.state.selectedTask.task,
+      {
+        files: data,
+        episodes_name: `${reviewForm.episodes_name_start}\n${reviewForm.episodes_name_end}`,
+        comment: reviewForm.comment
+      }
+    )
+  } catch (error) {
+    ElMessage.error(error.message)
+    isLoading.value = false
+  }
+  isLoading.value = false
+}
+
 async function pathRule() {
   const pin_yin_ming_cheng =
     updateTaskFiles.state.selectedTask.entity.pin_yin_ming_cheng
@@ -320,7 +369,7 @@ const onAddData = async files => {
     ].includes(updateTaskFiles.state.selectedTask.task.task_type_id)
   ) {
     files = Array.from(files).sort((a, b) => a.name.localeCompare(b.name))
-    if (props.updateEntityType !== 'shot') {
+    if (props.updateEntityType === 'asset') {
       const entity_ids = []
       updateTaskFiles.state.selection.forEach(item => {
         entity_ids.push(item.entity.id)
@@ -668,16 +717,67 @@ function deleteAllTask() {
           @add-data="onAddData"
           @view-log="onViewLog"
           @handle-action="onActions"
+          v-show="updateTaskFiles.state.currentUpdateType !== 6"
         ></table-list>
+        <div
+          class="create-review"
+          v-if="updateTaskFiles.state.currentUpdateType === 6"
+        >
+          <div class="create-review-input">
+            <el-input
+              v-model="reviewForm.episodes_name_start"
+              style="width: 240px"
+              placeholder="集数"
+            />
+            <el-input
+              v-model="reviewForm.episodes_name_end"
+              style="width: 240px"
+              placeholder="集数名称"
+            />
+            <el-input
+              v-model="reviewForm.comment"
+              style="width: 240px"
+              placeholder="评论(可为空)"
+            />
+          </div>
+          <div class="create-review-sub">
+            <add-review-file-cell
+              title="字幕"
+              v-model="reviewForm.subtitle_path"
+            ></add-review-file-cell>
+            <add-review-file-cell
+              title="配音"
+              v-model="reviewForm.audio_path"
+            ></add-review-file-cell>
+          </div>
+          <div class="create-review-sub">
+            <add-review-file-cell
+              title="片头"
+              v-model="reviewForm.intro_path"
+            ></add-review-file-cell>
+            <add-review-file-cell
+              title="片尾"
+              v-model="reviewForm.outro_path"
+            ></add-review-file-cell>
+          </div>
+        </div>
         <div class="has-text-right">
           <a
             :class="{
               button: true
             }"
             @click="deleteAllTask"
+            v-show="updateTaskFiles.state.currentUpdateType !== 6"
           >
             删除所有
           </a>
+
+          <button-simple
+            :is-loading="isLoading"
+            text="上传"
+            @click="submitCreateReview"
+            v-show="updateTaskFiles.state.currentUpdateType === 6"
+          />
         </div>
       </div>
     </div>
@@ -689,7 +789,7 @@ function deleteAllTask() {
 
 <style scoped lang="scss">
 .modal-content {
-  width: 70%;
+  width: 80%;
 }
 
 .update-type {
@@ -705,6 +805,18 @@ function deleteAllTask() {
   flex-direction: row;
   gap: 2em;
   margin-bottom: 10px;
+}
+.create-review-sub {
+  display: flex;
+  flex-flow: row;
+  gap: 10px;
+  height: 100%;
+}
+
+.create-review-input {
+  display: flex;
+  flex-flow: row;
+  gap: 10px;
 }
 
 .project-list-item {
@@ -726,5 +838,15 @@ function deleteAllTask() {
 }
 .has-text-right {
   margin-top: 5px;
+}
+.create-review {
+  display: flex;
+  flex-flow: column;
+  height: 60vh;
+  border-radius: 5px;
+  gap: 10px;
+}
+.box {
+  padding: 1em 2em 1em 2em;
 }
 </style>

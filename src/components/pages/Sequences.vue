@@ -146,7 +146,10 @@
       @confirm="confirmCreateTasks"
       @confirm-and-stay="confirmCreateTasksAndStay"
     />
-
+    <task-update-files-modal
+      update-entity-type="sequence"
+      v-if="updateTaskFilesStore().state.isShowUpdateModal"
+    />
     <add-metadata-modal
       :active="modals.isAddMetadataDisplayed"
       :is-loading="loading.addMetadata"
@@ -237,6 +240,8 @@ import TaskInfo from '@/components/sides/TaskInfo.vue'
 import AddSequenceModal from '@/components/modals/AddSequenceModal.vue'
 import { ElMessage } from 'element-plus'
 import i18n from '@/lib/i18n.js'
+import TaskUpdateFilesModal from '@/components/modals/TaskUpdateFilesModal.vue'
+import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 
 export default {
   name: 'sequences',
@@ -244,6 +249,7 @@ export default {
   mixins: [searchMixin, entitiesMixin],
 
   components: {
+    TaskUpdateFilesModal,
     AddSequenceModal,
     AddMetadataModal,
     AddThumbnailsModal,
@@ -439,6 +445,7 @@ export default {
   },
 
   methods: {
+    updateTaskFilesStore,
     ...mapActions([
       'addMetadataDescriptor',
       'createTasks',

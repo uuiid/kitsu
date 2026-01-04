@@ -98,6 +98,10 @@ export default {
     const path = localPath + `/api/actions/tools/add-watermark`
     return client.pput(path, data)
   },
+  submitCreateReview(task, data) {
+    const path = `/api/actions/tasks/${task.id}/create-review`
+    return client.ppost(path, data)
+  },
   submitLightTask(project_id, task, localPath = '') {
     const path = localPath + `/api/actions/project/${project_id}/sync`
     return client.ppost(path, task)

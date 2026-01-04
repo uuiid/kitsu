@@ -206,6 +206,13 @@
         </div>
         <div
           class="menu-item"
+          :title="$t('doodle.create_review')"
+          @click="$emit('create-review')"
+        >
+          <cloud-upload />
+        </div>
+        <div
+          class="menu-item"
           :title="$t('doodle.folder_down')"
           @click="$emit('folder-down')"
           v-if="isElectron && isShowDownFolder"
@@ -911,6 +918,7 @@
 <script>
 import {
   CheckSquareIcon,
+  CloudUpload,
   LinkIcon,
   PlayCircleIcon,
   XIcon,
@@ -987,6 +995,7 @@ export default {
     BuildFilterModal,
     ButtonSimple,
     CheckSquareIcon,
+    CloudUpload,
     ComboboxModel,
     ComboboxStatus,
     ComboboxStyled,
@@ -1014,7 +1023,8 @@ export default {
     'folder-up',
     'show-auto-light-list',
     'folder-down',
-    'image-up'
+    'image-up',
+    'create-review'
   ],
 
   data() {

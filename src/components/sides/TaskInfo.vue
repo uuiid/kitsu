@@ -29,6 +29,7 @@
         @folder-up="updateTaskFile"
         @folder-down="downloadTaskFile"
         @image-up="updateTaskFile"
+        @create-review="updateTaskFile"
       />
       <div class="pa1" v-if="task?.working_files?.length > 0">
         <div
