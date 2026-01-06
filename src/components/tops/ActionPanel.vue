@@ -206,10 +206,17 @@
         </div>
         <div
           class="menu-item"
+          :title="$t('doodle.add_review')"
+          @click="$emit('add-review')"
+        >
+          <cloud-upload />
+        </div>
+        <div
+          class="menu-item"
           :title="$t('doodle.create_review')"
           @click="$emit('create-review')"
         >
-          <cloud-upload />
+          <tv-minimal-play />
         </div>
         <div
           class="menu-item"
@@ -927,7 +934,8 @@ import {
   FolderDown,
   Flashlight,
   Loader,
-  ImageUp
+  ImageUp,
+  TvMinimalPlay
 } from 'lucide-vue-next'
 import { mapGetters, mapActions } from 'vuex'
 
@@ -945,7 +953,6 @@ import PeopleField from '@/components/widgets/PeopleField.vue'
 import SearchField from '@/components/widgets/SearchField.vue'
 import Spinner from '@/components/widgets/Spinner.vue'
 import ViewPlaylistModal from '@/components/modals/ViewPlaylistModal.vue'
-import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 import { ElMessage } from 'element-plus'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 
@@ -1013,7 +1020,8 @@ export default {
     FolderOpen,
     FolderUp,
     FolderDown,
-    ImageUp
+    ImageUp,
+    TvMinimalPlay
   },
   emits: [
     'export-task',
@@ -1024,7 +1032,8 @@ export default {
     'show-auto-light-list',
     'folder-down',
     'image-up',
-    'create-review'
+    'create-review',
+    'add-review'
   ],
 
   data() {
@@ -1387,7 +1396,6 @@ export default {
     }
   },
   methods: {
-    updateTaskFilesStore,
     ...mapActions([
       'assignSelectedTasks',
       'changeSelectedTaskStatus',

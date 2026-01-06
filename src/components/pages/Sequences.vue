@@ -150,6 +150,13 @@
       update-entity-type="sequence"
       v-if="updateTaskFilesStore().state.isShowUpdateModal"
     />
+    <create-review-field-modal
+      v-if="updateTaskFilesStore().state.isShowCreateReviewFieldModal"
+    />
+    <show-check-review-modal
+      v-if="updateTaskFilesStore().state.isShowCheckReviewModal"
+      :paged-assets="updateTaskFilesStore().state.checkCreateReviewTasks"
+    />
     <add-metadata-modal
       :active="modals.isAddMetadataDisplayed"
       :is-loading="loading.addMetadata"
@@ -242,6 +249,8 @@ import { ElMessage } from 'element-plus'
 import i18n from '@/lib/i18n.js'
 import TaskUpdateFilesModal from '@/components/modals/TaskUpdateFilesModal.vue'
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
+import CreateReviewFieldModal from '@/components/modals/CreateReviewFieldModal.vue'
+import ShowCheckReviewModal from '@/components/modals/ShowCheckReviewModal.vue'
 
 export default {
   name: 'sequences',
@@ -249,6 +258,8 @@ export default {
   mixins: [searchMixin, entitiesMixin],
 
   components: {
+    ShowCheckReviewModal,
+    CreateReviewFieldModal,
     TaskUpdateFilesModal,
     AddSequenceModal,
     AddMetadataModal,

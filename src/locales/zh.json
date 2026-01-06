@@ -1803,8 +1803,10 @@
       "download": "下载客户端",
       "folder_up": "上传文件",
       "image_up": "上传视频",
+      "video_inspection_for_review": "送审视频检查",
       "folder_down": "下载文件",
-      "create_review": "添加送审视频资料",
+      "create_review": "创建送审视频",
+      "add_review": "添加送审视频资料",
       "add_custom_entry": "添加自定义任务",
       "select_production": "选择项目",
       "project_uuid": "项目",
@@ -1841,7 +1843,13 @@
       "statistical_asset": "统计资产",
       "check_shot_light": "检查镜头自动灯光",
       "run_auto_light": "运行自动灯光",
-      "update_asset_from_fbx": "从FBX查找资产"
+      "update_asset_from_fbx": "从FBX查找资产",
+      "add_subtitle": "添加字幕",
+      "add_dubbing": "添加配音",
+      "add_name": "添加名称",
+      "add_head_tail": "添加标题",
+      "add_watermark": "添加水印",
+      "add_time_code": "添加时间码"
     },
     "doodle_productions": {
       "fields": {

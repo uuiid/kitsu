@@ -6,6 +6,8 @@ import Queue from 'yocto-queue'
 import { v4 as uuid } from 'uuid'
 import user from '@/store/modules/user.js'
 import doodlework from '@/store/api/doodlework.js'
+import tasksApi from '@/store/api/tasks'
+import { ElMessage } from 'element-plus'
 
 class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
   constructor() {
@@ -122,6 +124,8 @@ function initState() {
     isShowCheckModal: false,
     isShowUpdatePanel: false,
     isShowUpdateModal: false,
+    isShowCheckReviewModal: false,
+    isShowCreateReviewFieldModal: false,
     selectedTask: null,
     allFiles: new Map(),
     updateTaskQueue: new Queue(),
@@ -130,7 +134,8 @@ function initState() {
     localHttpPath: '',
     currentUpdateType: 0,
     selection: [],
-    downloadFileTaskId: ''
+    downloadFileTaskId: '',
+    checkCreateReviewTasks: []
   }
 }
 
@@ -447,8 +452,32 @@ export const updateTaskFilesStore = defineStore(
         commentData.set('task_status_id', task.task_status_id)
         commentData.set('comment', data.comment || '')
         commentData.set('checklist', [])
-        console.log(commentData)
         await doodlework.submitCreateReview(task, commentData)
+      },
+      getCreateReview: task => {
+        return doodlework.getCreateReview(task)
+      },
+      createReview: async (task, data) => {
+        const commentData = {
+          task_status_id: task.task_status_id,
+          comment: '',
+          checklist: [],
+          links: null,
+          taskId: task.id
+        }
+        const comment = await tasksApi.commentTask(commentData)
+        const previewData = {
+          taskId: task.id,
+          commentId: comment.id,
+          revision: undefined
+        }
+        const preview = await tasksApi.addPreview(previewData)
+        try {
+          await doodlework.createReview(preview.id, data)
+          ElMessage.success('创建成功')
+        } catch (err) {
+          ElMessage.error(err.body.error)
+        }
       },
       submitLightLocalDoodleWork: async task => {
         task['id'] = uuid()

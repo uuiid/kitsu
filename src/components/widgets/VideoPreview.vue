@@ -40,6 +40,7 @@
         @click.left="$emit('on-clicked-img')"
         @click.right="event => onPictureClicked(event)"
       >
+        <video v-if="isVideo" :src="videoPath" />
         <img
           class="thumbnail-picture"
           loading="lazy"
@@ -51,6 +52,7 @@
           }"
           :width="width || ''"
           alt=""
+          v-else
         />
       </div>
       <span
@@ -147,6 +149,10 @@ export default {
     showBigImage: {
       default: true,
       type: Boolean
+    },
+    isVideo: {
+      default: false,
+      type: Boolean
     }
   },
   components: {
@@ -172,7 +178,9 @@ export default {
     isMovie() {
       return this.entity.preview_file_extension === 'mp4'
     },
-
+    videoPath() {
+      return `api/movies/originals/preview-files/${this.entity.id}.mp4`
+    },
     thumbnailPath() {
       const previewFileId = this.previewFileId || this.entity.preview_file_id
       const thumbnailPath = this.showBigImage

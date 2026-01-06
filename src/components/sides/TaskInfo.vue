@@ -29,7 +29,8 @@
         @folder-up="updateTaskFile"
         @folder-down="downloadTaskFile"
         @image-up="updateTaskFile"
-        @create-review="updateTaskFile"
+        @create-review="createReview"
+        @add-review="updateTaskFile"
       />
       <div class="pa1" v-if="task?.working_files?.length > 0">
         <div
@@ -1344,6 +1345,41 @@ export default {
     executeDoodleWork() {
       console.log(this.taskTypeMap)
       console.log(this.selectedTasks)
+    },
+    async createReview() {
+      const check_create_review_res =
+        await updateTaskFilesStore().actions.getCreateReview(
+          updateTaskFilesStore().state.selectedTask.task
+        )
+      if (check_create_review_res.all_ready) {
+        updateTaskFilesStore().state.isShowCreateReviewFieldModal = true
+      } else {
+        const asset_list = []
+        if (this.shotMap.size === 0) await this.loadShots()
+        updateTaskFilesStore().state.isShowCheckReviewModal = true
+        for (const asset_id in check_create_review_res) {
+          const asset = this.shotMap.get(asset_id)
+          if (asset) {
+            let exist = true
+            if (check_create_review_res[asset_id] === null) exist = false
+            asset_list.push(
+              Object.assign(
+                {
+                  label: asset.name,
+                  exist: exist
+                },
+                check_create_review_res[asset_id]
+              )
+            )
+          }
+        }
+
+        updateTaskFilesStore().state.checkCreateReviewTasks = asset_list.sort(
+          (a, b) => {
+            return a.label.localeCompare(b.label)
+          }
+        )
+      }
     },
     updateTaskFile(label = '') {
       updateTaskFilesStore().state.selection = []

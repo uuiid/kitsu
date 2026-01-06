@@ -307,7 +307,8 @@ const initialState = {
 
   shotValidationColumns: [],
 
-  selectedShots: new Map()
+  selectedShots: new Map(),
+  shotMap: new Map()
 }
 
 const state = {
@@ -320,7 +321,7 @@ const getters = {
 
   shotSearchQueries: state => state.shotSearchQueries,
   shotSearchFilterGroups: state => state.shotSearchFilterGroups,
-  shotMap: state => cache.shotMap,
+  shotMap: state => state.shotMap,
   shotSorting: state => state.shotSorting,
 
   isFps: state => state.isFps,
@@ -828,6 +829,7 @@ const mutations = {
     cache.result = []
     cache.shotIndex = {}
     cache.shotMap = new Map()
+    state.shotMap = new Map()
 
     state.displayedShots = []
     state.displayedShotsCount = 0
@@ -846,6 +848,7 @@ const mutations = {
     cache.result = []
     cache.shotIndex = {}
     cache.shotMap = new Map()
+    state.shotMap = new Map()
     state.shotValidationColumns = []
 
     state.isShotsLoading = true
@@ -942,6 +945,7 @@ const mutations = {
       if (!isMaxRetakes && shot.data.max_retakes) isMaxRetakes = true
 
       cache.shotMap.set(shot.id, shot)
+      state.shotMap.set(shot.id, shot)
     })
     shots = sortShots(shots)
     cache.shots = shots
@@ -1019,6 +1023,7 @@ const mutations = {
     })
     shot.tasks = sortTasks(shot.tasks, taskTypeMap)
     cache.shotMap.set(shot.id, shot)
+    state.shotMap.set(shot.id, shot)
   },
 
   [SHOT_CSV_FILE_SELECTED](state, formData) {
@@ -1053,6 +1058,7 @@ const mutations = {
       cache.shots.push(newShot)
       cache.shots = sortShots(cache.shots)
       cache.shotMap.set(newShot.id, newShot)
+      state.shotMap.set(shot.id, shot)
       const maxX = state.displayedShots.length
       const maxY = state.nbValidationColumns
       state.shotSelectionGrid = buildSelectionGrid(maxX, maxY)
@@ -1119,6 +1125,7 @@ const mutations = {
     helpers.setListStats(state, cache.shots)
     state.shotFilledColumns = getFilledColumns(state.displayedShots)
     cache.shotMap.set(shot.id, shot)
+    state.shotMap.set(shot.id, shot)
     cache.shotIndex = buildShotIndex(cache.shots)
 
     const maxX = state.displayedShots.length
@@ -1324,7 +1331,7 @@ const mutations = {
     cache.shots.push(shot)
     cache.shots = sortShots(cache.shots)
     cache.shotMap.set(shot.id, shot)
-
+    state.shotMap.set(shot.id, shot)
     state.displayedShots.push(shot)
     state.displayedShots = sortShots(state.displayedShots)
     state.displayedShotsCount = cache.shots.length
@@ -1335,6 +1342,7 @@ const mutations = {
     const maxY = state.nbValidationColumns
     state.shotSelectionGrid = buildSelectionGrid(maxX, maxY)
     cache.shotMap.set(shot.id, shot)
+    state.shotMap.set(shot.id, shot)
   },
 
   [UPDATE_SHOT](state, shot) {
@@ -1344,6 +1352,7 @@ const mutations = {
 
   [REMOVE_SHOT](state, shotToDelete) {
     cache.shotMap.delete(shotToDelete.id)
+    state.shotMap.delete(shotToDelete.id)
     cache.shots = removeModelFromList(cache.shots, shotToDelete)
     cache.result = removeModelFromList(cache.result, shotToDelete)
     cache.shotIndex = buildShotIndex(cache.shots)
