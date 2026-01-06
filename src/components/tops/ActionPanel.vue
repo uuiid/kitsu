@@ -207,7 +207,8 @@
         <div
           class="menu-item"
           :title="$t('doodle.add_review')"
-          @click="$emit('add-review')"
+          @click="$emit('add-review', 'add_review')"
+          v-if="isShowSequenceButton"
         >
           <cloud-upload />
         </div>
@@ -215,6 +216,7 @@
           class="menu-item"
           :title="$t('doodle.create_review')"
           @click="$emit('create-review')"
+          v-if="isShowSequenceButton"
         >
           <tv-minimal-play />
         </div>
@@ -1189,6 +1191,9 @@ export default {
         this.selectedShots.size > 0 ||
         this.selectedEdits.size > 0
       )
+    },
+    isShowSequenceButton() {
+      return this.$route.name === 'sequences'
     },
     isAssigned() {
       if (!this.isCurrentUserArtist) return

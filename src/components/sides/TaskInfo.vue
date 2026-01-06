@@ -1382,6 +1382,10 @@ export default {
       }
     },
     updateTaskFile(label = '') {
+      if (label === 'add_review') {
+        updateTaskFilesStore().state.isShowUpdateModal = true
+        return
+      }
       updateTaskFilesStore().state.selection = []
       this.isLoadingWorkingFiles = true
       updateTaskFilesStore()
@@ -1421,7 +1425,8 @@ export default {
               if (label !== '') {
                 this.isLoadingWorkingFiles = false
                 updateTaskFilesStore().state.isShowUpdateModal = true
-                updateTaskFilesStore().state.currentUpdateType = 5
+                if (label === 'image-up')
+                  updateTaskFilesStore().state.currentUpdateType = 5
                 return
               }
               if (res.UE_path !== '' && res.maya_path !== '') {
