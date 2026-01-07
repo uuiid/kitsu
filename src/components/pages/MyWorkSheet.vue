@@ -267,8 +267,7 @@ import { sortPeople } from '@/lib/sorting'
 import stringHelpers from '@/lib/string'
 
 import csv from '@/lib/csv'
-import { range } from '@/lib/time'
-import { formatFullDate } from '@/lib/time'
+import { formatFullDateWithTimezone, range } from '@/lib/time'
 import { ElMessage } from 'element-plus'
 import AddTaskSheetModal from '@/components/modals/AddTaskSheetModal.vue'
 
@@ -712,8 +711,10 @@ export default {
       }
       line.push(`《${project_name}》第${season}季`)
       line.push(`EP${episodes}`)
-      line.push(formatFullDate(t.work_start_time))
-      line.push(formatFullDate(t.work_end_time))
+      line.push(
+        formatFullDateWithTimezone(t.work_start_time, this.user.timezone)
+      )
+      line.push(formatFullDateWithTimezone(t.work_end_time, this.user.timezone))
       const duration = Number(t.work_duration / (1000 * 1000 * 60 * 60 * 8))
       line.push(duration)
       line.push(t.work_remark)
