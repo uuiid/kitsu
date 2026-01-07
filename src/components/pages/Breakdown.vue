@@ -1326,7 +1326,7 @@ export default {
     },
     async updateAssetFromFbx() {
       if (this.sequenceId === 'all') {
-        ElMessage.error('请先选择基数')
+        ElMessage.error('请先选择集数')
         return
       }
       if (this.targetAssetsMap.size === 0) {
