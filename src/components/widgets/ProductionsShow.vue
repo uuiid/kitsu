@@ -132,7 +132,9 @@ function getPath(production) {
                 class="avatar-initials"
                 :style="{
                   fontSize:
-                    generateAvatar(production).length === 2 ? '48px' : '35px'
+                    86 / generateAvatar(production).length +
+                    (9 - generateAvatar(production).length) +
+                    'px'
                 }"
               >
                 {{ generateAvatar(production) }}
