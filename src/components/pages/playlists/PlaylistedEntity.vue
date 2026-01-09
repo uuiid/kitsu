@@ -178,6 +178,7 @@ export default {
 
     setCurrentParameters() {
       // Find task type matching current preview.
+      if (!this.entity.preview_files) return
       const taskTypeIds = Object.keys(this.entity.preview_files)
       if (taskTypeIds.length > 0) {
         if (this.entity.preview_file_id) {

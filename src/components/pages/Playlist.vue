@@ -870,14 +870,16 @@ export default {
               entity.preview_file_id,
               playlistEntity
             )
-            const previewFileGroups = Object.values(
-              playlistEntity.preview_files
-            )
-            previewFileGroups.forEach(previewFiles => {
-              previewFiles.forEach(previewFile => {
-                this.previewFileMap.set(previewFile.id, previewFile)
+            if (playlistEntity.preview_files) {
+              const previewFileGroups = Object.values(
+                playlistEntity.preview_files
+              )
+              previewFileGroups.forEach(previewFiles => {
+                previewFiles.forEach(previewFile => {
+                  this.previewFileMap.set(previewFile.id, previewFile)
+                })
               })
-            })
+            }
           }
         })
       }

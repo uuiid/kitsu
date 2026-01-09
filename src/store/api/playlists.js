@@ -65,6 +65,27 @@ export default {
     client.put(`/api/data/playlists/${playlist.id}`, data, callback)
   },
 
+  addPlaylistEntity(playlist, entity) {
+    const data = {
+      entity_id: entity.id,
+      sequence_id: '',
+      preview_file_id: entity.preview_file_id,
+      order_index: 0
+    }
+    const path = `/api/data/playlists/${playlist.id}/entities/${data.entity_id}`
+    return client.ppost(path, data)
+  },
+
+  deletePlaylistEntity(playlist, data) {
+    const path = `/api/data/playlists/${playlist.id}/shots/${data.shot_id}`
+    return client.pdel(path)
+  },
+
+  editPlaylistEntity(playlist, data, callback) {
+    const path = `/api/data/playlists/${playlist.id}/shots/${data.shot_id}`
+    return client.pput(path, data)
+  },
+
   deletePlaylist(playlist, callback) {
     return client.del(`/api/data/playlists/${playlist.id}`, callback)
   },

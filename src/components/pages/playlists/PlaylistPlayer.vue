@@ -1285,6 +1285,7 @@ export default {
 
     currentRevisionToCompare() {
       if (!this.currentEntity) return null
+      if (!this.currentEntity.preview_files) return null
       const previewFiles =
         this.currentEntity.preview_files[this.taskTypeToCompare]
       if (previewFiles && previewFiles.length > 0) {
@@ -1678,6 +1679,8 @@ export default {
      * }
      */
     onEntityDropped(info) {
+      console.log(this.entityList.find(s => s.id === info.after))
+      console.log(this.entityList.find(s => s.id === info.before))
       const playlistEl = this.$refs['playlisted-entities']
       const scrollLeft = playlistEl.scrollLeft
       const entityToMove = this.entityList.find(s => s.id === info.after)
@@ -1783,25 +1786,28 @@ export default {
     },
 
     getComparisonTaskTypeOptions() {
-      const taskTypeIds = Object.keys(this.currentEntity.preview_files).filter(
-        taskTypeId => {
+      if (this.currentEntity.preview_files) {
+        const taskTypeIds = Object.keys(
+          this.currentEntity.preview_files
+        ).filter(taskTypeId => {
           return !!this.currentEntity.preview_files[taskTypeId]
-        }
-      )
-      const taskTypeOptions = taskTypeIds
-        .map(taskTypeId => {
-          return {
-            label: this.taskTypeMap.get(taskTypeId).name,
-            value: this.taskTypeMap.get(taskTypeId).id
-          }
         })
-        .sort(
-          (a, b) =>
-            -a.label.localeCompare(b.label, undefined, {
-              numeric: true
-            })
-        )
-      return taskTypeOptions
+        const taskTypeOptions = taskTypeIds
+          .map(taskTypeId => {
+            return {
+              label: this.taskTypeMap.get(taskTypeId).name,
+              value: this.taskTypeMap.get(taskTypeId).id
+            }
+          })
+          .sort(
+            (a, b) =>
+              -a.label.localeCompare(b.label, undefined, {
+                numeric: true
+              })
+          )
+        return taskTypeOptions
+      }
+      return []
     },
 
     isComparisonTaskTypeAvailable() {
@@ -1834,6 +1840,7 @@ export default {
     },
 
     rebuildRevisionOptions() {
+      if (!this.currentEntity.preview_files) return
       if (
         this.currentEntity &&
         this.currentEntity.preview_files[this.taskTypeToCompare]

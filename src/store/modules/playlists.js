@@ -89,6 +89,9 @@ const actions = {
     return playlistsApi
       .getPlaylist(currentProduction, playlist)
       .then(playlist => {
+        playlist.shots = playlist.shots.sort(
+          (a, b) => a.order_index - b.order_index
+        )
         commit(LOAD_PLAYLIST_END, playlist)
         return Promise.resolve(playlist)
       })
@@ -153,6 +156,7 @@ const actions = {
           resolve(entity)
         }
       })
+      playlistsApi.addPlaylistEntity(playlist, entity)
     })
   },
 
@@ -160,13 +164,19 @@ const actions = {
     { commit, dispatch },
     { playlist, entity, callback }
   ) {
+    const play = playlist.shots.find(play => play.entity_id === entity.id)
     commit(REMOVE_ENTITY_FROM_PLAYLIST, { playlist, entity })
-    dispatch('editPlaylist', { data: playlist, callback })
+    //dispatch('editPlaylist', { data: playlist, callback })
+    if (play) playlistsApi.deletePlaylistEntity(playlist, play)
   },
 
   changePlaylistOrder({ commit, dispatch }, { playlist, info, callback }) {
     commit(CHANGE_PLAYLIST_ORDER, { playlist, info })
-    dispatch('editPlaylist', { data: playlist, callback })
+    //dispatch('editPlaylist', { data: playlist, callback })
+    const entityToMove = playlist.shots.find(
+      entityPlaylist => entityPlaylist.entity_id === info.after
+    )
+    playlistsApi.editPlaylistEntity(playlist, entityToMove, callback)
   },
 
   changePlaylistPreview(
@@ -244,13 +254,15 @@ const mutations = {
     state.previewFileEntityMap.clear()
     if (playlist.shots) {
       playlist.shots.forEach(entity => {
-        state.previewFileEntityMap.set(entity.preview_file_id, entity)
-        const previewFileGroups = Object.values(entity.preview_files)
-        previewFileGroups.forEach(previewFiles => {
-          previewFiles.forEach(previewFile => {
-            state.previewFileMap.set(previewFile.id, previewFile)
+        if (entity.preview_file_id) {
+          state.previewFileEntityMap.set(entity.preview_file_id, entity)
+          const previewFileGroups = Object.values(entity.preview_files)
+          previewFileGroups.forEach(previewFiles => {
+            previewFiles.forEach(previewFile => {
+              state.previewFileMap.set(previewFile.id, previewFile)
+            })
           })
-        })
+        }
       })
     }
   },
@@ -353,12 +365,27 @@ const mutations = {
     const entityToMove = playlist.shots.find(
       entityPlaylist => entityPlaylist.entity_id === info.after
     )
+    const targetShot = playlist.shots.find(
+      entityPlaylist => entityPlaylist.entity_id === info.before
+    )
+
     const entityToMoveIndex = playlist.shots.findIndex(
       entityPlaylist => entityPlaylist.entity_id === info.after
     )
     let targetShotIndex = playlist.shots.findIndex(
       entityPlaylist => entityPlaylist.entity_id === info.before
     )
+    if (targetShotIndex === playlist.shots.length - 1) {
+      entityToMove.order_index = targetShot.order_index + 100
+    } else {
+      const targetNextShot = playlist.shots[targetShotIndex + 1]
+      if (targetNextShot.order_index - targetShot.order_index <= 1) {
+        throw new Error('调整顺序失败')
+      }
+      entityToMove.order_index = Math.round(
+        (targetNextShot.order_index + targetShot.order_index) / 2
+      )
+    }
     if (entityToMoveIndex >= 0 && targetShotIndex >= 0) {
       playlist.shots.splice(entityToMoveIndex, 1)
       if (entityToMoveIndex > targetShotIndex) targetShotIndex++
