@@ -138,7 +138,7 @@
                     e =>
                       (names.shot = e.target.value
                         .replace(/\D/g, '')
-                        .slice(0, 3))
+                        .slice(0, 4))
                   "
                   v-model="names.shot"
                 />
@@ -392,7 +392,7 @@ export default {
 
     addShot() {
       if (this.isAddShotAllowed && !this.loading.addShot) {
-        const shotName = `SC${String(Number(this.names.shot)).padStart(3, '0')}`
+        const shotName = `SC${String(Number(this.names.shot)).padStart(this.names.shot.length, '0')}`
         this.loading.addShot = true
         if (shotName.length > 0 && this.selectedSequenceId) {
           const shot = {
@@ -405,7 +405,10 @@ export default {
             this.selectSequence(this.selectedSequenceId)
             let next_shot = Number(this.names.shot)
             if (this.shotNameSuffix === '') next_shot += 1
-            this.names.shot = String(next_shot).padStart(3, '0')
+            this.names.shot = String(next_shot).padStart(
+              this.names.shot.length,
+              '0'
+            )
           })
         }
       }
@@ -413,7 +416,7 @@ export default {
 
     addShot10() {
       if (this.isAddShotAllowed && !this.loading.addShot) {
-        const shotName = `SC${String(Number(this.names.shot)).padStart(3, '0')}`
+        const shotName = `SC${String(Number(this.names.shot)).padStart(this.names.shot.length, '0')}`
         const number = shotName.replace(/\D/g, '')
         if (number.length > 0) {
           const val = parseInt(number)
@@ -424,7 +427,11 @@ export default {
               if (this.selectedSequenceId) {
                 const shot = {
                   name:
-                    'SC' + String(Number(this.names.shot) + i).padStart(3, '0'),
+                    'SC' +
+                    String(Number(this.names.shot) + i).padStart(
+                      this.names.shot.length,
+                      '0'
+                    ),
                   sequence_id: this.selectedSequenceId,
                   project_id: this.currentProduction.id
                 }
@@ -434,7 +441,7 @@ export default {
                   console.log(this.names.shot)
                   this.names.shot = String(
                     Number(this.names.shot) + 1
-                  ).padStart(3, '0')
+                  ).padStart(this.names.shot.length, '0')
                 })
               }
             }
