@@ -915,8 +915,7 @@ export default {
               navigator.userAgent.includes('Electron') &&
               this.previewForms.length > 0
             ) {
-              const forms = this.previewForms.length
-              forms.forEach(async form => {
+              this.previewForms.forEach(async form => {
                 const data = await videoLibrary.helpers.getDateFromFile(
                   form.get('file')
                 )
