@@ -1329,8 +1329,14 @@ export default {
         ElMessage.error('请先选择集数')
         return
       }
+      await workingFileStore().actions.getWorkingFilesFromSequence(
+        this.currentProduction.id,
+        this.sequenceId
+      )
       if (this.targetAssetsMap.size === 0) {
-        for (const asset of this.assets) {
+        for (const asset of [
+          ...workingFileStore().state.workingFiles.values()
+        ]) {
           if (asset.canceled) continue
           if (
             ![
