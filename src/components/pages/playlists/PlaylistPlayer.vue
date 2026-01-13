@@ -48,11 +48,16 @@
 
       <div class="filler"></div>
       <button-simple
-        class="playlist-button topbar-button flexrow-item"
+        class="playlist-button playlist-button topbar-button flexrow-item"
         :text="$t('playlists.actions.exit_play_full')"
         :title="$t('playlists.actions.exit_play_full')"
         @click="isFullMode = false"
         v-if="isFullMode"
+      />
+      <button-simple
+        :text="$t('doodle.create_review')"
+        class="playlist-button topbar-button flexrow-item full-button"
+        @click="$emit('create-review')"
       />
 
       <preview-room
@@ -1095,7 +1100,8 @@ export default {
     'save-clicked',
     'show-add-entities',
     'remove-entity',
-    'task-type-changed'
+    'task-type-changed',
+    'create-review'
   ],
 
   data() {
@@ -1679,8 +1685,6 @@ export default {
      * }
      */
     onEntityDropped(info) {
-      console.log(this.entityList.find(s => s.id === info.after))
-      console.log(this.entityList.find(s => s.id === info.before))
       const playlistEl = this.$refs['playlisted-entities']
       const scrollLeft = playlistEl.scrollLeft
       const entityToMove = this.entityList.find(s => s.id === info.after)

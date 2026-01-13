@@ -222,6 +222,7 @@
           @for-client-changed="onForClientChanged"
           @annotations-refreshed="onAnnotationsRefreshed"
           @new-entity-dropped="onNewEntityDropped"
+          @create-review="createReview"
         />
 
         <div
@@ -467,6 +468,22 @@
       @cancel="hideEditModal"
       @confirm="confirmEditPlaylist"
     />
+    <create-review-field-modal
+      v-if="updateTaskFilesStore().state.isShowCreateReviewFieldModal"
+      :sequences-options="createReviewData.sequencesOptions"
+      :sequence-id="createReviewData.sequenceId"
+      :is-loading="createReviewData.isLoading"
+      :selectable-departments="createReviewData.selectableDepartments"
+      :playlists="currentPlaylist"
+      @update-sequence-id="onUpdateSequenceId"
+      @submit-create-review="submitCreateReview"
+      @update-department="createReviewData.selectedDepartment = $event"
+    />
+
+    <task-update-files-modal
+      update-entity-type="sequence"
+      v-if="updateTaskFilesStore().state.isShowUpdateModal"
+    />
 
     <build-filter-modal
       ref="build-filter-modal"
@@ -506,11 +523,18 @@ import PlaylistPlayer from '@/components/pages/playlists/PlaylistPlayer.vue'
 import SearchField from '@/components/widgets/SearchField.vue'
 import Spinner from '@/components/widgets/Spinner.vue'
 import TaskTypeName from '@/components/widgets/TaskTypeName.vue'
+import CreateReviewFieldModal from '@/components/modals/CreateReviewFieldModal.vue'
+import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
+import TaskUpdateFilesModal from '@/components/modals/TaskUpdateFilesModal.vue'
+import sequencesStore from '@/store/modules/sequences.js'
+import tasksStore from '@/store/modules/tasks.js'
 
 export default {
   name: 'playlist',
 
   components: {
+    TaskUpdateFilesModal,
+    CreateReviewFieldModal,
     BuildFilterModal,
     ButtonSimple,
     Combobox,
@@ -568,6 +592,13 @@ export default {
       errors: {
         editPlaylist: false,
         playlistLoading: false
+      },
+      createReviewData: {
+        sequencesOptions: [],
+        isLoading: false,
+        sequenceId: '',
+        selectedDepartment: '',
+        selectableDepartments: []
       }
     }
   },
@@ -595,7 +626,10 @@ export default {
       'shotSearchText',
       'taskMap',
       'taskStatusMap',
-      'taskTypeMap'
+      'taskTypeMap',
+      'shotMap',
+      'sequenceMap',
+      'sequenceValidationColumns'
     ]),
 
     isAdditionLoading() {
@@ -683,6 +717,7 @@ export default {
   },
 
   methods: {
+    updateTaskFilesStore,
     ...mapActions([
       'changePlaylistOrder',
       'changePlaylistPreview',
@@ -788,6 +823,63 @@ export default {
       } else {
         return Promise.resolve()
       }
+    },
+    selectableDepartments() {
+      const selectableDepartments = []
+      this.currentProduction.task_types.forEach(task_type => {
+        if (this.taskTypeMap.get(task_type).for_entity === 'Sequence')
+          selectableDepartments.push(this.taskTypeMap.get(task_type))
+      })
+      // this.sequenceValidationColumns.forEach(column => {
+      //   selectableDepartments.push(this.taskTypeMap.get(column))
+      // })
+      selectableDepartments.sort((a, b) => a.priority - b.priority)
+      return selectableDepartments
+    },
+    async submitCreateReview() {
+      // const asset_list = []
+      // updateTaskFilesStore().state.isShowCheckReviewModal = true
+      // for (const asset_id in check_create_review_res) {
+      //   const asset = this.shotMap.get(asset_id)
+      //   if (asset) {
+      //     let exist = true
+      //     if (check_create_review_res[asset_id] === null) exist = false
+      //     asset_list.push(
+      //       Object.assign(
+      //         {
+      //           label: asset.name,
+      //           exist: exist
+      //         },
+      //         check_create_review_res[asset_id]
+      //       )
+      //     )
+      //   }
+      // }
+      //
+      // updateTaskFilesStore().state.checkCreateReviewTasks = asset_list.sort(
+      //   (a, b) => {
+      //     return a.label.localeCompare(b.label)
+      //   }
+      // )
+    },
+
+    async createReview() {
+      if (this.shotMap.size === 0) await this.loadShots()
+      if (this.currentPlaylist && this.currentPlaylist.shots.length > 0) {
+        for (const sequence of sequenceStore.cache.sequences) {
+          if (sequence.name)
+            this.createReviewData.sequencesOptions.push({
+              value: sequence.id,
+              label: sequence.name
+            })
+        }
+        const shot_entity = this.shotMap.get(
+          this.currentPlaylist.shots[0].entity_id
+        )
+        this.createReviewData.sequenceId = shot_entity.sequence_id
+      }
+      this.createReviewData.selectableDepartments = this.selectableDepartments()
+      updateTaskFilesStore().state.isShowCreateReviewFieldModal = true
     },
 
     loadPlaylistsData(force = false) {
@@ -1021,7 +1113,19 @@ export default {
       const playlist = this.currentPlaylist
       this.addEntity(entity, playlist).then(this.playlistPlayer.scrollToRight())
     },
-
+    onUpdateSequenceId(value) {
+      this.createReviewData.selectableDepartments = []
+      this.createReviewData.sequenceId = value
+      const sequence = sequencesStore.cache.sequenceMap.get(value)
+      if (sequence && sequence.tasks.length > 0) {
+        sequence.tasks.forEach(task_id => {
+          const task = tasksStore.state.taskMap.get(task_id)
+          this.createReviewData.selectableDepartments.push(
+            this.taskTypeMap.get(task.task_type_id)
+          )
+        })
+      }
+    },
     onNewEntityDropped(info) {
       let entity
       if (this.isAssetPlaylist) {
@@ -1318,7 +1422,6 @@ export default {
         }
       })
     },
-
     onBodyScroll(event) {
       const position = event.target
       const maxHeight =

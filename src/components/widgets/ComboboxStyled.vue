@@ -30,7 +30,11 @@
         ></span>
         <chevron-down-icon class="down-icon flexrow-item" />
       </div>
-      <div class="select-input" v-if="showList">
+      <div
+        class="select-input"
+        v-if="showList"
+        :style="`max-height: ${maxHeight}`"
+      >
         <div
           :key="option.id"
           class="option-line flexrow"
@@ -139,6 +143,10 @@ export default {
     thin: {
       default: false,
       type: Boolean
+    },
+    maxHeight: {
+      default: '480px',
+      type: String
     }
   },
 
@@ -258,7 +266,7 @@ export default {
   margin: 0;
   margin-top: 1px;
   max-width: 400px;
-  padding: 0.5em;
+  padding: 0.3em;
   position: relative;
   vertical-align: middle;
 
@@ -313,7 +321,6 @@ export default {
   border-bottom-right-radius: 1em;
   left: 0;
   margin-left: -1px;
-  max-height: 480px;
   overflow-x: hidden;
   overflow-y: auto;
   position: absolute;

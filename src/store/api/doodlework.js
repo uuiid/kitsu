@@ -106,8 +106,8 @@ export default {
     const path = `/api/actions/tasks/${task.id}/create-review`
     return client.pget(path)
   },
-  createReview(preview_file_id, data) {
-    const path = `/api/actions/preview-files/${preview_file_id}/create-review`
+  createReview(playlists, preview_file_id, data) {
+    const path = `/api/actions/playlists/${playlists.id}/preview-files/${preview_file_id}/create-review`
     return client.ppost(path, data)
   },
   submitLightTask(project_id, task, localPath = '') {

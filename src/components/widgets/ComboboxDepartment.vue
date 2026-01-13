@@ -155,14 +155,7 @@ export default {
       ) {
         return [...this.departmentsToTakeAccount]
       } else if (this.withEmptyChoice) {
-        return [
-          {
-            color: '#AAA',
-            id: null,
-            name: this.$t('departments.no_department')
-          },
-          ...this.departmentsToTakeAccount
-        ]
+        return [...this.departmentsToTakeAccount]
       } else {
         return [...this.departmentsToTakeAccount]
       }

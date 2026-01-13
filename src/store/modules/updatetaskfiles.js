@@ -126,6 +126,7 @@ function initState() {
     isShowUpdateModal: false,
     isShowCheckReviewModal: false,
     isShowCreateReviewFieldModal: false,
+    isShowCreateReviewSelectModal: false,
     selectedTask: null,
     allFiles: new Map(),
     updateTaskQueue: new Queue(),
@@ -457,7 +458,7 @@ export const updateTaskFilesStore = defineStore(
       getCreateReview: task => {
         return doodlework.getCreateReview(task)
       },
-      createReview: async (task, data) => {
+      createReview: async (playlists, task, data) => {
         const commentData = {
           task_status_id: task.task_status_id,
           comment: '',
@@ -473,7 +474,7 @@ export const updateTaskFilesStore = defineStore(
         }
         const preview = await tasksApi.addPreview(previewData)
         try {
-          await doodlework.createReview(preview.id, data)
+          await doodlework.createReview(playlists, preview.id, data)
           ElMessage.success('创建成功')
         } catch (err) {
           ElMessage.error(err.body.error)
