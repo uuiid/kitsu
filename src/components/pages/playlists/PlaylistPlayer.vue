@@ -566,6 +566,7 @@
           :title="$t('playlists.actions.toggle_waveform')"
           icon="waveform"
           @click="isWaveformDisplayed = !isWaveformDisplayed"
+          v-if="false"
         />
       </div>
 

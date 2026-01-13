@@ -1,6 +1,7 @@
 <script setup>
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles.js'
 import { reactive, ref, onMounted } from 'vue'
+import { ElMessage } from 'element-plus'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
 import ComboboxStyled from '@/components/widgets/ComboboxStyled.vue'
 import ComboboxDepartment from '@/components/widgets/ComboboxDepartment.vue'
@@ -64,11 +65,11 @@ async function submitCreateReview() {
         task,
         formData
       )
-      updateTaskFiles.state.isShowCheckReviewModal = false
+      updateTaskFiles.state.isShowCreateReviewFieldModal = false
     } catch (e) {
       isLoading.value = false
     }
-  }
+  } else ElMessage.error('任务不存在')
   isLoading.value = false
 }
 onMounted(() => {
