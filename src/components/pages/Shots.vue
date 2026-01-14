@@ -768,11 +768,6 @@ export default {
 
     confirmEditShot(form) {
       form.id = this.shotToEdit.id
-      form.data.resolution = form.resolution
-      form.data.max_retakes = form.max_retakes
-      form.data.frame_in = form.frameIn
-      form.data.frame_out = form.frameOut
-      form.data.fps = form.fps
       this.loading.edit = true
       this.errors.edit = false
       this.editShot(form)
@@ -951,17 +946,35 @@ export default {
     },
 
     renderImport(data, mode) {
+      const shotsMap = new Map()
+      this.shots.forEach(shot => {
+        if (shot.name && shot.sequence_name) {
+          shotsMap.set(`${shot.sequence_name}_${shot.name}`, shot)
+        }
+      })
       this.loading.importing = true
       this.errors.importing = false
       this.formData = data
       if (mode === 'file') {
         data = data.get('file')
       }
-      csv.processCSV(data).then(results => {
+      csv.processCSV(data).then(async results => {
         this.parsedCSV = results
+        for (const row of this.parsedCSV.slice(1)) {
+          const shot_name = row[2]
+          const shot = shotsMap.get(shot_name.slice(shot_name.indexOf('_') + 1))
+          if (shot) {
+            const data = {
+              id: shot.id,
+              frame_in: 1001,
+              frame_out: 1001 + Number(row[3]) - 1
+            }
+            await this.editShot(data)
+          }
+        }
         this.hideImportModal()
         this.loading.importing = false
-        this.showImportRenderModal()
+        //this.showImportRenderModal()
       })
     },
 
@@ -1140,26 +1153,24 @@ export default {
     async onMetadataChanged({ entry, descriptor, value }) {
       const data = {
         id: entry.id,
-        data: {
-          [descriptor.field_name]: value
-        }
+        [descriptor.field_name]: value
       }
       const shot = this.shotMap.get(entry.id)
       if (
         descriptor.field_name === 'frame_in' &&
-        shot.data?.frame_out &&
-        parseInt(shot.data.frame_out) > parseInt(value) &&
+        shot?.frame_out &&
+        parseInt(shot.frame_out) > parseInt(value) &&
         !this.isPaperProduction
       ) {
-        data.nb_frames = parseInt(shot.data.frame_out) - parseInt(value) + 1
+        data.nb_frames = parseInt(shot.frame_out) - parseInt(value) + 1
       }
       if (
         descriptor.field_name === 'frame_out' &&
-        shot.data?.frame_in &&
-        parseInt(shot.data.frame_in) < parseInt(value) &&
+        shot?.frame_in &&
+        parseInt(shot.frame_in) < parseInt(value) &&
         !this.isPaperProduction
       ) {
-        data.nb_frames = parseInt(value) - parseInt(shot.data.frame_in) + 1
+        data.nb_frames = parseInt(value) - parseInt(shot.frame_in) + 1
       }
       await this.editShot(data)
       this.applySearchFromUrl()

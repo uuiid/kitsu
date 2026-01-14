@@ -279,8 +279,8 @@ const initialState = {
 
   isFps: false,
   isFrames: false,
-  isFrameIn: false,
-  isFrameOut: false,
+  isFrameIn: true,
+  isFrameOut: true,
   isMaxRetakes: false,
   isResolution: false,
   isShotDescription: false,
@@ -523,6 +523,7 @@ const actions = {
   },
 
   editShot({ commit, rootGetters }, data) {
+    console.log(data)
     commit(LOCK_SHOT, data)
     commit(EDIT_SHOT_END, {
       newShot: data,
@@ -700,11 +701,11 @@ const actions = {
         shotLine.push(minutesToDays(organisation, shot.estimation).toFixed(2))
       }
       if (state.isFrames) shotLine.push(shot.nb_frames)
-      if (state.isFrameIn) shotLine.push(shot.data.frame_in)
-      if (state.isFrameOut) shotLine.push(shot.data.frame_out)
-      if (state.isFps) shotLine.push(shot.data.fps)
-      if (state.isResolution) shotLine.push(shot.data.resolution)
-      if (state.isMaxRetakes) shotLine.push(shot.data.max_retakes)
+      if (state.isFrameIn) shotLine.push(shot.frame_in)
+      if (state.isFrameOut) shotLine.push(shot.frame_out)
+      if (state.isFps) shotLine.push(shot.fps)
+      if (state.isResolution) shotLine.push(shot.resolution)
+      if (state.isMaxRetakes) shotLine.push(shot.max_retakes)
       state.shotValidationColumns.forEach(validationColumn => {
         const task = rootGetters.taskMap.get(
           shot.validations.get(validationColumn)
@@ -887,8 +888,6 @@ const mutations = {
     const validationColumns = {}
     let isFps = false
     let isFrames = false
-    let isFrameIn = false
-    let isFrameOut = false
     let isDescription = false
     let isTime = false
     let isEstimation = false
@@ -934,15 +933,13 @@ const mutations = {
       shot.timeSpent = timeSpent
       shot.estimation = estimation
 
-      if (!isFps && shot.data.fps) isFps = true
+      if (!isFps && shot.fps) isFps = true
       if (!isFrames && shot.nb_frames) isFrames = true
-      if (!isFrameIn && shot.data.frame_in != null) isFrameIn = true
-      if (!isFrameOut && shot.data.frame_out) isFrameOut = true
       if (!isTime && shot.timeSpent > 0) isTime = true
       if (!isEstimation && shot.estimation > 0) isEstimation = true
       if (!isDescription && shot.description) isDescription = true
-      if (!isResolution && shot.data.resolution) isResolution = true
-      if (!isMaxRetakes && shot.data.max_retakes) isMaxRetakes = true
+      if (!isResolution && shot.resolution) isResolution = true
+      if (!isMaxRetakes && shot.max_retakes) isMaxRetakes = true
 
       cache.shotMap.set(shot.id, shot)
       state.shotMap.set(shot.id, shot)
@@ -964,8 +961,6 @@ const mutations = {
     state.nbValidationColumns = state.shotValidationColumns.length
     state.isFps = isFps
     state.isFrames = isFrames
-    state.isFrameIn = isFrameIn
-    state.isFrameOut = isFrameOut
     state.isShotTime = isTime
     state.isMaxRetakes = isMaxRetakes
     state.isResolution = isResolution
@@ -1071,17 +1066,14 @@ const mutations = {
     } else {
       helpers.setListStats(state, cache.shots)
     }
-
-    if (!newShot.data) newShot.data = {}
-    if (newShot.data.fps && !state.isFps) state.isFps = true
+    if (newShot.fps && !state.isFps) state.isFps = true
     if (newShot.nb_frames && !state.isFrames) state.isFrames = true
-    if (newShot.data.frame_in && !state.isFrameIn != null)
-      state.isFrameIn = true
-    if (newShot.data.frame_out && !state.isFrameOut) state.isFrameOut = true
-    if (newShot.data.resolution && !state.isResolution) {
+    if (newShot.frame_in && !state.isFrameIn != null) state.isFrameIn = true
+    if (newShot.frame_out && !state.isFrameOut) state.isFrameOut = true
+    if (newShot.resolution && !state.isResolution) {
       state.isResolution = true
     }
-    if (newShot.data.max_retakes && !state.isMaxRetakes) {
+    if (newShot.max_retakes && !state.isMaxRetakes) {
       state.isMaxRetakes = true
     }
     if (shot.description && !state.isShotDescription) {
@@ -1132,12 +1124,12 @@ const mutations = {
     const maxY = state.nbValidationColumns
     state.shotSelectionGrid = buildSelectionGrid(maxX, maxY)
 
-    if (shot.data.fps) state.isFps = true
+    if (shot.fps) state.isFps = true
     if (shot.nb_frames) state.isFrames = true
-    if (shot.data.frame_in != null) state.isFrameIn = true
-    if (shot.data.frame_out) state.isFrameOut = true
-    if (shot.data.resolution) state.isResolution = true
-    if (shot.data.max_retakes) state.isMaxRetakes = true
+    if (shot.frame_in != null) state.isFrameIn = true
+    if (shot.frame_out) state.isFrameOut = true
+    if (shot.resolution) state.isResolution = true
+    if (shot.max_retakes) state.isMaxRetakes = true
   },
 
   [CREATE_TASKS_END](state, { tasks }) {

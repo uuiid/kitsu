@@ -81,8 +81,7 @@ export default {
     const data = {
       name: shot.name,
       parent_id: shot.sequence_id,
-      description: shot.description,
-      data: shot.data
+      description: shot.description
     }
     if (shot.is_casting_standby !== undefined) {
       data.is_casting_standby = Boolean(shot.is_casting_standby)
@@ -101,7 +100,7 @@ export default {
       shot.resolution !== undefined ||
       shot.max_retakes !== undefined
     ) {
-      Object.assign(data.data, {
+      Object.assign(data, {
         frame_in: shot.frameIn,
         frame_out: shot.frameOut,
         fps: shot.fps,
@@ -110,7 +109,7 @@ export default {
       })
     }
     const path = `/api/data/entities/${shot.id}`
-    return client.pput(path, data)
+    return client.pput(path, shot)
   },
 
   updateSequence(sequence) {

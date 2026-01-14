@@ -42,10 +42,10 @@
                   {{ version.name }}
                 </td>
                 <td class="frame-in">
-                  {{ version.data.frame_in }}
+                  {{ version.frame_in }}
                 </td>
                 <td class="frame-out">
-                  {{ version.data.frame_out }}
+                  {{ version.frame_out }}
                 </td>
                 <td class="person table-filler">
                   {{ getPersonFullName(version.person_id) }}

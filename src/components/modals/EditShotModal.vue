@@ -175,25 +175,23 @@ export default {
     ]),
 
     frameIn() {
-      return this.shotToEdit.data ? this.shotToEdit.data.frame_in : ''
+      return this.shotToEdit ? this.shotToEdit.frame_in : ''
     },
 
     frameOut() {
-      return this.shotToEdit.data ? this.shotToEdit.data.frame_out : ''
+      return this.shotToEdit ? this.shotToEdit.frame_out : ''
     },
 
     fps() {
-      return this.shotToEdit.data ? this.shotToEdit.data.fps : ''
+      return this.shotToEdit ? this.shotToEdit.fps : ''
     },
 
     resolution() {
-      return this.shotToEdit.data ? this.shotToEdit.data.resolution : ''
+      return this.shotToEdit ? this.shotToEdit.resolution : ''
     },
 
     maxRetakes() {
-      return this.shotToEdit.data
-        ? parseInt(this.shotToEdit.data.max_retakes)
-        : ''
+      return this.shotToEdit ? parseInt(this.shotToEdit.max_retakes) : ''
     }
   },
 
@@ -247,7 +245,7 @@ export default {
           fps: this.fps,
           max_retakes: this.maxRetakes,
           resolution: this.resolution,
-          data: { ...this.shotToEdit.data } || {}
+          data: { ...this.shotToEdit } || {}
         }
       }
     }

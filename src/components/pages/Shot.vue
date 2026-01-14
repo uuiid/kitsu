@@ -102,75 +102,59 @@
 
                 <tr
                   class="datatable-row"
-                  v-if="
-                    currentShot &&
-                    currentShot.data &&
-                    currentShot.data.frame_in != null
-                  "
+                  v-if="currentShot && currentShot.frame_in != null"
                 >
                   <td class="field-label">
                     {{ $t('shots.fields.frame_in') }}
                   </td>
                   <td>
-                    {{ currentShot ? currentShot.data.frame_in : '' }}
+                    {{ currentShot ? currentShot.frame_in : '' }}
                   </td>
                 </tr>
 
                 <tr
                   class="datatable-row"
-                  v-if="
-                    currentShot &&
-                    currentShot.data &&
-                    currentShot.data.frame_out
-                  "
+                  v-if="currentShot && currentShot.frame_out"
                 >
                   <td class="field-label">
                     {{ $t('shots.fields.frame_out') }}
                   </td>
                   <td>
-                    {{ currentShot ? currentShot.data.frame_out : '' }}
+                    {{ currentShot ? currentShot.frame_out : '' }}
                   </td>
                 </tr>
 
                 <tr
                   class="datatable-row"
-                  v-if="currentShot && currentShot.data && currentShot.data.fps"
+                  v-if="currentShot && currentShot.data && currentShot.fps"
                 >
                   <td class="field-label">{{ $t('shots.fields.fps') }}</td>
                   <td>
-                    {{ currentShot ? currentShot.data.fps : '' }}
+                    {{ currentShot ? currentShot.fps : '' }}
                   </td>
                 </tr>
 
                 <tr
                   class="datatable-row"
-                  v-if="
-                    currentShot &&
-                    currentShot.data &&
-                    currentShot.data.resolution
-                  "
+                  v-if="currentShot && currentShot.resolution"
                 >
                   <td class="field-label">
                     {{ $t('shots.fields.resolution') }}
                   </td>
                   <td>
-                    {{ currentShot ? currentShot.data.resolution : '' }}
+                    {{ currentShot ? currentShot.resolution : '' }}
                   </td>
                 </tr>
 
                 <tr
                   class="datatable-row"
-                  v-if="
-                    currentShot &&
-                    currentShot.data &&
-                    currentShot.data.max_retakes
-                  "
+                  v-if="currentShot && currentShot.max_retakes"
                 >
                   <td class="field-label">
                     {{ $t('shots.fields.max_retakes') }}
                   </td>
                   <td>
-                    {{ currentShot ? currentShot.data.max_retakes : '' }}
+                    {{ currentShot ? currentShot.max_retakes : '' }}
                   </td>
                 </tr>
 
@@ -183,7 +167,7 @@
                   <td>
                     {{
                       currentShot && currentShot.data
-                        ? currentShot.data[descriptor.field_name]
+                        ? currentShot[descriptor.field_name]
                         : ''
                     }}
                   </td>
@@ -508,11 +492,6 @@ export default {
 
     confirmEditShot(form) {
       form.id = this.currentShot.id
-      form.data.resolution = form.resolution
-      form.data.max_retakes = form.max_retakes
-      form.data.frame_in = form.frameIn
-      form.data.frame_out = form.frameOut
-      form.data.fps = form.fps
       this.loading.edit = true
       this.errors.edit = false
       this.editShot(form)
