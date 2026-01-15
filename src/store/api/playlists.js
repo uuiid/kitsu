@@ -19,6 +19,11 @@ export default {
     return client.pget(path, callback)
   },
 
+  createPlaylistPreview(sequence_id) {
+    const path = `/api/actions/sequences/${sequence_id}/create-review/playlists`
+    return client.ppost(path, {})
+  },
+
   getEntityPreviewFiles(entity, callback) {
     const path = `/api/data/playlists/entities/${entity.id}/preview-files`
     return client.pget(path)

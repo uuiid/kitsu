@@ -414,6 +414,18 @@
                   >
                     {{ $t('playlists.add_sequence') }}
                   </button>
+                  <button
+                    class="button"
+                    @click="onCreateReviewPreview(sequenceShots[0].sequence_id)"
+                    :key="'add-sequence-button-' + sequenceShots[0].sequence_id"
+                    v-if="
+                      (isCurrentUserManager || isCurrentUserSupervisor) &&
+                      sequenceShots.length > 0 &&
+                      sequenceShots[0].sequence_id
+                    "
+                  >
+                    {{ $t('doodle.create_review_preview') }}
+                  </button>
                 </h2>
                 <div class="addition-entities">
                   <div
@@ -742,7 +754,8 @@ export default {
       'setAssetSearch',
       'setSequenceSearch',
       'setShotSearch',
-      'updatePreviewAnnotation'
+      'updatePreviewAnnotation',
+      'createReviewPreview'
     ]),
 
     // Helpers
@@ -1421,6 +1434,9 @@ export default {
           this.rebuildCurrentEntities()
         }
       })
+    },
+    onCreateReviewPreview(sequence_id) {
+      this.createReviewPreview(sequence_id)
     },
     onBodyScroll(event) {
       const position = event.target

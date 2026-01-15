@@ -82,7 +82,23 @@ const actions = {
         return Promise.resolve(playlists)
       })
   },
-
+  createReviewPreview({ commit }, sequence_id) {
+    commit(LOAD_PLAYLIST_START)
+    return playlistsApi
+      .createPlaylistPreview(sequence_id)
+      .then(playlist => {
+        playlist.shots = playlist.shots.sort(
+          (a, b) => a.order_index - b.order_index
+        )
+        commit(ADD_PLAYLISTS, [playlist])
+        commit(LOAD_PLAYLIST_END, playlist)
+        return Promise.resolve(playlist)
+      })
+      .catch(err => {
+        console.error(err)
+        return Promise.resolve({})
+      })
+  },
   loadPlaylist({ commit, rootGetters }, playlist) {
     const currentProduction = rootGetters.currentProduction
     commit(LOAD_PLAYLIST_START)

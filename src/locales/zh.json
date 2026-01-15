@@ -1849,7 +1849,8 @@
       "add_name": "添加名称",
       "add_head_tail": "添加标题",
       "add_watermark": "添加水印",
-      "add_time_code": "添加时间码"
+      "add_time_code": "添加时间码",
+      "create_review_preview": "创建审片预览"
     },
     "doodle_productions": {
       "fields": {
