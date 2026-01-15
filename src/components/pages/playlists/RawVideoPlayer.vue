@@ -460,15 +460,23 @@ export default {
       if (this.videoCache.has(url)) {
         return this.videoCache.get(url).blobUrl
       } else {
-        return fetch(url).then(res => {
-          if (res.ok) {
-            return res.blob().then(blob => {
-              const blobUrl = URL.createObjectURL(blob)
-              this.videoCache.set(url, { blobUrl })
-              return blobUrl
-            })
-          } else return url
-        })
+        return fetch(url)
+          .then(res => {
+            if (res.ok) {
+              return res.blob().then(blob => {
+                const blobUrl = URL.createObjectURL(blob)
+                this.videoCache.set(url, { blobUrl })
+                return blobUrl
+              })
+            } else {
+              console.log(url)
+              return url
+            }
+          })
+          .catch(error => {
+            console.log(error)
+            return url
+          })
       }
     },
     playNext(handleIn) {
