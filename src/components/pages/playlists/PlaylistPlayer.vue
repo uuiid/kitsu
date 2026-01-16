@@ -113,6 +113,7 @@
             position: isComparisonOverlay ? 'absolute' : 'relative'
           }"
           v-show="isFullMode"
+          v-if="false"
         />
 
         <raw-video-player
@@ -127,6 +128,8 @@
           :is-hd="isHd"
           :is-repeating="isRepeating"
           :muted="true"
+          v-if="false"
+          :video-cache="videoCache"
           :handle-in="playlist.for_entity === 'shot' ? handleIn : -1"
           :handle-out="playlist.for_entity === 'shot' ? handleOut : -1"
           v-show="
@@ -172,7 +175,10 @@
           <video
             ref="picture-video-player-comparison"
             class="picture-preview"
-            :src="currentComparisonPreviewPath"
+            :src="
+              videoCache.get(currentComparisonPreviewPath) ||
+              currentComparisonPreviewPath
+            "
             controls
             loop
             muted
@@ -200,6 +206,7 @@
           :current-preview-index="currentPreviewIndex"
           :muted="isMuted"
           :panzoom="true"
+          :video-cache="videoCache"
           @entity-change="onPlayerPlayingEntityChange"
           @frame-update="onRawPlayerFrameUpdate"
           @max-duration-update="onMaxDurationUpdate"
@@ -1164,7 +1171,8 @@ export default {
         { label: this.$t('playlists.for_client'), value: 'true' },
         { label: this.$t('playlists.for_studio'), value: 'false' }
       ],
-      speedTextMap: ['x0.25', 'x0.50', 'x1.00', 'x1.50', 'x2.00']
+      speedTextMap: ['x0.25', 'x0.50', 'x1.00', 'x1.50', 'x2.00'],
+      videoCache: new Map()
     }
   },
 
@@ -1197,7 +1205,6 @@ export default {
 
     this.resetPencilConfiguration()
   },
-
   computed: {
     ...mapGetters([
       'currentEpisode',
@@ -1498,9 +1505,19 @@ export default {
     },
 
     entityListClicked(entityIndex) {
-      this.playEntity(entityIndex)
-      this.currentPreviewIndex = 0
-      this.updateRoomStatus()
+      this.setVideoCache(this.entityList[entityIndex]).then(() => {
+        this.playEntity(entityIndex)
+        this.currentPreviewIndex = 0
+        this.updateRoomStatus()
+        this.$nextTick(async () => {
+          for (const entity of this.entityList.slice(
+            entityIndex,
+            Math.min(this.entities.length, entityIndex + 10)
+          )) {
+            await this.setVideoCache(entity)
+          }
+        })
+      })
     },
 
     removeEntity(entity) {
@@ -1545,6 +1562,8 @@ export default {
 
     onPlayNext() {
       const nextEntity = this.entityList[this.nextEntityIndex]
+      if (this.entityList.length > this.nextEntityIndex + 10)
+        this.setVideoCache(this.entityList[this.nextEntityIndex + 10])
       if (this.isRepeating && this.isCurrentPreviewMovie) {
         this.rawPlayer.playNext()
       } else if (nextEntity.preview_file_extension === 'mp4') {
@@ -1969,13 +1988,43 @@ export default {
           .catch(console.error)
       }
     },
+    getMoviePath(entity) {
+      if (entity.preview_file_extension === 'mp4') {
+        let previewId
+        if (
+          this.currentPreviewIndex === 0 ||
+          this.currentPreviewIndex > entity.preview_file_previews.length
+        ) {
+          previewId = entity.preview_file_id
+        } else {
+          previewId =
+            entity.preview_file_previews[this.currentPreviewIndex - 1].id
+        }
+        if (this.isHd) {
+          return `/api/movies/originals/preview-files/${previewId}.mp4`
+        } else {
+          return `/api/movies/low/preview-files/${previewId}.mp4`
+        }
+      } else {
+        return ''
+      }
+    },
+    async setVideoCache(entity) {
+      const url = this.getMoviePath(entity)
+      if (!this.videoCache.has(url)) {
+        const res = await fetch(url)
+        const blob = await res.blob()
+        const blobUrl = URL.createObjectURL(blob)
+        this.videoCache.set(url, blobUrl)
+      }
+    },
 
     playBuild(job) {
       this.isFullMode = true
       const path = this.getBuildPath(job)
       if (this.$options.fullPlayingPath !== path) {
         this.$options.fullPlayingPath = path
-        this.fullPlayer.src = path
+        this.fullPlayer.src = this.videoCache.get(path) | path
         this.fullPlayer.currentTime = 0
         this.setPlaylistProgress(0)
       }
@@ -2211,7 +2260,6 @@ export default {
         this.picturePlayer.pausePanZoom()
       }
     },
-
     resetPanZoom() {
       if (this.isCurrentPreviewMovie) {
         this.rawPlayer.resetPanZoom()
@@ -2411,6 +2459,12 @@ export default {
       this.currentPreviewIndex = 0
       this.currentComparisonPreviewuIndex = 0
       this.entityList = Object.values(this.entities)
+      for (const entity of this.entityList.slice(
+        0,
+        Math.min(10, Object.values(this.entities).length)
+      )) {
+        this.setVideoCache(entity)
+      }
       this.resetPlaylistFrameData()
 
       this.playingEntityIndex = 0

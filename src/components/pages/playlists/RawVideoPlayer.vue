@@ -86,6 +86,10 @@ export default {
     panzoom: {
       type: Boolean,
       default: false
+    },
+    videoCache: {
+      type: Map,
+      default: () => new Map()
     }
   },
 
@@ -107,8 +111,7 @@ export default {
       isPlaying: false,
       nextPlayer: undefined,
       panzoomInstances: [],
-      playingIndex: 0,
-      videoCache: new Map()
+      playingIndex: 0
     }
   },
 
@@ -389,14 +392,17 @@ export default {
           this.updateMaxDuration
         )
         const rate = this.$options.rate || 1
-
         if (entity.preview_file_extension === 'mp4' && this.currentPlayer) {
-          this.currentPlayer.src = this.getMoviePath(entity)
+          this.currentPlayer.src =
+            this.videoCache.get(this.getMoviePath(entity)) ||
+            this.getMoviePath(entity)
         } else if (this.currentPlayer) {
           this.currentPlayer.src = ''
         }
         if (nextEntity.preview_file_extension === 'mp4' && this.nextPlayer) {
-          this.nextPlayer.src = this.getMoviePath(nextEntity)
+          this.nextPlayer.src =
+            this.videoCache.get(this.getMoviePath(nextEntity)) ||
+            this.getMoviePath(nextEntity)
         } else if (this.nextPlayer) {
           this.nextPlayer.src = ''
         }
@@ -454,29 +460,7 @@ export default {
         this.updateTime(this.currentPlayer.currentTime)
       }, 1000 / this.fps)
     },
-    setVideoCache(url) {
-      if (this.videoCache.has(url)) {
-        return this.videoCache.get(url).blobUrl
-      } else {
-        return fetch(url)
-          .then(res => {
-            if (res.ok) {
-              return res.blob().then(blob => {
-                const blobUrl = URL.createObjectURL(blob)
-                this.videoCache.set(url, { blobUrl })
-                return blobUrl
-              })
-            } else {
-              console.log(url)
-              return url
-            }
-          })
-          .catch(error => {
-            console.log(error)
-            return url
-          })
-      }
-    },
+
     playNext(handleIn) {
       if (!this.isPlaying) return
       handleIn = handleIn || this.handleIn
@@ -593,7 +577,9 @@ export default {
       this.currentPlayer = this.nextPlayer
       this.nextPlayer = this.tmpPlayer
       if (nextEntity) {
-        this.nextPlayer.src = this.getMoviePath(nextEntity)
+        this.nextPlayer.src =
+          this.videoCache.get(this.getMoviePath(nextEntity)) ||
+          this.getMoviePath(nextEntity)
       }
       this.resetHeight()
       const rate = this.$options.rate || 1
