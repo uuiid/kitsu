@@ -1506,15 +1506,16 @@ export default {
 
     entityListClicked(entityIndex) {
       this.setVideoCache(this.entityList[entityIndex]).then(() => {
+        console.log('entityListClicked')
         this.playEntity(entityIndex)
         this.currentPreviewIndex = 0
         this.updateRoomStatus()
-        this.$nextTick(async () => {
+        this.$nextTick(() => {
           for (const entity of this.entityList.slice(
             entityIndex,
-            Math.min(this.entities.length, entityIndex + 10)
+            Math.min(this.entityList.length, entityIndex + 10)
           )) {
-            await this.setVideoCache(entity)
+            this.setVideoCache(entity)
           }
         })
       })
