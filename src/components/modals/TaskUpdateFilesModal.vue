@@ -210,7 +210,7 @@ async function submitCreateReview() {
   data.set('subtitle_path', reviewForm.subtitle_path)
   data.set('audio_path', reviewForm.audio_path)
   data.set('intro_path', reviewForm.intro_path)
-  data.set(' outro_path', reviewForm.outro_path)
+  data.set('outro_path', reviewForm.outro_path)
   try {
     await updateTaskFiles.actions.submitCreateReview(
       updateTaskFiles.state.selectedTask.task,
