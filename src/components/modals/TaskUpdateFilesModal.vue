@@ -221,7 +221,7 @@ async function submitCreateReview() {
       }
     )
   } catch (error) {
-    ElMessage.error(error.message)
+    ElMessage.error(error.body.error)
     isLoading.value = false
   }
   isLoading.value = false
