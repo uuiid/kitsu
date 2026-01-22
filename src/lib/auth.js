@@ -41,10 +41,10 @@ const auth = {
         } else {
           if (res.body.login) {
             if (navigator.userAgent.includes('Electron'))
-              //window.api.setCookies(res.body.access_token)
-              //const user = res.body.user
-              store.commit(DATA_LOADING_START)
-            //callback(null, user)
+              window.api.setCookies(res.body.access_token)
+            const user = res.body.user
+            store.commit(DATA_LOADING_START)
+            callback(null, user)
           } else {
             store.commit(USER_LOGIN_FAIL)
             callback(new Error('Login failed'))
