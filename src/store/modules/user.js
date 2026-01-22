@@ -415,11 +415,7 @@ const mutations = {
   [USER_LOGIN](state, user) {
     state.user = peopleStore.helpers.addAdditionalInformation(user)
     state.isAuthenticated = true
-    state.isEpiboly = ![
-      '3766b557-df0d-43e8-b5a7-e7255a05c17d',
-      '8ccf8856-6370-430f-a41a-cba8e4f91691',
-      'fd3eb038-7cd5-46bf-88f6-c8e6097d9325'
-    ].includes(user.studio_id)
+    state.isEpiboly = user.role === 'outsource '
   },
   [USER_LOGOUT](state) {
     state.user = null
