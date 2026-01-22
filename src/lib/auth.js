@@ -59,6 +59,7 @@ const auth = {
         console.error(err)
         callback(err)
       }
+      if (navigator.userAgent.includes('Electron')) window.api.setCookies('')
       store.commit(USER_LOGOUT)
       callback()
     })
