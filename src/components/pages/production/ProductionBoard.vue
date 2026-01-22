@@ -81,7 +81,7 @@ export default {
 
   data() {
     return {
-      availableRoles: ['user', 'vendor', 'supervisor', 'manager', 'admin']
+      availableRoles: ['user', 'outsource', 'supervisor', 'manager', 'admin']
     }
   },
 

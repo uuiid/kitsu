@@ -295,7 +295,7 @@ export default {
         { label: 'manager', value: 'manager' },
         { label: 'supervisor', value: 'supervisor' },
         { label: 'user', value: 'user' },
-        { label: 'vendor', value: 'vendor' }
+        { label: 'outsource', value: 'outsource' }
       ],
       positionOptions: [
         { label: '', value: null },
