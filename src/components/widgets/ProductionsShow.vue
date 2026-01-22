@@ -61,7 +61,7 @@ function sectionPath(production, section) {
   ) {
     route.name = 'assets'
   }
-  if (user.getters.isCurrentUserVendor) route.name = 'breakdown'
+  if (user.state.user.role === 'outsource') route.name = 'breakdown'
   const isEntityPage = [
     'assets',
     'shots',
