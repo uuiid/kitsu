@@ -387,7 +387,7 @@ const actions = {
     return peopleApi.getContext().then(context => {
       commit(LOAD_USER_FILTERS_END, context.search_filters)
       commit(LOAD_USER_FILTER_GROUPS_END, context.search_filter_groups)
-      commit(LOAD_DINGDING_COMPANY, context.dingding_companys)
+      commit(LOAD_DINGDING_COMPANY, context.studios)
       commit(LOAD_PRODUCTION_STATUS_END, context.project_status)
       commit(LOAD_DEPARTMENTS_END, context.departments)
       commit(LOAD_STUDIOS_END, context.studios)

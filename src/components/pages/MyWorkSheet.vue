@@ -357,7 +357,7 @@ export default {
 
   mounted() {
     this.updateActiveTab()
-    if (this.user && this.user.dingding_company_id && this.user.phone) {
+    if (this.user && this.user.studio_id && this.user.phone) {
       this.isShow = true
     }
     //--------------------
@@ -370,7 +370,7 @@ export default {
         name: element.name,
         label: element.name
       }
-      if (element.id === this.user.dingding_company_id) {
+      if (element.id === this.user.studio_id) {
         res.unshift(temp)
         this.companyString = element.name
       } else {
@@ -540,13 +540,12 @@ export default {
           production.team
             .map(personId => this.personMap.get(personId))
             .filter(
-              person =>
-                !person.is_bot && person.dingding_company_id && person.phone
+              person => !person.is_bot && person.studio_id && person.phone
             )
         )
       } else {
         return this.activePeopleWithoutBot.filter(
-          person => person.dingding_company_id && person.phone
+          person => person.studio_id && person.phone
         )
       }
     }
