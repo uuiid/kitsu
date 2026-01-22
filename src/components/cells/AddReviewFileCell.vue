@@ -42,7 +42,6 @@ const onDrop = event => {
   if (props.isDrop) {
     isDragOver.value = false
     const files = event.dataTransfer.files
-    console.log(files[0].path)
     emit('update:modelValue', { name: files[0].name, file: files[0] })
     emit('add-data', files)
   }

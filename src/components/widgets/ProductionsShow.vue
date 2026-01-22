@@ -61,6 +61,7 @@ function sectionPath(production, section) {
   ) {
     route.name = 'assets'
   }
+  if (user.state.isEpiboly) route.name = 'breakdown'
   const isEntityPage = [
     'assets',
     'shots',

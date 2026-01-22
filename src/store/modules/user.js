@@ -121,7 +121,8 @@ const initialState = {
   todoListScrollPosition: 0,
   dingDingCompany: [],
   timeSpentMap: {},
-  timeSpentTotal: 0
+  timeSpentTotal: 0,
+  isEpiboly: false
 }
 
 const state = {
@@ -131,12 +132,16 @@ const state = {
 const getters = {
   user: state => state.user,
   isAuthenticated: state => state.isAuthenticated,
+  isEpiboly: state => state.isEpiboly,
   isCurrentUserManager: state => {
     return state.user && ['admin', 'manager'].includes(state.user.role)
   },
   isCurrentUserAdmin: state => state.user && state.user.role === 'admin',
   isCurrentUserArtist: state => {
     return state.user && ['user', 'vendor'].includes(state.user.role)
+  },
+  isCurrentUserProducer: state => {
+    return state.user && ['producer', 'admin'].includes(state.user.role)
   },
   isCurrentUserSupervisor: state =>
     state.user && state.user.role === 'supervisor',
@@ -410,14 +415,21 @@ const mutations = {
   [USER_LOGIN](state, user) {
     state.user = peopleStore.helpers.addAdditionalInformation(user)
     state.isAuthenticated = true
+    state.isEpiboly = ![
+      '3766b557-df0d-43e8-b5a7-e7255a05c17d',
+      '8ccf8856-6370-430f-a41a-cba8e4f91691',
+      'fd3eb038-7cd5-46bf-88f6-c8e6097d9325'
+    ].includes(user.studio_id)
   },
   [USER_LOGOUT](state) {
     state.user = null
     state.isAuthenticated = false
+    state.isEpiboly = false
   },
   [USER_LOGIN_FAIL](state) {
     state.user = null
     state.isAuthenticated = false
+    state.isEpiboly = false
   },
 
   [USER_SAVE_PROFILE_LOADING](state) {

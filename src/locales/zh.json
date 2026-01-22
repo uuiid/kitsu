@@ -624,6 +624,7 @@
       "role": {
         "admin": "超级管理员",
         "client": "客户",
+        "producer": "制片",
         "manager": "组长",
         "user": "组员",
         "undefined": "未定义",
@@ -1850,7 +1851,8 @@
       "add_head_tail": "添加标题",
       "add_watermark": "添加水印",
       "add_time_code": "添加时间码",
-      "create_review_preview": "创建审片预览"
+      "create_review_preview": "创建审片预览",
+      "epiboly_authorization": "外包授权"
     },
     "doodle_productions": {
       "fields": {

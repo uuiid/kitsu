@@ -1,6 +1,5 @@
 import superagent from 'superagent'
 import errors from '@/lib/errors'
-
 const client = {
   get(path, callback) {
     superagent.get(path).end((err, res) => {
@@ -51,9 +50,12 @@ const client = {
             return reject(err)
           } else {
             if (err) {
+              console.log(res)
               err.body = res ? res.body : ''
+              //ElMessage.error(err.body.error)
               return reject(err)
             } else {
+              console.log(res)
               return resolve(res?.body)
             }
           }

@@ -43,10 +43,10 @@
               :section="currentSectionOption"
             />
           </div>
-          <div class="flexrow-item">
+          <div class="flexrow-item" v-if="!user.isEpiboly">
             <chevron-right-icon class="align-middle" :size="20" />
           </div>
-          <div class="flexrow-item subitem">
+          <div class="flexrow-item subitem" v-if="!user.isEpiboly">
             <topbar-section-list
               :episode-id="currentEpisodeId"
               :section-list="sectionOptions"
@@ -317,6 +317,7 @@ export default {
     ...mapGetters([
       'currentEpisode',
       'currentProduction',
+      'isCurrentUserProducer',
       'episodes',
       'episodeOptionGroups',
       'isCurrentUserAdmin',
@@ -471,7 +472,13 @@ export default {
       if (this.isTVShow && !this.isCurrentUserClient) {
         options.push({ label: this.$t('episodes.title'), value: 'episodes' })
       }
-
+      console.log(this.isCurrentUserProducer)
+      if (this.isCurrentUserProducer) {
+        options.push({
+          label: this.$t('doodle.epiboly_authorization'),
+          value: 'set-permission'
+        })
+      }
       options = options.concat([{ label: 'separator', value: 'separator' }])
 
       if (!this.isCurrentUserClient) {

@@ -128,6 +128,10 @@ export default {
     indexes: {
       type: Object,
       required: true
+    },
+    isEdit: {
+      type: Boolean,
+      required: true
     }
   },
 
@@ -136,9 +140,10 @@ export default {
 
     isEditable() {
       return (
-        this.isCurrentUserManager ||
-        this.isSupervisorInDepartments(this.descriptor.departments) ||
-        true
+        (this.isCurrentUserManager ||
+          this.isSupervisorInDepartments(this.descriptor.departments) ||
+          true) &&
+        this.isEdit
       )
     }
   }

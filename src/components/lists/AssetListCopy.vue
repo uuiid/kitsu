@@ -1,0 +1,1411 @@
+<template>
+  <div class="data-list">
+    <div ref="body" class="datatable-wrapper" @scroll.passive="onBodyScroll">
+      <table-header-menu
+        ref="headerMenu"
+        :is-minimized="hiddenColumns[lastHeaderMenuDisplayed]"
+        :is-edit-allowed="isCurrentUserManager"
+        :is-sticked="stickedColumns[lastHeaderMenuDisplayed]"
+        @minimize-clicked="onMinimizeColumnToggled()"
+        @delete-all-clicked="onDeleteAllTasksClicked()"
+        @sort-by-clicked="onSortByTaskTypeClicked()"
+        @select-column="onSelectColumn('asset')"
+        @toggle-stick="stickColumnClicked()"
+      />
+
+      <table-metadata-header-menu
+        ref="headerMetadataMenu"
+        :is-edit-allowed="
+          isMetadataColumnEditAllowed(lastMetadaDataHeaderMenuDisplayed)
+        "
+        :is-sticked="stickedColumns[lastMetadaDataHeaderMenuDisplayed]"
+        @edit-clicked="onEditMetadataClicked()"
+        @delete-clicked="onDeleteMetadataClicked()"
+        @sort-by-clicked="onSortByMetadataClicked()"
+        @toggle-stick="metadataStickColumnClicked($event)"
+      />
+
+      <table class="datatable multi-section">
+        <thead class="datatable-head" v-columns-resizable id="datatable-asset">
+          <tr>
+            <th ref="th-name" class="name datatable-row-header" scope="col">
+              <div class="flexrow">
+                <span class="flexrow-item">
+                  {{ $t('assets.fields.name') }}
+                </span>
+                <button-simple
+                  class="is-small flexrow-item"
+                  icon="plus"
+                  :text="''"
+                  @click="onAddMetadataClicked"
+                  v-if="
+                    (isCurrentUserManager || isCurrentUserSupervisor) &&
+                    !isLoading
+                  "
+                />
+              </div>
+            </th>
+
+            <th
+              v-show="!isSimpleThumbnails"
+              scope="col"
+              class="episode"
+              ref="th-episode"
+              v-if="isTVShow && isShowInfos"
+            >
+              {{ $t('assets.fields.episode') }}
+            </th>
+
+            <metadata-header
+              v-show="!isSimpleThumbnails"
+              :ref="`editor-${j}`"
+              :key="'sticky-header' + descriptor.id"
+              :descriptor="descriptor"
+              :left="
+                offsets['editor-' + j] ? `${offsets['editor-' + j]}px` : '0'
+              "
+              is-stick
+              :style="{
+                'z-index': 1001
+              }"
+              @show-metadata-header-menu="
+                event => showMetadataHeaderMenu(descriptor.id, event)
+              "
+              v-for="(descriptor, j) in stickedVisibleMetadataDescriptors"
+            />
+
+            <template v-if="!isLoading">
+              <validation-header
+                v-show="!isSimpleThumbnails"
+                :ref="`validation-${columnIndexInGrid}`"
+                :key="'sticky-header' + columnId"
+                :hidden-columns="hiddenColumns"
+                :column-id="columnId"
+                :validation-style="getValidationStyle(columnId)"
+                :left="
+                  offsets['validation-' + columnIndexInGrid]
+                    ? `${offsets['validation-' + columnIndexInGrid]}px`
+                    : '0'
+                "
+                type="assets"
+                is-stick
+                @show-header-menu="
+                  event => showHeaderMenu(columnId, columnIndexInGrid, event)
+                "
+                v-for="(
+                  columnId, columnIndexInGrid
+                ) in stickedDisplayedValidationColumns"
+              />
+            </template>
+
+            <th
+              v-show="!isSimpleThumbnails"
+              ref="th-ready-for"
+              scope="col"
+              class="ready-for"
+              :title="$t('assets.fields.ready_for')"
+              v-if="
+                isCurrentUserManager &&
+                isShowInfos &&
+                !isAssetsOnly &&
+                metadataDisplayHeaders.readyFor
+              "
+            >
+              {{ $t('assets.fields.ready_for') }}
+            </th>
+
+            <th
+              v-show="!isSimpleThumbnails"
+              scope="col"
+              class="description"
+              ref="th-description"
+              v-if="!isCurrentUserClient && isShowInfos && isAssetDescription"
+            >
+              {{ $t('assets.fields.description') }}
+            </th>
+
+            <th
+              v-show="!isSimpleThumbnails"
+              scope="col"
+              class="time-spent number-cell"
+              ref="th-spent"
+              v-if="
+                !isCurrentUserClient &&
+                isShowInfos &&
+                isAssetTime &&
+                metadataDisplayHeaders.timeSpent
+              "
+            >
+              {{ $t('assets.fields.time_spent') }}
+            </th>
+
+            <th
+              v-show="!isSimpleThumbnails"
+              scope="col"
+              class="estimation number-cell"
+              :title="$t('main.estimation')"
+              ref="th-spent"
+              v-if="
+                !isCurrentUserClient &&
+                isShowInfos &&
+                isAssetEstimation &&
+                metadataDisplayHeaders.estimation
+              "
+            >
+              {{ $t('main.estimation_short') }}
+            </th>
+
+            <th
+              scope="col"
+              class="resolution"
+              v-if="
+                isAssetResolution &&
+                isShowInfos &&
+                metadataDisplayHeaders.resolution
+              "
+            >
+              {{ $t('shots.fields.resolution') }}
+            </th>
+
+            <template v-if="isShowInfos">
+              <metadata-header
+                v-show="!isSimpleThumbnails"
+                :key="'header' + descriptor.id"
+                :descriptor="descriptor"
+                :grade-list="gradeList"
+                @show-metadata-header-menu="
+                  event => showMetadataHeaderMenu(descriptor.id, event)
+                "
+                v-for="descriptor in nonStickedVisibleMetadataDescriptors"
+              />
+            </template>
+
+            <template v-if="!isLoading">
+              <validation-header
+                v-show="!isSimpleThumbnails"
+                :key="'header' + columnId"
+                :hidden-columns="hiddenColumns"
+                :column-id="columnId"
+                :title="taskTypeMap.get(columnId).name"
+                :validation-style="getValidationStyle(columnId)"
+                type="assets"
+                @show-header-menu="
+                  event => {
+                    showHeaderMenu(columnId, columnIndexInGrid, event)
+                  }
+                "
+                v-for="(
+                  columnId, columnIndexInGrid
+                ) in nonStickedDisplayedValidationColumns"
+              />
+            </template>
+
+            <th
+              scope="col"
+              class="actions"
+              ref="actionsSection"
+              v-show="!isSimpleThumbnails"
+            >
+              <table-metadata-selector-menu
+                :descriptors="assetMetadataDescriptors"
+                :exclude="{
+                  timeSpent: !isAssetTime,
+                  estimation: !isAssetEstimation
+                }"
+                namespace="assets"
+                v-model="metadataDisplayHeaders"
+                v-show="columnSelectorDisplayed"
+                v-if="isShowInfos"
+              />
+            </th>
+          </tr>
+        </thead>
+
+        <template v-if="!isLoading && isListVisible">
+          <tbody
+            class="datatable-body"
+            :key="'group-' + getGroupKey(group, k, 'asset_type_id')"
+            @mousedown="startBrowsing"
+            @touchstart="startBrowsing"
+            v-for="(group, k) in displayedAssets"
+          >
+            <tr class="datatable-type-header" v-if="group[0]">
+              <th scope="rowgroup" :colspan="visibleColumns">
+                <span
+                  class="datatable-row-header pointer"
+                  @click="$emit('asset-type-clicked', group[0].asset_type_name)"
+                >
+                  {{ group[0] ? group[0].asset_type_name : '' }}
+                </span>
+              </th>
+            </tr>
+
+            <tr
+              class="datatable-row"
+              :class="{
+                canceled: asset.canceled,
+                shared: asset.shared
+              }"
+              scope="row"
+              :key="`row${asset.id}`"
+              :title="asset.shared ? $t('library.from_library') : undefined"
+              v-show="!isSimpleThumbnails"
+              v-for="(asset, i) in group"
+            >
+              <th
+                :class="{
+                  'datatable-row-header': true,
+                  name: true,
+                  bold: !asset.canceled
+                }"
+              >
+                <div class="flexrow">
+                  <input
+                    type="checkbox"
+                    class="flexrow-item"
+                    :checked="selectedAssets.has(asset.id) || null"
+                    :disabled="asset.shared"
+                    @input="event => toggleLine(asset, event)"
+                    v-if="isCurrentUserManager"
+                  />
+                  <entity-thumbnail
+                    class="entity-thumbnail flexrow-item"
+                    :entity="asset"
+                    :width="isBigThumbnails ? 150 : 50"
+                    :height="isBigThumbnails ? 100 : 30"
+                    :empty-width="isBigThumbnails ? 150 : 50"
+                    :empty-height="isBigThumbnails ? 100 : 32"
+                  />
+                  <div class="selectable-text" :title="asset.full_name">
+                    {{ asset.name }}
+                  </div>
+                  <router-link
+                    tabindex="-1"
+                    class="asset-link asset-name flexrow-item selectable-text"
+                    :to="assetPath(asset.id)"
+                    :title="asset.full_name"
+                    v-if="!asset.shared"
+                  >
+                    &#8629;
+                  </router-link>
+                  <template v-else>
+                    {{ asset.name }}
+                  </template>
+                </div>
+              </th>
+
+              <td class="episode" v-if="isTVShow && isShowInfos">
+                <div class="flexrow" :title="assetEpisodes(asset, true)">
+                  {{ assetEpisodes(asset, false) }}
+                </div>
+              </td>
+
+              <!-- Metadata stick -->
+              <td
+                class="metadata-descriptor datatable-row-header"
+                :title="asset.data ? asset.data[descriptor.field_name] : ''"
+                :style="{
+                  'z-index': 1000 - i - k * 100, // Needed for combo to be above the next cell
+                  left: offsets['editor-' + j]
+                    ? `${offsets['editor-' + j]}px`
+                    : '0'
+                }"
+                :key="'sticky-desc-' + asset.id + '-' + descriptor.id"
+                v-for="(descriptor, j) in stickedVisibleMetadataDescriptors"
+              >
+                <metadata-input
+                  :entity="asset"
+                  :descriptor="descriptor"
+                  :indexes="{ i, j, k }"
+                  @metadata-changed="$emit('metadata-changed', $event)"
+                />
+              </td>
+
+              <template v-if="!isLoading">
+                <validation-cell
+                  :ref="`validation-${getIndex(i, k)}-${j}`"
+                  :class="{
+                    'validation-cell': !hiddenColumns[columnId],
+                    'hidden-validation-cell': hiddenColumns[columnId],
+                    'datatable-row-header': true
+                  }"
+                  :contact-sheet="contactSheetMode"
+                  :key="'sticky-validation-' + columnId + '-' + asset.id"
+                  :canceled="asset.canceled"
+                  :column="taskTypeMap.get(columnId)"
+                  :entity="asset"
+                  :task-test="taskMap.get(asset.validations.get(columnId))"
+                  :selected="isSelected(i, k, j)"
+                  :row-x="getIndex(i, k)"
+                  :column-y="j"
+                  :minimized="hiddenColumns[columnId]"
+                  :is-static="true"
+                  :is-assignees="isShowAssignations"
+                  :left="
+                    offsets['validation-' + j]
+                      ? `${offsets['validation-' + j]}px`
+                      : '0'
+                  "
+                  :sticked="true"
+                  @select="infos => onTaskSelected(infos, true)"
+                  @unselect="infos => onTaskUnselected(infos, true)"
+                  v-for="(columnId, j) in stickedDisplayedValidationColumns"
+                />
+              </template>
+
+              <td
+                class="task-type-name ready-for"
+                v-if="
+                  isCurrentUserManager &&
+                  isShowInfos &&
+                  !isAssetsOnly &&
+                  metadataDisplayHeaders.readyFor
+                "
+              >
+                <combobox-task-type
+                  class="mb0"
+                  :model-value="asset.ready_for"
+                  :task-type-list="readyForTaskTypes"
+                  :shy="true"
+                  @update:model-value="
+                    taskTypeId => onReadyForChanged(asset, taskTypeId)
+                  "
+                />
+              </td>
+
+              <description-cell
+                class="description"
+                @description-changed="
+                  value => onDescriptionChanged(asset, value)
+                "
+                :editable="isCurrentUserManager && !asset.shared"
+                v-if="!isCurrentUserClient && isShowInfos && isAssetDescription"
+                :entry="asset"
+              />
+
+              <td
+                class="time-spent selectable number-cell"
+                v-if="
+                  !isCurrentUserClient &&
+                  isShowInfos &&
+                  isAssetTime &&
+                  metadataDisplayHeaders.timeSpent
+                "
+              >
+                {{ formatDuration(asset.timeSpent) }}
+              </td>
+
+              <td
+                class="estimation selectable number-cell"
+                v-if="
+                  !isCurrentUserClient &&
+                  isShowInfos &&
+                  isAssetEstimation &&
+                  metadataDisplayHeaders.estimation
+                "
+              >
+                {{ formatDuration(asset.estimation) }}
+              </td>
+
+              <td
+                class="resolution"
+                v-if="
+                  isAssetResolution &&
+                  isShowInfos &&
+                  metadataDisplayHeaders.resolution
+                "
+              >
+                <span class="metadata-value selectable">
+                  {{
+                    getMetadataFieldValue({ field_name: 'resolution' }, asset)
+                  }}
+                </span>
+              </td>
+
+              <!-- other Metadata cells -->
+              <template v-if="isShowInfos">
+                <td
+                  class="metadata-descriptor"
+                  :title="asset.data ? asset.data[descriptor.field_name] : ''"
+                  :key="'desc' + asset.id + '-' + descriptor.id"
+                  v-for="(
+                    descriptor, j
+                  ) in nonStickedVisibleMetadataDescriptors"
+                >
+                  <metadata-input
+                    :class="{
+                      selected: isSelectedAsset(asset, j)
+                    }"
+                    :entity="asset"
+                    :descriptor="descriptor"
+                    :indexes="{ i, j, k }"
+                    :is-edit="isEdit"
+                    @click="onAssetSelected($event, i, j, k)"
+                    @metadata-changed="onMetadataChange($event)"
+                    @mousedown="handleMouseDown"
+                  />
+                </td>
+              </template>
+
+              <template v-if="!isLoading">
+                <validation-cell
+                  :ref="`validation-${getIndex(i, k)}-${
+                    j + stickedDisplayedValidationColumns.length
+                  }`"
+                  :class="{
+                    'validation-cell': !hiddenColumns[columnId],
+                    'hidden-validation-cell': hiddenColumns[columnId]
+                  }"
+                  :key="'validation' + columnId + '-' + asset.id"
+                  :canceled="asset.canceled"
+                  :column="taskTypeMap.get(columnId)"
+                  :contact-sheet="contactSheetMode"
+                  :entity="asset"
+                  :task-test="taskMap.get(asset.validations.get(columnId))"
+                  :selected="
+                    isSelected(
+                      i,
+                      k,
+                      j + stickedDisplayedValidationColumns.length
+                    )
+                  "
+                  :row-x="getIndex(i, k)"
+                  :column-y="j"
+                  :minimized="hiddenColumns[columnId]"
+                  :is-static="true"
+                  :is-assignees="isShowAssignations"
+                  :selectable="isSelectable(asset, columnId)"
+                  :disabled="!isSelectable(asset, columnId)"
+                  :is-show-date="true"
+                  @select="onTaskSelected"
+                  @unselect="onTaskUnselected"
+                  @update-task="onUpdateTask"
+                  v-for="(columnId, j) in nonStickedDisplayedValidationColumns"
+                />
+              </template>
+
+              <row-actions-cell
+                :entry="asset"
+                @edit-clicked="
+                  $emit('edit-clicked', [...selectedAssets.values()], () => {
+                    selectedAssets.clear()
+                  })
+                "
+                @delete-clicked="
+                  $emit('delete-clicked', [...selectedAssets.values()], () =>
+                    selectedAssets.clear()
+                  )
+                "
+                @restore-clicked="$emit('restore-clicked', asset)"
+                v-if="isCurrentUserSupervisorAbove && !asset.shared"
+              />
+              <td class="actions" v-else></td>
+            </tr>
+            <tr>
+              <template v-if="isSimpleThumbnails">
+                <div class="container-gird">
+                  <div
+                    class="grid"
+                    :key="'row' + asset.id"
+                    v-for="asset in group"
+                  >
+                    <div class="gird-box">
+                      <entity-thumbnail
+                        class="entity-thumbnail flexrow-item"
+                        :entity="asset"
+                        :width="150"
+                        :height="100"
+                        :empty-width="150"
+                        :empty-height="100"
+                      />
+                      <router-link
+                        tabindex="-1"
+                        class="asset-link asset-name flexrow-item text-item"
+                        :to="assetPath(asset.id)"
+                        :title="asset.full_name"
+                      >
+                        {{ asset.name }}
+                      </router-link>
+                    </div>
+                  </div>
+                </div>
+              </template>
+            </tr>
+          </tbody>
+        </template>
+      </table>
+
+      <div
+        class="has-text-centered"
+        v-if="isEmptyList && !isCurrentUserClient && !isLoading"
+      >
+        <p class="info">
+          <img src="../../assets/illustrations/empty_asset.png" />
+        </p>
+        <p class="info">{{ $t('assets.empty_list') }}</p>
+        <button-simple
+          class="level-item big-button"
+          :text="$t('assets.new_assets')"
+          @click="$emit('new-clicked')"
+        />
+      </div>
+      <div
+        class="has-text-centered"
+        v-if="isEmptyList && isCurrentUserClient && !isLoading"
+      >
+        <p class="info">
+          <img src="../../assets/illustrations/empty_asset.png" />
+        </p>
+        <p class="info">{{ $t('assets.empty_list_client') }}</p>
+      </div>
+
+      <table-info :is-loading="isLoading" :is-error="isError" />
+    </div>
+
+    <p class="has-text-centered nb-assets" v-if="!isEmptyList && !isLoading">
+      {{ displayedAssetsLength }}
+      {{ $tc('assets.number', displayedAssetsLength) }}
+      <span
+        v-show="displayedAssetsTimeSpent > 0 || displayedAssetsEstimation > 0"
+      >
+        ({{ formatDuration(displayedAssetsTimeSpent) }}
+        {{
+          isDurationInHours
+            ? $tc('main.hours_spent', displayedAssetsTimeSpent)
+            : $tc('main.days_spent', displayedAssetsTimeSpent)
+        }},
+        {{ formatDuration(displayedAssetsEstimation) }}
+        {{
+          isDurationInHours
+            ? $tc('main.hours_estimated', displayedAssetsEstimation)
+            : $tc('main.man_days', displayedAssetsEstimation)
+        }})
+      </span>
+    </p>
+  </div>
+  <el-dialog v-model="dialogVisible" title="添加修改日期评论" width="500">
+    <el-input
+      v-model="dateComment"
+      :autosize="{ minRows: 2, maxRows: 10 }"
+      type="textarea"
+      :placeholder="$t('comments.add_comment')"
+    />
+    <template #footer>
+      <el-button @click="dialogVisible = false">取消</el-button>
+      <el-button type="primary" @click="onModifyDateComment">确定</el-button>
+    </template>
+  </el-dialog>
+</template>
+
+<script>
+import { mapGetters, mapActions } from 'vuex'
+
+import { descriptorMixin } from '@/components/mixins/descriptors'
+import { domMixin } from '@/components/mixins/dom'
+import { entityListMixin } from '@/components/mixins/entity_list'
+import { formatListMixin } from '@/components/mixins/format'
+import { selectionListMixin } from '@/components/mixins/selection'
+
+import preferences from '@/lib/preferences'
+import { sortTaskTypes } from '@/lib/sorting'
+import { range } from '@/lib/time'
+
+import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
+import ComboboxTaskType from '@/components/widgets/ComboboxTaskType.vue'
+import DescriptionCell from '@/components/cells/DescriptionCell.vue'
+import EntityThumbnail from '@/components/widgets/EntityThumbnail.vue'
+import MetadataHeader from '@/components/cells/MetadataHeader.vue'
+import MetadataInput from '@/components/cells/MetadataInput.vue'
+import RowActionsCell from '@/components/cells/RowActionsCell.vue'
+import TableHeaderMenu from '@/components/widgets/TableHeaderMenu.vue'
+import TableInfo from '@/components/widgets/TableInfo.vue'
+import TableMetadataHeaderMenu from '@/components/widgets/TableMetadataHeaderMenu.vue'
+import TableMetadataSelectorMenu from '@/components/widgets/TableMetadataSelectorMenu.vue'
+import ValidationCell from '@/components/cells/ValidationCell.vue'
+import ValidationHeader from '@/components/cells/ValidationHeader.vue'
+
+import assetTypeStore from '@/store/modules/assettypes'
+import episodeStore from '@/store/modules/episodes'
+import taskTypeStore from '@/store/modules/tasktypes'
+import moment from 'moment-timezone'
+import { assetFilterStore } from '@/store/modules/assetfilter.js'
+
+export default {
+  name: 'asset-list-copy',
+
+  mixins: [
+    entityListMixin,
+    descriptorMixin,
+    domMixin,
+    formatListMixin,
+    selectionListMixin
+  ],
+
+  components: {
+    ButtonSimple,
+    ComboboxTaskType,
+    DescriptionCell,
+    EntityThumbnail,
+    MetadataInput,
+    MetadataHeader,
+    RowActionsCell,
+    TableInfo,
+    TableHeaderMenu,
+    TableMetadataHeaderMenu,
+    TableMetadataSelectorMenu,
+    ValidationCell,
+    ValidationHeader
+  },
+
+  props: {
+    contactSheetMode: {
+      type: Boolean,
+      default: false
+    },
+    displayedAssets: {
+      type: Array,
+      default: () => []
+    },
+    isLoading: {
+      type: Boolean,
+      default: true
+    },
+    isError: {
+      type: Boolean,
+      default: true
+    },
+    validationColumns: {
+      type: Array,
+      default: () => []
+    },
+    departmentFilter: {
+      type: Array,
+      default: () => []
+    },
+    isEdit: {
+      type: Boolean,
+      default: false
+    }
+  },
+
+  emits: [
+    'asset-changed',
+    'asset-type-clicked',
+    'delete-clicked',
+    'edit-clicked',
+    'metadata-changed',
+    'new-clicked',
+    'restore-clicked',
+    'load-more-shots'
+  ],
+
+  data() {
+    return {
+      type: 'asset',
+      columnSelectorDisplayed: false,
+      hiddenColumns: {},
+      isSelectableMap: {},
+      lastSelection: null,
+      lastHeaderMenuDisplayed: null,
+      lastMetadaDataHeaderMenuDisplayed: null,
+      lastHeaderMenuDisplayedIndexInGrid: null,
+      metadataDisplayHeaders: {
+        estimation: true,
+        readyFor: true,
+        resolution: true,
+        timeSpent: true
+      },
+      stickedColumns: {},
+      domEvents: [
+        ['mousemove', this.onMouseMove],
+        ['touchmove', this.onMouseMove],
+        ['mouseup', this.stopBrowsing],
+        ['mouseleave', this.stopBrowsing],
+        ['touchend', this.stopBrowsing],
+        ['touchcancel', this.stopBrowsing],
+        ['keyup', this.stopBrowsing]
+      ],
+      offsets: {},
+      lastSelectedAsset: null,
+      selected_task_ids: [],
+      indexes: null,
+      start_selected_group_index: null,
+      start_selected_task_index: null,
+      dialogVisible: false,
+      dateComment: '',
+      updateDateTask: null,
+      selectedAssets: new Map()
+    }
+  },
+
+  mounted() {
+    this.stickedColumns =
+      JSON.parse(localStorage.getItem(this.localStorageStickKey)) || {}
+    this.addEvents(this.domEvents)
+  },
+
+  beforeUnmount() {
+    this.removeEvents(this.domEvents)
+    document.body.style.cursor = 'default'
+  },
+
+  computed: {
+    ...mapGetters([
+      'assets',
+      'assetFilledColumns',
+      'assetMap',
+      'assetMetadataDescriptors',
+      'assetSearchText',
+      'assetSelectionGrid',
+      'currentEpisode',
+      'currentProduction',
+      'displayedAssetsCount',
+      'displayedAssetsLength',
+      'displayedAssetsTimeSpent',
+      'displayedAssetsEstimation',
+      'nbSelectedTasks',
+      'organisation',
+      'isAssetDescription',
+      'isAssetResolution',
+      'isBigThumbnails',
+      'isCurrentUserClient',
+      'isCurrentUserManager',
+      'isCurrentUserSupervisor',
+      'isShowAssignations',
+      'isShowInfos',
+      'isAssetEstimation',
+      'isAssetTime',
+      'isTVShow',
+      'productionAssetTaskTypes',
+      'productionShotTaskTypes',
+      'selectedTasks',
+      'taskMap',
+      'user',
+      'isSimpleThumbnails',
+      'isCurrentUserSupervisorAbove'
+    ]),
+
+    assetTypeMap() {
+      return assetTypeStore.cache.assetTypeMap
+    },
+
+    episodeMap() {
+      return episodeStore.cache.episodeMap
+    },
+
+    taskTypeMap() {
+      return taskTypeStore.cache.taskTypeMap
+    },
+    gradeList() {
+      return assetFilterStore().state.gradeList
+    },
+
+    isEmptyList() {
+      return (
+        this.displayedAssets.length === 0 &&
+        !this.isLoading &&
+        !this.isError &&
+        (!this.assetSearchText || this.assetSearchText.length === 0)
+      )
+    },
+
+    isEmptyTask() {
+      return (
+        !this.isEmptyList &&
+        !this.isLoading &&
+        this.validationColumns &&
+        this.validationColumns.length === 0
+      )
+    },
+
+    isListVisible() {
+      return !this.isLoading && !this.isError && this.displayedAssets.length > 0
+    },
+
+    visibleColumns() {
+      let count = 1
+      count += this.isTVShow ? 1 : 0
+      count +=
+        !this.isCurrentUserClient && this.isShowInfos && this.isAssetDescription
+          ? 1
+          : 0
+      count += this.visibleMetadataDescriptors.length
+      count +=
+        !this.isCurrentUserClient &&
+        this.isShowInfos &&
+        this.isAssetTime &&
+        this.metadataDisplayHeaders.timeSpent
+          ? 1
+          : 0
+      count +=
+        !this.isCurrentUserClient &&
+        this.isShowInfos &&
+        this.isAssetEstimation &&
+        this.metadataDisplayHeaders.estimation
+          ? 1
+          : 0
+      count += this.displayedValidationColumns.length
+      return count
+    },
+
+    displayedValidationColumns() {
+      return this.validationColumns.filter(columnId => {
+        return (
+          this.assetFilledColumns[columnId] &&
+          (!this.hiddenColumns[columnId] || this.isShowInfos)
+        )
+      })
+    },
+
+    metadataDescriptors() {
+      return this.assetMetadataDescriptors
+    },
+
+    localStorageStickKey() {
+      return `stick-assets-${this.currentProduction.id}`
+    },
+
+    readyForTaskTypes() {
+      return [
+        {
+          id: null,
+          name: 'No task type',
+          color: '#CCC'
+        },
+        ...sortTaskTypes(this.productionShotTaskTypes, this.currentProduction)
+      ]
+    },
+
+    isAssetsOnly() {
+      return this.currentProduction.production_type === 'assets'
+    },
+
+    formatDurationInHours() {
+      return this.organisation.format_duration_in_hours
+    }
+  },
+
+  methods: {
+    ...mapActions([
+      'displayMoreAssets',
+      'editAsset',
+      'setAssetSelection',
+      'updateTask',
+      'modifyDateComment'
+    ]),
+
+    assetEpisodes(asset, full) {
+      if (!this.episodeMap) return ''
+      const mainEpisode = this.episodeMap.get(asset.episode_id)
+      const mainEpisodeName = mainEpisode ? mainEpisode.name : 'MP'
+      const episodeNames = (asset.casting_episode_ids || [])
+        .map(eId => this.episodeMap.get(eId).name)
+        .filter(name => name !== mainEpisodeName)
+      let episodeNameString = ''
+      if (episodeNames.length > 2) {
+        if (full) {
+          episodeNameString = episodeNames.join(', ')
+        } else {
+          episodeNameString = episodeNames.slice(0, 2).join(', ') + ', ...'
+        }
+      } else if (episodeNames.length > 0) {
+        episodeNameString = episodeNames.join(', ')
+      }
+      return episodeNames.length > 0
+        ? mainEpisodeName + ', ' + episodeNameString
+        : mainEpisodeName
+    },
+
+    // Selectable if the task type is included in the workflow.
+    isSelectable(asset, columnId) {
+      if (asset.shared) {
+        return false
+      }
+      const key = asset.asset_type_id + columnId
+      if (this.isSelectableMap === undefined) this.isSelectableMap = {}
+      if (this.isSelectableMap[key] === undefined) {
+        const taskType = this.taskTypeMap.get(columnId)
+        const assetType = this.assetTypeMap.get(asset.asset_type_id)
+        let taskTypes = assetType?.task_types || []
+        if (taskTypes.length === 0) {
+          taskTypes = this.productionAssetTaskTypes.map(t => t.id)
+        }
+        this.isSelectable[key] = taskTypes.includes(taskType.id)
+      }
+      return this.isSelectable[key]
+    },
+    onMetadataChange(event) {
+      this.$emit('metadata-changed', event, this.selected_task_ids)
+    },
+    handleMouseDown(e) {
+      if (e.shiftKey) {
+        e.preventDefault() // 阻止默认非聚焦行为
+        e.target.focus() // 聚焦当前点击的 input
+      }
+    },
+    isSelected(indexInGroup, groupIndex, columnIndex) {
+      const lineIndex = this.getIndex(indexInGroup, groupIndex)
+      return this.assetSelectionGrid[lineIndex][columnIndex]
+    },
+    toggleLine(asset, event) {
+      const selected = event.target.checked
+      const assetsToSelect = [asset]
+      if (this.shiftKeyPressed && this.lastSelectedAsset) {
+        const assetsFlatten = this.displayedAssets.flat()
+        let startAssetIndex = assetsFlatten.findIndex(
+          displayedAsset => displayedAsset.id === this.lastSelectedAsset.id
+        )
+        let endAssetIndex = assetsFlatten.findIndex(
+          displayedAsset => displayedAsset.id === asset.id
+        )
+        if (startAssetIndex > endAssetIndex) {
+          ;[startAssetIndex, endAssetIndex] = [endAssetIndex, startAssetIndex]
+        }
+        if (startAssetIndex >= 0 && endAssetIndex >= 0) {
+          range(startAssetIndex, endAssetIndex).forEach(index => {
+            assetsToSelect.push(assetsFlatten[index])
+          })
+        }
+      }
+
+      this.lastSelectedAsset = asset
+
+      if (selected) {
+        assetsToSelect.forEach(asset => {
+          this.selectedAssets.set(asset.id, asset)
+        })
+      } else {
+        assetsToSelect.forEach(asset => {
+          this.selectedAssets.delete(asset.id)
+        })
+      }
+    },
+
+    onBodyScroll(event) {
+      if (!this.$refs.body) return
+      const position = event.target
+      const maxHeight =
+        this.$refs.body.scrollHeight - this.$refs.body.offsetHeight
+      if (maxHeight < position.scrollTop + 100) {
+        this.$emit('load-more-shots', position.scrollTop)
+      }
+    },
+    formatDate(date) {
+      if (date) return moment(date).tz('UTC').format('YYYY-MM-DD HH:mm:ss')
+      return '\n'
+    },
+    onUpdateTask(task) {
+      this.updateDateTask = task
+      if (task.start_date !== null && task.due_date !== null)
+        this.dialogVisible = true
+      else this.modifyTaskDate()
+    },
+    onModifyDateComment() {
+      const taskId = this.updateDateTask.id
+      const data = {
+        checklist: [],
+        links: [],
+        task_status_id: this.updateDateTask.task_status_id,
+        start_date: this.updateDateTask.dateRange[0],
+        due_date: this.updateDateTask.dateRange[1],
+        comment: this.dateComment
+      }
+      this.modifyDateComment({ taskId, data })
+        .then(() => {
+          this.updateDateTask.start_date = data.start_date
+          this.updateDateTask.due_date = data.due_date
+          this.dialogVisible = false
+        })
+        .catch(console.error)
+    },
+
+    modifyTaskDate() {
+      if (this.updateDateTask) {
+        const taskId = this.updateDateTask.id
+        const data = {
+          start_date: this.updateDateTask.dateRange[0],
+
+          due_date: this.updateDateTask.dateRange[1]
+        }
+        if (
+          !(
+            this.updateDateTask.start_date === data.start_date &&
+            this.updateDateTask.due_date === data.due_date
+          )
+        ) {
+          this.updateTask({ taskId, data })
+            .then(() => {
+              this.updateDateTask.start_date = data.start_date
+              this.updateDateTask.due_date = data.due_date
+            })
+            .catch(console.error)
+        }
+      }
+    },
+    isSelectedAsset(asset, j) {
+      return this.selected_task_ids.includes(asset.id) && this.indexes === j
+    },
+    onAssetSelected(event, i, j, k) {
+      if (!this.shiftKeyPressed) {
+        this.start_selected_task_index = i
+        this.start_selected_group_index = k
+        this.selected_task_ids = []
+        return
+      }
+      this.indexes = j
+      if (k === this.start_selected_group_index) {
+        if (i >= this.start_selected_task_index)
+          this.displayedAssets[k]
+            .slice(this.start_selected_task_index, i + 1)
+            .forEach(asset => {
+              this.selected_task_ids.push(asset.id)
+            })
+        else
+          this.displayedAssets[k]
+            .slice(i, this.start_selected_task_index + 1)
+            .forEach(asset => {
+              this.selected_task_ids.push(asset.id)
+            })
+        return
+      }
+      let is_reverse = false
+      if (k < this.start_selected_group_index) {
+        is_reverse = true
+      }
+      for (
+        let index = is_reverse ? k : this.start_selected_group_index;
+        index < (is_reverse ? this.start_selected_group_index : k) + 1;
+        index++
+      ) {
+        if (index < k) {
+          this.displayedAssets[index].forEach(asset => {
+            this.selected_task_ids.push(asset.id)
+          })
+        } else {
+          if (is_reverse)
+            this.displayedAssets[index]
+              .slice(i, this.displayedAssets[index].length)
+              .forEach(asset => {
+                this.selected_task_ids.push(asset.id)
+              })
+          else
+            this.displayedAssets[index].slice(0, i + 1).forEach(asset => {
+              this.selected_task_ids.push(asset.id)
+            })
+        }
+      }
+    },
+    onReadyForChanged(asset, taskTypeId) {
+      if (this.selectedAssets.has(asset.id)) {
+        this.selectedAssets.forEach(asset => {
+          const data = { id: asset.id, ready_for: taskTypeId }
+          this.$emit('asset-changed', data)
+        })
+      } else {
+        const data = { id: asset.id, ready_for: taskTypeId }
+        this.$emit('asset-changed', data)
+      }
+    },
+
+    loadMoreAssets() {
+      this.displayMoreAssets()
+    },
+
+    getIndex(i, k) {
+      return this.getEntityLineNumber(this.displayedAssets, i, k)
+    },
+
+    assetPath(assetId) {
+      return this.getPath('asset', assetId)
+    },
+
+    getPath(section, assetId) {
+      const route = {
+        name: section,
+        params: {
+          production_id: this.currentProduction.id
+        }
+      }
+
+      if (this.isTVShow && this.currentEpisode) {
+        route.name = `episode-${section}`
+        route.params.episode_id = this.currentEpisode.id
+      }
+
+      if (assetId) {
+        route.params.asset_id = assetId
+      }
+
+      return route
+    },
+
+    onInputKeyUp(event, i, j) {
+      const listWidth = this.visibleMetadataDescriptors.length
+      const listHeight = this.displayedAssets.length
+      this.keyMetadataNavigation(listWidth, listHeight, i, j, event.key)
+    },
+
+    toggleStickedColumns(columnId) {
+      const sticked = !this.stickedColumns[columnId]
+      this.stickedColumns = {
+        ...this.stickedColumns,
+        [columnId]: sticked
+      }
+      preferences.setObjectPreference(
+        this.localStorageStickKey,
+        this.stickedColumns
+      )
+    },
+
+    stickColumnClicked() {
+      this.toggleStickedColumns(this.lastHeaderMenuDisplayed)
+      this.showHeaderMenu()
+    },
+
+    metadataStickColumnClicked(event) {
+      this.toggleStickedColumns(this.lastMetadaDataHeaderMenuDisplayed)
+      this.showMetadataHeaderMenu(this.lastMetadaDataHeaderMenuDisplayed, event)
+    },
+
+    updateOffsets() {
+      if (this.isLoading) {
+        return
+      }
+      this.$nextTick(function () {
+        let offset = this.$refs['th-name'].clientWidth
+        this.offsets = {}
+
+        if (this.isShowInfos) {
+          for (
+            let metadataCol = 0;
+            metadataCol < this.stickedVisibleMetadataDescriptors.length;
+            metadataCol++
+          ) {
+            this.offsets[`editor-${metadataCol}`] = offset
+            offset += this.$refs[`editor-${metadataCol}`][0].$el.clientWidth
+          }
+        }
+        for (
+          let validationCol = 0;
+          validationCol < this.stickedDisplayedValidationColumns.length;
+          validationCol++
+        ) {
+          this.offsets[`validation-${validationCol}`] = offset
+          offset += this.$refs[`validation-${validationCol}`][0].$el.clientWidth
+        }
+      })
+    }
+  },
+
+  watch: {
+    displayedAssets: {
+      deep: true,
+      handler() {
+        this.$options.lineIndex = {}
+      }
+    },
+
+    validationColumns: {
+      deep: true,
+      handler() {
+        this.initHiddenColumns(this.validationColumns, this.hiddenColumns)
+      }
+    },
+
+    stickedColumns() {
+      this.updateOffsets()
+    },
+
+    isLoading() {
+      this.updateOffsets()
+    },
+
+    isBigThumbnails() {
+      this.updateOffsets()
+    },
+
+    currentProduction() {
+      // Map used for performance reasons, to avoid array traversals
+      this.isSelectableMap = {}
+    }
+  }
+}
+</script>
+
+<style lang="scss" scoped>
+.data-list {
+  overflow: auto;
+}
+.dark thead tr a {
+  color: $light-grey;
+
+  .asset-name {
+    color: $white;
+  }
+
+  td .select {
+    &:active,
+    &:focus,
+    &:hover {
+      &::after {
+        border-color: $green;
+      }
+    }
+  }
+}
+
+.actions {
+  min-width: 160px;
+  padding: 0.4em;
+  position: sticky;
+}
+
+.name {
+  min-width: 200px;
+  width: 200px;
+}
+
+th.time-spent,
+td.time-spent,
+th.estimation,
+td.estimation {
+  min-width: 60px;
+  width: 60px;
+}
+
+td.resolution {
+  min-width: 110px;
+  max-width: 110px;
+  width: 110px;
+}
+
+th.ready-for,
+td.ready-for {
+  max-width: 180px;
+  width: 180px;
+  padding: 1px 5px;
+}
+
+.episode {
+  min-width: 130px;
+  width: 130px;
+}
+
+.bold {
+  font-weight: bold;
+}
+
+.description {
+  min-width: 200px;
+  max-width: 200px;
+  width: 200px;
+}
+
+.validation-cell {
+  min-width: 160px;
+  max-width: 160px;
+  width: 160px;
+  margin-right: 1em;
+}
+
+.hidden-validation-cell {
+  min-width: 30px;
+  max-width: 30px;
+  width: 30px;
+  padding: 4px;
+}
+
+.datatable-wrapper {
+  min-height: 200px;
+  flex: 1;
+}
+
+.datatable-row.shared {
+  > th,
+  > td {
+    opacity: 0.6;
+    background: color-mix(
+      in srgb,
+      var(--shared-color) 20%,
+      transparent
+    ) !important;
+
+    &:hover {
+      opacity: 1;
+    }
+  }
+
+  > td:not(.description-cell) {
+    font-size: 0;
+
+    > :deep(*) {
+      display: none;
+    }
+  }
+}
+
+.datatable-row th.name {
+  font-size: 1.1em;
+  padding: 6px;
+}
+
+.asset-name {
+  color: inherit;
+}
+
+.info img {
+  max-width: 80vh;
+}
+
+input[type='number']::-webkit-outer-spin-button,
+input[type='number']::-webkit-inner-spin-button {
+  -webkit-appearance: none;
+  margin: 0;
+}
+
+input[type='number'] {
+  -moz-appearance: textfield;
+}
+
+// Metadata cell CSS
+
+td.resolution,
+td.metadata-descriptor {
+  height: 3.1rem;
+  max-width: 120px;
+  padding: 0;
+}
+
+.gird-box {
+  display: flex;
+  flex-direction: column;
+}
+
+.container-gird {
+  grid-auto-flow: row dense;
+  grid-template-columns: repeat(9, 186px);
+  grid-gap: 5px;
+  display: grid;
+  margin-left: 50px;
+  margin-bottom: 10px;
+}
+
+.gird {
+  margin: 1px;
+  display: flex;
+  justify-content: center;
+}
+
+.selectable-text {
+  user-select: text;
+}
+
+.text-item {
+  overflow: hidden;
+  max-width: 150px;
+}
+
+.selected {
+  background: var(--background-selected);
+}
+</style>

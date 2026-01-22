@@ -290,12 +290,12 @@ export default {
         is_bot: false
       },
       roleOptions: [
-        { label: 'user', value: 'user' },
-        { label: 'supervisor', value: 'supervisor' },
+        { label: 'admin', value: 'admin' },
+        { label: 'producer', value: 'producer' },
         { label: 'manager', value: 'manager' },
-        { label: 'client', value: 'client' },
-        { label: 'vendor', value: 'vendor' },
-        { label: 'admin', value: 'admin' }
+        { label: 'supervisor', value: 'supervisor' },
+        { label: 'user', value: 'user' },
+        { label: 'vendor', value: 'vendor' }
       ],
       positionOptions: [
         { label: '', value: null },

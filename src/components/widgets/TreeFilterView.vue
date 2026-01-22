@@ -18,6 +18,10 @@ const defaultProps = {
   children: 'children',
   label: 'label'
 }
+const copyTreeFilterData = ref([])
+const copyTreeFilters = ref()
+const copyExpandedKeys = ref()
+const copyCheckedKeys = ref()
 const filterText = ref('')
 const currentNode = ref(null)
 const isOpen = ref(true)
@@ -33,35 +37,66 @@ const extendWidth = ref({
 
 const selfPosition = ref(0)
 const treeFilterData = computed(() => {
-  return props.type === 'assets'
-    ? assetFilter.state.treeFilterData
-    : assetFilter.state.shotTreeFilterData
+  switch (props.type) {
+    case 'assets':
+      return assetFilter.state.treeFilterData
+    case 'shots':
+      return assetFilter.state.shotTreeFilterData
+    case 'copy':
+      return copyTreeFilterData
+    default:
+      return []
+  }
 })
 
 const treeFilters = computed(() => {
-  return props.type === 'assets'
-    ? assetFilter.state.assetFilters
-    : assetFilter.state.shotFilters
+  switch (props.type) {
+    case 'assets':
+      return assetFilter.state.assetFilters
+    case 'shots':
+      return assetFilter.state.shotFilters
+    case 'copy':
+      return copyTreeFilters
+    default:
+      return []
+  }
 })
 const expandedKeys = computed(() => {
-  return props.type === 'assets'
-    ? assetFilter.state.expandedKeys
-    : assetFilter.state.shotExpandedKeys
+  switch (props.type) {
+    case 'assets':
+      return assetFilter.state.expandedKeys
+    case 'shots':
+      return assetFilter.state.shotExpandedKeys
+    case 'copy':
+      return copyExpandedKeys
+    default:
+      return []
+  }
 })
 const displayTreeData = computed(() => {
-  return treeFilterData.value.filter(
-    item =>
-      !(
-        item.id === 'chang_ci' &&
-        productions.state.currentProduction.id !==
-          'a69c8061-a88c-4bd8-8060-b35704f5efad'
-      )
+  if (props.type === 'copy') return copyTreeFilterData.value
+  return (
+    treeFilterData?.value?.filter(
+      item =>
+        !(
+          item.id === 'chang_ci' &&
+          productions.state.currentProduction.id !==
+            'a69c8061-a88c-4bd8-8060-b35704f5efad'
+        )
+    ) || []
   )
 })
 const checkedKeys = computed(() => {
-  return props.type === 'assets'
-    ? assetFilter.state.filters
-    : assetFilter.state.sFilters
+  switch (props.type) {
+    case 'assets':
+      return assetFilter.state.filters
+    case 'shots':
+      return assetFilter.state.sFilters
+    case 'copy':
+      return copyCheckedKeys
+    default:
+      return []
+  }
 })
 const onExtendDown = event => {
   extendWidth.value.isStartHandle = true

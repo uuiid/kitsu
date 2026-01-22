@@ -136,7 +136,8 @@ const icons = {
   watch,
   waveform,
   'scan-project': scanProject,
-  'doodle-work': doodleWork
+  'doodle-work': doodleWork,
+  'set-permission': scanProject
 }
 
 export default {

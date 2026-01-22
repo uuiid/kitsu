@@ -141,7 +141,7 @@ export default {
       roleOptions: [
         { label: 'all', value: 'all' },
         { label: 'admin', value: 'admin' },
-        { label: 'client', value: 'client' },
+        { label: 'producer', value: 'producer' },
         { label: 'manager', value: 'manager' },
         { label: 'supervisor', value: 'supervisor' },
         { label: 'user', value: 'user' },

@@ -52,16 +52,16 @@
           v-model="form.email"
         />
         <text-field :label="$t('people.fields.phone')" v-model="form.phone" />
-        <div class="field">
+        <div class="field" v-if="!user.isEpiboly">
           <label class="label">
             {{ $t('doodle.company') }}
           </label>
           <span class="select is-medium">
-            <select v-model="form.dingding_company_id">
+            <select v-model="form.studio_id">
               <option
                 :key="company.id"
                 :value="company.id"
-                v-for="company in dingDingCompany"
+                v-for="company in studios"
               >
                 {{ company.name }}
               </option>
@@ -694,7 +694,6 @@ export default {
   },
   watch: {
     user() {
-      console.log(this.user)
       Object.assign(this.form, this.user)
     }
   },
@@ -705,7 +704,8 @@ export default {
       'isSaveProfileLoading',
       'isSaveProfileLoadingError',
       'user',
-      'dingDingCompany'
+      'dingDingCompany',
+      'studios'
     ]),
     timezones() {
       return moment.tz.names().filter(timezone => {

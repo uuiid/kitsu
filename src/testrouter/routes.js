@@ -62,6 +62,7 @@ import TaskStatus from '@/components/pages/TaskStatus.vue'
 import TaskTypes from '@/components/pages/TaskTypes.vue'
 import WrongBrowser from '@/components/pages/WrongBrowser.vue'
 import ScanProject from '@/components/pages/ScanProject.vue'
+import SetPermission from '@/components/pages/SetPermission.vue'
 
 const ADMIN_PAGES = [
   'asset-types',
@@ -675,6 +676,11 @@ export const routes = [
         path: 'productions/:production_id/assets/:asset_id',
         component: Asset,
         name: 'asset'
+      },
+      {
+        path: 'productions/:production_id/set-permission',
+        component: SetPermission,
+        name: 'set-permission'
       },
 
       {

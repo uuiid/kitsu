@@ -23,6 +23,7 @@ import Edits from '@/components/pages/Edits.vue'
 import VideoLibrary from '../components/pages/VideoLibrary.vue'
 import ScanProject from '@/components/pages/ScanProject.vue'
 import DoodleWork from '@/components/pages/DoodleWork.vue'
+import SetPermission from '@/components/pages/SetPermission.vue'
 
 const AssetLibrary = () => import('@/components/pages/AssetLibrary.vue')
 const AllTasks = () => import('@/components/pages/AllTasks.vue')
@@ -636,6 +637,11 @@ export const routes = [
         path: 'productions/:production_id/shots/:shot_id',
         component: Shot,
         name: 'shot'
+      },
+      {
+        path: 'productions/:production_id/set-permission',
+        component: SetPermission,
+        name: 'set-permission'
       },
 
       {
