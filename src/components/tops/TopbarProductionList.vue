@@ -89,7 +89,7 @@ export default {
   },
 
   computed: {
-    ...mapGetters(['currentProduction'])
+    ...mapGetters(['currentProduction', 'isCurrentUserVendor'])
   },
 
   methods: {
@@ -112,11 +112,13 @@ export default {
     },
 
     getProductionPath(production) {
-      return getProductionPath(
+      const route = getProductionPath(
         production,
         this.section,
         this.episodeId || 'all'
       )
+      if (this.isCurrentUserVendor) route.name = 'breakdown'
+      return route
     }
   }
 }

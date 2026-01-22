@@ -28,7 +28,7 @@
           <div v-if="!isCurrentUserClient">
             <h2>{{ $t('main.workspace') }}</h2>
 
-            <p @click="toggleSidebar()">
+            <p @click="toggleSidebar()" v-if="!isCurrentUserVendor">
               <router-link :to="{ name: 'todos' }">
                 <kitsu-icon class="nav-icon" name="my-tasks" />
                 {{ $t('tasks.my_tasks') }}
@@ -43,13 +43,13 @@
                 {{ $t('tasks.my_checks') }}
               </router-link>
             </p>
-            <p @click="toggleSidebar()">
+            <p @click="toggleSidebar()" v-if="!isCurrentUserVendor">
               <router-link :to="{ name: 'Worksheet' }">
                 <kitsu-icon class="nav-icon" name="my-worksheet" />
                 {{ $t('doodle.my_worksheet') }}
               </router-link>
             </p>
-            <p @click="toggleSidebar()">
+            <p @click="toggleSidebar()" v-if="!isCurrentUserVendor">
               <router-link :to="{ name: 'entity-chats' }">
                 <kitsu-icon class="nav-icon" name="message" />
                 {{ $t('chats.title') }}
