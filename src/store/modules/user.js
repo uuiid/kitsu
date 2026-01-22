@@ -121,8 +121,7 @@ const initialState = {
   todoListScrollPosition: 0,
   dingDingCompany: [],
   timeSpentMap: {},
-  timeSpentTotal: 0,
-  isEpiboly: false
+  timeSpentTotal: 0
 }
 
 const state = {
@@ -132,7 +131,6 @@ const state = {
 const getters = {
   user: state => state.user,
   isAuthenticated: state => state.isAuthenticated,
-  isEpiboly: state => state.isEpiboly,
   isCurrentUserManager: state => {
     return state.user && ['admin', 'manager'].includes(state.user.role)
   },
@@ -415,17 +413,14 @@ const mutations = {
   [USER_LOGIN](state, user) {
     state.user = peopleStore.helpers.addAdditionalInformation(user)
     state.isAuthenticated = true
-    state.isEpiboly = user.role === 'outsource '
   },
   [USER_LOGOUT](state) {
     state.user = null
     state.isAuthenticated = false
-    state.isEpiboly = false
   },
   [USER_LOGIN_FAIL](state) {
     state.user = null
     state.isAuthenticated = false
-    state.isEpiboly = false
   },
 
   [USER_SAVE_PROFILE_LOADING](state) {

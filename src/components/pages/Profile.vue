@@ -52,7 +52,7 @@
           v-model="form.email"
         />
         <text-field :label="$t('people.fields.phone')" v-model="form.phone" />
-        <div class="field" v-if="!user.isEpiboly">
+        <div class="field" v-if="!isCurrentUserVendor">
           <label class="label">
             {{ $t('doodle.company') }}
           </label>
@@ -705,7 +705,8 @@ export default {
       'isSaveProfileLoadingError',
       'user',
       'dingDingCompany',
-      'studios'
+      'studios',
+      'isCurrentUserVendor'
     ]),
     timezones() {
       return moment.tz.names().filter(timezone => {

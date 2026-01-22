@@ -43,10 +43,10 @@
               :section="currentSectionOption"
             />
           </div>
-          <div class="flexrow-item" v-if="!user.isEpiboly">
+          <div class="flexrow-item" v-if="!isCurrentUserVendor">
             <chevron-right-icon class="align-middle" :size="20" />
           </div>
-          <div class="flexrow-item subitem" v-if="!user.isEpiboly">
+          <div class="flexrow-item subitem" v-if="!isCurrentUserVendor">
             <topbar-section-list
               :episode-id="currentEpisodeId"
               :section-list="sectionOptions"
