@@ -131,7 +131,7 @@ export default {
     },
     isEdit: {
       type: Boolean,
-      required: true
+      default: true
     }
   },
 
