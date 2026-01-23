@@ -113,7 +113,6 @@
             position: isComparisonOverlay ? 'absolute' : 'relative'
           }"
           v-show="isFullMode"
-          v-if="false"
         />
 
         <raw-video-player
@@ -128,7 +127,6 @@
           :is-hd="isHd"
           :is-repeating="isRepeating"
           :muted="true"
-          v-if="false"
           :video-cache="videoCache"
           :handle-in="playlist.for_entity === 'shot' ? handleIn : -1"
           :handle-out="playlist.for_entity === 'shot' ? handleOut : -1"
