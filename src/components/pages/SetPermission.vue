@@ -10,6 +10,7 @@ import assetTypeStore from '@/store/modules/assettypes'
 import ShotListCopy from '@/components/lists/ShotListCopy.vue'
 import SequenceListCopy from '@/components/lists/SequenceListCopy.vue'
 import studiosStore from '@/store/modules/studios'
+import ComboboxStyled from '@/components/widgets/ComboboxStyled.vue'
 let lastValue = productionsStore.state.currentProduction
 const epibolyAuthorization = epibolyAuthorizationStore()
 const displayedAssetsPage = ref(1)
@@ -18,6 +19,8 @@ const epibolyAuthorizationListByType = ref(new Map())
 const initialLoading = ref(false)
 const selectedStudio = ref(studiosStore.state.studios[0].id)
 const isStudioSelected = ref(false)
+const sequenceId = ref('all')
+const sequencesOptions = ref([])
 
 const selectedDepartment = ref('asset')
 const selectableDepartments = ref([
@@ -40,17 +43,29 @@ const displayedAssetsByTypeWithPreview = computed(() => {
   return epibolyAuthorizationListByType.value.get(selectedDepartment.value)
 })
 
+const displayedAssetsBySequence = computed(() => {
+  if (sequenceId.value === 'all' || selectedDepartment.value === 'sequence')
+    return displayedAssetsByTypeWithPreview.value
+  return displayedAssetsByTypeWithPreview.value.filter(entity => {
+    return (
+      (selectedDepartment.value === 'asset'
+        ? `EP${entity.ji_shu_lie}`
+        : entity.sequence_name) === sequenceId.value
+    )
+  })
+})
+
 const displayedAssetsByStudio = computed(() => {
-  if (!displayedAssetsByTypeWithPreview.value) return []
+  if (!displayedAssetsBySequence.value) return []
   if (isStudioSelected.value) {
-    return displayedAssetsByTypeWithPreview.value.filter(entity => {
+    return displayedAssetsBySequence.value.filter(entity => {
       if (entity.authorizations.length === 0) return false
       return entity.authorizations.find(
         a => a.studio_id === selectedStudio.value
       )
     })
   } else {
-    return displayedAssetsByTypeWithPreview.value.filter(entity => {
+    return displayedAssetsBySequence.value.filter(entity => {
       if (entity.authorizations.length === 0) return true
       return !entity.authorizations.find(
         a => a.studio_id === selectedStudio.value
@@ -88,6 +103,20 @@ function loadEpibolyAuthorization() {
     .then(res => {
       initialLoading.value = false
       groupEntitiesByType(res)
+      sequencesOptions.value.push({
+        label: '全部',
+        value: 'all'
+      })
+      sequencesOptions.value.push(
+        ...epibolyAuthorizationListByType.value
+          .get('sequence')
+          .map(sequence => {
+            return {
+              label: sequence.name,
+              value: sequence.name
+            }
+          })
+      )
     })
 }
 
@@ -175,7 +204,6 @@ function onSearchChange(searchField) {
 }
 
 async function onEditClicked(entities, callback) {
-  console.log(entities)
   for (const entity of entities) {
     if (
       entity.authorizations.length > 0 &&
@@ -219,7 +247,13 @@ async function onDeleteClicked(entities, callback) {
   callback()
 }
 
-function onDepartmentChange() {}
+function onSequenceChange() {
+  displayedAssetsPage.value = 1
+}
+
+function onDepartmentChange() {
+  displayedAssetsPage.value = 1
+}
 function onStudioChange(studio) {
   selectedStudio.value = studio
 }
@@ -241,6 +275,11 @@ function onStudioChange(studio) {
             :selectable-departments="selectableDepartments"
             v-model="selectedDepartment"
             @change="onDepartmentChange"
+          />
+          <combobox-styled
+            :options="sequencesOptions"
+            v-model="sequenceId"
+            @change="onSequenceChange"
           />
           <combobox-department
             :selectable-departments="studiosStore.state.studios"
