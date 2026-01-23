@@ -12,7 +12,7 @@
         <page-title class="title" :text="$t('shots.manage')" />
         <div class="explanation">{{ $t('shots.creation_explanation') }}</div>
         <div>
-          <div class="flexrow">
+          <div class="flexrow" v-if="false">
             <combobox
               ref="shot-padding"
               :label="$t('shots.padding')"
@@ -81,7 +81,7 @@
                 {{ sequence.name }}
               </div>
             </div>
-            <div class="field">
+            <div class="field" v-if="!isCurrentUserVendor">
               <div class="field-input-root">
                 <span>EP</span>
                 <input
@@ -281,7 +281,8 @@ export default {
       'currentProduction',
       'displayedEpisodes',
       'displayedSequences',
-      'isTVShow'
+      'isTVShow',
+      'isCurrentUserVendor'
     ]),
 
     isAddEpisodeAllowed() {

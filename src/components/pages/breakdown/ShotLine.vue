@@ -64,10 +64,7 @@
         {{ entity.nb_frames }}
       </span>
     </div>
-    <div
-      class="frames-column flexrow-item"
-      v-if="isFrameIn && isShowInfosBreakdown && metadataDisplayHeaders.frameIn"
-    >
+    <div class="frames-column flexrow-item" v-if="false">
       <input
         class="input-editor"
         step="1"
@@ -88,12 +85,7 @@
         {{ getMetadataFieldValue({ field_name: 'frame_in' }, entity) }}
       </span>
     </div>
-    <div
-      class="frames-column flexrow-item"
-      v-if="
-        isFrameOut && isShowInfosBreakdown && metadataDisplayHeaders.frameOut
-      "
-    >
+    <div class="frames-column flexrow-item" v-if="false">
       <input
         class="input-editor"
         step="1"

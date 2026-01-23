@@ -159,26 +159,10 @@
           >
             {{ $t('shots.fields.nb_frames') }}
           </div>
-          <div
-            class="frames-header"
-            v-if="
-              isShotCasting &&
-              isFrameIn &&
-              isShowInfosBreakdown &&
-              metadataDisplayHeaders.frameIn
-            "
-          >
+          <div class="frames-header" v-if="false">
             {{ $t('shots.fields.frame_in') }}
           </div>
-          <div
-            class="frames-header"
-            v-if="
-              isShotCasting &&
-              isFrameOut &&
-              isShowInfosBreakdown &&
-              metadataDisplayHeaders.frameOut
-            "
-          >
+          <div class="frames-header" v-if="false">
             {{ $t('shots.fields.frame_out') }}
           </div>
           <div
