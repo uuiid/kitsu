@@ -1504,7 +1504,9 @@ export default {
 
     entityListClicked(entityIndex) {
       this.setVideoCache(this.entityList[entityIndex]).then(() => {
-        console.log('entityListClicked')
+        if (this.entityListToCompare.length <= entityIndex) {
+          this.setVideoCache(this.entityListToCompare[entityIndex])
+        }
         this.playEntity(entityIndex)
         this.currentPreviewIndex = 0
         this.updateRoomStatus()
@@ -1514,6 +1516,14 @@ export default {
             Math.min(this.entityList.length, entityIndex + 10)
           )) {
             this.setVideoCache(entity)
+          }
+          if (this.entityListToCompare.length <= entityIndex) {
+            for (const entity of this.entityList.slice(
+              entityIndex,
+              Math.min(this.entityList.length, entityIndex + 10)
+            )) {
+              this.setVideoCache(entity)
+            }
           }
         })
       })
@@ -1561,8 +1571,21 @@ export default {
 
     onPlayNext() {
       const nextEntity = this.entityList[this.nextEntityIndex]
-      if (this.entityList.length > this.nextEntityIndex + 10)
+      if (this.entityList.length > this.nextEntityIndex + 10) {
         this.setVideoCache(this.entityList[this.nextEntityIndex + 10])
+        if (
+          this.isComparing &&
+          this.isCurrentPreviewMovie &&
+          this.isMovieComparison &&
+          !this.isFullMode &&
+          !this.isLoading &&
+          this.entityListToCompare.length > this.nextEntityIndex + 10
+        ) {
+          this.setVideoCache(
+            this.entityListToCompare[this.nextEntityIndex + 10]
+          )
+        }
+      }
       if (this.isRepeating && this.isCurrentPreviewMovie) {
         this.rawPlayer.playNext()
       } else if (nextEntity.preview_file_extension === 'mp4') {
@@ -2453,7 +2476,22 @@ export default {
         this.resetComparison()
       }
     },
-
+    entityListToCompare(newValue, oldValue) {
+      if (oldValue) {
+        for (const entity of newValue) {
+          const url = this.getMoviePath(entity)
+          this.videoCache.delete(url)
+        }
+      }
+      if (newValue) {
+        for (const entity of newValue.slice(
+          0,
+          Math.min(10, Object.values(newValue).length)
+        )) {
+          this.setVideoCache(entity)
+        }
+      }
+    },
     entities() {
       this.currentPreviewIndex = 0
       this.currentComparisonPreviewuIndex = 0
