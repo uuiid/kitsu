@@ -1317,52 +1317,50 @@ export default {
         this.currentProduction.id,
         this.sequenceId
       )
-      if (this.targetAssetsMap.size === 0) {
-        for (const asset of [
-          ...workingFileStore().state.workingFiles.values()
-        ]) {
-          if (asset.canceled) continue
+
+      for (const asset of [...workingFileStore().state.workingFiles.values()]) {
+        if (asset.canceled) continue
+        if (
+          ![
+            '8c02b76a-6be6-4959-af58-5c31a85fe072',
+            'f9a8be37-2d05-4e20-8fae-751a61960ce4',
+            '6d9d69f0-4269-46fc-9c26-a7f7bf2f30e3'
+          ].includes(asset.asset_type_id)
+        )
+          continue
+        if (asset.bian_hao !== '') {
+          const bian_hao_name = 'Ch' + asset.bian_hao
+          if (this.targetAssetsMap.has(bian_hao_name)) {
+            this.targetAssetsMap.get(bian_hao_name).push(asset)
+          } else {
+            this.targetAssetsMap.set(bian_hao_name, [asset])
+          }
+        }
+        if (asset.pin_yin_ming_cheng !== '') {
+          if (this.targetAssetsMap.has(asset.pin_yin_ming_cheng)) {
+            this.targetAssetsMap.get(asset.pin_yin_ming_cheng).push(asset)
+          } else {
+            this.targetAssetsMap.set(asset.pin_yin_ming_cheng, [asset])
+          }
+        }
+        if (asset.pin_yin_ming_cheng !== '' && asset.ban_ben !== '') {
           if (
-            ![
-              '8c02b76a-6be6-4959-af58-5c31a85fe072',
-              'f9a8be37-2d05-4e20-8fae-751a61960ce4',
-              '6d9d69f0-4269-46fc-9c26-a7f7bf2f30e3'
-            ].includes(asset.asset_type_id)
-          )
-            continue
-          if (asset.bian_hao !== '') {
-            const bian_hao_name = 'Ch' + asset.bian_hao
-            if (this.targetAssetsMap.has(bian_hao_name)) {
-              this.targetAssetsMap.get(bian_hao_name).push(asset)
-            } else {
-              this.targetAssetsMap.set(bian_hao_name, [asset])
-            }
-          }
-          if (asset.pin_yin_ming_cheng !== '') {
-            if (this.targetAssetsMap.has(asset.pin_yin_ming_cheng)) {
-              this.targetAssetsMap.get(asset.pin_yin_ming_cheng).push(asset)
-            } else {
-              this.targetAssetsMap.set(asset.pin_yin_ming_cheng, [asset])
-            }
-          }
-          if (asset.pin_yin_ming_cheng !== '' && asset.ban_ben !== '') {
-            if (
-              this.targetAssetsMap.has(
-                `${asset.pin_yin_ming_cheng}_${asset.ban_ben}`
-              )
-            ) {
-              this.targetAssetsMap
-                .get(`${asset.pin_yin_ming_cheng}_${asset.ban_ben}`)
-                .push(asset)
-            } else {
-              this.targetAssetsMap.set(
-                `${asset.pin_yin_ming_cheng}_${asset.ban_ben}`,
-                [asset]
-              )
-            }
+            this.targetAssetsMap.has(
+              `${asset.pin_yin_ming_cheng}_${asset.ban_ben}`
+            )
+          ) {
+            this.targetAssetsMap
+              .get(`${asset.pin_yin_ming_cheng}_${asset.ban_ben}`)
+              .push(asset)
+          } else {
+            this.targetAssetsMap.set(
+              `${asset.pin_yin_ming_cheng}_${asset.ban_ben}`,
+              [asset]
+            )
           }
         }
       }
+
       const entitiesNameMap = new Map()
       for (const entity of this.castingEntities) {
         entitiesNameMap.set(entity.name, entity)
