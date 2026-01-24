@@ -153,20 +153,10 @@
               {{ $t('shots.fields.nb_frames') }}
             </th>
 
-            <th
-              scope="col"
-              class="framein number-cell"
-              v-if="isFrameIn && isShowInfos && metadataDisplayHeaders.frameIn"
-            >
+            <th scope="col" class="framein number-cell" v-if="false">
               {{ $t('shots.fields.frame_in') }}
             </th>
-            <th
-              scope="col"
-              class="frameout number-cell"
-              v-if="
-                isFrameOut && isShowInfos && metadataDisplayHeaders.frameOut
-              "
-            >
+            <th scope="col" class="frameout number-cell" v-if="false">
               {{ $t('shots.fields.frame_out') }}
             </th>
 
@@ -234,7 +224,7 @@
                 icon="plus"
                 :text="$t('tasks.create_tasks')"
                 @click="$emit('create-tasks')"
-                v-if="isCurrentUserManager"
+                v-if="false"
               />
 
               <table-metadata-selector-menu
@@ -448,12 +438,7 @@
                 {{ shot.nb_drawings }}
               </td>
 
-              <td
-                class="framein number-cell"
-                v-if="
-                  isFrameIn && isShowInfos && metadataDisplayHeaders.frameIn
-                "
-              >
+              <td class="framein number-cell" v-if="false">
                 <input
                   class="input-editor"
                   step="1"
@@ -481,12 +466,7 @@
                   {{ getMetadataFieldValue({ field_name: 'frame_in' }, shot) }}
                 </span>
               </td>
-              <td
-                class="frameout number-cell"
-                v-if="
-                  isFrameOut && isShowInfos && metadataDisplayHeaders.frameOut
-                "
-              >
+              <td class="frameout number-cell" v-if="false">
                 <input
                   class="input-editor"
                   step="1"

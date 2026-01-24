@@ -280,6 +280,7 @@ function onStudioChange(studio) {
             :options="sequencesOptions"
             v-model="sequenceId"
             @change="onSequenceChange"
+            v-if="selectedDepartment !== 'sequence'"
           />
           <combobox-department
             :selectable-departments="studiosStore.state.studios"
