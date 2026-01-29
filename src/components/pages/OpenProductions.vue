@@ -100,6 +100,7 @@
           'open-productions-list': true,
           'is-grid': openProductions?.length > 4
         }"
+        v-if="!isCurrentUserVendor"
       >
         <div class="production-type">其他</div>
         <div
@@ -263,7 +264,8 @@ export default {
       'isOpenProductionsLoading',
       'lastProductionScreen',
       'mainConfig',
-      'openProductions'
+      'openProductions',
+      'isCurrentUserVendor'
     ]),
     completedProductions() {
       return this.openProductions.filter(production => {
