@@ -49,7 +49,7 @@ const displayedAssetsBySequence = computed(() => {
   return displayedAssetsByTypeWithPreview.value.filter(entity => {
     return (
       (selectedDepartment.value === 'asset'
-        ? `EP${entity.ji_shu_lie}`
+        ? `EP${String(entity.ji_shu_lie).padStart(3, '0')}`
         : entity.sequence_name) === sequenceId.value
     )
   })
@@ -103,6 +103,7 @@ function loadEpibolyAuthorization() {
     .then(res => {
       initialLoading.value = false
       groupEntitiesByType(res)
+      sequencesOptions.value = []
       sequencesOptions.value.push({
         label: '全部',
         value: 'all'
