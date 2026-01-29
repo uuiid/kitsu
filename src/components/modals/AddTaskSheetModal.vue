@@ -38,7 +38,7 @@
           <combobox
             class="flexrow-item"
             :label="$t('timesheets.month')"
-            :options="monthOptions"
+            :options="endMonthOptions"
             v-model="endMonthString"
             @change="onDateChange"
           />
@@ -167,7 +167,7 @@ export default {
   data() {
     return {
       yearString: `${moment().year()}`,
-      monthString: `${moment().month()}`,
+      monthString: `${moment().month() + 1}`,
       endYearString: `${moment().year()}`,
       endMonthString: `${moment().month() + 1}`,
       sortedTasks: [],
@@ -210,6 +210,19 @@ export default {
       const currentMonth = moment().month() + 1
       let monthRange = range(month, 12)
       if (currentYear === this.yearString) {
+        monthRange = range(month, currentMonth)
+      }
+      return monthRange.map(month => ({
+        label: month,
+        value: `${month}`
+      }))
+    },
+    endMonthOptions() {
+      const currentYear = `${moment().year()}`
+      const month = 1
+      const currentMonth = moment().month() + 1
+      let monthRange = range(month, 12)
+      if (currentYear === this.endYearString) {
         monthRange = range(month, currentMonth)
       }
       return monthRange.map(month => ({

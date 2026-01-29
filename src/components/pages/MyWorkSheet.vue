@@ -633,6 +633,7 @@ export default {
       }
       this.clearSelectedTasks()
       this.tasks = []
+      console.log(this.$refs['add-task-sheet-modal'].monthString)
       const start_date = `${this.$refs['add-task-sheet-modal'].yearString}-${this.$refs['add-task-sheet-modal'].monthString}-01`
       const end_day = new Date(
         this.$refs['add-task-sheet-modal'].endYearString,
