@@ -220,8 +220,19 @@ async function submitCreateReview() {
         comment: reviewForm.comment
       }
     )
+    ElMessage({
+      showClose: true,
+      message: '上传成功',
+      type: 'success',
+      duration: 0
+    })
   } catch (error) {
-    ElMessage.error(error.body.error)
+    ElMessage({
+      showClose: true,
+      message: error.body.error,
+      type: 'error',
+      duration: 0
+    })
     isLoading.value = false
   }
   isLoading.value = false

@@ -453,7 +453,7 @@ export const updateTaskFilesStore = defineStore(
         commentData.set('task_status_id', task.task_status_id)
         commentData.set('comment', data.comment || '')
         commentData.set('checklist', [])
-        await doodlework.submitCreateReview(task, commentData)
+        return await doodlework.submitCreateReview(task, commentData)
       },
       getCreateReview: task => {
         return doodlework.getCreateReview(task)
