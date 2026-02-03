@@ -204,7 +204,20 @@ const actions = {
       entityId: entity.id,
       previewFileId
     })
-    dispatch('editPlaylist', { data: playlist, callback })
+    const entityToMove = playlist.shots.find(
+      entityPlaylist => entityPlaylist.entity_id === entity.id
+    )
+    playlistsApi.editPlaylistEntity(
+      playlist,
+      {
+        entity_id: entity.id,
+        preview_file_id: previewFileId,
+        order_index: entityToMove.order_index,
+        shot_id: entityToMove.shot_id
+      },
+      callback
+    )
+    //dispatch('editPlaylist', { data: playlist, callback })
   },
 
   removeBuildJob({ commit }, job) {
