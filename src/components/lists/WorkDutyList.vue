@@ -159,7 +159,6 @@
                   data-test="button-delete"
                   tabindex="-1"
                   @click="onRemove(entry)"
-                  v-if="entry.is_custom"
                 >
                   <trash-icon class="icon is-small only-icon" />
                 </button>
