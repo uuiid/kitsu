@@ -388,6 +388,15 @@ export default {
               } else {
                 if (this.columnSelect[j] === 'description') {
                   data[this.columnSelect[j]] = this.parsedCsv[i][j] || ''
+                } else if (
+                  [
+                    'ji_du',
+                    'ji_shu_lie',
+                    'kai_shi_ji_shu',
+                    'gui_dang'
+                  ].includes(this.columnSelect[j])
+                ) {
+                  data[this.columnSelect[j]] = Number(this.parsedCsv[i][j])
                 } else if (this.parsedCsv[i][j] !== undefined) {
                   data[this.columnSelect[j]] = this.parsedCsv[i][j]
                 }
