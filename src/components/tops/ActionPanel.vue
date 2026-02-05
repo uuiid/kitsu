@@ -58,7 +58,9 @@
               isCurrentViewEntity ||
               isCurrentViewPerson ||
               isCurrentViewSingleEntity) &&
-            (isCurrentUserManager || isSupervisorInDepartment) &&
+            (isCurrentUserManager ||
+              isSupervisorInDepartment ||
+              isCurrentUserSupervisor) &&
             !isEntitySelection &&
             isTaskSelection
           "
