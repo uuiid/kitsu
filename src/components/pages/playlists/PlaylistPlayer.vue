@@ -85,14 +85,12 @@
         class="edit-button playlist-button flexrow-item"
         :title="$t('playlists.actions.edit')"
         icon="edit"
-        v-if="isCurrentUserManager || isCurrentUserSupervisor"
       />
       <button-simple
         @click="showDeleteModal"
         class="delete-button playlist-button flexrow-item"
         :title="$t('playlists.actions.delete')"
         icon="trash"
-        v-if="isCurrentUserManager || isCurrentUserSupervisor"
       />
     </div>
 

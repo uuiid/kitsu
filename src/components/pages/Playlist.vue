@@ -399,7 +399,6 @@
                     class="button"
                     @click="addSequence(sequenceShots)"
                     :key="'add-sequence-button-' + sequenceShots[0].sequence_id"
-                    v-if="isCurrentUserManager || isCurrentUserSupervisor"
                   >
                     {{ $t('playlists.add_sequence') }}
                   </button>
@@ -408,9 +407,7 @@
                     @click="onCreateReviewPreview(sequenceShots[0].sequence_id)"
                     :key="'add-sequence-button-' + sequenceShots[0].sequence_id"
                     v-if="
-                      (isCurrentUserManager || isCurrentUserSupervisor) &&
-                      sequenceShots.length > 0 &&
-                      sequenceShots[0].sequence_id
+                      sequenceShots.length > 0 && sequenceShots[0].sequence_id
                     "
                   >
                     {{ $t('doodle.create_review_preview') }}
