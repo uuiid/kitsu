@@ -222,13 +222,7 @@
           @create-review="createReview"
         />
 
-        <div
-          v-if="
-            (isCurrentUserManager || isCurrentUserSupervisor) &&
-            isAddingEntity &&
-            !loading.playlist
-          "
-        >
+        <div v-if="isAddingEntity && !loading.playlist">
           <div class="addition-header">
             <div class="flexrow">
               <page-subtitle class="flexrow-item" :text="addEntitiesText" />
@@ -318,9 +312,7 @@
 
         <div
           class="addition-section"
-          v-if="
-            (isCurrentUserManager || isCurrentUserSupervisor) && isAddingEntity
-          "
+          v-if="isAddingEntity"
           @scroll.passive="onBodyScroll"
         >
           <spinner

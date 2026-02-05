@@ -11,7 +11,6 @@
           class="remove-button flexrow-item"
           :title="$t('playlists.remove')"
           @click.prevent="onRemoveClick"
-          v-if="isCurrentUserManager || isCurrentUserSupervisor"
         >
           <x-icon />
         </span>
