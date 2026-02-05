@@ -48,9 +48,7 @@
           }"
           @click="showAddModal"
           key="new-playlist-button"
-          v-if="
-            (isCurrentUserManager || isCurrentUserSupervisor) && !isListToggled
-          "
+          v-if="!isListToggled"
         >
           <plus-icon class="icon is-small" />
           {{ $t('playlists.new_playlist') }}
@@ -195,7 +193,6 @@
             }"
             @click="showAddModal"
             key="new-playlist-button"
-            v-if="isCurrentUserManager || isCurrentUserSupervisor"
           >
             {{ $t('playlists.new_playlist') }}
           </button>
