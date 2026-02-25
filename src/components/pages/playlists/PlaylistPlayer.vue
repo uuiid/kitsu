@@ -466,6 +466,12 @@
             / {{ (nbFrames + '').padStart(3, '0') }} </span
           >)
         </span>
+        <span
+          class="flexrow-item time-indicator is-hidden-touch is-hidden-desktop-only"
+          :title="$t('playlists.actions.all_duration')"
+        >
+          {{ allDuration }}
+        </span>
       </div>
 
       <div class="separator"></div>
@@ -1226,7 +1232,14 @@ export default {
     fullPlayer() {
       return this.$refs['full-playlist-player']
     },
-
+    allDuration() {
+      if (this.playlist.shots.length === 0) return '00:00.000'
+      let all_duration = 0
+      this.playlist.shots.forEach(shot => {
+        all_duration += shot.preview_file_duration || 0
+      })
+      return this.formatTime(all_duration, this.fps)
+    },
     picturePreviews() {
       const picturePreviews = []
       this.entityList.forEach(e => {

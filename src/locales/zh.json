@@ -743,6 +743,7 @@
         "unmute": "取消静音",
         "number_of_files": "此修订的文件数",
         "max_duration": "视频时长",
+        "all_duration": "总视频时长",
         "see_original_file": "在新标签页中打开原始文件",
         "overlay": "覆盖",
         "side_by_side": "并排",
