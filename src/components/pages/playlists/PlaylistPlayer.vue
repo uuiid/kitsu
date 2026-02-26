@@ -2022,7 +2022,10 @@ export default {
       }
     },
     getMoviePath(entity) {
-      if (entity.preview_file_extension === 'mp4') {
+      if (
+        entity.preview_file_extension &&
+        entity.preview_file_extension === 'mp4'
+      ) {
         let previewId
         if (
           this.currentPreviewIndex === 0 ||
