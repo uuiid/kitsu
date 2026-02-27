@@ -229,7 +229,7 @@ class DoodleCheckBoxWidget(QCheckBox):
             Qt.CheckState()
             State.set_doodle_file_info_attr(self.parent.label + '.' + self._label, self.isChecked())
         except AttributeError as e:
-            print e
+            print(e)
 
     @property
     def label(self):

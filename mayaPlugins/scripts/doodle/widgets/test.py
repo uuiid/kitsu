@@ -31,4 +31,4 @@ if cmds.window('MayaWindow', exists=True):
         cmds.menuItem(label="c_doodle_item", parent=menu_name, command=my_custom_function)
 
 else:
-    print "Maya main window does not exist."
+    print("Maya main window does not exist.")

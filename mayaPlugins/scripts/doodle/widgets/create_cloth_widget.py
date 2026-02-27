@@ -72,7 +72,6 @@ class CreateClothWidget(QWidget):
         names = self.state.check_low_model()
         if names:
             for name in names:
-                print name
                 self.state.low_model[name] = []
                 item = CreateClothModelItem()
                 item.label = name

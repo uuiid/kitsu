@@ -1,5 +1,5 @@
 ﻿# -*- coding: utf-8 -*-
-import shelfBase
+import scripts.shelfBase as shelfBase
 import maya.cmds as cmds
 from maya import mel
 import scripts.Doodle_PolyRemesh as Doodle_PolyRemesh

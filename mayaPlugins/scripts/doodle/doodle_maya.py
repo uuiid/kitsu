@@ -217,7 +217,7 @@ class State(object):
                     return_object[obj] = str(connections_num)
                     connections_num += 1
                 else:
-                    cmds.warning(u"已存在" + obj)
+                    cmds.warning("已存在" + obj)
         return return_object
 
     @staticmethod
@@ -242,7 +242,7 @@ class State(object):
                 cmds.menuItem(label="doodle_tool", parent=menu_name, command=my_custom_function)
 
         else:
-            print "Maya main window does not exist."
+            print("Maya main window does not exist.")
     @staticmethod
     def remove_menu():
         cmds.deleteUI("doodle", menu=True)

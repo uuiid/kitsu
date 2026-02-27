@@ -1,10 +1,9 @@
+
 def select_ctrl():
     import pymel.core
     l_select = pymel.core.ls("*_ctrl")
     pymel.core.select(l_select)
 
-
-select_ctrl()
 
 
 def to_default():
@@ -17,9 +16,6 @@ def to_default():
                 l_def = pymel.core.attributeQuery(
                     attr_n, node=c, listDefault=True)[0]
                 attr.set(l_def)
-
-
-to_default()
 
 
 """
