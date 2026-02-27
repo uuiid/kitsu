@@ -23,7 +23,6 @@ class SelectableList(DoodleScrollArea):
     def set_current_item(self, index=None, name=None):
         if index is not None and len(self.items.values()) > 0:
             self._selected_item = self.items.values()[index]
-            print self._selected_item
         elif name:
             self._selected_item = self.items[name]
         if self._selected_item is not None:
