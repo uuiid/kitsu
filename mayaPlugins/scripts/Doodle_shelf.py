@@ -1,20 +1,17 @@
 ﻿# -*- coding: utf-8 -*-
-import scripts.shelfBase as shelfBase
+import shelfBase as shelfBase
 import maya.cmds as cmds
 from maya import mel
-import scripts.Doodle_PolyRemesh as Doodle_PolyRemesh
-import scripts.Doodle_clear as Doodle_clear
-# import scripts.dem_cloth_to_fbx as dem_cloth_to_fbx
-# import scripts.Doodle_deleteSurplusWeight as deleteWeight
-import scripts.Doodle_deleteAttr as deleteAttr
-import scripts.Doodle_blend_keyframe
-# import scripts.create_hair_uv as hair_uv
+import Doodle_PolyRemesh as Doodle_PolyRemesh
+import Doodle_clear as Doodle_clear
+import Doodle_deleteAttr as deleteAttr
+import Doodle_blend_keyframe
 from PySide2 import QtCore
 from PySide2 import QtGui
 from PySide2 import QtWidgets
 import random
 
-import scripts.doodle_ik_to_fk
+import doodle_ik_to_fk
 
 
 class DlsShelf(shelfBase._shelf):
