@@ -105,17 +105,28 @@ const onConfirm = async () => {
           :options="versions"
           v-model="doodleWork.state.doodleWorkZipFileVision"
         />
-        <text-field
-          ref="nameField"
-          :placeholder="textPlaceholder(value, key)"
-          :key="key"
-          :label="$t(`doodle_work.settings.${key}`)"
-          :readonly="readonlyFields.includes(key)"
-          v-for="(value, key) in displayFields"
-          :model-value="value"
-          v-model="displayFields[key]"
-          @change="val => onTextChange(val, key)"
-        />
+        <template :key="key" v-for="(value, key) in displayFields">
+          <text-field
+            ref="nameField"
+            :placeholder="textPlaceholder(value, key)"
+            :label="$t(`doodle_work.settings.${key}`)"
+            :readonly="readonlyFields.includes(key)"
+            :model-value="value"
+            v-model="displayFields[key]"
+            @change="val => onTextChange(val, key)"
+            v-if="key !== 'maya_version'"
+          />
+          <combobox
+            class="flexrow-item"
+            :label="$t(`doodle_work.settings.${key}`)"
+            :options="[
+              { label: 2020, value: 2020 },
+              { label: 2024, value: 2024 }
+            ]"
+            v-model="displayFields[key]"
+            v-else
+          />
+        </template>
         <text-field
           label="视频导出路径"
           v-model="doodleWork.state.outPath"
