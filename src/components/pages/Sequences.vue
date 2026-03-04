@@ -624,8 +624,12 @@ export default {
     },
     async confirmAddSequence(form) {
       for (let i = form.start_episodes; i <= form.end_episodes; i++) {
+        let sequence_name = ''
+        if (form.guang_dian)
+          sequence_name = `${form.name}${String(i).padStart(3, '0')}G`
+        else sequence_name = `${form.name}${String(i).padStart(3, '0')}`
         const sequence = {
-          name: `${form.name}${String(i).padStart(3, '0')}`,
+          name: sequence_name,
           description: form.description,
           data: {
             resolution: form.data.resolution

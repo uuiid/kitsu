@@ -16,7 +16,8 @@ const form = ref({
   end_episodes: null,
   data: {
     resolution: ''
-  }
+  },
+  guang_dian: false
 })
 const onConfirm = () => {
   if (form.value.start_episodes < form.value.end_episodes) {
@@ -82,6 +83,10 @@ const onConfirm = () => {
             :label="$t('shots.fields.resolution')"
             v-model="form.data.resolution"
           />
+          <div class="field">
+            <label class="label">是否广电</label>
+            <input type="checkbox" v-model="form.guang_dian" />
+          </div>
           <textarea-field
             ref="descriptionField"
             :label="$t('sequences.fields.description')"

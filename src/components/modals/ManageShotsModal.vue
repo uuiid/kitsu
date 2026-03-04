@@ -99,18 +99,32 @@
                   v-model="names.sequence"
                 />
               </div>
-
-              <button
-                :class="{
-                  button: true,
-                  'is-success': true,
-                  'is-loading': loading.addSequence
-                }"
-                :disabled="!isAddSequenceAllowed"
-                @click="addSequence"
-              >
-                {{ $t('main.add') }}
-              </button>
+              <div class="flexrow">
+                <button
+                  :class="{
+                    button: true,
+                    'is-fullwidth': true,
+                    'is-success': true,
+                    'is-loading': loading.addSequence
+                  }"
+                  :disabled="!isAddSequenceAllowed"
+                  @click="addSequence"
+                >
+                  {{ $t('main.add') }}
+                </button>
+                <button
+                  :class="{
+                    button: true,
+                    'is-fullwidth': true,
+                    'is-success': true,
+                    'is-loading': loading.addSequence
+                  }"
+                  :disabled="!isAddSequenceAllowed"
+                  @click="addSequence(true)"
+                >
+                  {{ $t('main.add') }}广电序列
+                </button>
+              </div>
             </div>
           </div>
 
@@ -366,9 +380,11 @@ export default {
       }
     },
 
-    addSequence() {
+    addSequence(is_guang_dian = false) {
       if (this.isAddSequenceAllowed) {
-        const sequenceName = `EP${this.names.sequence}`
+        const sequenceName = is_guang_dian
+          ? `EP${this.names.sequence}G`
+          : `EP${this.names.sequence}`
         if (
           sequenceName.length > 0 &&
           (this.selectedEpisodeId || !this.isTVShow)
