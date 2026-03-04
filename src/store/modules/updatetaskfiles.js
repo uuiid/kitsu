@@ -30,14 +30,14 @@ class DoodleWorkUpdateTaskFiles extends DoodleWorkBase {
     })
     this.task_data_filed.set('multi_uv_inspection', {
       id: 'multi_uv_inspection',
-      name: '是否检查名称长度',
+      name: '检查是否有多uv的情况(默认勾选)',
       checked: true,
       type: Boolean,
       task_type_id: '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
     })
     this.task_data_filed.set('name_length_check', {
       id: 'name_length_check',
-      name: '检查是否有多uv的情况(默认勾选)',
+      name: '是否检查名称长度',
       checked: true,
       type: Boolean,
       task_type_id: '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34'
