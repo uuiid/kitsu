@@ -391,14 +391,15 @@ const onAddData = async files => {
       if (props.updateEntityType === 'shot') {
         // const file_split = file.name.split('.')
         temp_task = updateTaskFiles.state.selection.filter(task => {
-          const target_name = `${productions.state.currentProduction.code}_${task.task.entity_name.replace(' / ', '_')}`
+          let target_name = `${productions.state.currentProduction.code}_${task.task.entity_name.replace(' / ', '_')}`
+          if (task.task.sequence_name.endsWith('G')) {
+            target_name = `${productions.state.currentProduction.code}_${task.task.sequence_name.slice(0, -1)}${task.task.entity_name.replace(task.task.sequence_name + ' / ', '_')}`
+          }
           return (
             (file.name[target_name.length] === '.' ||
               file.name[target_name.length] === '_' ||
               file.name[target_name.length] === undefined) &&
-            file.name.startsWith(
-              `${productions.state.currentProduction.code}_${task.task.entity_name.replace(' / ', '_')}`
-            )
+            file.name.startsWith(target_name)
           )
         })
       } else {
