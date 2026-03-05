@@ -30,6 +30,13 @@
           />
           <span class="filler"></span>
           <el-switch class="flexrow-item" v-model="isShowAsset" />
+          <button-simple
+            class="flexrow-item"
+            icon="copy"
+            :title="$t('doodle.copy_asset')"
+            @click="copyAssetsToGuangDian"
+            v-if="isShowCopy"
+          />
           <show-infos-button class="flexrow-item" :is-breakdown="true" />
           <button-simple
             class="flexrow-item"
@@ -827,7 +834,11 @@ export default {
     isEpisodeCasting() {
       return this.currentEpisode && this.currentEpisode.id === 'all'
     },
-
+    isShowCopy() {
+      const current_sequence = this.sequenceMap.get(this.sequenceId)
+      if (!current_sequence) return false
+      return !current_sequence.full_name.endsWith('G')
+    },
     isAssetCasting() {
       return !this.isEpisodeCasting && this.castingType === 'asset'
     },
@@ -969,7 +980,8 @@ export default {
       'newEpisode',
       'newSequence',
       'newShot',
-      'deleteShot'
+      'deleteShot',
+      'copySequenceCasting'
     ]),
 
     reset() {
@@ -1002,7 +1014,7 @@ export default {
     onDragStart(entry) {
       this.dropEntry = entry
     },
-    async reloadEntities() {
+    async reloadEntities(isLoadAsset = true) {
       this.isLoading = true
       await this.loadSequences()
       await this.loadShots()
@@ -1015,24 +1027,27 @@ export default {
       } else {
         this.setCastingEpisode(null)
       }
-      this.loadAssets({ all: true, withTasks: true }).then(() => {
-        this.isLoading = false
-        this.displayMoreAssets()
-        this.setCastingAssetTypes()
-        if (this.assetTypeId) {
-          this.setCastingAssetType(this.assetTypeId)
-        } else {
-          this.setCastingSequence(this.sequenceId || 'all')
-        }
-        this.resetSequenceOption()
-        this.resetSelection()
-        if (
-          (this.currentEpisode && this.currentEpisode.id === 'main') ||
-          this.currentProduction.production_type === 'assets'
-        ) {
-          this.castingType = 'asset'
-        }
-      })
+      this.setCastingAssetTypes()
+      if (this.assetTypeId) {
+        this.setCastingAssetType(this.assetTypeId)
+      } else {
+        this.setCastingSequence(this.sequenceId || 'all')
+      }
+      this.isLoading = false
+      if (isLoadAsset) {
+        this.loadAssets({ all: true, withTasks: true }).then(() => {
+          this.isLoading = false
+          this.displayMoreAssets()
+          this.resetSequenceOption()
+          this.resetSelection()
+          if (
+            (this.currentEpisode && this.currentEpisode.id === 'main') ||
+            this.currentProduction.production_type === 'assets'
+          ) {
+            this.castingType = 'asset'
+          }
+        })
+      }
     },
 
     resetSequenceOption() {
@@ -1630,7 +1645,25 @@ export default {
           this.errors.edit = true
         })
     },
-
+    copyAssetsToGuangDian() {
+      const current_sequence = this.sequenceMap.get(this.sequenceId)
+      let source_sequence = null
+      if (current_sequence) {
+        if (!current_sequence.full_name.endsWith('G')) {
+          source_sequence = [...this.sequenceMap.values()].find(
+            sequence => sequence.full_name === `${current_sequence.full_name}G`
+          )
+        }
+      }
+      if (source_sequence) {
+        this.copySequenceCasting({
+          sequence: current_sequence,
+          source_sequence
+        }).then(res => {
+          this.reloadEntities(false)
+        })
+      }
+    },
     confirmNewAsset(form) {
       this.loading.edit = true
       this.errors.edit = false

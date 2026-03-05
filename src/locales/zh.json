@@ -1847,6 +1847,7 @@
       "check_shot_light": "检查镜头自动灯光",
       "run_auto_light": "运行自动灯光",
       "update_asset_from_fbx": "从FBX查找资产",
+      "copy_asset": "从广电序列拷贝",
       "add_subtitle": "添加字幕",
       "add_dubbing": "添加配音",
       "add_name": "添加名称",

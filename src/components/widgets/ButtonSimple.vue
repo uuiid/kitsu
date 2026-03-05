@@ -51,6 +51,7 @@
     <scan-search class="icon" v-else-if="icon === 'scan'" />
     <replace-icon class="icon" v-else-if="icon === 'replace'" />
     <chart-area-icon class="icon" v-else-if="icon === 'chart-area'" />
+    <copy-icon class="icon" v-else-if="icon === 'copy'" />
     <refresh-ccw-icon
       class="icon"
       :stroke-width="1.2"
@@ -89,6 +90,7 @@ import {
   CodepenIcon,
   CornerLeftDownIcon,
   CornerRightDownIcon,
+  CopyIcon,
   DownloadIcon,
   FileDigitIcon,
   EditIcon,
@@ -136,6 +138,7 @@ export default {
     CodepenIcon,
     CornerLeftDownIcon,
     CornerRightDownIcon,
+    CopyIcon,
     DownloadIcon,
     EditIcon,
     Edit2Icon,

@@ -247,7 +247,18 @@ const actions = {
         return Promise.resolve(casting)
       })
   },
-
+  copySequenceCasting({ commit, rootGetters }, { sequence, source_sequence }) {
+    const assetMap = assetStore.cache.assetMap
+    return breakdownApi
+      .copySequenceCasting(rootGetters.currentProduction.id, {
+        source_sequence_id: source_sequence.id,
+        target_sequence_id: sequence.id
+      })
+      .then(casting => {
+        commit(LOAD_SEQUENCE_CASTING_END, { sequence, casting, assetMap })
+        return Promise.resolve(casting)
+      })
+  },
   loadAssetCastIn({ commit, state, rootState }, asset) {
     if (!asset) return Promise.resolve({})
     const shotMap = shotStore.cache.shotMap

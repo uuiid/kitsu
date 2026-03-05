@@ -18,7 +18,10 @@ export default {
     const path = `/api/data/projects/${productionId}/asset-types/${assetTypeId}/casting`
     return client.pget(path)
   },
-
+  copySequenceCasting(productionId, data) {
+    const path = `/api/actions/projects/${productionId}/casting/copy`
+    return client.ppost(path, data)
+  },
   updateCasting(productionId, entityId, casting, callback) {
     const path = `/api/data/projects/${productionId}/entities/${entityId}/casting`
     return client.pput(path, casting)
