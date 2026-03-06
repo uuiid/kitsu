@@ -475,11 +475,7 @@
                     event =>
                       onInputKeyUp(event, getIndex(i, k), descriptorLength + 1)
                   "
-                  v-if="isCurrentUserManager"
                 />
-                <span class="metadata-value selectable" v-else>
-                  {{ getMetadataFieldValue({ field_name: 'frame_in' }, shot) }}
-                </span>
               </td>
               <td
                 class="frameout number-cell"
@@ -508,11 +504,7 @@
                     event =>
                       onInputKeyUp(event, getIndex(i, k), descriptorLength + 2)
                   "
-                  v-if="isCurrentUserManager"
                 />
-                <span class="metadata-value selectable" v-else>
-                  {{ getMetadataFieldValue({ field_name: 'frame_out' }, shot) }}
-                </span>
               </td>
 
               <td
