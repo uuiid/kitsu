@@ -374,11 +374,36 @@ const pluginAssets = ref([
     isVisible: true,
     isPlugin: false,
     installState: false
+  },
+  {
+    id: 13,
+    name: 'environment_variable',
+    label: 'UE环境变量',
+    textIcon: 'S',
+    disabled: true,
+    description: '',
+    color: '#2fff00',
+    isVisible: true,
+    isPlugin: false,
+    installState: false
   }
 ])
 
 const installPlugin = async plugin => {
   plugin.installState = true
+  if (plugin.name === 'environment_variable') {
+    try {
+      const { exec } = require('child_process')
+      exec(
+        'setx UE-SharedDataCachePath "\\\\192.168.10.220\\Global Shared DDC Path"'
+      )
+      exec('setx UE-LocalDataCachePath "%GAMEDIR%DerivedDataCache"')
+      ElMessage.success('设置环境变量成功')
+    } catch (e) {
+      ElMessage.error(e)
+    }
+    return
+  }
   try {
     const os = require('os')
     const fs = require('fs')
