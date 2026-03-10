@@ -1640,7 +1640,7 @@ export default {
         const res = await fetch(
           `/api/actions/projects/${this.productionId}/shots/${taskId}/run-ue-assembly`,
           {
-            method: 'post',
+            method: 'get',
             body: ''
           }
         )
