@@ -35,7 +35,6 @@
             icon="copy"
             :title="$t('doodle.copy_asset')"
             @click="copyAssetsToGuangDian"
-            v-if="isShowCopy"
           />
           <show-infos-button class="flexrow-item" :is-breakdown="true" />
           <button-simple
@@ -833,11 +832,6 @@ export default {
 
     isEpisodeCasting() {
       return this.currentEpisode && this.currentEpisode.id === 'all'
-    },
-    isShowCopy() {
-      const current_sequence = this.sequenceMap.get(this.sequenceId)
-      if (!current_sequence) return false
-      return !current_sequence.full_name.endsWith('G')
     },
     isAssetCasting() {
       return !this.isEpisodeCasting && this.castingType === 'asset'
@@ -1646,6 +1640,10 @@ export default {
         })
     },
     copyAssetsToGuangDian() {
+      if (this.sequenceId === 'all') {
+        ElMessage.error('请先选择集数')
+        return
+      }
       const current_sequence = this.sequenceMap.get(this.sequenceId)
       let source_sequence = null
       if (current_sequence) {
@@ -1653,8 +1651,14 @@ export default {
           source_sequence = [...this.sequenceMap.values()].find(
             sequence => sequence.full_name === `${current_sequence.full_name}G`
           )
+        } else {
+          source_sequence = [...this.sequenceMap.values()].find(
+            sequence =>
+              sequence.full_name === current_sequence.full_name.slice(0, -1)
+          )
         }
-      }
+      } else return
+
       if (source_sequence) {
         this.copySequenceCasting({
           sequence: current_sequence,
