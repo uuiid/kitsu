@@ -1639,7 +1639,7 @@ export default {
           this.errors.edit = true
         })
     },
-    copyAssetsToGuangDian() {
+    async copyAssetsToGuangDian() {
       if (this.sequenceId === 'all') {
         ElMessage.error('请先选择集数')
         return
@@ -1658,7 +1658,17 @@ export default {
           )
         }
       } else return
-
+      const source_shots = [...this.shotMap.values()].filter(
+        shot => shot.sequence_id === source_sequence.id
+      )
+      for (const entity of source_shots) {
+        if (!this.castingEntities.find(shot => shot.name === entity.name)) {
+          const data = Object.assign(entity, {})
+          data.sequence_id = current_sequence.id
+          await this.addShot(data, () => {})
+        }
+      }
+      //await this.reloadEntities(false)
       if (source_sequence) {
         this.copySequenceCasting({
           sequence: current_sequence,
@@ -1780,6 +1790,7 @@ export default {
         this.editAsset(data)
       }
     },
+
     onCopy(copyAssets) {
       this.copyAssets = copyAssets
     },
