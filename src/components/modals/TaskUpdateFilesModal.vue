@@ -392,7 +392,10 @@ const onAddData = async files => {
         // const file_split = file.name.split('.')
         temp_task = updateTaskFiles.state.selection.filter(task => {
           let target_name = `${productions.state.currentProduction.code}_${task.task.entity_name.replace(' / ', '_')}`
-          if (task.task.sequence_name.endsWith('G')) {
+          if (
+            task.task.sequence_name.endsWith('G') &&
+            !file.name.startsWith(target_name)
+          ) {
             target_name = `${productions.state.currentProduction.code}_${task.task.sequence_name.slice(0, -1)}${task.task.entity_name.replace(task.task.sequence_name + ' / ', '_')}`
           }
           return (
