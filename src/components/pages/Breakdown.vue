@@ -1662,6 +1662,7 @@ export default {
         shot => shot.sequence_id === source_sequence.id
       )
       for (const entity of source_shots) {
+        if (entity.canceled) continue
         if (!this.castingEntities.find(shot => shot.name === entity.name)) {
           const data = Object.assign(entity, {})
           data.sequence_id = current_sequence.id
