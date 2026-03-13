@@ -1640,8 +1640,7 @@ export default {
         const res = await fetch(
           `/api/actions/projects/${this.productionId}/shots/${taskId}/run-ue-assembly`,
           {
-            method: 'get',
-            body: ''
+            method: 'get'
           }
         )
         const task = this.taskMap.get(taskId)
