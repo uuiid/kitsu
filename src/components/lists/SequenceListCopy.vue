@@ -541,7 +541,14 @@ export default {
     }
   },
 
-  emits: ['create-tasks', 'delete-clicked', 'edit-clicked', 'metadata-changed'],
+  emits: [
+    'create-tasks',
+    'delete-clicked',
+    'edit-clicked',
+    'metadata-changed',
+    'scroll',
+    'load-more-sequences'
+  ],
 
   data() {
     return {
@@ -680,6 +687,16 @@ export default {
         this.sequenceSelectionGrid[lineIndex] &&
         this.sequenceSelectionGrid[lineIndex][columnIndex]
       )
+    },
+    onBodyScroll(event) {
+      if (!this.$refs.body) return
+      const position = event.target
+      this.$emit('scroll', position.scrollTop)
+      const maxHeight =
+        this.$refs.body.scrollHeight - this.$refs.body.offsetHeight
+      if (maxHeight < position.scrollTop + 100) {
+        this.$emit('load-more-sequences', position.scrollTop)
+      }
     },
     toggleLine(sequence, event) {
       const selected = event.target.checked

@@ -317,7 +317,7 @@ function onStudioChange(studio) {
           :is-loading="initialLoading"
           @edit-clicked="onEditClicked"
           @delete-clicked="onDeleteClicked"
-          @load-more-shots="displayedAssetsPage++"
+          @load-more-sequences="displayedAssetsPage++"
           v-if="selectedDepartment === 'shot'"
         />
         <sequence-list-copy
