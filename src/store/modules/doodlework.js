@@ -526,6 +526,7 @@ class DoodleWorkWatermark extends DoodleWorkMergeVideo {
     return data
   }
 }
+class DoodleWorkAutoLightDistributed extends DoodleWorkAutoLight {}
 function initState() {
   return {
     workList: [],
@@ -589,6 +590,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
   const doodleWorkMergeVideo = new DoodleWorkMergeVideo()
   const doodleWorkConnectVideo = new DoodleWorkConnectVideo()
   const doodleWorkWatermark = new DoodleWorkWatermark()
+  const doodleWorkAutoLightDistributed = new DoodleWorkAutoLightDistributed()
   const doodleWorkStateMap = ref(
     new Map([
       ['export_fbx', doodleWorkFbx],
@@ -598,7 +600,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       ['extract_caption', doodleWorkExtractCaption],
       ['merge_video', doodleWorkMergeVideo],
       ['connect_video', doodleWorkConnectVideo],
-      ['watermark', doodleWorkWatermark]
+      ['watermark', doodleWorkWatermark],
+      ['auto_light_distributed', doodleWorkAutoLightDistributed]
     ])
   )
   const currentDoodleWorkState = computed(() => {
@@ -1082,6 +1085,35 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     getLocalLogPath: () => {
       return doodlework.getLocalLogPath(state.value.localHttpPath)
+    },
+    get_all_jobs: async () => {
+      const jobs = await doodlework.get_all_jobs()
+      if (jobs) {
+        for (const job of jobs) {
+          doodleWorkAutoLightDistributed.workList.set(job.id, job)
+        }
+      }
+    },
+    get_one_job_info: id => {
+      return doodlework.get_one_job_info(id)
+    },
+    update_job: (id, data) => {
+      return doodlework.update_job(id, data)
+    },
+    get_job_log: id => {
+      return doodlework.get_job_log(id)
+    },
+    update_job_log: (id, data) => {
+      return doodlework.update_job_log(id, data)
+    },
+    get_all_computers: () => {
+      return doodlework.get_all_computers()
+    },
+    get_one_computer_info: id => {
+      return doodlework.get_one_computer_info(id)
+    },
+    delete_computer: id => {
+      return doodlework.delete_computer(id)
     }
   }
   actions.getToolVersions()

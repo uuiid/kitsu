@@ -144,5 +144,37 @@ export default {
       localPath +
       `/api/actions/local/task/${task.task_id}/update/movie${task.compose_movie ? '/compose' : ''}`
     return client.ppost(path, task)
+  },
+  get_all_jobs() {
+    const path = '/api/data/jobs'
+    return client.pget(path)
+  },
+  get_one_job_info(id) {
+    const path = `/api/data/jobs/${id}`
+    return client.pget(path)
+  },
+  update_job(id, data) {
+    const path = `/api/data/jobs/${id}`
+    return client.pput(path, data)
+  },
+  get_job_log(id) {
+    const path = `/api/actions/jobs/${id}/log`
+    return client.pget(path)
+  },
+  update_job_log(id, data) {
+    const path = `/api/actions/jobs/${id}/log`
+    return client.pput(path, data)
+  },
+  get_all_computers() {
+    const path = '/api/data/computers'
+    return client.pget(path)
+  },
+  get_one_computer_info(id) {
+    const path = `/api/data/computers/${id}`
+    return client.pget(path)
+  },
+  delete_computer(id) {
+    const path = `/api/data/computers/${id}`
+    return client.pdel(path)
   }
 }

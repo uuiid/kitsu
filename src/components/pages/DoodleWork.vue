@@ -22,6 +22,7 @@ import AiVideo from '@/components/widgets/AiVideo.vue'
 import { AiScriptStore } from '@/store/modules/AiScript.js'
 import AutoLightSearchModal from '@/components/modals/AutoLightSearchModal.vue'
 import DownloadMessage from '@/components/widgets/DownloadMessage.vue'
+import AutoLight from '@/components/widgets/AutoLight.vue'
 
 useHead({
   title: i18n.global.t('doodle_work.doodle_work')
@@ -298,6 +299,18 @@ const pagedAssets = ref([
     color: '#75ec97',
     isVisible: true,
     isBaseTemplate: true,
+    isVisitor: false
+  },
+  {
+    id: 10,
+    name: 'auto_light_distributed',
+    label: '自动灯光(分布式)',
+    textIcon: 'P',
+    disabled: true,
+    description: '',
+    color: '#75ec97',
+    isVisible: true,
+    isBaseTemplate: false,
     isVisitor: false
   }
 ])
@@ -710,6 +723,11 @@ const onSetOutPath = () => {
           "
           v-if="currentPage.isBaseTemplate"
         />
+        <auto-light
+          class="datatable-wrapper"
+          :name="currentPage.name"
+          v-if="currentPage.name === 'auto_light_distributed'"
+        ></auto-light>
         <extract-caption
           class="datatable-wrapper"
           :name="currentPage.name"
