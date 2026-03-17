@@ -423,7 +423,7 @@ const installPlugin = async plugin => {
     if (plugin.name === 'solving_plugin') {
       if (doodleWork.doodleWorkFilePath) {
         const sourcePath = `${doodleWork.doodleWorkFilePath}\\maya`
-        const destPathRoot = `${os.homedir()}\\Documents\\maya\\${plugin.version}\\modules`
+        const destPathRoot = `${os.homedir()}\\Documents\\maya\\modules`
         const destPath = `${destPathRoot}\\doodle`
         await doodleWork.actions.copyFolder(sourcePath, destPath)
         fs.unlinkSync(`${destPath}\\doodle.mod`)
