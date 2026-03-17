@@ -962,6 +962,7 @@ export default {
         this.parsedCSV = results
         for (const row of this.parsedCSV.slice(1)) {
           const shot_name = row[2]
+          if (shot_name === undefined) continue
           const shot = shotsMap.get(shot_name.slice(shot_name.indexOf('_') + 1))
           if (shot) {
             const data = {
