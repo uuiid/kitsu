@@ -21,7 +21,9 @@ const props = defineProps({
   isShowProgress: { type: Boolean, default: false },
   isSelectable: { type: Boolean, default: false },
   isShowDemonstrate: { type: Boolean, default: false },
-  isShowRestart: { type: Boolean, default: false }
+  isShowRestart: { type: Boolean, default: false },
+  isShowDelete: { type: Boolean, default: true },
+  isShowCancel: { type: Boolean, default: true }
 })
 const colors = [
   { color: '#fa1b1b', percentage: 0 },
@@ -283,7 +285,7 @@ const handleAction = (action_name, task_id) => {
                 :class="{
                   button: true
                 }"
-                v-if="isShowViewLog"
+                v-if="isShowCancel"
                 @click="handleAction('cancel-task', work)"
                 >{{ $t('main.cancel') }}</a
               >
@@ -299,6 +301,7 @@ const handleAction = (action_name, task_id) => {
                     :class="{
                       button: true
                     }"
+                    v-if="isShowDelete"
                     >{{ $t('video_library.delete') }}</a
                   >
                 </template>

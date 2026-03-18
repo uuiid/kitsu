@@ -614,6 +614,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
   //   return `${state.value.doodleWorkExeLocalRootPath}/${doodleWorkZipFileName.value}`
   // })
   const doodleWorkFilePath = computed(() => {
+    console.log(state.value.doodleWorkZipFileVision)
     return `${state.value.doodleWorkExeLocalRootPath}/Doodle-${state.value.doodleWorkZipFileVision}-win64`
   })
   const doodleWorkExePath = computed(() => {
@@ -1127,6 +1128,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     actions,
     currentDoodleWorkState,
     doodleWorkFilePath,
-    doodleWorkStateMap
+    doodleWorkStateMap,
+    doodleWorkAutoLightDistributed
   }
 })

@@ -5,11 +5,12 @@ import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
 import { ElMessage } from 'element-plus'
 import { SearchIcon } from 'lucide-vue-next'
+import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
 //const _this = getCurrentInstance().appContext.config.globalProperties
 const doodleWork = doodleWorkStore()
+
 const allComputers = ref([])
-const localLogPath = ref('')
-const dialogTableVisible = ref(true)
+const computerListsVisible = ref(false)
 const props = defineProps(['name', 'isDrop', 'isSetOutPath'])
 doodleWork.state.currentDoodleWorkType = props.name
 //const isDragOver = ref(false)
@@ -26,31 +27,12 @@ const statusNum = computed(() => {
   return temp
 })
 
-const filteredWorkList = computed(() => {
-  if (inputValue.value) {
-    const temp = new Map()
-    //const temp_list = []
-    doodleWork.currentDoodleWorkState.workList.forEach((value, key) => {
-      if (
-        new RegExp(`.*?${inputValue.value}.*$`, 'gmi').test(value.last_line_log)
-      ) {
-        //temp_list.push(value)
-        temp.set(value.id, value)
-      }
-    })
-    // temp_list.sort((a, b) => {
-    //   return a.name.localeCompare(b.name)
-    // })
-    // temp_list.forEach(item => {
-    //   temp.set(item.id, item)
-    // })
-    return temp
-  }
-  return doodleWork.currentDoodleWorkState.workList
-})
+const filteredWorkList = ref(new Map())
 
-onMounted(() => {
-  doodleWork.actions.get_all_jobs()
+onMounted(async () => {
+  doodleWork.state.currentDoodleWorkType = props.name
+  await doodleWork.actions.get_all_jobs()
+  filteredWorkList.value = doodleWork.currentDoodleWorkState.workList
 })
 const reload = async () => {
   try {
@@ -71,7 +53,7 @@ const reload = async () => {
 const onViewLog = work_task => {
   doodleWork.state.viewLogWorkTask = work_task
   doodleWork.state.isActiveLogModal = true
-  doodleWork.actions.getWorkTaskLog(work_task.id).then(log => {
+  doodleWork.actions.get_job_log(work_task.id).then(log => {
     doodleWork.state.workTaskLogData = log
   })
 }
@@ -92,39 +74,25 @@ const reExecute = async () => {
   doodleWork.currentDoodleWorkState.isReload = true
 }
 const onAction = async (action_name, task) => {
-  if (action_name === 'remove-task') {
-    if (doodleWork.currentDoodleWorkState.name !== 'watermark')
-      doodleWork.actions.deleteDoodleWorkTask(task.id)
-    doodleWork.currentDoodleWorkState.workList.delete(task.id)
-  } else if (action_name === 'view-log') {
+  if (action_name === 'view-log') {
     //onViewLog(task)
-    const fs = require('fs')
-    const logPath = `${localLogPath.value}/${task.id}.log`
-    if (fs.existsSync(logPath)) {
-      window.api.openPath(logPath)
-    } else ElMessage.error('文件不存在，请稍后尝试')
-  } else if (action_name === 'cancel-task') {
-    try {
-      const res = await doodleWork.actions.cancelDoodleWorkTask(task)
-      if (res) {
-        task.status = 'canceled'
-        ElMessage({
-          message: '移除成功',
-          type: 'success'
-        })
-      } else {
-        ElMessage.error('移除失败')
-      }
-    } catch (e) {
-      ElMessage.error('移除失败')
-    }
+    doodleWork.state.viewLogWorkTask = task
+    doodleWork.state.isActiveLogModal = true
+    doodleWork.actions.get_job_log(task.id).then(log => {
+      doodleWork.state.workTaskLogData = log
+    })
   } else if (action_name === 'restart') {
     doodleWork.actions.resubmitLocalDoodleWork(task)
   }
 }
-// async function getAllComputers() {
-//   allComputers.value = await doodleWork.actions.get_all_computers()
-// }
+async function getAllComputers() {
+  allComputers.value = await doodleWork.actions.get_all_computers()
+  computerListsVisible.value = true
+}
+function deleteComputer(computer) {
+  doodleWork.actions.delete_computer(computer.id)
+  allComputers.value = allComputers.value.filter(c => c.id !== computer.id)
+}
 //
 // async function getComputerInfo(id) {
 //   return await doodleWork.actions.get_one_computer_info(id)
@@ -135,6 +103,10 @@ const onAction = async (action_name, task) => {
   <div class="datatable-main">
     <div class="datatable-content">
       <div class="has-right">
+        <button-simple
+          text="查看服务器"
+          @click="getAllComputers"
+        ></button-simple>
         <div class="search-field-main">
           <span class="search-icon">
             <search-icon :size="20" />
@@ -154,19 +126,17 @@ const onAction = async (action_name, task) => {
       <table-list
         style="width: 100%"
         :table-header-filed="doodleWork.currentDoodleWorkState.tableHeaderFiled"
-        :body-list="
-          filteredWorkList || doodleWork.currentDoodleWorkState.workList
-        "
+        :body-list="filteredWorkList"
         name="刷新"
         :is-drop="false"
         :is-show-submit="false"
+        :is-show-restart="false"
+        :is-show-delete="false"
         :is-show-view-log="
           doodleWork.currentDoodleWorkState.name !== 'watermark'
         "
-        :is-show-restart="
-          doodleWork.currentDoodleWorkState.name !== 'watermark'
-        "
         :is-show-demonstrate="true"
+        :is-show-cancel="false"
         @add-data="onAddData"
         @remove-data="doodleWork.currentDoodleWorkState.workList.delete"
         @view-log="onViewLog"
@@ -181,7 +151,7 @@ const onAction = async (action_name, task) => {
           {{ statusNum }}/{{ doodleWork.currentDoodleWorkState.workList.size }}
         </span>
       </div>
-      <div class="has-text-right">
+      <div class="has-text-right" v-if="false">
         <div class="buttons">
           <a
             :class="{
@@ -226,13 +196,28 @@ const onAction = async (action_name, task) => {
       </div>
     </div>
   </div>
-  <el-dialog v-model="dialogTableVisible" title="运行主机详情" width="800">
-    <el-table :data="allComputers">
-      <el-table-column property="name" label="名称" width="150" />
+  <el-dialog v-model="computerListsVisible" title="运行主机详情" width="800">
+    <el-table :data="allComputers" empty-text="没有主机">
+      <el-table-column property="name" label="名称" width="100" />
       <el-table-column property="ip" label="ip" width="200" />
       <el-table-column property="status" label="状态" />
       <el-table-column property="hardware_id" label="硬件id" />
-      <el-table-column property="last_heartbeat_time" label="最后连接时间" />
+      <el-table-column
+        property="last_heartbeat_time"
+        label="最后连接时间"
+        width="200"
+      />
+      <el-table-column align="right">
+        <template #default="scope">
+          <el-button
+            size="small"
+            type="danger"
+            @click="deleteComputer(scope.row)"
+          >
+            删除
+          </el-button>
+        </template>
+      </el-table-column>
     </el-table>
   </el-dialog>
 </template>
@@ -316,6 +301,7 @@ const onAction = async (action_name, task) => {
   align-items: center;
   justify-content: flex-end;
   margin-bottom: 5px;
+  gap: 5px;
 }
 
 .input {
