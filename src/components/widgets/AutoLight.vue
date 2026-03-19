@@ -196,9 +196,9 @@ function deleteComputer(computer) {
       </div>
     </div>
   </div>
-  <el-dialog v-model="computerListsVisible" title="运行主机详情" width="800">
+  <el-dialog v-model="computerListsVisible" title="运行主机详情" width="1200">
     <el-table :data="allComputers" empty-text="没有主机">
-      <el-table-column property="name" label="名称" width="100" />
+      <el-table-column property="name" label="名称" width="200" />
       <el-table-column property="ip" label="ip" width="200" />
       <el-table-column property="status" label="状态" />
       <el-table-column property="hardware_id" label="硬件id" />
