@@ -54,7 +54,7 @@ export class DoodleWorkBase {
   formatDataState(data) {}
 
   validateString(input) {
-    const regex = /^[A-Z]+_EP\d+_SC\d+[A-Z]?\.ma$/
+    const regex = /^[A-Z]+_EP\d|EP\dG+_SC\d+[A-Z]?\.ma$/
     return regex.test(input)
   }
 
