@@ -93,6 +93,10 @@ function deleteComputer(computer) {
   doodleWork.actions.delete_computer(computer.id)
   allComputers.value = allComputers.value.filter(c => c.id !== computer.id)
 }
+
+function startDistributedRendering() {
+  doodleWork.actions.startDistributedRendering()
+}
 //
 // async function getComputerInfo(id) {
 //   return await doodleWork.actions.get_one_computer_info(id)
@@ -103,6 +107,10 @@ function deleteComputer(computer) {
   <div class="datatable-main">
     <div class="datatable-content">
       <div class="has-right">
+        <button-simple
+          text="启动分布式渲染"
+          @click="startDistributedRendering"
+        ></button-simple>
         <button-simple
           text="查看服务器"
           @click="getAllComputers"

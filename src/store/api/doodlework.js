@@ -176,5 +176,9 @@ export default {
   delete_computer(id) {
     const path = `/api/data/computers/${id}`
     return client.pdel(path)
+  },
+  startDistributedRendering() {
+    const path = '/api/actions/local/task/run'
+    return client.ppost(path, {})
   }
 }

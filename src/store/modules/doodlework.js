@@ -1115,6 +1115,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     delete_computer: id => {
       return doodlework.delete_computer(id)
+    },
+    startDistributedRendering: () => {
+      return doodlework.startDistributedRendering()
     }
   }
   actions.getToolVersions()
