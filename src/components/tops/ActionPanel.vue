@@ -261,6 +261,13 @@
         >
           <flashlight @click="autoLight" />
         </div>
+        <div
+          class="menu-item"
+          :title="$t('doodle.run_auto_light_cloud')"
+          v-if="isCurrentViewShot"
+        >
+          <cloud-upload @click="autoLight(false)" />
+        </div>
         <!--div
           class="menu-item"
           :title="$t('scan_project.scan_project')"
@@ -1668,52 +1675,55 @@ export default {
         console.log(doodleWorkStore().state.checkAutoLightList)
       }
     },
-    async autoLight() {
-      if (doodleWorkStore().actions.getWorkSetting()) {
-        for (const taskId of this.selectedTaskIds) {
-          let path = ''
-          if (
-            this.taskMap.get(taskId).task_type_id ===
-            'eb7c92c8-232c-4894-8efa-c62ced44ff05'
-          ) {
-            path = `${doodleWorkStore().state.localHttpPath}/api/actions/projects/${this.productionId}/shots/${taskId}/run-ue-assembly`
-          } else if (
-            this.taskMap.get(taskId).task_type_id ===
-            '9d71918b-cbf0-46bc-9c39-27177c9a950a'
-          )
-            path = `${doodleWorkStore().state.localHttpPath}/api/actions/projects/${this.productionId}/shots/${taskId}/run-ue-assembly`
-          if (path !== '') {
-            const res = await fetch(path, {
-              method: 'post',
-              headers: {
-                'Content-Type': 'application/json'
-              },
-              body: JSON.stringify({
-                name: `${this.currentProduction.code}_${this.taskMap.get(taskId).entity_name.replace(' / ', '_')}`,
-                status: 'waiting',
-                source_computer: '本机',
-                submitter:
-                  this.user?.id || 'CB3b915c-2F16-cE9d-c2cE-b45B5ebb583a',
-                type: 'auto_light'
-              })
+    async autoLight(isLocal = true) {
+      //doodleWorkStore().actions.getWorkSetting()
+      let startPath = ''
+      if (isLocal) {
+        startPath = doodleWorkStore().state.localHttpPath
+      }
+      for (const taskId of this.selectedTaskIds) {
+        let path = ''
+        if (
+          this.taskMap.get(taskId).task_type_id ===
+          'eb7c92c8-232c-4894-8efa-c62ced44ff05'
+        ) {
+          path = `${startPath}/api/actions/projects/${this.productionId}/shots/${taskId}/run-ue-assembly`
+        } else if (
+          this.taskMap.get(taskId).task_type_id ===
+          '9d71918b-cbf0-46bc-9c39-27177c9a950a'
+        )
+          path = `${startPath}/api/actions/projects/${this.productionId}/shots/${taskId}/run-ue-assembly`
+        if (path !== '') {
+          const res = await fetch(path, {
+            method: 'post',
+            headers: {
+              'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+              name: `${this.currentProduction.code}_${this.taskMap.get(taskId).entity_name.replace(' / ', '_')}`,
+              status: 'waiting',
+              source_computer: '本机',
+              submitter:
+                this.user?.id || 'CB3b915c-2F16-cE9d-c2cE-b45B5ebb583a',
+              type: 'auto_light'
             })
-            const data = await res.json()
-            if (res.status === 200 || res.status === 201) {
-              ElMessage.success('进行自动灯光')
+          })
+          const data = await res.json()
+          if (res.status === 200 || res.status === 201) {
+            ElMessage.success('进行自动灯光')
+            if (isLocal) {
               doodleWorkStore()
                 .doodleWorkStateMap.get('auto_light')
                 .workList.set(data.id, data)
-            } else if (
-              data.code === 400 ||
-              data.code === 500 ||
-              data.code === 404
-            ) {
-              ElMessage.error(data.error)
             }
-          } else ElMessage.success('该任务不能进行自动灯光')
-        }
-      } else {
-        ElMessage.error('后台未启动，请稍后重试')
+          } else if (
+            data.code === 400 ||
+            data.code === 500 ||
+            data.code === 404
+          ) {
+            ElMessage.error(data.error)
+          }
+        } else ElMessage.success('该任务不能进行自动灯光')
       }
     },
     showAutoLightList() {
