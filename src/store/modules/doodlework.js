@@ -1117,7 +1117,10 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
       return doodlework.delete_computer(id)
     },
     startDistributedRendering: () => {
-      return doodlework.startDistributedRendering()
+      return doodlework.startDistributedRendering(state.value.localHttpPath)
+    },
+    getDistributedRenderingStatus: () => {
+      return doodlework.getDistributedRenderingStatus(state.value.localHttpPath)
     }
   }
   actions.getToolVersions()

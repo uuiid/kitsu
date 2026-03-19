@@ -177,8 +177,12 @@ export default {
     const path = `/api/data/computers/${id}`
     return client.pdel(path)
   },
-  startDistributedRendering() {
-    const path = '/api/actions/local/task/run'
+  startDistributedRendering(localPath = '') {
+    const path = localPath + '/api/actions/local/task/run'
     return client.ppost(path, {})
+  },
+  getDistributedRenderingStatus(localPath = '') {
+    const path = localPath + '/api/actions/local/task/run'
+    return client.pget(path)
   }
 }

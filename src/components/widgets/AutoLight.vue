@@ -5,11 +5,12 @@ import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
 import { ElMessage } from 'element-plus'
 import { SearchIcon } from 'lucide-vue-next'
-import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
 //const _this = getCurrentInstance().appContext.config.globalProperties
 const doodleWork = doodleWorkStore()
 
 const allComputers = ref([])
+const isPullProcessing = ref(false)
+const isPullProcessed = ref(false)
 const computerListsVisible = ref(false)
 const props = defineProps(['name', 'isDrop', 'isSetOutPath'])
 doodleWork.state.currentDoodleWorkType = props.name
@@ -33,6 +34,7 @@ onMounted(async () => {
   doodleWork.state.currentDoodleWorkType = props.name
   await doodleWork.actions.get_all_jobs()
   filteredWorkList.value = doodleWork.currentDoodleWorkState.workList
+  getDistributedRenderingStatus()
 })
 const reload = async () => {
   try {
@@ -94,8 +96,22 @@ function deleteComputer(computer) {
   allComputers.value = allComputers.value.filter(c => c.id !== computer.id)
 }
 
-function startDistributedRendering() {
-  doodleWork.actions.startDistributedRendering()
+function getDistributedRenderingStatus() {
+  doodleWork.actions.getDistributedRenderingStatus().then(res => {
+    isPullProcessed.value = !!res
+  })
+}
+
+async function startDistributedRendering() {
+  isPullProcessing.value = true
+  try {
+    await doodleWork.actions.startDistributedRendering()
+    isPullProcessed.value = true
+    ElMessage.success('已启动分布式渲染')
+  } catch (e) {
+    ElMessage.error('启动分布式渲染失败')
+  }
+  isPullProcessing.value = false
 }
 //
 // async function getComputerInfo(id) {
@@ -107,14 +123,19 @@ function startDistributedRendering() {
   <div class="datatable-main">
     <div class="datatable-content">
       <div class="has-right">
-        <button-simple
-          text="启动分布式渲染"
+        <el-button
+          :type="isPullProcessed ? 'primary' : 'danger'"
+          :loading="isPullProcessing"
           @click="startDistributedRendering"
-        ></button-simple>
-        <button-simple
-          text="查看服务器"
-          @click="getAllComputers"
-        ></button-simple>
+          >{{
+            isPullProcessing
+              ? `启动中`
+              : isPullProcessed
+                ? '已启动分布式渲染'
+                : '启动分布式渲染'
+          }}
+        </el-button>
+        <el-button @click="getAllComputers">查看服务器</el-button>
         <div class="search-field-main">
           <span class="search-icon">
             <search-icon :size="20" />
