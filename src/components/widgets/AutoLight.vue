@@ -5,6 +5,7 @@ import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
 import { ElMessage } from 'element-plus'
 import { SearchIcon } from 'lucide-vue-next'
+import EditableLabel from '@/components/cells/EditableLabel.vue'
 //const _this = getCurrentInstance().appContext.config.globalProperties
 const doodleWork = doodleWorkStore()
 
@@ -83,8 +84,8 @@ const onAction = async (action_name, task) => {
     doodleWork.actions.get_job_log(task.id).then(log => {
       doodleWork.state.workTaskLogData = log
     })
-  } else if (action_name === 'restart') {
-    doodleWork.actions.resubmitLocalDoodleWork(task)
+  } else if (action_name === 'remove-task') {
+    removeData(task.id)
   }
 }
 async function getAllComputers() {
@@ -112,6 +113,19 @@ async function startDistributedRendering() {
     ElMessage.error('启动分布式渲染失败')
   }
   isPullProcessing.value = false
+}
+function updateComputerInfo(value, computer) {
+  computer.name = value
+  doodleWork.actions.modifyComputerInfo(computer).then(() => {
+    ElMessage.success('修改成功')
+  })
+}
+function removeData(work_id) {
+  console.log(work_id)
+  doodleWork.actions.deleteJob(work_id).then(() => {
+    doodleWork.currentDoodleWorkState.workList.delete(work_id)
+    ElMessage.success('删除成功')
+  })
 }
 //
 // async function getComputerInfo(id) {
@@ -160,14 +174,12 @@ async function startDistributedRendering() {
         :is-drop="false"
         :is-show-submit="false"
         :is-show-restart="false"
-        :is-show-delete="false"
         :is-show-view-log="
           doodleWork.currentDoodleWorkState.name !== 'watermark'
         "
         :is-show-demonstrate="true"
         :is-show-cancel="false"
         @add-data="onAddData"
-        @remove-data="doodleWork.currentDoodleWorkState.workList.delete"
         @view-log="onViewLog"
         @handle-action="onAction"
       ></table-list>
@@ -225,9 +237,21 @@ async function startDistributedRendering() {
       </div>
     </div>
   </div>
-  <el-dialog v-model="computerListsVisible" title="运行主机详情" width="1200">
-    <el-table :data="allComputers" empty-text="没有主机">
-      <el-table-column property="name" label="名称" width="200" />
+  <el-dialog
+    v-model="computerListsVisible"
+    title="运行主机详情"
+    style="width: 80%"
+    width="1200"
+  >
+    <el-table :data="allComputers" empty-text="没有主机" height="700">
+      <el-table-column fixed property="name" label="名称" width="200">
+        <template #default="scope">
+          <editable-label
+            :value="scope.row"
+            @update-value="updateComputerInfo"
+          ></editable-label>
+        </template>
+      </el-table-column>
       <el-table-column property="ip" label="ip" width="200" />
       <el-table-column property="status" label="状态" />
       <el-table-column property="hardware_id" label="硬件id" />

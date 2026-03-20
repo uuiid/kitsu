@@ -1702,7 +1702,7 @@ export default {
             body: JSON.stringify({
               name: `${this.currentProduction.code}_${this.taskMap.get(taskId).entity_name.replace(' / ', '_')}`,
               status: 'waiting',
-              source_computer: '本机',
+              source_computer: isLocal ? '本机' : '',
               submitter:
                 this.user?.id || 'CB3b915c-2F16-cE9d-c2cE-b45B5ebb583a',
               type: 'auto_light'

@@ -1121,6 +1121,12 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     getDistributedRenderingStatus: () => {
       return doodlework.getDistributedRenderingStatus(state.value.localHttpPath)
+    },
+    modifyComputerInfo: computer_info => {
+      return doodlework.modifyComputerInfo(computer_info)
+    },
+    deleteJob: id => {
+      return doodlework.deleteJob(id)
     }
   }
   actions.getToolVersions()

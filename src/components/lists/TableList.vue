@@ -23,7 +23,8 @@ const props = defineProps({
   isShowDemonstrate: { type: Boolean, default: false },
   isShowRestart: { type: Boolean, default: false },
   isShowDelete: { type: Boolean, default: true },
-  isShowCancel: { type: Boolean, default: true }
+  isShowCancel: { type: Boolean, default: true },
+  isModify: { type: Boolean, default: false }
 })
 const colors = [
   { color: '#fa1b1b', percentage: 0 },
@@ -246,6 +247,7 @@ const handleAction = (action_name, task_id) => {
               >
                 {{ formatTableBodyData(work, key) }}
               </span>
+
               <timer-cell
                 :task="work"
                 v-else-if="value.type === 'time'"

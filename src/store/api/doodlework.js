@@ -184,5 +184,13 @@ export default {
   getDistributedRenderingStatus(localPath = '') {
     const path = localPath + '/api/actions/local/task/run'
     return client.pget(path)
+  },
+  modifyComputerInfo(computer_info) {
+    const path = `/api/data/computers/${computer_info.id}`
+    return client.pput(path, computer_info)
+  },
+  deleteJob(id) {
+    const path = `/api/data/jobs/${id}`
+    return client.pdel(path)
   }
 }
