@@ -253,7 +253,11 @@ function removeData(work_id) {
         </template>
       </el-table-column>
       <el-table-column property="ip" label="ip" width="200" />
-      <el-table-column property="status" label="状态" />
+      <el-table-column property="status" label="状态">
+        <template #default="scope">
+          <span>{{ $t(`doodle.${scope.row.status}`) }}</span>
+        </template>
+      </el-table-column>
       <el-table-column property="hardware_id" label="硬件id" />
       <el-table-column
         property="last_heartbeat_time"

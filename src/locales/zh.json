@@ -1856,7 +1856,9 @@
       "add_watermark": "添加水印",
       "add_time_code": "添加时间码",
       "create_review_preview": "创建审片预览",
-      "epiboly_authorization": "外包授权"
+      "epiboly_authorization": "外包授权",
+      "offline": "离线",
+      "online": "在线"
     },
     "doodle_productions": {
       "fields": {
