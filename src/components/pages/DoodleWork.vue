@@ -56,7 +56,7 @@ const switchPage = pageName => {
   doodleWork.state.DemonstrateVideoName = pageName.name
   if (pageName.name === 'material_Library') {
     router.push('/video-library')
-  } else if (pageName.name === 'auto_light_distributed') {
+  } else if (pageName.name === 'auto_light_distributed' || pageName === '') {
     currentPage.value = pageName
   } else if (doodleWork.state.isPullProcessed || doodleWork.state.isVisitor)
     currentPage.value = pageName

@@ -33,7 +33,16 @@ const filteredWorkList = ref(new Map())
 
 onMounted(async () => {
   doodleWork.state.currentDoodleWorkType = props.name
+  await getAllComputers()
+  const computers = new Map()
+  allComputers.value.forEach(computer => {
+    computers.set(computer.id, computer)
+  })
   await doodleWork.actions.get_all_jobs()
+  doodleWork.doodleWorkAutoLightDistributed.workList.forEach((v, k) => {
+    v.source_computer = computers.get(v.run_computer_id).name
+  })
+
   filteredWorkList.value = doodleWork.currentDoodleWorkState.workList
   getDistributedRenderingStatus()
 })
@@ -90,8 +99,12 @@ const onAction = async (action_name, task) => {
 }
 async function getAllComputers() {
   allComputers.value = await doodleWork.actions.get_all_computers()
+}
+function showComputers() {
+  getAllComputers()
   computerListsVisible.value = true
 }
+
 function deleteComputer(computer) {
   doodleWork.actions.delete_computer(computer.id)
   allComputers.value = allComputers.value.filter(c => c.id !== computer.id)
@@ -148,7 +161,7 @@ function removeData(work_id) {
                 : '启动分布式渲染'
           }}
         </el-button>
-        <el-button @click="getAllComputers">查看服务器</el-button>
+        <el-button @click="showComputers">查看服务器</el-button>
         <div class="search-field-main">
           <span class="search-icon">
             <search-icon :size="20" />
