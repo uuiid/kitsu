@@ -55,9 +55,9 @@ const reload = async () => {
 
 const onViewLog = work_task => {
   doodleWork.state.viewLogWorkTask = work_task
-  doodleWork.state.isActiveLogModal = true
   doodleWork.actions.get_job_log(work_task.id).then(log => {
     doodleWork.state.workTaskLogData = log
+    doodleWork.state.isActiveLogModal = true
   })
 }
 
@@ -80,9 +80,9 @@ const onAction = async (action_name, task) => {
   if (action_name === 'view-log') {
     //onViewLog(task)
     doodleWork.state.viewLogWorkTask = task
-    doodleWork.state.isActiveLogModal = true
     doodleWork.actions.get_job_log(task.id).then(log => {
       doodleWork.state.workTaskLogData = log
+      doodleWork.state.isActiveLogModal = true
     })
   } else if (action_name === 'remove-task') {
     removeData(task.id)
@@ -121,7 +121,6 @@ function updateComputerInfo(value, computer) {
   })
 }
 function removeData(work_id) {
-  console.log(work_id)
   doodleWork.actions.deleteJob(work_id).then(() => {
     doodleWork.currentDoodleWorkState.workList.delete(work_id)
     ElMessage.success('删除成功')

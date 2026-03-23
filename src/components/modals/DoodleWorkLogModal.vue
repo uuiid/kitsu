@@ -48,9 +48,12 @@ const load = () => {
   count += step
   loading.value = logs.value.length - count > 0
 }
-
 const intervalId = setInterval(() => {
-  if (workTask.value && workTask.value.status === 'running') {
+  if (
+    workTask.value &&
+    workTask.value.status === 'running' &&
+    doodleWork.state.currentDoodleWorkType !== 'auto_light_distributed'
+  ) {
     doodleWork.actions
       .getWorkTaskLog(doodleWork.state.viewLogWorkTask.id)
       .then(log => {
@@ -91,6 +94,7 @@ const regex = computed(() => {
 })
 
 const logs = computed(() => {
+  console.log(doodleWork.state.workTaskLogData)
   let res = doodleWork.state.workTaskLogData.match(
     new RegExp(regex.value, 'gm')
   )
