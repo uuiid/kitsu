@@ -1858,7 +1858,8 @@
       "create_review_preview": "创建审片预览",
       "epiboly_authorization": "外包授权",
       "offline": "离线",
-      "online": "在线"
+      "online": "在线",
+      "busy": "忙碌"
     },
     "doodle_productions": {
       "fields": {

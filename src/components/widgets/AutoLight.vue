@@ -1,12 +1,14 @@
 <script setup>
 import { onMounted, ref, computed } from 'vue'
-//import { getCurrentInstance } from 'vue'
+import { getCurrentInstance } from 'vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
 import { ElMessage } from 'element-plus'
 import { SearchIcon } from 'lucide-vue-next'
 import EditableLabel from '@/components/cells/EditableLabel.vue'
 //const _this = getCurrentInstance().appContext.config.globalProperties
+const instance = getCurrentInstance()
+const socket = instance?.proxy?.$socket
 const doodleWork = doodleWorkStore()
 
 const allComputers = ref([])
@@ -44,7 +46,11 @@ onMounted(async () => {
   })
 
   filteredWorkList.value = doodleWork.currentDoodleWorkState.workList
-  getDistributedRenderingStatus()
+  await getDistributedRenderingStatus()
+  console.log(socket)
+  socket.on('server-task-info:new', server_task_info_new)
+  socket.on('server-task-info:update', server_task_info_update)
+  socket.on('server-task-info:delete', server_task_info_delete)
 })
 const reload = async () => {
   try {
@@ -61,7 +67,20 @@ const reload = async () => {
     })
   }
 }
-
+function server_task_info_new(work) {
+  server_task_info_update(work)
+}
+function server_task_info_update(work) {
+  doodleWork.actions.get_one_job_info(work.server_task_info_id).then(work => {
+    doodleWork.currentDoodleWorkState.workList.set(
+      work.server_task_info_id,
+      work
+    )
+  })
+}
+function server_task_info_delete(id) {
+  removeData(id)
+}
 const onViewLog = work_task => {
   doodleWork.state.viewLogWorkTask = work_task
   doodleWork.actions.get_job_log(work_task.id).then(log => {
@@ -95,8 +114,19 @@ const onAction = async (action_name, task) => {
     })
   } else if (action_name === 'delete-task') {
     removeData(task.id)
+  } else if (action_name === 'restart') {
+    restartWork(task.id)
   }
 }
+
+function restartWork(id) {
+  const task = doodleWork.currentDoodleWorkState.workList.get(id)
+  if (!task) return
+  const data = Object.assign({}, task)
+  data.status = 'submitted'
+  doodleWork.actions.update_job(id, data)
+}
+
 async function getAllComputers() {
   allComputers.value = await doodleWork.actions.get_all_computers()
 }
@@ -185,7 +215,7 @@ function removeData(work_id) {
         name="刷新"
         :is-drop="false"
         :is-show-submit="false"
-        :is-show-restart="false"
+        :is-show-restart="true"
         :is-show-view-log="
           doodleWork.currentDoodleWorkState.name !== 'watermark'
         "
