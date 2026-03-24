@@ -159,7 +159,7 @@ export default {
   },
   get_job_log(id) {
     const path = `/api/actions/jobs/${id}/log`
-    return client.pget(path)
+    return client.ppget(path)
   },
   update_job_log(id, data) {
     const path = `/api/actions/jobs/${id}/log`

@@ -94,7 +94,9 @@ const regex = computed(() => {
 })
 
 const logs = computed(() => {
-  console.log(doodleWork.state.workTaskLogData)
+  if (!doodleWork.state.workTaskLogData) {
+    return []
+  }
   let res = doodleWork.state.workTaskLogData.match(
     new RegExp(regex.value, 'gm')
   )

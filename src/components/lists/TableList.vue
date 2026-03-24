@@ -291,23 +291,16 @@ const handleAction = (action_name, task_id) => {
                 @click="handleAction('cancel-task', work)"
                 >{{ $t('main.cancel') }}</a
               >
-              <el-popconfirm
-                :confirm-button-text="$t('main.confirmation')"
-                :cancel-button-text="$t('main.cancel')"
-                :title="$t('doodle_work.is_sure_delete')"
-                @confirm="handleAction('remove-task', work)"
+              <a
+                class="action_item"
+                :class="{
+                  button: true
+                }"
+                v-if="isShowDelete"
+                @click="handleAction('delete-task', work)"
+                >{{ $t('video_library.delete') }}</a
               >
-                <template #reference>
-                  <a
-                    class="action_item"
-                    :class="{
-                      button: true
-                    }"
-                    v-if="isShowDelete"
-                    >{{ $t('video_library.delete') }}</a
-                  >
-                </template>
-              </el-popconfirm>
+
               <a
                 :class="{
                   button: true

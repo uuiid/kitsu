@@ -39,6 +39,10 @@ const client = {
     return superagent.get(path).then(res => res?.body)
   },
 
+  ppget(path) {
+    return superagent.get(path).then(res => res?.text)
+  },
+
   ppost(path, data) {
     return new Promise((resolve, reject) => {
       superagent
