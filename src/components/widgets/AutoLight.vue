@@ -40,7 +40,7 @@ onMounted(async () => {
   })
   await doodleWork.actions.get_all_jobs()
   doodleWork.doodleWorkAutoLightDistributed.workList.forEach((v, k) => {
-    v.source_computer = computers.get(v.run_computer_id).name
+    v.source_computer = computers.get(v.run_computer_id)?.name || ''
   })
 
   filteredWorkList.value = doodleWork.currentDoodleWorkState.workList
