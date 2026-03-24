@@ -298,8 +298,8 @@ const handleAction = (action_name, task_id) => {
                 }"
                 v-if="isShowDelete"
                 @click="handleAction('delete-task', work)"
-                >{{ $t('video_library.delete') }}</a
-              >
+                >{{ $t('video_library.delete') }}
+              </a>
 
               <a
                 :class="{

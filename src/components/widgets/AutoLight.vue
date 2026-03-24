@@ -93,7 +93,7 @@ const onAction = async (action_name, task) => {
       doodleWork.state.workTaskLogData = log
       doodleWork.state.isActiveLogModal = true
     })
-  } else if (action_name === 'remove-task') {
+  } else if (action_name === 'delete-task') {
     removeData(task.id)
   }
 }
