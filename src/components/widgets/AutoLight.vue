@@ -1,5 +1,5 @@
 <script setup>
-import { onMounted, ref, computed } from 'vue'
+import { onMounted, ref, computed, onUnmounted } from 'vue'
 import { getCurrentInstance } from 'vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import TableList from '@/components/lists/TableList.vue'
@@ -51,6 +51,11 @@ onMounted(async () => {
   socket.on('server-task-info:new', server_task_info_new)
   socket.on('server-task-info:update', server_task_info_update)
   socket.on('server-task-info:delete', server_task_info_delete)
+})
+onUnmounted(() => {
+  socket.off('server-task-info:new', server_task_info_new)
+  socket.off('server-task-info:update', server_task_info_update)
+  socket.off('server-task-info:delete', server_task_info_delete)
 })
 const reload = async () => {
   try {
