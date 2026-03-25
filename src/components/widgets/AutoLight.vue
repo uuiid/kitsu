@@ -75,11 +75,8 @@ function server_task_info_new(work) {
   server_task_info_update(work)
 }
 function server_task_info_update(work) {
-  doodleWork.actions.get_one_job_info(work.server_task_info_id).then(work => {
-    doodleWork.currentDoodleWorkState.workList.set(
-      work.server_task_info_id,
-      work
-    )
+  doodleWork.actions.get_one_job_info(work.server_task_info_id).then(res => {
+    doodleWork.currentDoodleWorkState.workList.set(res.id, res)
   })
 }
 function server_task_info_delete(id) {
