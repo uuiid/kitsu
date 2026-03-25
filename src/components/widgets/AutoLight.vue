@@ -109,18 +109,22 @@ const reExecute = async () => {
   })
   doodleWork.currentDoodleWorkState.isReload = true
 }
-const onAction = async (action_name, task) => {
+const onAction = async (action_name, tasks) => {
   if (action_name === 'view-log') {
     //onViewLog(task)
-    doodleWork.state.viewLogWorkTask = task
-    doodleWork.actions.get_job_log(task.id).then(log => {
+    doodleWork.state.viewLogWorkTask = tasks[0]
+    doodleWork.actions.get_job_log(tasks[0].id).then(log => {
       doodleWork.state.workTaskLogData = log
       doodleWork.state.isActiveLogModal = true
     })
   } else if (action_name === 'delete-task') {
-    removeData(task.id)
+    let index = 0
+    for (const task of tasks) {
+      await removeData(task.id, index === tasks.length - 1)
+      index++
+    }
   } else if (action_name === 'restart') {
-    restartWork(task.id)
+    for (const task of tasks) await restartWork(task.id)
   }
 }
 
@@ -129,7 +133,10 @@ function restartWork(id) {
   if (!task) return
   const data = Object.assign({}, task)
   data.status = 'submitted'
-  doodleWork.actions.update_job(id, data)
+  data.run_computer_id = ''
+  doodleWork.actions.update_job(id, data).then(res => {
+    doodleWork.currentDoodleWorkState.workList.set(res.id, res)
+  })
 }
 
 async function getAllComputers() {
@@ -168,10 +175,10 @@ function updateComputerInfo(value, computer) {
     ElMessage.success('修改成功')
   })
 }
-function removeData(work_id) {
+function removeData(work_id, isShow = true) {
   doodleWork.actions.deleteJob(work_id).then(() => {
     doodleWork.currentDoodleWorkState.workList.delete(work_id)
-    ElMessage.success('删除成功')
+    if (isShow) ElMessage.success('删除成功')
   })
 }
 //
@@ -221,6 +228,7 @@ function removeData(work_id) {
         :is-drop="false"
         :is-show-submit="false"
         :is-show-restart="true"
+        :is-selectable="true"
         :is-show-view-log="
           doodleWork.currentDoodleWorkState.name !== 'watermark'
         "

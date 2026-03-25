@@ -7,6 +7,8 @@ import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import ColorPicker from '@/components/widgets/ColorPicker.vue'
 
 const vuexStore = useStore()
+const isShift = ref(false)
+const shiftStartIndex = ref(null)
 const props = defineProps({
   name: { type: String, default: '' },
   runningLabel: { type: String, default: '' },
@@ -44,9 +46,13 @@ const emit = defineEmits([
 ])
 onMounted(() => {
   window.addEventListener('paste', onClipboardFile, false)
+  window.addEventListener('keydown', onKeydown, false)
+  window.addEventListener('keyup', onKeyup, false)
 })
 onUnmounted(() => {
   window.removeEventListener('paste', onClipboardFile)
+  window.removeEventListener('keydown', onKeydown)
+  window.removeEventListener('keyup', onKeyup)
 })
 const isDragOver = ref(false)
 const displayWorkList = computed(() => {
@@ -75,7 +81,6 @@ const formatDiffTime = diffTime => {
 
 function onDemonstrate() {
   doodleWorkStore().state.isShowDemonstrateVideo = true
-  console.log('test')
 }
 
 const formatTableBodyData = (workTask, key) => {
@@ -138,6 +143,19 @@ const onDrop = event => {
   }
 }
 
+function onKeydown(event) {
+  if (event.key === 'Shift') {
+    isShift.value = true
+  }
+}
+
+function onKeyup(event) {
+  if (event.key === 'Shift') {
+    isShift.value = false
+    shiftStartIndex.value = null
+  }
+}
+
 function onMouseEnter() {
   isPaste.value = true
   //window.addEventListener('paste', onClipboardFile, false)
@@ -167,7 +185,36 @@ const onClipboardFile = event => {
   }
 }
 const handleAction = (action_name, task_id) => {
+  if (props.isSelectable) {
+    const tasks = displayWorkList.value.filter(w => w.selected)
+    emit('handle-action', action_name, tasks.length > 0 ? tasks : [task_id])
+  }
   emit('handle-action', action_name, task_id)
+}
+
+function onSelected(work, index) {
+  if (isShift.value) {
+    if (shiftStartIndex.value !== null) {
+      if (shiftStartIndex.value < index) {
+        displayWorkList.value
+          .slice(shiftStartIndex.value, index + 1)
+          .forEach(w => {
+            w.selected = displayWorkList.value[shiftStartIndex.value].selected
+          })
+      } else
+        displayWorkList.value
+          .slice(index, shiftStartIndex.value + 1)
+          .forEach(w => {
+            w.selected = displayWorkList.value[shiftStartIndex.value].selected
+          })
+    } else {
+      shiftStartIndex.value = index
+      work.selected = !work.selected
+    }
+  } else {
+    work.selected = !work.selected
+    shiftStartIndex.value = index
+  }
 }
 </script>
 
@@ -214,14 +261,14 @@ const handleAction = (action_name, task_id) => {
               selected: work.selected
             }"
             :key="work.id"
-            v-for="work in displayWorkList"
+            v-for="(work, index) in displayWorkList"
           >
             <td class="datatable-row-header" v-if="isSelectable">
               <input
                 class="input-checkbox"
                 type="checkbox"
                 v-model="work.selected"
-                @click="work.selected = !work.selected"
+                @click="onSelected(work, index)"
               />
             </td>
             <td
