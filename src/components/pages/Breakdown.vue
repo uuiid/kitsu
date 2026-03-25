@@ -30,12 +30,19 @@
           />
           <span class="filler"></span>
           <el-switch class="flexrow-item" v-model="isShowAsset" />
-          <button-simple
-            class="flexrow-item"
-            icon="copy"
-            :title="$t('doodle.copy_asset')"
-            @click="copyAssetsToGuangDian"
-          />
+          <el-dropdown placement="bottom-start" class="flexrow-item">
+            <button-simple class="flexrow-item" icon="copy" />
+            <template #dropdown>
+              <el-dropdown-menu>
+                <el-dropdown-item @click="copyAssetsToGuangDian"
+                  >从正集到广电</el-dropdown-item
+                >
+                <el-dropdown-item @click="copyAssetsToGuangDian(false)"
+                  >从广电到正集</el-dropdown-item
+                >
+              </el-dropdown-menu>
+            </template>
+          </el-dropdown>
           <show-infos-button class="flexrow-item" :is-breakdown="true" />
           <button-simple
             class="flexrow-item"
@@ -1639,12 +1646,14 @@ export default {
           this.errors.edit = true
         })
     },
-    async copyAssetsToGuangDian() {
+    async copyAssetsToGuangDian(is_to_gd = true) {
       if (this.sequenceId === 'all') {
         ElMessage.error('请先选择集数')
         return
       }
-      const current_sequence = this.sequenceMap.get(this.sequenceId)
+      let guangdian_sequence = null
+      let notGuangdian_sequence = null
+      let current_sequence = this.sequenceMap.get(this.sequenceId)
       let source_sequence = null
       if (current_sequence) {
         if (!current_sequence.full_name.endsWith('G')) {
@@ -1658,6 +1667,20 @@ export default {
           )
         }
       } else return
+      if (current_sequence.full_name.endsWith('G')) {
+        guangdian_sequence = current_sequence
+        notGuangdian_sequence = source_sequence
+      } else {
+        notGuangdian_sequence = current_sequence
+        guangdian_sequence = source_sequence
+      }
+      if (is_to_gd) {
+        current_sequence = guangdian_sequence
+        source_sequence = notGuangdian_sequence
+      } else {
+        current_sequence = notGuangdian_sequence
+        source_sequence = guangdian_sequence
+      }
       const source_shots = [...this.shotMap.values()].filter(
         shot => shot.sequence_id === source_sequence.id
       )
@@ -1675,7 +1698,9 @@ export default {
           sequence: current_sequence,
           source_sequence
         }).then(res => {
-          this.reloadEntities(false)
+          if (current_sequence.id === this.sequenceId)
+            this.reloadEntities(false)
+          else ElMessage.success('复制成功')
         })
       }
     },
