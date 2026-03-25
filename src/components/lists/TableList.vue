@@ -5,6 +5,7 @@ import i18n from '@/lib/i18n.js'
 import TimerCell from '@/components/cells/TimerCell.vue'
 import { doodleWorkStore } from '@/store/modules/doodlework.js'
 import ColorPicker from '@/components/widgets/ColorPicker.vue'
+import EditableLabel from '@/components/cells/EditableLabel.vue'
 
 const vuexStore = useStore()
 const isShift = ref(false)
@@ -26,7 +27,8 @@ const props = defineProps({
   isShowRestart: { type: Boolean, default: false },
   isShowDelete: { type: Boolean, default: true },
   isShowCancel: { type: Boolean, default: true },
-  isModify: { type: Boolean, default: false }
+  isModify: { type: Boolean, default: false },
+  isPriority: { type: Boolean, default: false }
 })
 const colors = [
   { color: '#fa1b1b', percentage: 0 },
@@ -42,7 +44,8 @@ const emit = defineEmits([
   'add-data',
   'handle-action',
   'selected',
-  'view-log'
+  'view-log',
+  'update-priority'
 ])
 onMounted(() => {
   window.addEventListener('paste', onClipboardFile, false)
@@ -216,6 +219,10 @@ function onSelected(work, index) {
     shiftStartIndex.value = index
   }
 }
+
+function onUpdatePriority(value, work) {
+  emit('update-priority', value, work)
+}
 </script>
 
 <template>
@@ -251,6 +258,7 @@ function onSelected(work, index) {
             >
               {{ filed.name }}
             </th>
+            <th class="normal" v-if="isPriority">优先级</th>
             <th class="action">{{ $t('doodle.action') }}</th>
           </tr>
         </thead>
@@ -318,6 +326,14 @@ function onSelected(work, index) {
                   index !== work[key].length - 1 ? item + ',' : item
                 }}</span>
               </div>
+            </td>
+
+            <td class="normal" v-if="isPriority">
+              <editable-label
+                :value="work.priority"
+                type="number"
+                @update-value="value => onUpdatePriority(value, work)"
+              ></editable-label>
             </td>
             <td class="action">
               <a

@@ -47,7 +47,6 @@ onMounted(async () => {
 
   filteredWorkList.value = doodleWork.currentDoodleWorkState.workList
   await getDistributedRenderingStatus()
-  console.log(socket)
   socket.on('server-task-info:new', server_task_info_new)
   socket.on('server-task-info:update', server_task_info_update)
   socket.on('server-task-info:delete', server_task_info_delete)
@@ -181,6 +180,16 @@ function removeData(work_id, isShow = true) {
     if (isShow) ElMessage.success('删除成功')
   })
 }
+
+function onUpdatePriority(priority, work) {
+  const data = Object.assign({}, work)
+  data.priority = priority
+  doodleWork.actions.update_job(work.id, data).then(res => {
+    doodleWork.currentDoodleWorkState.workList.set(res.id, res)
+    ElMessage.success('修改成功')
+  })
+}
+
 //
 // async function getComputerInfo(id) {
 //   return await doodleWork.actions.get_one_computer_info(id)
@@ -234,9 +243,11 @@ function removeData(work_id, isShow = true) {
         "
         :is-show-demonstrate="true"
         :is-show-cancel="false"
+        :is-priority="true"
         @add-data="onAddData"
         @view-log="onViewLog"
         @handle-action="onAction"
+        @update-priority="onUpdatePriority"
       ></table-list>
       <div
         class="has-right"
@@ -302,8 +313,8 @@ function removeData(work_id, isShow = true) {
       <el-table-column fixed property="name" label="名称" width="200">
         <template #default="scope">
           <editable-label
-            :value="scope.row"
-            @update-value="updateComputerInfo"
+            :value="scope.row.name"
+            @update-value="value => updateComputerInfo(value, scope.row)"
           ></editable-label>
         </template>
       </el-table-column>
