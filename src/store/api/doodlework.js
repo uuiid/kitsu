@@ -192,5 +192,9 @@ export default {
   deleteJob(id) {
     const path = `/api/data/jobs/${id}`
     return client.pdel(path)
+  },
+  runExportAnimFbx(project_id, shot_id, data) {
+    const path = `/api/actions/projects/${project_id}/shots/${shot_id}/run_export-anim-fbx`
+    return client.ppost(path, data)
   }
 }

@@ -1714,6 +1714,7 @@
       "view_log": "查看日志",
       "restart": "重新提交",
       "log": "日志",
+      "log_p": "日志 名称 创建者",
       "visitor": "访客",
       "logout": "退出访客",
       "is_sure_delete": "您确认删除吗?",

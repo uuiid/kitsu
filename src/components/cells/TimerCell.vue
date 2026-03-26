@@ -33,10 +33,10 @@ const time_info = computed(() => {
   const temp = []
   if (props.task.run_time_info) {
     props.task.run_time_info.forEach(item => {
-      const start_time = new Date(item.start_time)
+      const start_time = new Date(item.run_time)
       const end_time = new Date(item.end_time)
       temp.push({
-        start_time: item.start_time,
+        start_time: item.run_time,
         end_time: item.end_time,
         run_time: doodleWork.actions.formatDiffTime(end_time - start_time), // end_time - start_time,
         info: item.info
@@ -63,7 +63,7 @@ const start = () => {
         let all_time = 0
         props.task.run_time_info.forEach(item => {
           if (item) {
-            const start_time = new Date(item.start_time)
+            const start_time = new Date(item.run_time)
             const end_time = new Date(item.end_time)
             all_time += end_time - start_time
           }
@@ -71,7 +71,7 @@ const start = () => {
         time.value = doodleWork.actions.formatDiffTime(all_time)
       } else {
         time.value = doodleWork.actions.formatDiffTime(
-          new Date(props.task.end_time) - new Date(props.task.submit_time)
+          new Date(props.task.end_time) - new Date(props.task.run_time)
         )
       }
     }

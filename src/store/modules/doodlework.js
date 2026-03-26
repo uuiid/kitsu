@@ -1089,6 +1089,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     get_all_jobs: async () => {
       const jobs = await doodlework.get_all_jobs()
+      jobs.reverse()
       if (jobs) {
         for (const job of jobs) {
           doodleWorkAutoLightDistributed.workList.set(job.id, job)
@@ -1127,6 +1128,9 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     deleteJob: id => {
       return doodlework.deleteJob(id)
+    },
+    runExportAnimFbx: (project_id, shot_id, data) => {
+      return doodlework.runExportAnimFbx(project_id, shot_id, data)
     }
   }
   actions.getToolVersions()

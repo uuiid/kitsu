@@ -6,11 +6,13 @@ import TableList from '@/components/lists/TableList.vue'
 import { ElMessage } from 'element-plus'
 import { SearchIcon } from 'lucide-vue-next'
 import EditableLabel from '@/components/cells/EditableLabel.vue'
+import { useStore } from 'vuex'
+import i18n from '@/lib/i18n.js'
 //const _this = getCurrentInstance().appContext.config.globalProperties
 const instance = getCurrentInstance()
 const socket = instance?.proxy?.$socket
 const doodleWork = doodleWorkStore()
-
+const vuexStore = useStore()
 const allComputers = ref([])
 const isPullProcessing = ref(false)
 const isPullProcessed = ref(false)
@@ -20,9 +22,10 @@ doodleWork.state.currentDoodleWorkType = props.name
 //const isDragOver = ref(false)
 const inputValue = ref('')
 const inputValueModel = ref('')
+const workList = ref(new Map())
 const statusNum = computed(() => {
   let temp = 0
-  doodleWork.currentDoodleWorkState.workList.forEach((value, key) => {
+  workList.value.forEach((value, key) => {
     if (value.status === 'failed') {
       //temp_list.push(value)
       temp++
@@ -31,7 +34,42 @@ const statusNum = computed(() => {
   return temp
 })
 
-const filteredWorkList = ref(new Map())
+const filteredWorkList = computed(() => {
+  const temp = new Map()
+  workList.value.forEach((value, key) => {
+    if (value.status !== 'completed') temp.set(value.id, value)
+  })
+  return temp
+})
+
+const searchWorkList = computed(() => {
+  if (inputValue.value) {
+    const temp = new Map()
+    //const temp_list = []
+    filteredWorkList.value.forEach((value, key) => {
+      const submitter = vuexStore.getters.personMap.get(value.submitter)
+      const exp = new RegExp(`.*?${inputValue.value}.*$`, 'gmi')
+      if (
+        exp.test(value.last_line_log) ||
+        exp.test(value.name) ||
+        exp.test(submitter?.first_name) ||
+        exp.test(submitter?.full_name) ||
+        exp.test(i18n.global.t(`doodle_work.task_state.${value.status}`))
+      ) {
+        //temp_list.push(value)
+        temp.set(value.id, value)
+      }
+    })
+    // temp_list.sort((a, b) => {
+    //   return a.name.localeCompare(b.name)
+    // })
+    // temp_list.forEach(item => {
+    //   temp.set(item.id, item)
+    // })
+    return temp
+  }
+  return filteredWorkList.value
+})
 
 onMounted(async () => {
   doodleWork.state.currentDoodleWorkType = props.name
@@ -45,7 +83,7 @@ onMounted(async () => {
     v.source_computer = computers.get(v.run_computer_id)?.name || ''
   })
 
-  filteredWorkList.value = doodleWork.currentDoodleWorkState.workList
+  workList.value = doodleWork.doodleWorkAutoLightDistributed.workList
   await getDistributedRenderingStatus()
   socket.on('server-task-info:new', server_task_info_new)
   socket.on('server-task-info:update', server_task_info_update)
@@ -76,7 +114,7 @@ function server_task_info_new(work) {
 }
 function server_task_info_update(work) {
   doodleWork.actions.get_one_job_info(work.server_task_info_id).then(res => {
-    doodleWork.currentDoodleWorkState.workList.set(res.id, res)
+    workList.value.set(res.id, res)
   })
 }
 function server_task_info_delete(id) {
@@ -98,7 +136,7 @@ const onAddData = files => {
 }
 
 const reExecute = async () => {
-  doodleWork.currentDoodleWorkState.workList.forEach(work => {
+  workList.value.forEach(work => {
     if (work.status === 'failed') {
       doodleWork.actions.resubmitLocalDoodleWork(work)
     }
@@ -125,13 +163,13 @@ const onAction = async (action_name, tasks) => {
 }
 
 function restartWork(id) {
-  const task = doodleWork.currentDoodleWorkState.workList.get(id)
+  const task = workList.value.get(id)
   if (!task) return
   const data = Object.assign({}, task)
   data.status = 'submitted'
   data.run_computer_id = ''
   doodleWork.actions.update_job(id, data).then(res => {
-    doodleWork.currentDoodleWorkState.workList.set(res.id, res)
+    workList.value.set(res.id, res)
   })
 }
 
@@ -173,18 +211,29 @@ function updateComputerInfo(value, computer) {
 }
 function removeData(work_id, isShow = true) {
   doodleWork.actions.deleteJob(work_id).then(() => {
-    doodleWork.currentDoodleWorkState.workList.delete(work_id)
+    workList.value.delete(work_id)
     if (isShow) ElMessage.success('删除成功')
   })
 }
 
-function onUpdatePriority(priority, work) {
-  const data = Object.assign({}, work)
-  data.priority = priority
-  doodleWork.actions.update_job(work.id, data).then(res => {
-    doodleWork.currentDoodleWorkState.workList.set(res.id, res)
-    ElMessage.success('修改成功')
-  })
+async function onUpdatePriority(priority, works) {
+  for (const work of works) {
+    const data = Object.assign({}, work)
+    data.priority = Number(priority)
+    await doodleWork.actions.update_job(work.id, data).then(res => {
+      workList.value.set(res.id, res)
+    })
+  }
+  ElMessage.success('修改成功')
+}
+
+async function deleteCompletedWork() {
+  for (const work of workList.value) {
+    if (work.status === 'completed') {
+      await removeData(work.id)
+    }
+  }
+  ElMessage.success('删除成功')
 }
 
 //
@@ -210,6 +259,7 @@ function onUpdatePriority(priority, work) {
           }}
         </el-button>
         <el-button @click="showComputers">查看服务器</el-button>
+        <el-button @click="deleteCompletedWork">删除已完成</el-button>
         <div class="search-field-main">
           <span class="search-icon">
             <search-icon :size="20" />
@@ -217,7 +267,7 @@ function onUpdatePriority(priority, work) {
           <input
             ref="search-field"
             class="input"
-            :placeholder="$t('doodle_work.log')"
+            :placeholder="$t('doodle_work.log_p')"
             v-model.trim="inputValueModel"
             @keydown.enter="inputValue = inputValueModel"
             @input="
@@ -229,7 +279,7 @@ function onUpdatePriority(priority, work) {
       <table-list
         style="width: 100%"
         :table-header-filed="doodleWork.currentDoodleWorkState.tableHeaderFiled"
-        :body-list="filteredWorkList"
+        :body-list="searchWorkList"
         name="刷新"
         :is-drop="false"
         :is-show-submit="false"
@@ -246,14 +296,9 @@ function onUpdatePriority(priority, work) {
         @handle-action="onAction"
         @update-priority="onUpdatePriority"
       ></table-list>
-      <div
-        class="has-right"
-        v-if="doodleWork.currentDoodleWorkState.workList.size > 0"
-      >
+      <div class="has-right" v-if="workList.size > 0">
         <span>失败/所有:</span>
-        <span>
-          {{ statusNum }}/{{ doodleWork.currentDoodleWorkState.workList.size }}
-        </span>
+        <span> {{ statusNum }}/{{ workList.size }} </span>
       </div>
       <div class="has-text-right" v-if="false">
         <div class="buttons">
@@ -266,10 +311,7 @@ function onUpdatePriority(priority, work) {
           >
             {{ `历史` }}
           </a>
-          <div
-            class="buttons"
-            v-show="doodleWork.currentDoodleWorkState.workList.size > 0"
-          >
+          <div class="buttons" v-show="workList.size > 0">
             <a
               :class="{
                 button: true

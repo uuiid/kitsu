@@ -44,7 +44,6 @@ const emit = defineEmits([
   'add-data',
   'handle-action',
   'selected',
-  'view-log',
   'update-priority'
 ])
 onMounted(() => {
@@ -173,7 +172,7 @@ const onClickBody = (work, key) => {
   }
   if (key === 'last_line_log') {
     //handleAction('view-log', work)
-    emit('view-log', work)
+    //emit('view-log', work)
   }
 }
 
@@ -190,9 +189,8 @@ const onClipboardFile = event => {
 const handleAction = (action_name, task_id) => {
   if (props.isSelectable) {
     const tasks = displayWorkList.value.filter(w => w.selected)
-    emit('handle-action', action_name, tasks.length > 0 ? tasks : [task_id])
-  }
-  emit('handle-action', action_name, task_id)
+    emit('handle-action', action_name, tasks.length === 0 ? [task_id] : tasks)
+  } else emit('handle-action', action_name, task_id)
 }
 
 function onSelected(work, index) {
@@ -221,7 +219,10 @@ function onSelected(work, index) {
 }
 
 function onUpdatePriority(value, work) {
-  emit('update-priority', value, work)
+  if (props.isSelectable) {
+    const tasks = displayWorkList.value.filter(w => w.selected)
+    emit('update-priority', value, tasks.length === 0 ? [work] : tasks)
+  } else emit('update-priority', value, work)
 }
 </script>
 
