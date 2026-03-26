@@ -1089,6 +1089,7 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     get_all_jobs: async () => {
       const jobs = await doodlework.get_all_jobs()
+      doodleWorkAutoLightDistributed.workList.clear()
       jobs.reverse()
       if (jobs) {
         for (const job of jobs) {
