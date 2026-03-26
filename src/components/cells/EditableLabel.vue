@@ -16,7 +16,7 @@
       @change="$emit('update-value', modelValue)"
     ></el-input>
     <span :style="`width: ${width - 20}px;height: ${height}px`" v-else>{{
-      modelValue
+      value
     }}</span>
     <!-- 手动触发焦点（可选） -->
     <pencil-icon

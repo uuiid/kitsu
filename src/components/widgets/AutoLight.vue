@@ -43,32 +43,29 @@ const filteredWorkList = computed(() => {
 })
 
 const searchWorkList = computed(() => {
-  if (inputValue.value) {
-    const temp = new Map()
-    //const temp_list = []
-    filteredWorkList.value.forEach((value, key) => {
-      const submitter = vuexStore.getters.personMap.get(value.submitter)
-      const exp = new RegExp(`.*?${inputValue.value}.*$`, 'gmi')
-      if (
-        exp.test(value.last_line_log) ||
+  const temp = new Map()
+  filteredWorkList.value.forEach((value, key) => {
+    const submitter = vuexStore.getters.personMap.get(value.submitter)
+    const exp = new RegExp(`.*?${inputValue.value}.*$`, 'gmi')
+    if (
+      (exp.test(value.last_line_log) ||
         exp.test(value.name) ||
         exp.test(submitter?.first_name) ||
         exp.test(submitter?.full_name) ||
-        exp.test(i18n.global.t(`doodle_work.task_state.${value.status}`))
-      ) {
-        //temp_list.push(value)
-        temp.set(value.id, value)
-      }
-    })
-    // temp_list.sort((a, b) => {
-    //   return a.name.localeCompare(b.name)
-    // })
-    // temp_list.forEach(item => {
-    //   temp.set(item.id, item)
-    // })
-    return temp
-  }
-  return filteredWorkList.value
+        exp.test(i18n.global.t(`doodle_work.task_state.${value.status}`))) &&
+      value.status !== 'completed'
+    ) {
+      //temp_list.push(value)
+      temp.set(value.id, value)
+    }
+  })
+  // temp_list.sort((a, b) => {
+  //   return a.name.localeCompare(b.name)
+  // })
+  // temp_list.forEach(item => {
+  //   temp.set(item.id, item)
+  // })
+  return temp
 })
 
 onMounted(async () => {
@@ -162,17 +159,6 @@ const onAction = async (action_name, tasks) => {
   }
 }
 
-function restartWork(id) {
-  const task = workList.value.get(id)
-  if (!task) return
-  const data = Object.assign({}, task)
-  data.status = 'submitted'
-  data.run_computer_id = ''
-  doodleWork.actions.update_job(id, data).then(res => {
-    workList.value.set(res.id, res)
-  })
-}
-
 async function getAllComputers() {
   allComputers.value = await doodleWork.actions.get_all_computers()
 }
@@ -213,6 +199,17 @@ function removeData(work_id, isShow = true) {
   doodleWork.actions.deleteJob(work_id).then(() => {
     workList.value.delete(work_id)
     if (isShow) ElMessage.success('删除成功')
+  })
+}
+
+function restartWork(id) {
+  const task = workList.value.get(id)
+  if (!task) return
+  const data = Object.assign({}, task)
+  data.status = 'submitted'
+  data.run_computer_id = ''
+  doodleWork.actions.update_job(id, data).then(res => {
+    workList.value.set(res.id, res)
   })
 }
 
