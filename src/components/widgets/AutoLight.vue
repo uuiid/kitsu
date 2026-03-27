@@ -16,8 +16,9 @@ const vuexStore = useStore()
 const allComputers = ref([])
 const isPullProcessing = ref(false)
 const isPullProcessed = ref(false)
+const isShowCompleted = ref(false)
 const computerListsVisible = ref(false)
-const props = defineProps(['name', 'isDrop', 'isSetOutPath'])
+const props = defineProps(['name', 'isDrop', 'isSetOutPath', 'type'])
 doodleWork.state.currentDoodleWorkType = props.name
 //const isDragOver = ref(false)
 const inputValue = ref('')
@@ -37,7 +38,11 @@ const statusNum = computed(() => {
 const filteredWorkList = computed(() => {
   const temp = new Map()
   workList.value.forEach((value, key) => {
-    if (value.status !== 'completed') temp.set(value.id, value)
+    if (
+      (isShowCompleted.value ? true : value.status !== 'completed') &&
+      value.type === props.type
+    )
+      temp.set(value.id, value)
   })
   return temp
 })
@@ -48,12 +53,11 @@ const searchWorkList = computed(() => {
     const submitter = vuexStore.getters.personMap.get(value.submitter)
     const exp = new RegExp(`.*?${inputValue.value}.*$`, 'gmi')
     if (
-      (exp.test(value.last_line_log) ||
-        exp.test(value.name) ||
-        exp.test(submitter?.first_name) ||
-        exp.test(submitter?.full_name) ||
-        exp.test(i18n.global.t(`doodle_work.task_state.${value.status}`))) &&
-      value.status !== 'completed'
+      exp.test(value.last_line_log) ||
+      exp.test(value.name) ||
+      exp.test(submitter?.first_name) ||
+      exp.test(submitter?.full_name) ||
+      exp.test(i18n.global.t(`doodle_work.task_state.${value.status}`))
     ) {
       //temp_list.push(value)
       temp.set(value.id, value)
@@ -243,6 +247,12 @@ async function deleteCompletedWork() {
   <div class="datatable-main">
     <div class="datatable-content">
       <div class="has-right">
+        <el-switch
+          v-model="isShowCompleted"
+          inline-prompt
+          :active-text="$t('doodle_work.show_completed')"
+          :inactive-text="$t('doodle_work.hide_completed')"
+        />
         <el-button
           :type="isPullProcessed ? 'primary' : 'danger'"
           :loading="isPullProcessing"

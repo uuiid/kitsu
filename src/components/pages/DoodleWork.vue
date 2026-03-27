@@ -728,6 +728,7 @@ const onSetOutPath = () => {
         <auto-light
           class="datatable-wrapper"
           :name="currentPage.name"
+          type="auto_light"
           v-if="currentPage.name === 'auto_light_distributed'"
         ></auto-light>
         <extract-caption
