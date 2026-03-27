@@ -209,19 +209,18 @@ export default {
       }
     },
 
-    showList() {
-      if (this.showList && this.isReversed) {
-        this.$nextTick(() => {
-          let list = null
-          for (const child of this.$refs.select.children) {
-            if (child.className !== 'flexrow') {
-              list = child
-            }
-          }
-          list.scrollTo({ top: this.optionList.length * 60 })
-        })
-      }
-    },
+    // showList() {
+    //   if (this.showList && this.isReversed) {
+    //     this.$nextTick(() => {
+    //       let list = null
+    //       for (const child of this.$refs.select.children) {
+    //         if (child.className !== 'flexrow') {
+    //           list = child
+    //         }
+    //       }
+    //     })
+    //   }
+    // },
 
     modelValue() {
       this.selectedOption = this.options.find(o => o.value === this.modelValue)
