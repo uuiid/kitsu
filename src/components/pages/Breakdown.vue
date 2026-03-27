@@ -18,6 +18,7 @@
           <combobox-styled
             :label="$t('shots.fields.sequence')"
             :options="castingSequencesOptions"
+            :is-reversed="true"
             v-model="sequenceId"
             v-if="isShotCasting"
             @change="onSequenceChange"
@@ -360,6 +361,7 @@
           />
           <combobox-styled
             :options="castingSequencesOptions"
+            :is-reversed="true"
             v-model="assetSequenceId"
             v-if="isShotCasting"
             style="margin-top: 0.4em; margin-right: 0.4em"

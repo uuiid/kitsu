@@ -8,7 +8,6 @@
       :class="{
         thin,
         compact: isCompact,
-        reversed: isReversed,
         open: showList
       }"
       ref="select"
