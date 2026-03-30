@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, reactive, ref } from 'vue'
+import { computed, ref } from 'vue'
 import { DoodleWorkBase, doodleWorkStore } from '@/store/modules/doodlework'
 import productions from '@/store/modules/productions.js'
 import Queue from 'yocto-queue'
@@ -143,7 +143,7 @@ function initState() {
 export const updateTaskFilesStore = defineStore(
   'updateTaskFilesStorage',
   () => {
-    const state = reactive(initState())
+    const state = ref(initState())
 
     const doodleWork = doodleWorkStore()
     const doodleWorkCheckFiles = new DoodleWorkUpdateTaskFiles()
@@ -214,7 +214,10 @@ export const updateTaskFilesStore = defineStore(
           } else if (task.updateType === 1) {
             await actions.updateFile(task.file.path, task)
           } else if (task.updateType === 4) {
-            if (task.task_type_id === 'eb7c92c8-232c-4894-8efa-c62ced44ff05') {
+            if (
+              task.task_type_id === 'eb7c92c8-232c-4894-8efa-c62ced44ff05' &&
+              task.isLocal !== true
+            ) {
               const file = {
                 data: task.file,
                 disposition: task.task_data.name,

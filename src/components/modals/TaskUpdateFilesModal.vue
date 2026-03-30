@@ -16,6 +16,7 @@ const instance = getCurrentInstance()
 const socket = instance?.proxy?.$socket
 const updateTaskFiles = updateTaskFilesStore()
 const doodleWork = doodleWorkStore()
+const islocal = ref(true)
 const props = defineProps({
   updateEntityType: {
     type: String,
@@ -490,6 +491,7 @@ const onAddData = async files => {
       const task = setDoodleWorkTask(file)
       task.task_id = temp_task[0].task.id
       task.file = file
+      task.isLocal = islocal.value
       task.entity_type = route.name
       task.task_data = {
         name: `${productions.state.currentProduction.code}_${temp_task[0].task.entity_name.replace(' / ', '_')}.ma`,
@@ -771,6 +773,10 @@ function deleteAllTask() {
                 />
                 <span>{{ taskData[1].name }}</span>
               </div>
+            </div>
+            <div class="project-list-item" v-if="isExportFbx">
+              <input class="input-checkbox" type="checkbox" v-model="islocal" />
+              <span>是否本地</span>
             </div>
           </div>
         </div>
