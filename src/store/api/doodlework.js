@@ -194,7 +194,11 @@ export default {
     return client.pdel(path)
   },
   runExportAnimFbx(project_id, shot_id, data) {
-    const path = `/api/actions/projects/${project_id}/shots/${shot_id}/run_export-anim-fbx`
+    const path = `/api/actions/projects/${project_id}/shots/${shot_id}/run-export-anim-fbx`
     return client.ppost(path, data)
+  },
+  updateShotMayaFile(task_id, file) {
+    const path = `/api/doodle/data/shots/${task_id}/file/maya`
+    return client.ppostFileData(path, file)
   }
 }

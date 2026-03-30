@@ -314,6 +314,18 @@ const pagedAssets = ref([
     isVisible: true,
     isBaseTemplate: false,
     isVisitor: false
+  },
+  {
+    id: 10,
+    name: 'export_fbx_distributed',
+    label: '自动动画(分布式)',
+    textIcon: 'P',
+    disabled: true,
+    description: '',
+    color: '#75ec97',
+    isVisible: true,
+    isBaseTemplate: false,
+    isVisitor: false
   }
 ])
 const pluginAssets = ref([
@@ -730,6 +742,12 @@ const onSetOutPath = () => {
           :name="currentPage.name"
           type="auto_light"
           v-if="currentPage.name === 'auto_light_distributed'"
+        ></auto-light>
+        <auto-light
+          class="datatable-wrapper"
+          :name="currentPage.name"
+          type="export_fbx"
+          v-if="currentPage.name === 'export_fbx_distributed'"
         ></auto-light>
         <extract-caption
           class="datatable-wrapper"

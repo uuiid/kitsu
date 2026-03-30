@@ -79,11 +79,12 @@ onMounted(async () => {
   allComputers.value.forEach(computer => {
     computers.set(computer.id, computer)
   })
-  await doodleWork.actions.get_all_jobs()
-  doodleWork.doodleWorkAutoLightDistributed.workList.forEach((v, k) => {
-    v.source_computer = computers.get(v.run_computer_id)?.name || ''
-  })
-
+  const jobs = await doodleWork.actions.get_all_jobs()
+  jobs.reverse()
+  for (const job of jobs) {
+    doodleWork.doodleWorkAutoLightDistributed.workList.set(job.id, job)
+    job.source_computer = computers.get(job.run_computer_id)?.name || ''
+  }
   workList.value = doodleWork.doodleWorkAutoLightDistributed.workList
   await getDistributedRenderingStatus()
   socket.on('server-task-info:new', server_task_info_new)

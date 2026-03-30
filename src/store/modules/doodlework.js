@@ -1087,15 +1087,8 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     getLocalLogPath: () => {
       return doodlework.getLocalLogPath(state.value.localHttpPath)
     },
-    get_all_jobs: async () => {
-      const jobs = await doodlework.get_all_jobs()
-      doodleWorkAutoLightDistributed.workList.clear()
-      jobs.reverse()
-      if (jobs) {
-        for (const job of jobs) {
-          doodleWorkAutoLightDistributed.workList.set(job.id, job)
-        }
-      }
+    get_all_jobs: () => {
+      return doodlework.get_all_jobs()
     },
     get_one_job_info: id => {
       return doodlework.get_one_job_info(id)
@@ -1129,9 +1122,6 @@ export const doodleWorkStore = defineStore('doodleWorkStore', () => {
     },
     deleteJob: id => {
       return doodlework.deleteJob(id)
-    },
-    runExportAnimFbx: (project_id, shot_id, data) => {
-      return doodlework.runExportAnimFbx(project_id, shot_id, data)
     }
   }
   actions.getToolVersions()

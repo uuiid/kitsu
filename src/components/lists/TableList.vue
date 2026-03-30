@@ -252,13 +252,14 @@ function onUpdatePriority(value, work) {
               class="name datatable-row-header"
               v-if="isSelectable"
             ></th>
-            <th
-              class="normal"
-              :key="key"
-              v-for="(filed, key) in tableHeaderFiled"
-            >
-              {{ filed.name }}
-            </th>
+            <template :key="key" v-for="(filed, key) in tableHeaderFiled">
+              <th
+                class="normal"
+                v-if="filed.type === 'progress' ? isShowProgress : true"
+              >
+                {{ filed.name }}
+              </th>
+            </template>
             <th class="normal" v-if="isPriority">优先级</th>
             <th class="action">{{ $t('doodle.action') }}</th>
           </tr>
@@ -280,55 +281,57 @@ function onUpdatePriority(value, work) {
                 @click="onSelected(work, index)"
               />
             </td>
-            <td
-              :key="key"
-              :class="{
-                pointer: key === 'last_line_log'
-              }"
-              v-for="(value, key) in tableHeaderFiled"
-              @click="onClickBody(work, key)"
-            >
-              <span
-                :title="
-                  key === 'last_line_log' ? formatTableBodyData(work, key) : ''
-                "
+            <template :key="key" v-for="(value, key) in tableHeaderFiled">
+              <td
                 :class="{
-                  error:
-                    work[key] === 'failed' ||
-                    (key === 'last_line_log' && work['status'] === 'failed'),
-                  completed:
-                    work[key] === 'completed' || work[key] === 'updated'
+                  pointer: key === 'last_line_log'
                 }"
-                v-if="value.type === 'string' || value.type === 'number'"
+                @click="onClickBody(work, key)"
+                v-if="value.type === 'progress' ? isShowProgress : true"
               >
-                {{ formatTableBodyData(work, key) }}
-              </span>
+                <span
+                  :title="
+                    key === 'last_line_log'
+                      ? formatTableBodyData(work, key)
+                      : ''
+                  "
+                  :class="{
+                    error:
+                      work[key] === 'failed' ||
+                      (key === 'last_line_log' && work['status'] === 'failed'),
+                    completed:
+                      work[key] === 'completed' || work[key] === 'updated'
+                  }"
+                  v-if="value.type === 'string' || value.type === 'number'"
+                >
+                  {{ formatTableBodyData(work, key) }}
+                </span>
 
-              <timer-cell
-                :task="work"
-                v-else-if="value.type === 'time'"
-              ></timer-cell>
-              <span v-else-if="value.type === 'boolean'">
-                <input type="checkbox" v-model="work.task_data[key]" />
-              </span>
-              <el-progress
-                type="dashboard"
-                :percentage="Math.floor(work.progress * 100) || 0"
-                :color="colors"
-                :width="100"
-                v-else-if="value.type === 'progress'"
-              />
-              <color-picker
-                :color="work[key]"
-                v-else-if="value.type === 'color'"
-              />
-              <div v-else-if="value.type === 'list'">
-                <span :key="item" v-for="(item, index) in work[key]">{{
-                  index !== work[key].length - 1 ? item + ',' : item
-                }}</span>
-              </div>
-            </td>
-
+                <timer-cell
+                  :task="work"
+                  v-else-if="value.type === 'time'"
+                ></timer-cell>
+                <span v-else-if="value.type === 'boolean'">
+                  <input type="checkbox" v-model="work.task_data[key]" />
+                </span>
+                <el-progress
+                  type="dashboard"
+                  :percentage="Math.floor(work.progress * 100) || 0"
+                  :color="colors"
+                  :width="100"
+                  v-else-if="value.type === 'progress' && isShowProgress"
+                />
+                <color-picker
+                  :color="work[key]"
+                  v-else-if="value.type === 'color'"
+                />
+                <div v-else-if="value.type === 'list'">
+                  <span :key="item" v-for="(item, index) in work[key]">{{
+                    index !== work[key].length - 1 ? item + ',' : item
+                  }}</span>
+                </div>
+              </td>
+            </template>
             <td class="normal" v-if="isPriority">
               <editable-label
                 :value="work.priority"

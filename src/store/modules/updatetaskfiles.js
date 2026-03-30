@@ -1,5 +1,5 @@
 import { defineStore } from 'pinia'
-import { computed, ref } from 'vue'
+import { computed, reactive, ref } from 'vue'
 import { DoodleWorkBase, doodleWorkStore } from '@/store/modules/doodlework'
 import productions from '@/store/modules/productions.js'
 import Queue from 'yocto-queue'
@@ -128,7 +128,7 @@ function initState() {
     isShowCreateReviewFieldModal: false,
     isShowCreateReviewSelectModal: false,
     selectedTask: null,
-    allFiles: new Map(),
+    allFiles: ref(new Map()),
     updateTaskQueue: new Queue(),
     checkedTasks: new Map(),
     loadingNum: 0,
@@ -143,7 +143,7 @@ function initState() {
 export const updateTaskFilesStore = defineStore(
   'updateTaskFilesStorage',
   () => {
-    const state = ref(initState())
+    const state = reactive(initState())
 
     const doodleWork = doodleWorkStore()
     const doodleWorkCheckFiles = new DoodleWorkUpdateTaskFiles()
@@ -214,7 +214,19 @@ export const updateTaskFilesStore = defineStore(
           } else if (task.updateType === 1) {
             await actions.updateFile(task.file.path, task)
           } else if (task.updateType === 4) {
-            await actions.submitLocalDoodleWork(task)
+            if (task.task_type_id === 'eb7c92c8-232c-4894-8efa-c62ced44ff05') {
+              const file = {
+                data: task.file,
+                disposition: task.task_data.name,
+                filetype: 'application/octet-stream'
+              }
+              await actions.updateShotMayaFile(task.task_id, file)
+              await actions.runExportAnimFbx(
+                productions.state.currentProduction.id,
+                task.task_id,
+                task.task_data
+              )
+            } else await actions.submitLocalDoodleWork(task)
           } else if (task.updateType === 5) {
             task['path'] = task.file.path
             await actions.updateShotVideoAndSequence(task)
@@ -595,6 +607,22 @@ export const updateTaskFilesStore = defineStore(
           state.value.allFiles.set(task.id, task)
         }
         doodleWorkCheckFiles.uncommittedWorkList.delete(item.id)
+      },
+      updateShotMayaFile: (task_id, file) => {
+        return doodlework.updateShotMayaFile(task_id, file)
+      },
+      runExportAnimFbx: async (project_id, shot_id, data) => {
+        const result = await doodlework.runExportAnimFbx(
+          project_id,
+          shot_id,
+          data
+        )
+        const task = Object.assign({}, state.value.allFiles.get(shot_id))
+        state.value.allFiles.delete(shot_id)
+        task.id = result.id
+        await doodleWork.actions.formatTask(task, result)
+        state.value.allFiles.set(task.id, task)
+        doodleWorkCheckFiles.uncommittedWorkList.delete(shot_id)
       }
 
       // loadLocalDoodleWork: async task => {

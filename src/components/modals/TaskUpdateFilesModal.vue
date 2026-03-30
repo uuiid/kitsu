@@ -1,6 +1,7 @@
 <script setup>
 import TableList from '@/components/lists/TableList.vue'
 import { reactive, ref } from 'vue'
+import { getCurrentInstance } from 'vue'
 import { updateTaskFilesStore } from '@/store/modules/updatetaskfiles'
 import { onUnmounted, onMounted, computed } from 'vue'
 import { ElMessage, ElNotification } from 'element-plus'
@@ -11,7 +12,10 @@ import { useRoute } from 'vue-router'
 import AddReviewFileCell from '@/components/cells/AddReviewFileCell.vue'
 import ButtonSimple from '@/components/widgets/ButtonSimple.vue'
 const route = useRoute()
+const instance = getCurrentInstance()
+const socket = instance?.proxy?.$socket
 const updateTaskFiles = updateTaskFilesStore()
+const doodleWork = doodleWorkStore()
 const props = defineProps({
   updateEntityType: {
     type: String,
@@ -53,6 +57,15 @@ const displayUpdateTypes = computed(() => {
   return updateTypes.filter(type => type.type === props.updateEntityType)
 })
 
+const isExportFbx = computed(() => {
+  if (updateTaskFiles.state.selectedTask)
+    return (
+      updateTaskFiles.state.selectedTask.task.task_type_id ===
+      'eb7c92c8-232c-4894-8efa-c62ced44ff05'
+    )
+  return false
+})
+
 const tests = computed(() => {
   return updateTypes.filter(
     type => type.id === updateTaskFiles.state.currentUpdateType
@@ -65,14 +78,17 @@ const disPlayTaskDataFiled = computed(() => {
   return []
 })
 const displayAllFiles = computed(() => {
-  return [...updateTaskFiles.state.allFiles.values()].filter(
-    task => task.updateType === updateTaskFiles.state.currentUpdateType
+  return [...updateTaskFiles.state.allFiles.values()].filter(task =>
+    updateTaskFiles.state.currentUpdateType === 4
+      ? task.type === 'auto_light' ||
+        task.updateType === updateTaskFiles.state.currentUpdateType
+      : task.updateType === updateTaskFiles.state.currentUpdateType
   )
 })
 function sleep(ms) {
   return new Promise(resolve => setTimeout(resolve, ms))
 }
-onMounted(() => {
+onMounted(async () => {
   if (
     updateTaskFiles.state.selectedTask.task.task_type_id ===
       '3e20ff2b-13e6-4dce-8bf2-37341b5c1f34' ||
@@ -123,8 +139,41 @@ onMounted(() => {
         ).toFixed(4)
       }
     )
+    // const jobs = await doodleWorkStore().actions.get_all_jobs()
+    // jobs.reverse()
+    // for (const job of jobs) {
+    //   updateTaskFiles.state.allFiles.set(job.id, job)
+    // }
+    socket.on('server-task-info:new', server_task_info_new)
+    socket.on('server-task-info:update', server_task_info_update)
+    socket.on('server-task-info:delete', server_task_info_delete)
   }
 })
+onUnmounted(() => {
+  socket.off('server-task-info:new', server_task_info_new)
+  socket.off('server-task-info:update', server_task_info_update)
+  socket.off('server-task-info:delete', server_task_info_delete)
+})
+function server_task_info_new(work) {
+  if (work.type === 'export_fbx') server_task_info_update(work)
+}
+function server_task_info_update(work) {
+  if (work.type === 'export_fbx')
+    doodleWork.actions.get_one_job_info(work.server_task_info_id).then(res => {
+      updateTaskFiles.state.allFiles.set(res.id, res)
+    })
+}
+function server_task_info_delete(id) {
+  removeData(id)
+}
+
+function removeData(work_id, isShow = true) {
+  doodleWork.actions.deleteJob(work_id).then(() => {
+    updateTaskFiles.state.allFiles.delete(work_id)
+    if (isShow) ElMessage.success('删除成功')
+  })
+}
+
 updateTaskFiles.doodleWork.state.currentDoodleWorkType = 'check_maya'
 const intervalId = setInterval(() => {
   // updateTaskFiles.actions.isReloadDoodleWork()
@@ -172,10 +221,15 @@ const onViewLog = work_task => {
 }
 
 const onActions = async (action_name, task) => {
-  if (action_name === 'remove-task') {
+  if (action_name === 'delete-task') {
     updateTaskFiles.state.allFiles.delete(task.id)
     updateTaskFiles.doodleWorkCheckFiles.uncommittedWorkList.delete(task.id)
+    if (isExportFbx.value) removeData(task.id)
   } else if (action_name === 'view-log') {
+    if (isExportFbx.value) {
+      ElMessage.error('请到Ai自动工作台自动动画（分布式）查看详情')
+      return
+    }
     const fs = require('fs')
     const localLogPath = await doodleWorkStore().actions.getLocalLogPath()
     const logPath = `${localLogPath.tmp_dir}/${task.id}.log`
@@ -433,10 +487,14 @@ const onAddData = async files => {
         updateTaskFiles.state.currentUpdateType === 3
       )
         temp_task.push(updateTaskFiles.state.selectedTask)
-      const task = setDoodleWorlTask(file)
+      const task = setDoodleWorkTask(file)
       task.task_id = temp_task[0].task.id
       task.file = file
       task.entity_type = route.name
+      task.task_data = {
+        name: `${productions.state.currentProduction.code}_${temp_task[0].task.entity_name.replace(' / ', '_')}.ma`,
+        submitter: task.submitter
+      }
       updateTaskFiles.state.allFiles.set(task.id, task)
       notNeedInspections.set(task.id, task)
     }
@@ -573,7 +631,7 @@ const onAddData = async files => {
       messages.push(`${file.name}:请检查文件名称`)
       continue
     }
-    const task = setDoodleWorlTask(file)
+    const task = setDoodleWorkTask(file)
     task.task_id = updateTaskFiles.state.selectedTask.task.id
     task.entity_type = route.name
     updateTaskFiles.state.allFiles.set(task.id, task)
@@ -599,7 +657,7 @@ const onAddData = async files => {
   // )
 }
 
-function setDoodleWorlTask(file) {
+function setDoodleWorkTask(file) {
   const task = updateTaskFiles.doodleWorkCheckFiles.formatData(file)
   task.status = 'waiting'
   task.run_time = new Date().toISOString()
@@ -724,8 +782,9 @@ function deleteAllTask() {
           "
           :is-drop="true"
           :is-show-submit="true"
-          :is-show-view-log="true"
-          :is-show-progress="false"
+          :is-show-view-log="!isExportFbx"
+          :is-show-cancel="!isExportFbx"
+          :is-show-progress="updateTaskFiles.state.currentUpdateType !== 4"
           :body-list="displayAllFiles"
           running-label="checking"
           @submit="onSubmit"
