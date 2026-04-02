@@ -1428,7 +1428,7 @@ export default {
                   updateTaskFilesStore().state.currentUpdateType = 5
                 return
               }
-              if (res.UE_path !== '' && res.maya_path !== '') {
+              if (res.UE_path !== '') {
                 if (res.user_work_root !== '') {
                   const task_ids = []
                   this.selectedTasks.forEach(task => {
